@@ -552,27 +552,9 @@ function doSubmit() {
   const tenNV = document.getElementById('input-ten-nv').value.trim();
 
   state.submitting = true;
-  state.submitted  = true;
+  btn.className = 'submit-btn s-ready';
+  btn.innerHTML = '<span class="spinner"></span>Đang gửi...';
 
-  // ===== HIỆN KẾT QUẢ NGAY — không chờ server =====
-  setBtn('s-done', '✓ Đã chấm công thành công');
-
-  const rb = document.getElementById('result-box');
-  rb.style.display = 'block';
-  rb.className = 'result-box r-ok';
-  rb.innerHTML = `✓ <strong>${state.loai}</strong> · Đang xử lý... · ${pad(new Date().getHours())}:${pad(new Date().getMinutes())}:${pad(new Date().getSeconds())}`;
-
-  const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-  logs.unshift({
-    loai: state.loai,
-    lbcls: lbMap[state.loai] || 'lb-v',
-    time: `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}:${pad(new Date().getSeconds())}`,
-    dist: '--',
-    ok: true,
-  });
-  renderLog();
-
-  // ===== GỬI SERVER NGẦM — không chờ kết quả =====
   const payload = {
     maCuaHang:    maCH,
     tenCuaHang:   tenCH,
@@ -585,26 +567,13 @@ function doSubmit() {
     selfieBase64: state.selfieB64 || null,
   };
 
-  fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(payload) })
-    .then(r => r.json())
-    .then(res => {
-      // Cập nhật kết quả sau khi server xử lý xong
-      if (res.gpsStatus === 'NGOÀI VÙNG') {
-        rb.className = 'result-box r-warn';
-        rb.innerHTML = `⚠ <strong>${state.loai}</strong> · Ngoài vùng (${res.khoangCach}m) · Đã cảnh báo quản lý`;
-        logs[0].ok   = false;
-        logs[0].dist = res.khoangCach + 'm';
-      } else if (res.gpsStatus === 'HỢP LỆ') {
-        rb.innerHTML = `✓ <strong>${state.loai}</strong> · GPS hợp lệ · Cách ${res.khoangCach}m · ${res.timestamp.substring(11,19)}`;
-        logs[0].dist = res.khoangCach + 'm';
-      }
-      renderLog();
-    })
-    .catch(err => {
-      // Lỗi mạng — vẫn giữ thông báo thành công vì NV đã thao tác đúng
-      console.error('Lỗi gửi server:', err);
-      rb.innerHTML += ' · ⚠ Lỗi kết nối, dữ liệu có thể chưa lưu';
-    });
+fetch(SCRIPT_URL, {
+  method: 'POST',
+  body: JSON.stringify(payload),
+})
+  .then(r => r.json())
+  .then(res => onOk(res))
+  .catch(err => onErr(err));
 }
 
 function onOk(res) {
