@@ -128,23 +128,30 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 .popup-btn:active{transform:scale(.98);}
 
 /* POPUP THÔNG BÁO */
-.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
-.popup-box{background:white;border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2);}
-.popup-header{padding:16px 20px 12px;text-align:center;}
-.popup-header.ok{background:#E1F5EE;}
-.popup-header.warn{background:#FAEEDA;}
-.popup-icon{font-size:36px;margin-bottom:6px;}
-.popup-title{font-size:16px;font-weight:700;color:#085041;}
-.popup-header.warn .popup-title{color:#412402;}
-.popup-body{padding:14px 20px;border-bottom:0.5px solid var(--border);}
-.popup-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:0.5px solid var(--border);}
+.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.popup-box{background:white;border-radius:24px 24px 0 0;width:100%;max-width:430px;overflow:hidden;box-shadow:0 -4px 40px rgba(0,0,0,.18);animation:slideUp .28s cubic-bezier(.34,1.1,.64,1);}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.popup-top{height:4px;width:40px;background:#e0dfd8;border-radius:2px;margin:12px auto 0;}
+.popup-icon-wrap{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:16px auto 10px;font-size:30px;}
+.popup-icon-wrap.ok{background:linear-gradient(135deg,#1D9E75,#0F6E56);box-shadow:0 6px 20px rgba(15,110,86,.35);}
+.popup-icon-wrap.warn{background:linear-gradient(135deg,#F0B429,#BA7517);box-shadow:0 6px 20px rgba(186,117,23,.35);}
+.popup-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;color:#1a1a18;}
+.popup-sub{font-size:12px;text-align:center;color:#888780;margin-bottom:16px;}
+.popup-card{margin:0 16px 14px;background:#f8f7f3;border-radius:14px;overflow:hidden;}
+.popup-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:0.5px solid rgba(0,0,0,0.06);font-size:13px;}
 .popup-row:last-child{border-bottom:none;}
-.popup-label{color:var(--text-m);}
-.popup-val{font-weight:500;text-align:right;max-width:60%;}
-.popup-val.warn{color:#BA7517;}
+.popup-label{color:#888780;font-size:12px;}
+.popup-val{font-weight:600;text-align:right;max-width:65%;font-size:13px;color:#1a1a18;}
 .popup-val.ok{color:#0F6E56;}
-.popup-btn{display:block;width:100%;padding:15px;text-align:center;font-size:15px;font-weight:700;background:var(--green);color:white;border:none;cursor:pointer;}
-.popup-btn:active{opacity:.85;}
+.popup-val.warn{color:#BA7517;}
+.popup-val.err{color:#A32D2D;}
+.popup-gps-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+.popup-gps-badge.ok{background:#E1F5EE;color:#085041;}
+.popup-gps-badge.warn{background:#FAEEDA;color:#412402;}
+.popup-gps-badge.unk{background:#F1EFE8;color:#5F5E5A;}
+.popup-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;text-align:center;font-size:15px;font-weight:700;background:#0F6E56;color:white;border:none;border-radius:12px;cursor:pointer;letter-spacing:.02em;}
+.popup-btn:active{transform:scale(.98);opacity:.92;}
+.popup-safe{height:env(safe-area-inset-bottom,0px);}
 </style>
 </head>
 <body>
@@ -253,23 +260,39 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 <!-- POPUP THÔNG BÁO -->
 <div class="popup-overlay" id="popup-overlay" style="display:none" onclick="if(event.target===this)dongPopup()">
   <div class="popup-box">
-    <div class="popup-header" id="popup-header">
-      <div class="popup-icon" id="popup-icon">✅</div>
-      <div class="popup-title" id="popup-title">Chấm công thành công</div>
+    <div class="popup-top"></div>
+    <div class="popup-icon-wrap ok" id="pp-icon-wrap">✅</div>
+    <div class="popup-title" id="popup-title">Chấm công thành công</div>
+    <div class="popup-sub" id="popup-sub">Thông tin đã được ghi nhận</div>
+    <div class="popup-card">
+      <div class="popup-row">
+        <span class="popup-label">Nhân viên</span>
+        <span class="popup-val" id="pp-nv">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Cửa hàng</span>
+        <span class="popup-val" id="pp-ch">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Thời điểm</span>
+        <span class="popup-val" id="pp-loai">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Giờ chấm</span>
+        <span class="popup-val ok" id="pp-gio">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Vị trí GPS</span>
+        <span id="pp-gps"><span class="popup-gps-badge unk">--</span></span>
+      </div>
     </div>
-    <div class="popup-body">
-      <div class="popup-row"><span class="popup-label">Nhân viên</span><span class="popup-val" id="pp-nv">--</span></div>
-      <div class="popup-row"><span class="popup-label">Cửa hàng</span><span class="popup-val" id="pp-ch">--</span></div>
-      <div class="popup-row"><span class="popup-label">Thời điểm</span><span class="popup-val" id="pp-loai">--</span></div>
-      <div class="popup-row"><span class="popup-label">Giờ chấm</span><span class="popup-val" id="pp-gio">--</span></div>
-      <div class="popup-row"><span class="popup-label">Vị trí GPS</span><span class="popup-val" id="pp-gps">--</span></div>
-    </div>
-    <button class="popup-btn" onclick="dongPopup()">XÁC NHẬN & TIẾP TỤC</button>
+    <button class="popup-btn" id="popup-btn" onclick="dongPopup()">XÁC NHẬN & TIẾP TỤC</button>
+    <div class="popup-safe"></div>
   </div>
 </div>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNgYT5TiYc0b9I_w2RMwUPuvThsUrGFJsX1bCa10mt1BZakfxyuAU1vYIh8kX9dJLl/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYAbSSkWvqVJmyubrIVLyIfR2iISXyVkGLXglIWTvQENAttXVOJ5TX3cr4fAxIKyhj/exec';
 let NV_LIST = [], CH_LIST = [];
 
 fetch(SCRIPT_URL + '?type=data')
@@ -453,7 +476,7 @@ function doSubmit(){
   .then(res=>{
     state.submitting=false; state.submitted=true;
     // Hiện popup thông báo
-    hienPopup(res, state.loai, tenNV, tenCH, res.gio||res.timestamp.substring(11,19));
+    hienPopup(res, state.loai, tenNV, tenCH);
   })
   .catch(()=>{
     state.submitting=false;
@@ -548,27 +571,39 @@ function resetForm() {
 
 
 // POPUP & RESET
-function hienPopup(res, loai, tenNV, tenCH, thoiGian) {
+function hienPopup(res, loai, tenNV, tenCH) {
   const isWarn = res.gpsStatus === 'NGOÀI VÙNG';
-  const header = document.getElementById('popup-header');
-  header.className = 'popup-header ' + (isWarn ? 'warn' : 'ok');
-  document.getElementById('popup-icon').textContent  = isWarn ? '⚠️' : '✅';
-  document.getElementById('popup-title').textContent = isWarn ? 'Cảnh báo ngoài vùng' : 'Chấm công thành công';
+  const iconWrap = document.getElementById('pp-icon-wrap');
+  iconWrap.className = 'popup-icon-wrap ' + (isWarn ? 'warn' : 'ok');
+  iconWrap.textContent = isWarn ? '⚠️' : '✅';
+  document.getElementById('popup-title').textContent = isWarn ? 'Cảnh báo ngoài vùng!' : 'Chấm công thành công';
+  document.getElementById('popup-sub').textContent   = isWarn
+    ? 'Vị trí của bạn không đúng cửa hàng'
+    : 'Thông tin đã được ghi nhận';
+
+  // Thông tin
   document.getElementById('pp-nv').textContent   = tenNV || '--';
   document.getElementById('pp-ch').textContent   = tenCH || '--';
   document.getElementById('pp-loai').textContent = loai  || '--';
-  document.getElementById('pp-gio').textContent  = thoiGian || '--';
-  const gpsEl = document.getElementById('pp-gps');
+
+  // Giờ — lấy từ timestamp server
+  const gio = res.timestamp ? res.timestamp.substring(11,19) : '--';
+  document.getElementById('pp-gio').textContent = gio;
+
+  // GPS badge
+  const gpsWrap = document.getElementById('pp-gps');
   if (res.gpsStatus === 'HỢP LỆ') {
-    gpsEl.textContent = 'Hợp lệ · Cách ' + res.khoangCach + 'm';
-    gpsEl.className = 'popup-val ok';
+    gpsWrap.innerHTML = '<span class="popup-gps-badge ok">✓ Hợp lệ · Cách ' + res.khoangCach + 'm</span>';
   } else if (res.gpsStatus === 'NGOÀI VÙNG') {
-    gpsEl.textContent = 'Ngoài vùng · ' + res.khoangCach + 'm';
-    gpsEl.className = 'popup-val warn';
+    gpsWrap.innerHTML = '<span class="popup-gps-badge warn">⚠ Ngoài vùng · ' + res.khoangCach + 'm</span>';
   } else {
-    gpsEl.textContent = 'Không xác định';
-    gpsEl.className = 'popup-val';
+    gpsWrap.innerHTML = '<span class="popup-gps-badge unk">Không xác định</span>';
   }
+
+  // Màu nút theo trạng thái
+  const btn = document.getElementById('popup-btn');
+  btn.style.background = isWarn ? '#BA7517' : '#0F6E56';
+
   document.getElementById('popup-overlay').style.display = 'flex';
 }
 
