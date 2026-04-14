@@ -358,46 +358,64 @@ function updateSubmitBtn(){
 function setBtn(cls,txt){const b=document.getElementById('submit-btn');b.className='submit-btn '+cls;b.textContent=txt;}
 
 // SUBMIT — Optimistic UI
-function doSubmit(){
-  if(state.submitting||state.submitted)return;
-  if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
-  const maCH=document.getElementById('sel-cuahang').value;
-  const dispCH=document.getElementById('input-cuahang-display').value;
-  const tenCH=dispCH.includes(' — ')?dispCH.split(' — ').slice(1).join(' — '):dispCH;
-  const maNV=state.isKhac?'KHÁC':document.getElementById('input-ma-nv').value.trim();
-  const tenNV=document.getElementById('input-ten-nv').value.trim();
-  const now=new Date();
-  const tg=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+function doSubmit() {
+  if (state.submitting || state.submitted) return;
+  if (document.getElementById('submit-btn').classList.contains('s-disabled')) return;
 
-  state.submitting=true; state.submitted=true;
+  const maCH   = document.getElementById('sel-cuahang').value;
+  const dispCH = document.getElementById('input-cuahang-display').value;
+  const tenCH  = dispCH.includes(' — ') ? dispCH.split(' — ').slice(1).join(' — ') : dispCH;
+  const maNV   = state.isKhac ? 'KHÁC' : document.getElementById('input-ma-nv').value.trim();
+  const tenNV  = document.getElementById('input-ten-nv').value.trim();
 
-  // Hiện kết quả NGAY
-  setBtn('s-done','✓ Đã chấm công thành công');
-  const rb=document.getElementById('result-box');
-  rb.style.display='block'; rb.className='result-box r-ok';
-  rb.innerHTML='✓ <strong>'+state.loai+'</strong> · '+tg+' · Đang xử lý...';
-  const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-  logs.unshift({loai:state.loai,lbcls:lbMap[state.loai]||'lb-v',time:tg,dist:'--',ok:true});
-  renderLog();
+  state.submitting = true;
 
-  // Gửi server ngầm
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({maCuaHang:maCH,tenCuaHang:tenCH,maNhanVien:maNV,tenNhanVien:tenNV,loaiChamCong:state.loai,lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,selfieBase64:state.selfieB64||null})})
-    .then(r=>r.json())
-    .then(res=>{
-      if(res.gpsStatus==='NGOÀI VÙNG'){
-        rb.className='result-box r-warn';
-        rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';
-        logs[0].ok=false; logs[0].dist=res.khoangCach+'m';
-      } else if(res.gpsStatus==='HỢP LỆ'){
-        rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);
-        logs[0].dist=res.khoangCach+'m';
-      } else {
-        rb.className='result-box r-warn';
-        rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';
-      }
-      renderLog();
-    })
-    .catch(()=>{ rb.innerHTML+=' · ⚠ Lỗi kết nối'; });
+  // Hiện loading — chờ server
+  setBtn('s-ready', '');
+  document.getElementById('submit-btn').innerHTML = '<span class="spinner"></span>Đang xử lý...';
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      maCuaHang:    maCH,
+      tenCuaHang:   tenCH,
+      maNhanVien:   maNV,
+      tenNhanVien:  tenNV,
+      loaiChamCong: state.loai,
+      lat:          state.lat,
+      lng:          state.lng,
+      gpsAccuracy:  state.gpsAcc,
+      selfieBase64: state.selfieB64 || null,
+    }),
+  })
+  .then(r => r.json())
+  .then(res => {
+    state.submitting = false;
+    state.submitted  = true;
+    setBtn('s-done', '✓ Đã chấm công thành công');
+    const rb = document.getElementById('result-box');
+    rb.style.display = 'block';
+    if (res.gpsStatus === 'HỢP LỆ') {
+      rb.className = 'result-box r-ok';
+      rb.innerHTML = '✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);
+    } else if (res.gpsStatus === 'NGOÀI VÙNG') {
+      rb.className = 'result-box r-warn';
+      rb.innerHTML = '⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';
+    } else {
+      rb.className = 'result-box r-warn';
+      rb.innerHTML = '⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';
+    }
+    const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+    logs.unshift({ loai:state.loai, lbcls:lbMap[state.loai]||'lb-v', time:res.timestamp.substring(11,19), dist:res.khoangCach?res.khoangCach+'m':'--', ok:res.gpsStatus==='HỢP LỆ' });
+    renderLog();
+  })
+  .catch(() => {
+    state.submitting = false;
+    setBtn('s-ready', 'XÁC NHẬN — ' + state.loai.toUpperCase());
+    const rb = document.getElementById('result-box');
+    rb.style.display = 'block'; rb.className = 'result-box r-err';
+    rb.textContent = '✕ Lỗi kết nối. Vui lòng thử lại.';
+  });
 }
 
 // LOG
