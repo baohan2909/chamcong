@@ -109,6 +109,42 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 .ls-err{color:var(--red);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+
+/* POPUP THÔNG BÁO */
+.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.popup-box{background:white;border-radius:16px;padding:0;width:100%;max-width:340px;overflow:hidden;}
+.popup-header{background:var(--green);padding:16px 20px;text-align:center;}
+.popup-icon{font-size:32px;margin-bottom:4px;}
+.popup-title{font-size:16px;font-weight:600;color:white;}
+.popup-body{padding:16px 20px;}
+.popup-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.popup-row:last-child{border-bottom:none;}
+.popup-label{color:var(--text-m);}
+.popup-value{font-weight:500;text-align:right;max-width:180px;}
+.popup-value.ok{color:var(--green-m);}
+.popup-value.warn{color:var(--amber);}
+.popup-value.err{color:var(--red);}
+.popup-btn{margin:4px 20px 20px;width:calc(100% - 40px);padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
+.popup-btn:active{transform:scale(.98);}
+
+/* POPUP THÔNG BÁO */
+.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.popup-box{background:white;border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2);}
+.popup-header{padding:16px 20px 12px;text-align:center;}
+.popup-header.ok{background:#E1F5EE;}
+.popup-header.warn{background:#FAEEDA;}
+.popup-icon{font-size:36px;margin-bottom:6px;}
+.popup-title{font-size:16px;font-weight:700;color:#085041;}
+.popup-header.warn .popup-title{color:#412402;}
+.popup-body{padding:14px 20px;border-bottom:0.5px solid var(--border);}
+.popup-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:0.5px solid var(--border);}
+.popup-row:last-child{border-bottom:none;}
+.popup-label{color:var(--text-m);}
+.popup-val{font-weight:500;text-align:right;max-width:60%;}
+.popup-val.warn{color:#BA7517;}
+.popup-val.ok{color:#0F6E56;}
+.popup-btn{display:block;width:100%;padding:15px;text-align:center;font-size:15px;font-weight:700;background:var(--green);color:white;border:none;cursor:pointer;}
+.popup-btn:active{opacity:.85;}
 </style>
 </head>
 <body>
@@ -195,9 +231,45 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
   <div class="log-list" id="log-list"><div class="log-empty">Chưa có dữ liệu hôm nay.</div></div>
 </div>
 
+
+<!-- POPUP THÔNG BÁO CHẤM CÔNG -->
+<div class="popup-overlay" id="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <div class="popup-header">
+      <div class="popup-icon" id="popup-icon">✅</div>
+      <div class="popup-title" id="popup-title">Chấm công thành công</div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-row"><span class="popup-label">Nhân viên</span><span class="popup-value" id="popup-nv">--</span></div>
+      <div class="popup-row"><span class="popup-label">Cửa hàng</span><span class="popup-value" id="popup-ch">--</span></div>
+      <div class="popup-row"><span class="popup-label">Thời điểm</span><span class="popup-value" id="popup-loai">--</span></div>
+      <div class="popup-row"><span class="popup-label">Giờ</span><span class="popup-value" id="popup-gio">--</span></div>
+      <div class="popup-row"><span class="popup-label">Vị trí GPS</span><span class="popup-value" id="popup-gps">--</span></div>
+    </div>
+    <button class="popup-btn" onclick="dongPopup()">Xác nhận</button>
+  </div>
+</div>
+
+<!-- POPUP THÔNG BÁO -->
+<div class="popup-overlay" id="popup-overlay" style="display:none" onclick="if(event.target===this)dongPopup()">
+  <div class="popup-box">
+    <div class="popup-header" id="popup-header">
+      <div class="popup-icon" id="popup-icon">✅</div>
+      <div class="popup-title" id="popup-title">Chấm công thành công</div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-row"><span class="popup-label">Nhân viên</span><span class="popup-val" id="pp-nv">--</span></div>
+      <div class="popup-row"><span class="popup-label">Cửa hàng</span><span class="popup-val" id="pp-ch">--</span></div>
+      <div class="popup-row"><span class="popup-label">Thời điểm</span><span class="popup-val" id="pp-loai">--</span></div>
+      <div class="popup-row"><span class="popup-label">Giờ chấm</span><span class="popup-val" id="pp-gio">--</span></div>
+      <div class="popup-row"><span class="popup-label">Vị trí GPS</span><span class="popup-val" id="pp-gps">--</span></div>
+    </div>
+    <button class="popup-btn" onclick="dongPopup()">XÁC NHẬN & TIẾP TỤC</button>
+  </div>
+</div>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUQm_LPL7-98wgeTt57Sqxo-n1voZNZrV7tT_tmbkQBsH7w26GPsn201MZxDTE_Ck/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNgYT5TiYc0b9I_w2RMwUPuvThsUrGFJsX1bCa10mt1BZakfxyuAU1vYIh8kX9dJLl/exec';
 let NV_LIST = [], CH_LIST = [];
 
 fetch(SCRIPT_URL + '?type=data')
@@ -357,65 +429,200 @@ function updateSubmitBtn(){
 }
 function setBtn(cls,txt){const b=document.getElementById('submit-btn');b.className='submit-btn '+cls;b.textContent=txt;}
 
-// SUBMIT — Optimistic UI
-function doSubmit() {
-  if (state.submitting || state.submitted) return;
-  if (document.getElementById('submit-btn').classList.contains('s-disabled')) return;
+// SUBMIT — chờ server xong mới hiện popup
+function doSubmit(){
+  if(state.submitting||state.submitted)return;
+  if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
+  const maCH=document.getElementById('sel-cuahang').value;
+  const dispCH=document.getElementById('input-cuahang-display').value;
+  const tenCH=dispCH.includes(' — ')?dispCH.split(' — ').slice(1).join(' — '):dispCH;
+  const maNV=state.isKhac?'KHÁC':document.getElementById('input-ma-nv').value.trim();
+  const tenNV=document.getElementById('input-ten-nv').value.trim();
 
-  const maCH   = document.getElementById('sel-cuahang').value;
-  const dispCH = document.getElementById('input-cuahang-display').value;
-  const tenCH  = dispCH.includes(' — ') ? dispCH.split(' — ').slice(1).join(' — ') : dispCH;
-  const maNV   = state.isKhac ? 'KHÁC' : document.getElementById('input-ma-nv').value.trim();
-  const tenNV  = document.getElementById('input-ten-nv').value.trim();
+  state.submitting=true;
+  // Hiện loading
+  document.getElementById('submit-btn').className='submit-btn s-ready';
+  document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
 
-  state.submitting = true;
-
-  // Hiện loading — chờ server
-  setBtn('s-ready', '');
-  document.getElementById('submit-btn').innerHTML = '<span class="spinner"></span>Đang xử lý...';
-
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      maCuaHang:    maCH,
-      tenCuaHang:   tenCH,
-      maNhanVien:   maNV,
-      tenNhanVien:  tenNV,
-      loaiChamCong: state.loai,
-      lat:          state.lat,
-      lng:          state.lng,
-      gpsAccuracy:  state.gpsAcc,
-      selfieBase64: state.selfieB64 || null,
-    }),
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    maCuaHang:maCH,tenCuaHang:tenCH,maNhanVien:maNV,tenNhanVien:tenNV,
+    loaiChamCong:state.loai,lat:state.lat,lng:state.lng,
+    gpsAccuracy:state.gpsAcc,selfieBase64:state.selfieB64||null,
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    state.submitting=false; state.submitted=true;
+    // Hiện popup thông báo
+    hienPopup(res, state.loai, tenNV, tenCH, res.gio||res.timestamp.substring(11,19));
   })
-  .then(r => r.json())
-  .then(res => {
-    state.submitting = false;
-    state.submitted  = true;
-    setBtn('s-done', '✓ Đã chấm công thành công');
-    const rb = document.getElementById('result-box');
-    rb.style.display = 'block';
-    if (res.gpsStatus === 'HỢP LỆ') {
-      rb.className = 'result-box r-ok';
-      rb.innerHTML = '✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);
-    } else if (res.gpsStatus === 'NGOÀI VÙNG') {
-      rb.className = 'result-box r-warn';
-      rb.innerHTML = '⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';
-    } else {
-      rb.className = 'result-box r-warn';
-      rb.innerHTML = '⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';
-    }
-    const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-    logs.unshift({ loai:state.loai, lbcls:lbMap[state.loai]||'lb-v', time:res.timestamp.substring(11,19), dist:res.khoangCach?res.khoangCach+'m':'--', ok:res.gpsStatus==='HỢP LỆ' });
-    renderLog();
-  })
-  .catch(() => {
-    state.submitting = false;
-    setBtn('s-ready', 'XÁC NHẬN — ' + state.loai.toUpperCase());
-    const rb = document.getElementById('result-box');
-    rb.style.display = 'block'; rb.className = 'result-box r-err';
-    rb.textContent = '✕ Lỗi kết nối. Vui lòng thử lại.';
+  .catch(()=>{
+    state.submitting=false;
+    setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
+    const rb=document.getElementById('result-box');
+    rb.style.display='block'; rb.className='result-box r-err';
+    rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';
   });
+}
+
+// POPUP + RESET
+function hienPopup(res, loai, tenNV, tenCH, thoiGian) {
+  document.getElementById('popup-nv').textContent   = tenNV || '--';
+  document.getElementById('popup-ch').textContent   = tenCH || '--';
+  document.getElementById('popup-loai').textContent = loai  || '--';
+  document.getElementById('popup-gio').textContent  = thoiGian;
+  const gpsEl = document.getElementById('popup-gps');
+  if (res.gpsStatus === 'HỢP LỆ') {
+    gpsEl.textContent = 'Hợp lệ · Cách ' + res.khoangCach + 'm';
+    gpsEl.className   = 'popup-value ok';
+    document.getElementById('popup-icon').textContent  = '✅';
+    document.getElementById('popup-title').textContent = 'Chấm công thành công';
+    document.getElementById('popup-overlay').querySelector('.popup-header').style.background = 'var(--green)';
+  } else if (res.gpsStatus === 'NGOÀI VÙNG') {
+    gpsEl.textContent = 'Ngoài vùng · ' + res.khoangCach + 'm';
+    gpsEl.className   = 'popup-value warn';
+    document.getElementById('popup-icon').textContent  = '⚠️';
+    document.getElementById('popup-title').textContent = 'Đã ghi nhận - Ngoài vùng';
+    document.getElementById('popup-overlay').querySelector('.popup-header').style.background = 'var(--amber)';
+  } else {
+    gpsEl.textContent = 'Không xác định';
+    gpsEl.className   = 'popup-value warn';
+  }
+  document.getElementById('popup-overlay').style.display = 'flex';
+}
+
+function dongPopup() {
+  document.getElementById('popup-overlay').style.display = 'none';
+  resetForm();
+}
+
+function resetForm() {
+  // Reset state
+  state = { loai:null, btnId:null, lat:null, lng:null, gpsAcc:null, gpsOk:false, selfieB64:null, submitting:false, submitted:false, isKhac:false };
+  logs.length = 0;
+
+  // Reset cửa hàng
+  document.getElementById('input-cuahang-display').value = '';
+  document.getElementById('sel-cuahang').value = '';
+
+  // Reset nhân viên
+  document.getElementById('input-ma-nv').value  = '';
+  document.getElementById('input-ten-nv').value = '';
+  document.getElementById('input-ten-nv').setAttribute('readonly', true);
+  document.getElementById('input-ten-nv').placeholder = 'Tự động hiển thị khi nhập mã';
+  document.getElementById('input-ma-nv').placeholder  = 'Nhập mã hoặc tìm tên...';
+  document.getElementById('chk-khac').checked = false;
+
+  // Reset 4 nút loại
+  Object.keys(TYPE_MAP).forEach(k => {
+    document.getElementById('btn-'+k).className = 'type-btn ' + TYPE_MAP[k].cls;
+  });
+
+  // Reset GPS
+  const gpsbtn = document.getElementById('gps-btn');
+  gpsbtn.className = 'gps-btn';
+  document.getElementById('gps-icon').textContent  = '📍';
+  document.getElementById('gps-label').textContent = 'Chưa xác nhận vị trí';
+  document.getElementById('gps-sub').textContent   = 'Bấm để lấy tọa độ GPS';
+  document.getElementById('gps-badge').textContent = 'XÁC NHẬN VỊ TRÍ';
+
+  // Reset selfie
+  document.getElementById('selfie-btn').className     = 'selfie-btn';
+  document.getElementById('selfie-icon').style.display = '';
+  document.getElementById('selfie-icon').textContent   = '📷';
+  document.getElementById('selfie-preview').style.display = 'none';
+  document.getElementById('selfie-preview').src        = '';
+  document.getElementById('selfie-text').textContent   = 'Chụp ảnh xác minh';
+  document.getElementById('selfie-sub').textContent    = 'Bấm để mở camera';
+  document.getElementById('selfie-input').value        = '';
+
+  // Reset result box
+  const rb = document.getElementById('result-box');
+  rb.style.display = 'none'; rb.textContent = '';
+
+  // Reset submit
+  setBtn('s-disabled', 'Chọn thời điểm chấm công');
+
+  // Reset log
+  renderLog();
+}
+
+
+// POPUP & RESET
+function hienPopup(res, loai, tenNV, tenCH, thoiGian) {
+  const isWarn = res.gpsStatus === 'NGOÀI VÙNG';
+  const header = document.getElementById('popup-header');
+  header.className = 'popup-header ' + (isWarn ? 'warn' : 'ok');
+  document.getElementById('popup-icon').textContent  = isWarn ? '⚠️' : '✅';
+  document.getElementById('popup-title').textContent = isWarn ? 'Cảnh báo ngoài vùng' : 'Chấm công thành công';
+  document.getElementById('pp-nv').textContent   = tenNV || '--';
+  document.getElementById('pp-ch').textContent   = tenCH || '--';
+  document.getElementById('pp-loai').textContent = loai  || '--';
+  document.getElementById('pp-gio').textContent  = thoiGian || '--';
+  const gpsEl = document.getElementById('pp-gps');
+  if (res.gpsStatus === 'HỢP LỆ') {
+    gpsEl.textContent = 'Hợp lệ · Cách ' + res.khoangCach + 'm';
+    gpsEl.className = 'popup-val ok';
+  } else if (res.gpsStatus === 'NGOÀI VÙNG') {
+    gpsEl.textContent = 'Ngoài vùng · ' + res.khoangCach + 'm';
+    gpsEl.className = 'popup-val warn';
+  } else {
+    gpsEl.textContent = 'Không xác định';
+    gpsEl.className = 'popup-val';
+  }
+  document.getElementById('popup-overlay').style.display = 'flex';
+}
+
+function dongPopup() {
+  document.getElementById('popup-overlay').style.display = 'none';
+  resetForm();
+}
+
+function resetForm() {
+  // Reset state
+  state.loai=null; state.btnId=null;
+  state.lat=null; state.lng=null; state.gpsAcc=null; state.gpsOk=false;
+  state.selfieB64=null; state.submitting=false; state.submitted=false; state.isKhac=false;
+
+  // Reset fields
+  document.getElementById('input-cuahang-display').value='';
+  document.getElementById('sel-cuahang').value='';
+  document.getElementById('input-ma-nv').value='';
+  document.getElementById('input-ten-nv').value='';
+  document.getElementById('input-ten-nv').setAttribute('readonly',true);
+  document.getElementById('input-ten-nv').placeholder='Tự động hiển thị khi nhập mã';
+  document.getElementById('input-ma-nv').placeholder='Nhập mã hoặc tìm tên...';
+  document.getElementById('chk-khac').checked=false;
+
+  // Reset 4 nút loại
+  Object.keys(TYPE_MAP).forEach(k=>{
+    document.getElementById('btn-'+k).className='type-btn '+TYPE_MAP[k].cls;
+  });
+
+  // Reset GPS
+  const gpsBtn=document.getElementById('gps-btn');
+  gpsBtn.className='gps-btn';
+  document.getElementById('gps-icon').textContent='📍';
+  document.getElementById('gps-label').textContent='Chưa xác nhận vị trí';
+  document.getElementById('gps-sub').textContent='Bấm để lấy tọa độ GPS';
+  document.getElementById('gps-badge').textContent='XÁC NHẬN VỊ TRÍ';
+
+  // Reset selfie
+  document.getElementById('selfie-btn').className='selfie-btn';
+  document.getElementById('selfie-icon').style.display='';
+  document.getElementById('selfie-icon').textContent='📷';
+  const preview=document.getElementById('selfie-preview');
+  preview.src=''; preview.style.display='none';
+  document.getElementById('selfie-text').textContent='Chụp ảnh xác minh';
+  document.getElementById('selfie-sub').textContent='Bấm để mở camera';
+  document.getElementById('selfie-input').value='';
+
+  // Reset result & submit
+  const rb=document.getElementById('result-box');
+  rb.style.display='none'; rb.className='result-box';
+  setBtn('s-disabled','Chọn thời điểm chấm công');
+
+  // Scroll lên đầu
+  window.scrollTo(0,0);
 }
 
 // LOG
