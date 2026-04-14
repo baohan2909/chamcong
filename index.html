@@ -73,25 +73,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 .blinking{animation:blink .8s infinite;}
 .selfie-wrap{padding:6px 12px 10px;}
-.selfie-btn{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--gray-lt);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;}
+.selfie-btn{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--gray-lt);border:1.5px solid var(--amber-bd);border-radius:10px;cursor:pointer;transition:all .15s;}
 .selfie-btn:active{transform:scale(.98);}
 .selfie-btn.done{background:var(--green-lt);border-color:var(--green-bd);}
 .selfie-icon{width:44px;height:44px;border-radius:8px;background:white;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .selfie-btn.done .selfie-icon{background:var(--green-bd);}
 img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;display:none;}
 .selfie-text{font-size:13px;font-weight:500;}
-.selfie-sub{font-size:11px;color:var(--text-m);margin-top:2px;}
+.selfie-sub{font-size:11px;color:var(--amber);margin-top:2px;}
 .selfie-btn.done .selfie-sub{color:#085041;}
 #selfie-input{display:none;}
 .result-box{margin:0 12px 8px;padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.5;display:none;}
 .r-ok{background:var(--green-lt);color:#085041;}
 .r-warn{background:var(--amber-lt);color:#412402;}
 .r-err{background:var(--red-lt);color:var(--red);}
+/* Countdown reload */
+.countdown-bar{margin:0 12px 8px;background:var(--green-lt);border-radius:10px;padding:10px 14px;font-size:12px;color:#085041;display:none;text-align:center;}
 .submit-wrap{padding:8px 12px 14px;}
 .submit-btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;border:none;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .submit-btn:active{transform:scale(.98);}
 .s-disabled{background:#e2e1da;color:#aaa9a3;cursor:default;}
 .s-ready{background:var(--green);color:white;}
+.s-loading{background:var(--green-m);color:white;opacity:.85;cursor:default;}
 .s-done{background:var(--green-lt);color:var(--green);border:1.5px solid var(--green-bd);}
 .log-list{padding:4px 0;}
 .log-empty{padding:14px 16px;font-size:13px;color:var(--text-m);}
@@ -109,49 +112,6 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 .ls-err{color:var(--red);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
-
-/* POPUP THÔNG BÁO */
-.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
-.popup-box{background:white;border-radius:16px;padding:0;width:100%;max-width:340px;overflow:hidden;}
-.popup-header{background:var(--green);padding:16px 20px;text-align:center;}
-.popup-icon{font-size:32px;margin-bottom:4px;}
-.popup-title{font-size:16px;font-weight:600;color:white;}
-.popup-body{padding:16px 20px;}
-.popup-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
-.popup-row:last-child{border-bottom:none;}
-.popup-label{color:var(--text-m);}
-.popup-value{font-weight:500;text-align:right;max-width:180px;}
-.popup-value.ok{color:var(--green-m);}
-.popup-value.warn{color:var(--amber);}
-.popup-value.err{color:var(--red);}
-.popup-btn{margin:4px 20px 20px;width:calc(100% - 40px);padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
-.popup-btn:active{transform:scale(.98);}
-
-/* POPUP THÔNG BÁO */
-.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.popup-box{background:white;border-radius:24px 24px 0 0;width:100%;max-width:430px;overflow:hidden;box-shadow:0 -4px 40px rgba(0,0,0,.18);animation:slideUp .28s cubic-bezier(.34,1.1,.64,1);}
-@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.popup-top{height:4px;width:40px;background:#e0dfd8;border-radius:2px;margin:12px auto 0;}
-.popup-icon-wrap{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:16px auto 10px;font-size:30px;}
-.popup-icon-wrap.ok{background:linear-gradient(135deg,#1D9E75,#0F6E56);box-shadow:0 6px 20px rgba(15,110,86,.35);}
-.popup-icon-wrap.warn{background:linear-gradient(135deg,#F0B429,#BA7517);box-shadow:0 6px 20px rgba(186,117,23,.35);}
-.popup-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;color:#1a1a18;}
-.popup-sub{font-size:12px;text-align:center;color:#888780;margin-bottom:16px;}
-.popup-card{margin:0 16px 14px;background:#f8f7f3;border-radius:14px;overflow:hidden;}
-.popup-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:0.5px solid rgba(0,0,0,0.06);font-size:13px;}
-.popup-row:last-child{border-bottom:none;}
-.popup-label{color:#888780;font-size:12px;}
-.popup-val{font-weight:600;text-align:right;max-width:65%;font-size:13px;color:#1a1a18;}
-.popup-val.ok{color:#0F6E56;}
-.popup-val.warn{color:#BA7517;}
-.popup-val.err{color:#A32D2D;}
-.popup-gps-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
-.popup-gps-badge.ok{background:#E1F5EE;color:#085041;}
-.popup-gps-badge.warn{background:#FAEEDA;color:#412402;}
-.popup-gps-badge.unk{background:#F1EFE8;color:#5F5E5A;}
-.popup-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;text-align:center;font-size:15px;font-weight:700;background:#0F6E56;color:white;border:none;border-radius:12px;cursor:pointer;letter-spacing:.02em;}
-.popup-btn:active{transform:scale(.98);opacity:.92;}
-.popup-safe{height:env(safe-area-inset-bottom,0px);}
 </style>
 </head>
 <body>
@@ -214,18 +174,22 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 </div>
 
 <div class="card">
-  <div class="card-section">Ảnh xác minh danh tính</div>
+  <div class="card-section">Ảnh xác minh danh tính <span style="color:var(--amber);font-weight:600">— Bắt buộc</span></div>
   <div class="selfie-wrap">
     <div class="selfie-btn" id="selfie-btn" onclick="document.getElementById('selfie-input').click()">
       <div class="selfie-icon" id="selfie-icon">📷</div>
       <img id="selfie-preview" class="selfie-preview" alt="selfie">
-      <div><div class="selfie-text" id="selfie-text">Chụp ảnh xác minh</div><div class="selfie-sub" id="selfie-sub">Bấm để mở camera</div></div>
+      <div>
+        <div class="selfie-text" id="selfie-text">Chụp ảnh xác minh</div>
+        <div class="selfie-sub" id="selfie-sub">⚠ Bắt buộc chụp ảnh trước khi xác nhận</div>
+      </div>
     </div>
     <input type="file" id="selfie-input" accept="image/*" capture="user" onchange="onSelfie(event)">
   </div>
 </div>
 
 <div class="result-box" id="result-box"></div>
+<div class="countdown-bar" id="countdown-bar"></div>
 
 <div class="card">
   <div class="submit-wrap">
@@ -238,58 +202,6 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
   <div class="log-list" id="log-list"><div class="log-empty">Chưa có dữ liệu hôm nay.</div></div>
 </div>
 
-
-<!-- POPUP THÔNG BÁO CHẤM CÔNG -->
-<div class="popup-overlay" id="popup-overlay" style="display:none;">
-  <div class="popup-box">
-    <div class="popup-header">
-      <div class="popup-icon" id="popup-icon">✅</div>
-      <div class="popup-title" id="popup-title">Chấm công thành công</div>
-    </div>
-    <div class="popup-body">
-      <div class="popup-row"><span class="popup-label">Nhân viên</span><span class="popup-value" id="popup-nv">--</span></div>
-      <div class="popup-row"><span class="popup-label">Cửa hàng</span><span class="popup-value" id="popup-ch">--</span></div>
-      <div class="popup-row"><span class="popup-label">Thời điểm</span><span class="popup-value" id="popup-loai">--</span></div>
-      <div class="popup-row"><span class="popup-label">Giờ</span><span class="popup-value" id="popup-gio">--</span></div>
-      <div class="popup-row"><span class="popup-label">Vị trí GPS</span><span class="popup-value" id="popup-gps">--</span></div>
-    </div>
-    <button class="popup-btn" onclick="dongPopup()">Xác nhận</button>
-  </div>
-</div>
-
-<!-- POPUP THÔNG BÁO -->
-<div class="popup-overlay" id="popup-overlay" style="display:none" onclick="if(event.target===this)dongPopup()">
-  <div class="popup-box">
-    <div class="popup-top"></div>
-    <div class="popup-icon-wrap ok" id="pp-icon-wrap">✅</div>
-    <div class="popup-title" id="popup-title">Chấm công thành công</div>
-    <div class="popup-sub" id="popup-sub">Thông tin đã được ghi nhận</div>
-    <div class="popup-card">
-      <div class="popup-row">
-        <span class="popup-label">Nhân viên</span>
-        <span class="popup-val" id="pp-nv">--</span>
-      </div>
-      <div class="popup-row">
-        <span class="popup-label">Cửa hàng</span>
-        <span class="popup-val" id="pp-ch">--</span>
-      </div>
-      <div class="popup-row">
-        <span class="popup-label">Thời điểm</span>
-        <span class="popup-val" id="pp-loai">--</span>
-      </div>
-      <div class="popup-row">
-        <span class="popup-label">Giờ chấm</span>
-        <span class="popup-val ok" id="pp-gio">--</span>
-      </div>
-      <div class="popup-row">
-        <span class="popup-label">Vị trí GPS</span>
-        <span id="pp-gps"><span class="popup-gps-badge unk">--</span></span>
-      </div>
-    </div>
-    <button class="popup-btn" id="popup-btn" onclick="dongPopup()">XÁC NHẬN & TIẾP TỤC</button>
-    <div class="popup-safe"></div>
-  </div>
-</div>
 </div>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYAbSSkWvqVJmyubrIVLyIfR2iISXyVkGLXglIWTvQENAttXVOJ5TX3cr4fAxIKyhj/exec';
@@ -300,7 +212,12 @@ fetch(SCRIPT_URL + '?type=data')
   .then(d => { NV_LIST = d.nhanVienList||[]; CH_LIST = d.cuaHangList||[]; })
   .catch(err => console.error('Lỗi tải dữ liệu:', err));
 
-let state = { loai:null, btnId:null, lat:null, lng:null, gpsAcc:null, gpsOk:false, selfieB64:null, submitting:false, submitted:false, isKhac:false };
+let state = {
+  loai:null, btnId:null,
+  lat:null, lng:null, gpsAcc:null, gpsOk:false,
+  selfieB64:null, selfieOk:false,
+  submitting:false, submitted:false, isKhac:false,
+};
 const logs = [];
 
 function pad(n){return String(n).padStart(2,'0');}
@@ -364,7 +281,7 @@ function selectNV(ma,ten,cuaHang){
 function clearNV(){if(!state.isKhac)document.getElementById('input-ten-nv').value='';updateSubmitBtn();}
 function hideSuggest(){setTimeout(()=>{document.getElementById('suggest-list').style.display='none';},150);}
 
-// KHÁC
+// CHECKBOX KHÁC
 function toggleKhac(){
   state.isKhac=document.getElementById('chk-khac').checked;
   const ma=document.getElementById('input-ma-nv'), ten=document.getElementById('input-ten-nv');
@@ -380,7 +297,12 @@ function toggleKhac(){
 }
 
 // LOẠI CHẤM CÔNG
-const TYPE_MAP={'vao':{cls:'tb-vao',label:'Vào ca',lbcls:'lb-v'},'ra':{cls:'tb-ra',label:'Ra ca',lbcls:'lb-r'},'ra-g':{cls:'tb-ra-g',label:'Ra giữa ca',lbcls:'lb-rg'},'vao-g':{cls:'tb-vao-g',label:'Vào giữa ca',lbcls:'lb-vg'}};
+const TYPE_MAP={
+  'vao':{cls:'tb-vao',label:'Vào ca',lbcls:'lb-v'},
+  'ra':{cls:'tb-ra',label:'Ra ca',lbcls:'lb-r'},
+  'ra-g':{cls:'tb-ra-g',label:'Ra giữa ca',lbcls:'lb-rg'},
+  'vao-g':{cls:'tb-vao-g',label:'Vào giữa ca',lbcls:'lb-vg'},
+};
 function selType(loai,btnId){
   if(state.submitted)return;
   state.loai=loai; state.btnId=btnId;
@@ -391,14 +313,20 @@ function selType(loai,btnId){
 // GPS
 function layViTri(){
   if(state.gpsOk||state.submitted)return;
-  const btn=document.getElementById('gps-btn'),label=document.getElementById('gps-label'),sub=document.getElementById('gps-sub'),badge=document.getElementById('gps-badge');
-  btn.className='gps-btn loading'; label.textContent='Đang lấy tọa độ...'; sub.textContent='Vui lòng giữ yên thiết bị'; badge.innerHTML='<span class="blinking">●</span> Đang lấy';
+  const btn=document.getElementById('gps-btn'),label=document.getElementById('gps-label'),
+        sub=document.getElementById('gps-sub'),badge=document.getElementById('gps-badge');
+  btn.className='gps-btn loading';
+  label.textContent='Đang lấy tọa độ...'; sub.textContent='Vui lòng giữ yên thiết bị';
+  badge.innerHTML='<span class="blinking">●</span> Đang lấy';
   if(!navigator.geolocation){setGpsErr('Thiết bị không hỗ trợ GPS');return;}
   navigator.geolocation.getCurrentPosition(
     pos=>{
-      state.lat=pos.coords.latitude.toFixed(6); state.lng=pos.coords.longitude.toFixed(6); state.gpsAcc=Math.round(pos.coords.accuracy); state.gpsOk=true;
-      btn.className='gps-btn success'; label.textContent='ĐÃ XÁC NHẬN VỊ TRÍ'; sub.textContent='Độ chính xác ±'+state.gpsAcc+'m'; badge.textContent='✓ ĐÃ XÁC NHẬN';
-      document.getElementById('gps-icon').textContent='✅'; updateSubmitBtn();
+      state.lat=pos.coords.latitude.toFixed(6); state.lng=pos.coords.longitude.toFixed(6);
+      state.gpsAcc=Math.round(pos.coords.accuracy); state.gpsOk=true;
+      btn.className='gps-btn success';
+      label.textContent='ĐÃ XÁC NHẬN VỊ TRÍ'; sub.textContent='Độ chính xác ±'+state.gpsAcc+'m';
+      badge.textContent='✓ ĐÃ XÁC NHẬN'; document.getElementById('gps-icon').textContent='✅';
+      updateSubmitBtn();
     },
     err=>{const msgs={1:'Từ chối truy cập vị trí',2:'Không lấy được GPS',3:'Quá thời gian chờ'};setGpsErr(msgs[err.code]||'Lỗi GPS — bấm thử lại');},
     {enableHighAccuracy:true,timeout:10000,maximumAge:0}
@@ -406,30 +334,33 @@ function layViTri(){
 }
 function setGpsErr(msg){
   document.getElementById('gps-btn').className='gps-btn error';
-  document.getElementById('gps-label').textContent=msg; document.getElementById('gps-sub').textContent='Bấm để thử lại';
-  document.getElementById('gps-badge').textContent='Thử lại'; document.getElementById('gps-icon').textContent='❌';
+  document.getElementById('gps-label').textContent=msg;
+  document.getElementById('gps-sub').textContent='Bấm để thử lại';
+  document.getElementById('gps-badge').textContent='Thử lại';
+  document.getElementById('gps-icon').textContent='❌';
   state.gpsOk=false; updateSubmitBtn();
 }
 
-// SELFIE — resize 800px, nén 70%
+// SELFIE — resize 800px, nén 70%, BẮT BUỘC
 function onSelfie(e){
   const file=e.target.files[0]; if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
     const img=new Image();
     img.onload=()=>{
-      const MAX=800; let w=img.width, h=img.height;
+      const MAX=800; let w=img.width,h=img.height;
       if(w>h){if(w>MAX){h=h*MAX/w;w=MAX;}}else{if(h>MAX){w=w*MAX/h;h=MAX;}}
       const canvas=document.createElement('canvas');
       canvas.width=w; canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       state.selfieB64=canvas.toDataURL('image/jpeg',0.7);
+      state.selfieOk=true;
       const preview=document.getElementById('selfie-preview');
       preview.src=state.selfieB64; preview.style.display='block';
       document.getElementById('selfie-icon').style.display='none';
       document.getElementById('selfie-btn').className='selfie-btn done';
-      document.getElementById('selfie-text').textContent='Ảnh đã chụp';
-      document.getElementById('selfie-sub').textContent='Bấm để chụp lại';
+      document.getElementById('selfie-text').textContent='Ảnh đã chụp ✓';
+      document.getElementById('selfie-sub').textContent='Bấm để chụp lại nếu cần';
       updateSubmitBtn();
     };
     img.src=ev.target.result;
@@ -437,7 +368,7 @@ function onSelfie(e){
   reader.readAsDataURL(file);
 }
 
-// UPDATE SUBMIT
+// UPDATE SUBMIT — thêm kiểm tra bắt buộc selfie
 function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
@@ -448,14 +379,16 @@ function updateSubmitBtn(){
   if(state.isKhac&&!tenNV){setBtn('s-disabled','Nhập tên nhân viên');return;}
   if(!state.loai){setBtn('s-disabled','Chọn thời điểm chấm công');return;}
   if(!state.gpsOk){setBtn('s-disabled','Cần xác nhận vị trí GPS');return;}
+  if(!state.selfieOk){setBtn('s-disabled','Cần chụp ảnh xác minh');return;}  // BẮT BUỘC
   setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
 }
 function setBtn(cls,txt){const b=document.getElementById('submit-btn');b.className='submit-btn '+cls;b.textContent=txt;}
 
-// SUBMIT — chờ server xong mới hiện popup
+// SUBMIT
 function doSubmit(){
   if(state.submitting||state.submitted)return;
   if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
+
   const maCH=document.getElementById('sel-cuahang').value;
   const dispCH=document.getElementById('input-cuahang-display').value;
   const tenCH=dispCH.includes(' — ')?dispCH.split(' — ').slice(1).join(' — '):dispCH;
@@ -463,20 +396,43 @@ function doSubmit(){
   const tenNV=document.getElementById('input-ten-nv').value.trim();
 
   state.submitting=true;
-  // Hiện loading
-  document.getElementById('submit-btn').className='submit-btn s-ready';
+  document.getElementById('submit-btn').className='submit-btn s-loading';
   document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
 
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    maCuaHang:maCH,tenCuaHang:tenCH,maNhanVien:maNV,tenNhanVien:tenNV,
-    loaiChamCong:state.loai,lat:state.lat,lng:state.lng,
-    gpsAccuracy:state.gpsAcc,selfieBase64:state.selfieB64||null,
-  })})
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    body:JSON.stringify({
+      maCuaHang:maCH, tenCuaHang:tenCH,
+      maNhanVien:maNV, tenNhanVien:tenNV,
+      loaiChamCong:state.loai,
+      lat:state.lat, lng:state.lng, gpsAccuracy:state.gpsAcc,
+      selfieBase64:state.selfieB64||null,
+    }),
+  })
   .then(r=>r.json())
   .then(res=>{
     state.submitting=false; state.submitted=true;
-    // Hiện popup thông báo
-    hienPopup(res, state.loai, tenNV, tenCH);
+    setBtn('s-done','✓ Đã chấm công thành công');
+
+    const rb=document.getElementById('result-box');
+    rb.style.display='block';
+    if(res.gpsStatus==='HỢP LỆ'){
+      rb.className='result-box r-ok';
+      rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);
+    } else if(res.gpsStatus==='NGOÀI VÙNG'){
+      rb.className='result-box r-warn';
+      rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';
+    } else {
+      rb.className='result-box r-warn';
+      rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';
+    }
+
+    const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+    logs.unshift({loai:state.loai,lbcls:lbMap[state.loai]||'lb-v',time:res.timestamp.substring(11,19),dist:res.khoangCach?res.khoangCach+'m':'--',ok:res.gpsStatus==='HỢP LỆ'});
+    renderLog();
+
+    // Đếm ngược 3 giây rồi reload
+    startCountdown(3);
   })
   .catch(()=>{
     state.submitting=false;
@@ -487,177 +443,21 @@ function doSubmit(){
   });
 }
 
-// POPUP + RESET
-function hienPopup(res, loai, tenNV, tenCH, thoiGian) {
-  document.getElementById('popup-nv').textContent   = tenNV || '--';
-  document.getElementById('popup-ch').textContent   = tenCH || '--';
-  document.getElementById('popup-loai').textContent = loai  || '--';
-  document.getElementById('popup-gio').textContent  = thoiGian;
-  const gpsEl = document.getElementById('popup-gps');
-  if (res.gpsStatus === 'HỢP LỆ') {
-    gpsEl.textContent = 'Hợp lệ · Cách ' + res.khoangCach + 'm';
-    gpsEl.className   = 'popup-value ok';
-    document.getElementById('popup-icon').textContent  = '✅';
-    document.getElementById('popup-title').textContent = 'Chấm công thành công';
-    document.getElementById('popup-overlay').querySelector('.popup-header').style.background = 'var(--green)';
-  } else if (res.gpsStatus === 'NGOÀI VÙNG') {
-    gpsEl.textContent = 'Ngoài vùng · ' + res.khoangCach + 'm';
-    gpsEl.className   = 'popup-value warn';
-    document.getElementById('popup-icon').textContent  = '⚠️';
-    document.getElementById('popup-title').textContent = 'Đã ghi nhận - Ngoài vùng';
-    document.getElementById('popup-overlay').querySelector('.popup-header').style.background = 'var(--amber)';
-  } else {
-    gpsEl.textContent = 'Không xác định';
-    gpsEl.className   = 'popup-value warn';
-  }
-  document.getElementById('popup-overlay').style.display = 'flex';
-}
-
-function dongPopup() {
-  document.getElementById('popup-overlay').style.display = 'none';
-  resetForm();
-}
-
-function resetForm() {
-  // Reset state
-  state = { loai:null, btnId:null, lat:null, lng:null, gpsAcc:null, gpsOk:false, selfieB64:null, submitting:false, submitted:false, isKhac:false };
-  logs.length = 0;
-
-  // Reset cửa hàng
-  document.getElementById('input-cuahang-display').value = '';
-  document.getElementById('sel-cuahang').value = '';
-
-  // Reset nhân viên
-  document.getElementById('input-ma-nv').value  = '';
-  document.getElementById('input-ten-nv').value = '';
-  document.getElementById('input-ten-nv').setAttribute('readonly', true);
-  document.getElementById('input-ten-nv').placeholder = 'Tự động hiển thị khi nhập mã';
-  document.getElementById('input-ma-nv').placeholder  = 'Nhập mã hoặc tìm tên...';
-  document.getElementById('chk-khac').checked = false;
-
-  // Reset 4 nút loại
-  Object.keys(TYPE_MAP).forEach(k => {
-    document.getElementById('btn-'+k).className = 'type-btn ' + TYPE_MAP[k].cls;
-  });
-
-  // Reset GPS
-  const gpsbtn = document.getElementById('gps-btn');
-  gpsbtn.className = 'gps-btn';
-  document.getElementById('gps-icon').textContent  = '📍';
-  document.getElementById('gps-label').textContent = 'Chưa xác nhận vị trí';
-  document.getElementById('gps-sub').textContent   = 'Bấm để lấy tọa độ GPS';
-  document.getElementById('gps-badge').textContent = 'XÁC NHẬN VỊ TRÍ';
-
-  // Reset selfie
-  document.getElementById('selfie-btn').className     = 'selfie-btn';
-  document.getElementById('selfie-icon').style.display = '';
-  document.getElementById('selfie-icon').textContent   = '📷';
-  document.getElementById('selfie-preview').style.display = 'none';
-  document.getElementById('selfie-preview').src        = '';
-  document.getElementById('selfie-text').textContent   = 'Chụp ảnh xác minh';
-  document.getElementById('selfie-sub').textContent    = 'Bấm để mở camera';
-  document.getElementById('selfie-input').value        = '';
-
-  // Reset result box
-  const rb = document.getElementById('result-box');
-  rb.style.display = 'none'; rb.textContent = '';
-
-  // Reset submit
-  setBtn('s-disabled', 'Chọn thời điểm chấm công');
-
-  // Reset log
-  renderLog();
-}
-
-
-// POPUP & RESET
-function hienPopup(res, loai, tenNV, tenCH) {
-  const isWarn = res.gpsStatus === 'NGOÀI VÙNG';
-  const iconWrap = document.getElementById('pp-icon-wrap');
-  iconWrap.className = 'popup-icon-wrap ' + (isWarn ? 'warn' : 'ok');
-  iconWrap.textContent = isWarn ? '⚠️' : '✅';
-  document.getElementById('popup-title').textContent = isWarn ? 'Cảnh báo ngoài vùng!' : 'Chấm công thành công';
-  document.getElementById('popup-sub').textContent   = isWarn
-    ? 'Vị trí của bạn không đúng cửa hàng'
-    : 'Thông tin đã được ghi nhận';
-
-  // Thông tin
-  document.getElementById('pp-nv').textContent   = tenNV || '--';
-  document.getElementById('pp-ch').textContent   = tenCH || '--';
-  document.getElementById('pp-loai').textContent = loai  || '--';
-
-  // Giờ — lấy từ timestamp server
-  const gio = res.timestamp ? res.timestamp.substring(11,19) : '--';
-  document.getElementById('pp-gio').textContent = gio;
-
-  // GPS badge
-  const gpsWrap = document.getElementById('pp-gps');
-  if (res.gpsStatus === 'HỢP LỆ') {
-    gpsWrap.innerHTML = '<span class="popup-gps-badge ok">✓ Hợp lệ · Cách ' + res.khoangCach + 'm</span>';
-  } else if (res.gpsStatus === 'NGOÀI VÙNG') {
-    gpsWrap.innerHTML = '<span class="popup-gps-badge warn">⚠ Ngoài vùng · ' + res.khoangCach + 'm</span>';
-  } else {
-    gpsWrap.innerHTML = '<span class="popup-gps-badge unk">Không xác định</span>';
-  }
-
-  // Màu nút theo trạng thái
-  const btn = document.getElementById('popup-btn');
-  btn.style.background = isWarn ? '#BA7517' : '#0F6E56';
-
-  document.getElementById('popup-overlay').style.display = 'flex';
-}
-
-function dongPopup() {
-  document.getElementById('popup-overlay').style.display = 'none';
-  resetForm();
-}
-
-function resetForm() {
-  // Reset state
-  state.loai=null; state.btnId=null;
-  state.lat=null; state.lng=null; state.gpsAcc=null; state.gpsOk=false;
-  state.selfieB64=null; state.submitting=false; state.submitted=false; state.isKhac=false;
-
-  // Reset fields
-  document.getElementById('input-cuahang-display').value='';
-  document.getElementById('sel-cuahang').value='';
-  document.getElementById('input-ma-nv').value='';
-  document.getElementById('input-ten-nv').value='';
-  document.getElementById('input-ten-nv').setAttribute('readonly',true);
-  document.getElementById('input-ten-nv').placeholder='Tự động hiển thị khi nhập mã';
-  document.getElementById('input-ma-nv').placeholder='Nhập mã hoặc tìm tên...';
-  document.getElementById('chk-khac').checked=false;
-
-  // Reset 4 nút loại
-  Object.keys(TYPE_MAP).forEach(k=>{
-    document.getElementById('btn-'+k).className='type-btn '+TYPE_MAP[k].cls;
-  });
-
-  // Reset GPS
-  const gpsBtn=document.getElementById('gps-btn');
-  gpsBtn.className='gps-btn';
-  document.getElementById('gps-icon').textContent='📍';
-  document.getElementById('gps-label').textContent='Chưa xác nhận vị trí';
-  document.getElementById('gps-sub').textContent='Bấm để lấy tọa độ GPS';
-  document.getElementById('gps-badge').textContent='XÁC NHẬN VỊ TRÍ';
-
-  // Reset selfie
-  document.getElementById('selfie-btn').className='selfie-btn';
-  document.getElementById('selfie-icon').style.display='';
-  document.getElementById('selfie-icon').textContent='📷';
-  const preview=document.getElementById('selfie-preview');
-  preview.src=''; preview.style.display='none';
-  document.getElementById('selfie-text').textContent='Chụp ảnh xác minh';
-  document.getElementById('selfie-sub').textContent='Bấm để mở camera';
-  document.getElementById('selfie-input').value='';
-
-  // Reset result & submit
-  const rb=document.getElementById('result-box');
-  rb.style.display='none'; rb.className='result-box';
-  setBtn('s-disabled','Chọn thời điểm chấm công');
-
-  // Scroll lên đầu
-  window.scrollTo(0,0);
+// ĐẾM NGƯỢC VÀ RELOAD
+function startCountdown(giay){
+  const bar=document.getElementById('countdown-bar');
+  bar.style.display='block';
+  let dem=giay;
+  bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';
+  const timer=setInterval(()=>{
+    dem--;
+    if(dem<=0){
+      clearInterval(timer);
+      location.reload();
+    } else {
+      bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';
+    }
+  },1000);
 }
 
 // LOG
