@@ -546,8 +546,8 @@ function doSubmit() {
   if (btn.classList.contains('s-disabled')) return;
 
   const maCH  = document.getElementById('sel-cuahang').value;
-  const selCH = document.getElementById('sel-cuahang');
-  const tenCH = selCH.options[selCH.selectedIndex]?.text || '';
+  const displayCH = document.getElementById('input-cuahang-display').value;
+  const tenCH = displayCH.includes(' — ') ? displayCH.split(' — ').slice(1).join(' — ') : displayCH;
   const maNV  = state.isKhac ? 'KHÁC' : document.getElementById('input-ma-nv').value.trim();
   const tenNV = document.getElementById('input-ten-nv').value.trim();
 
