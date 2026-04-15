@@ -479,28 +479,40 @@ function startCountdown(giay){
 
 // TÓM TẮT CA — hiện khi Ra ca
 function hienTomTatCa(gioRaCa){
-  const card=document.getElementById('summary-card');
-  const rows=document.getElementById('summary-rows');
-  const allLogs=[...logs].reverse(); // cũ → mới
-  let html='', gioVaoCa='', gioRaGiua='', thoiGianRaNgoai=0;
-  const nhanMap={'lb-v':'Vào ca','lb-r':'Ra ca','lb-rg':'Ra giữa ca','lb-vg':'Vào giữa ca'};
+  const maNV = state.isKhac ? '' : document.getElementById('input-ma-nv').value.trim();
+  const card = document.getElementById('summary-card');
+  const rows = document.getElementById('summary-rows');
 
-  allLogs.forEach(l=>{
-    html+='<div class="summary-row"><span class="summary-label">'+nhanMap[l.lbcls]+'</span><span class="summary-value">'+l.time+'</span></div>';
-    if(l.lbcls==='lb-v')  gioVaoCa=l.time;
-    if(l.lbcls==='lb-rg') gioRaGiua=l.time;
-    if(l.lbcls==='lb-vg'&&gioRaGiua){
-      thoiGianRaNgoai+=toPhut(l.time)-toPhut(gioRaGiua);
-      gioRaGiua='';
-    }
-  });
-
-  const tongPhut=gioVaoCa&&gioRaCa ? toPhut(gioRaCa)-toPhut(gioVaoCa)-thoiGianRaNgoai : 0;
-  rows.innerHTML=html;
-  document.getElementById('summary-total-val').textContent=tongPhut>0?formatPhut(tongPhut):'--';
   card.style.display='block';
-}
+  rows.innerHTML='<div style="font-size:12px;color:var(--text-m);padding:4px 0">Đang tải...</div>';
+  document.getElementById('summary-total-val').textContent='--';
 
+  fetch(SCRIPT_URL + '?type=lichsu&maNV=' + encodeURIComponent(maNV))
+    .then(r => r.json())
+    .then(d => {
+      const lichSu = d.lichSu || [];
+      if(!lichSu.length){ rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Không có dữ liệu</div>'; return; }
+
+      let html='', gioVaoCa='', gioRaGiua='', thoiGianRaNgoai=0;
+
+      lichSu.forEach(l => {
+        html += '<div class="summary-row"><span class="summary-label">'+l.loai+'</span><span class="summary-value">'+l.gio+'</span></div>';
+        if(l.loai==='Vào ca')      gioVaoCa  = l.gio;
+        if(l.loai==='Ra giữa ca')  gioRaGiua = l.gio;
+        if(l.loai==='Vào giữa ca' && gioRaGiua){
+          thoiGianRaNgoai += toPhut(l.gio) - toPhut(gioRaGiua);
+          gioRaGiua = '';
+        }
+      });
+
+      const tongPhut = gioVaoCa ? toPhut(gioRaCa) - toPhut(gioVaoCa) - thoiGianRaNgoai : 0;
+      rows.innerHTML = html;
+      document.getElementById('summary-total-val').textContent = tongPhut > 0 ? formatPhut(tongPhut) : '--';
+    })
+    .catch(() => {
+      rows.innerHTML='<div style="font-size:12px;color:var(--red)">Lỗi tải dữ liệu</div>';
+    });
+}
 function toPhut(s){
   if(!s)return 0;
   const p=s.split(':').map(Number);
