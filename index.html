@@ -112,6 +112,14 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 .ls-err{color:var(--red);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+.summary-card{margin:0 12px 8px;background:white;border-radius:12px;border:1.5px solid var(--blue-bd);padding:14px 16px;display:none;}
+.summary-title{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:10px;}
+.summary-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--border);}
+.summary-row:last-child{border-bottom:none;}
+.summary-label{color:var(--text-m);}
+.summary-value{font-weight:500;color:var(--text);}
+.summary-total{display:flex;justify-content:space-between;font-size:14px;font-weight:600;padding:8px 0 0;margin-top:4px;border-top:1.5px solid var(--blue-bd);}
+.summary-total .summary-value{color:var(--blue);}
 </style>
 </head>
 <body>
@@ -189,6 +197,14 @@ img.selfie-preview{width:44px;height:44px;border-radius:8px;object-fit:cover;fle
 </div>
 
 <div class="result-box" id="result-box"></div>
+<div class="summary-card" id="summary-card">
+  <div class="summary-title">Tóm tắt ca làm việc hôm nay</div>
+  <div id="summary-rows"></div>
+  <div class="summary-total">
+    <span class="summary-label">Tổng giờ làm việc</span>
+    <span class="summary-value" id="summary-total-val">--</span>
+  </div>
+</div>
 <div class="countdown-bar" id="countdown-bar"></div>
 
 <div class="card">
@@ -431,8 +447,13 @@ function doSubmit(){
     logs.unshift({loai:state.loai,lbcls:lbMap[state.loai]||'lb-v',time:res.timestamp.substring(11,19),dist:res.khoangCach?res.khoangCach+'m':'--',ok:res.gpsStatus==='HỢP LỆ'});
     renderLog();
 
-    // Đếm ngược 3 giây rồi reload
-    startCountdown(3);
+// Ra ca → hiện tóm tắt 30 giây, còn lại 10 giây
+    if(state.loai === 'Ra ca'){
+      hienTomTatCa(res.timestamp.substring(11,19));
+      startCountdown(30);
+    } else {
+      startCountdown(10);
+    }
   })
   .catch(()=>{
     state.submitting=false;
@@ -451,13 +472,44 @@ function startCountdown(giay){
   bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';
   const timer=setInterval(()=>{
     dem--;
-    if(dem<=0){
-      clearInterval(timer);
-      location.reload();
-    } else {
-      bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';
-    }
+    if(dem<=0){ clearInterval(timer); location.reload(); }
+    else { bar.textContent='Trang sẽ làm mới sau '+dem+' giây...'; }
   },1000);
+}
+
+// TÓM TẮT CA — hiện khi Ra ca
+function hienTomTatCa(gioRaCa){
+  const card=document.getElementById('summary-card');
+  const rows=document.getElementById('summary-rows');
+  const allLogs=[...logs].reverse(); // cũ → mới
+  let html='', gioVaoCa='', gioRaGiua='', thoiGianRaNgoai=0;
+  const nhanMap={'lb-v':'Vào ca','lb-r':'Ra ca','lb-rg':'Ra giữa ca','lb-vg':'Vào giữa ca'};
+
+  allLogs.forEach(l=>{
+    html+='<div class="summary-row"><span class="summary-label">'+nhanMap[l.lbcls]+'</span><span class="summary-value">'+l.time+'</span></div>';
+    if(l.lbcls==='lb-v')  gioVaoCa=l.time;
+    if(l.lbcls==='lb-rg') gioRaGiua=l.time;
+    if(l.lbcls==='lb-vg'&&gioRaGiua){
+      thoiGianRaNgoai+=toPhut(l.time)-toPhut(gioRaGiua);
+      gioRaGiua='';
+    }
+  });
+
+  const tongPhut=gioVaoCa&&gioRaCa ? toPhut(gioRaCa)-toPhut(gioVaoCa)-thoiGianRaNgoai : 0;
+  rows.innerHTML=html;
+  document.getElementById('summary-total-val').textContent=tongPhut>0?formatPhut(tongPhut):'--';
+  card.style.display='block';
+}
+
+function toPhut(s){
+  if(!s)return 0;
+  const p=s.split(':').map(Number);
+  return p[0]*60+(p[1]||0)+(p[2]||0)/60;
+}
+
+function formatPhut(phut){
+  const g=Math.floor(phut/60),p=Math.round(phut%60);
+  return g+'g '+String(p).padStart(2,'0')+'p';
 }
 
 // LOG
