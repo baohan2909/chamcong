@@ -1028,7 +1028,7 @@ function tinhKhoangCachOSRM(ch){
       const durTxt  = durPhut < 60
         ? durPhut+'p'
         : Math.floor(durPhut/60)+'g '+String(durPhut%60).padStart(2,'0')+'p';
-      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe (tùy mật độ)';
+      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe';
     } else {
       const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
       val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
