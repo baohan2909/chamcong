@@ -1022,13 +1022,13 @@ function tinhKhoangCachOSRM(ch){
     loading.style.display='none';
     if(data.code==='Ok' && data.routes && data.routes[0]){
       const dist = data.routes[0].distance; // mét
-      const dur  = data.routes[0].duration * 2.0; // giây — nhân 2.0 cho thực tế VN
+      const dur  = data.routes[0].duration * 2.5; // giây — nhân 2.5 cho thực tế VN
       const distTxt = dist<1000 ? Math.round(dist)+'m' : (dist/1000).toFixed(1)+'km';
       const durPhut = Math.round(dur/60);
       const durTxt  = durPhut < 60
         ? durPhut+'p'
         : Math.floor(durPhut/60)+'g '+String(durPhut%60).padStart(2,'0')+'p';
-      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe (ước tính)';
+      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe (tùy mật độ)';
     } else {
       const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
       val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
