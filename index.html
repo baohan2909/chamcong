@@ -1022,7 +1022,7 @@ function tinhKhoangCachOSRM(ch){
     loading.style.display='none';
     if(data.code==='Ok' && data.routes && data.routes[0]){
       const dist = data.routes[0].distance; // mét
-      const dur  = data.routes[0].duration * 1.6; // giây — nhân 1.6 cho thực tế VN
+      const dur  = data.routes[0].duration * 2.0; // giây — nhân 2.0 cho thực tế VN
       const distTxt = dist<1000 ? Math.round(dist)+'m' : (dist/1000).toFixed(1)+'km';
       const durPhut = Math.round(dur/60);
       const durTxt  = durPhut < 60
