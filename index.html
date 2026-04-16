@@ -67,11 +67,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .field label { display:block; font-size:11px; color:var(--text-m); margin-bottom:4px; }
 .field-val { font-size:15px; font-weight:500; }
 
-/* NV INFO */
-.nv-info-card { margin:14px 14px 0; background:var(--green); border-radius:16px; padding:16px 18px; box-shadow:0 4px 16px rgba(15,110,86,.20); }
-.nv-info-name { font-size:17px; font-weight:700; color:white; }
-.nv-info-ma   { font-size:12px; color:rgba(255,255,255,.75); margin-top:2px; }
-.nv-info-ch   { font-size:13px; color:rgba(255,255,255,.9); margin-top:8px; }
+/* NV INFO — dùng lại card trắng style cũ, không cần class riêng */
 
 /* CỬA HÀNG (FIX 1) */
 .ch-field { padding:11px 16px; border-bottom:0.5px solid var(--border); position:relative; }
@@ -311,10 +307,21 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <br><button class="banner-pw-btn" onclick="openPwModal()">Đổi mật khẩu ngay</button>
     </div>
 
-    <div class="nv-info-card">
-      <div class="nv-info-name" id="disp-ten-nv">--</div>
-      <div class="nv-info-ma"   id="disp-ma-nv">--</div>
-      <div class="nv-info-ch">📍 <span id="disp-cua-hang">--</span></div>
+    <!-- Thông tin nhân viên — card trắng kiểu cũ -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-section">Thông tin nhân viên</div>
+      <div class="field">
+        <label>Họ và tên</label>
+        <div class="field-val" id="disp-ten-nv">--</div>
+      </div>
+      <div class="field">
+        <label>Mã nhân viên</label>
+        <div class="field-val" id="disp-ma-nv">--</div>
+      </div>
+      <div class="field">
+        <label>Cửa hàng</label>
+        <div class="field-val" id="disp-cua-hang">--</div>
+      </div>
     </div>
 
     <!-- CỬA HÀNG (FIX 1: gợi ý, không lặp tên) -->
