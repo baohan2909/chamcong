@@ -68,7 +68,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .field label { display:block; font-size:11px; color:var(--text-m); margin-bottom:4px; }
 .field-val { font-size:15px; font-weight:500; }
 
-/* NV INFO — dùng lại card trắng style cũ, không cần class riêng */
+/* NV INFO — readonly style: mờ nhẹ, họ tên đậm */
+.field-val-readonly { font-size:15px; font-weight:400; color:var(--text-m); }
+.field-val-name     { font-size:15px; font-weight:700; color:var(--text-m); }
 
 /* CỬA HÀNG (FIX 1) */
 .ch-field { padding:11px 16px; border-bottom:0.5px solid var(--border); position:relative; }
@@ -77,8 +79,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .ch-input::placeholder { color:var(--text-lt); font-weight:400; }
 .ch-change-btn { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--green); font-weight:600; cursor:pointer; padding:3px 8px; border:1px solid var(--green-bd); border-radius:99px; background:var(--green-lt); white-space:nowrap; }
 .autocomplete-wrap { position:relative; }
-.suggest-list { position:absolute; top:calc(100% + 4px); left:-16px; right:-16px; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:230px; overflow-y:auto; display:none; }
-.suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; }
+/* Giới hạn 3 dòng hiển thị (~148px), kéo để xem thêm */
+.suggest-list { position:absolute; top:calc(100% + 4px); left:-16px; right:-16px; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:148px; overflow-y:auto; display:none; -webkit-overflow-scrolling:touch; }
+.suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; min-height:49px; }
 .suggest-item:last-child { border-bottom:none; }
 .suggest-item:active { background:var(--green-lt); }
 .s-ma  { font-weight:600; color:var(--green); display:block; }
@@ -250,9 +253,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .map-search-wrap { margin:14px 14px 0; background:white; border-radius:16px; overflow:visible; box-shadow:var(--shadow); }
 .map-search-inner { padding:12px 16px 14px; position:relative; }
 .map-search-label { font-size:11px; color:var(--text-m); margin-bottom:6px; }
-.map-search-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:1.5px solid var(--border); border-radius:10px; padding:11px 14px 11px 38px; outline:none; background:var(--gray-lt); transition:border-color .15s; }
+.map-search-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:1.5px solid var(--border); border-radius:10px; padding:11px 40px 11px 14px; outline:none; background:var(--gray-lt); transition:border-color .15s; }
 .map-search-input:focus { border-color:#073763; background:white; }
-.map-search-ico { position:absolute; left:28px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; margin-top:3px; }
+.map-search-ico { position:absolute; right:13px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; }
 .map-suggest-list { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:240px; overflow-y:auto; display:none; }
 .map-suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; display:flex; align-items:center; gap:10px; }
 .map-suggest-item:last-child { border-bottom:none; }
@@ -265,7 +268,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .map-store-header { padding:16px 18px 14px; border-bottom:0.5px solid var(--border); }
 .map-store-name { font-size:16px; font-weight:700; color:var(--text); }
 .map-store-kv   { font-size:12px; color:var(--text-m); margin-top:3px; }
-.map-store-coords{ font-size:11px; color:var(--text-lt); margin-top:4px; font-family:monospace; }
+.map-store-diachi{ font-size:12px; color:var(--text-m); margin-top:5px; display:flex; align-items:flex-start; gap:5px; line-height:1.4; }
+.map-store-diachi-pin { font-size:13px; flex-shrink:0; margin-top:1px; }
 .map-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px 16px; }
 .map-btn-primary { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:12px; font-size:14px; font-weight:700; background:#073763; color:white; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .15s; }
 .map-btn-primary:active { transform:scale(.97); background:#052a4a; }
@@ -354,11 +358,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="card-section">Thông tin nhân viên</div>
       <div class="field">
         <label>Họ và tên</label>
-        <div class="field-val" id="disp-ten-nv">--</div>
+        <div class="field-val-name" id="disp-ten-nv">--</div>
       </div>
       <div class="field">
         <label>Mã nhân viên</label>
-        <div class="field-val" id="disp-ma-nv">--</div>
+        <div class="field-val-readonly" id="disp-ma-nv">--</div>
       </div>
     </div>
 
@@ -504,11 +508,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="map-search-inner">
         <div class="map-search-label">Tìm cửa hàng cần chỉ đường</div>
         <div style="position:relative">
-          <span class="map-search-ico">🔍</span>
           <input type="text" class="map-search-input" id="map-search-input"
                  placeholder="Nhập mã hoặc tên cửa hàng..."
                  autocomplete="off"
                  oninput="onMapSearch()" onblur="hideMapSuggest()" onfocus="onMapSearch()">
+          <span class="map-search-ico">🔍</span>
         </div>
         <div class="map-suggest-list" id="map-suggest-list"></div>
       </div>
@@ -518,7 +522,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="map-store-header">
         <div class="map-store-name" id="map-store-name">--</div>
         <div class="map-store-kv"   id="map-store-kv">--</div>
-        <div class="map-store-coords" id="map-store-coords">--</div>
+        <div class="map-store-diachi" id="map-store-diachi"></div>
       </div>
       <div class="map-distance-bar" id="map-distance-bar">
         Khoảng cách từ vị trí của bạn: <span class="map-distance-val" id="map-distance-val">--</span>
@@ -905,19 +909,25 @@ function renderTaiKhoan(){
 }
 
 // ── BẢN ĐỒ CHỈ ĐƯỜNG ──
-let mapSelectedCH = null; // {ma, ten, khuVuc, lat, lng}
-let userLatLng    = null; // {lat, lng} vị trí người dùng
+let mapSelectedCH = null;
+let userLatLng    = null;
+let nearbyRendered = false;
 
 function khoiDongBanDo(){
-  // Lấy vị trí người dùng để tính khoảng cách
+  // Render nearby ngay với danh sách hiện có (không chờ GPS)
+  if(!nearbyRendered && CH_LIST.length) { renderNearby(); nearbyRendered=true; }
+
+  // Lấy GPS nền → re-render nearby theo khoảng cách thực
   if(navigator.geolocation && !userLatLng){
     navigator.geolocation.getCurrentPosition(
-      pos=>{ userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude}; },
-      ()=>{}
+      pos=>{
+        userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};
+        renderNearby(); // cập nhật lại theo khoảng cách
+      },
+      ()=>{},
+      {enableHighAccuracy:false, timeout:5000, maximumAge:30000}
     );
   }
-  // Hiện gợi ý cửa hàng gần đây nếu có vị trí
-  renderNearby();
 }
 
 function onMapSearch(){
@@ -929,7 +939,7 @@ function onMapSearch(){
   ).slice(0,10);
   if(!matched.length){list.style.display='none';return;}
   list.innerHTML=matched.map(ch=>`
-    <div class="map-suggest-item" onmousedown="chonCuaHangBanDo('${esc(ch.ma)}','${esc(ch.ten)}','${esc(ch.khuVuc||'')}','${esc(ch.lat||'')}','${esc(ch.lng||'')}')">
+    <div class="map-suggest-item" onmousedown="chonCuaHangBanDo(${JSON.stringify(ch)})">
       <span class="map-si-pin">📍</span>
       <div><div class="map-si-main">${ch.ten}</div><div class="map-si-sub">${ch.ma}${ch.khuVuc?' · '+ch.khuVuc:''}</div></div>
     </div>`).join('');
@@ -937,57 +947,55 @@ function onMapSearch(){
 }
 function hideMapSuggest(){setTimeout(()=>{document.getElementById('map-suggest-list').style.display='none';},150);}
 
-function chonCuaHangBanDo(ma,ten,khuVuc,lat,lng){
-  mapSelectedCH={ma,ten,khuVuc,lat:parseFloat(lat),lng:parseFloat(lng)};
-  document.getElementById('map-search-input').value=ten;
+function chonCuaHangBanDo(ch){
+  if(typeof ch==='string') ch=JSON.parse(ch);
+  mapSelectedCH=ch;
+  document.getElementById('map-search-input').value=ch.ten;
   document.getElementById('map-suggest-list').style.display='none';
 
-  // Hiện card kết quả
-  document.getElementById('map-store-name').textContent=ten;
-  document.getElementById('map-store-kv').textContent=khuVuc||ma;
-  document.getElementById('map-store-coords').textContent=
-    lat&&lng ? 'LAT: '+parseFloat(lat).toFixed(6)+'  LNG: '+parseFloat(lng).toFixed(6) : 'Chưa có tọa độ';
+  document.getElementById('map-store-name').textContent=ch.ten;
+  document.getElementById('map-store-kv').textContent=ch.khuVuc||ch.ma;
+
+  // Địa chỉ từ cột G
+  const diaChiEl=document.getElementById('map-store-diachi');
+  if(ch.diaChi){
+    diaChiEl.innerHTML='<span class="map-store-diachi-pin">📍</span><span>'+ch.diaChi+'</span>';
+  } else {
+    diaChiEl.innerHTML='';
+  }
 
   document.getElementById('map-distance-bar').style.display='none';
   document.getElementById('map-result-card').style.display='block';
 
-  // Tự tính khoảng cách nếu đã có vị trí
-  if(userLatLng && lat && lng) tinhKhoangCach();
+  if(userLatLng && ch.lat && ch.lng) tinhKhoangCach();
 }
 
 function chiDuong(){
-  if(!mapSelectedCH){return;}
-  const {lat,lng,ten}=mapSelectedCH;
-  if(!lat||!lng||isNaN(lat)||isNaN(lng)){
-    alert('Cửa hàng này chưa có tọa độ GPS.');return;
-  }
-  // Mở Google Maps chỉ đường — ưu tiên app native nếu có
-  const url=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-  window.open(url,'_blank');
+  if(!mapSelectedCH)return;
+  const {lat,lng}=mapSelectedCH;
+  if(!lat||!lng||isNaN(lat)||isNaN(lng)){alert('Cửa hàng này chưa có tọa độ GPS.');return;}
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`,'_blank');
 }
 
 function tinhKhoangCach(){
   if(!mapSelectedCH)return;
   const {lat,lng}=mapSelectedCH;
-  if(!lat||!lng||isNaN(lat)||isNaN(lng)){return;}
-
+  if(!lat||!lng||isNaN(lat)||isNaN(lng))return;
   const bar=document.getElementById('map-distance-bar');
   const val=document.getElementById('map-distance-val');
-
-  if(!userLatLng){
-    navigator.geolocation.getCurrentPosition(
-      pos=>{
-        userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};
-        const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
-        val.textContent=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
-        bar.style.display='block';
-      },
-      ()=>{val.textContent='Không lấy được vị trí';bar.style.display='block';}
-    );
-  } else {
+  const showDist=()=>{
+    if(!userLatLng){val.textContent='Không lấy được vị trí';bar.style.display='block';return;}
     const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
     val.textContent=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
     bar.style.display='block';
+  };
+  if(userLatLng){showDist();}
+  else{
+    navigator.geolocation.getCurrentPosition(
+      pos=>{userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};showDist();},
+      ()=>showDist(),
+      {enableHighAccuracy:false,timeout:5000}
+    );
   }
 }
 
@@ -998,26 +1006,25 @@ function haversineMap(lat1,lon1,lat2,lon2){
 }
 
 function renderNearby(){
-  // Hiện 6 cửa hàng đầu, nếu có vị trí thì sort theo khoảng cách
   let list=[...CH_LIST];
   if(userLatLng){
     list=list
       .filter(ch=>ch.lat&&ch.lng)
       .map(ch=>({...ch,dist:haversineMap(userLatLng.lat,userLatLng.lng,parseFloat(ch.lat),parseFloat(ch.lng))}))
       .sort((a,b)=>a.dist-b.dist)
-      .slice(0,6);
+      .slice(0,8);
   } else {
-    list=list.slice(0,6);
+    list=list.slice(0,8);
   }
   if(!list.length){document.getElementById('map-nearby-wrap').style.display='none';return;}
-
   document.getElementById('map-nearby-list').innerHTML=list.map(ch=>{
     const distTxt=ch.dist!=null?(ch.dist<1000?Math.round(ch.dist)+'m':(ch.dist/1000).toFixed(1)+'km'):'';
-    return `<div class="map-nearby-item" onclick="chonCuaHangBanDo('${esc(ch.ma)}','${esc(ch.ten)}','${esc(ch.khuVuc||'')}','${esc(ch.lat||'')}','${esc(ch.lng||'')}')">
+    const sub=ch.diaChi||ch.khuVuc||ch.ma;
+    return `<div class="map-nearby-item" onclick="chonCuaHangBanDo(${JSON.stringify(ch).replace(/"/g,'&quot;')})">
       <div class="map-nearby-pin">📍</div>
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="map-nearby-name">${ch.ten}</div>
-        <div class="map-nearby-kv">${ch.khuVuc||ch.ma}${distTxt?' · '+distTxt:''}</div>
+        <div class="map-nearby-kv" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub}${distTxt?' · <strong>'+distTxt+'</strong>':''}</div>
       </div>
       <div class="map-nearby-arrow">›</div>
     </div>`;
