@@ -53,7 +53,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 4px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:none; background:none; }
 .nav-icon  { font-size:20px; margin-bottom:3px; }
 .nav-label { font-size:10px; font-weight:500; color:var(--text-lt); }
-.nav-item.active .nav-label { color:var(--green); font-weight:700; }
+.nav-item.active .nav-label { color:#073763; font-weight:700; }
+.nav-item.active .nav-icon  { filter:none; }
 
 /* PAGES */
 .page { display:none; padding-bottom:84px; }
@@ -85,20 +86,20 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 
 /* LOẠI */
 .type-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
-.type-btn { border-radius:12px; padding:13px 8px; text-align:center; cursor:pointer; border:1.5px solid transparent; transition:all .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
-.type-btn:active { transform:scale(.95); }
-.t-icon { font-size:20px; margin-bottom:5px; }
-.t-name { font-size:12px; font-weight:700; line-height:1.3; }
-.t-sub  { font-size:10px; margin-top:2px; opacity:.75; }
-.tb-vao   { background:var(--green-lt); border-color:var(--green-bd); } .tb-vao .t-name   { color:#085041; }
-.tb-ra    { background:var(--blue-lt);  border-color:var(--blue-bd);  } .tb-ra .t-name    { color:#042C53; }
-.tb-ra-g  { background:var(--amber-lt); border-color:var(--amber-bd); } .tb-ra-g .t-name  { color:#412402; }
-.tb-vao-g { background:var(--purple-lt);border-color:var(--purple-bd);} .tb-vao-g .t-name { color:#26215C; }
-.tb-vao.sel   { background:var(--green-m); border-color:var(--green-m); box-shadow:0 4px 12px rgba(29,158,117,.35); }
-.tb-ra.sel    { background:var(--blue);    border-color:var(--blue);    box-shadow:0 4px 12px rgba(24,95,165,.35); }
-.tb-ra-g.sel  { background:var(--amber);   border-color:var(--amber);   box-shadow:0 4px 12px rgba(186,117,23,.35); }
-.tb-vao-g.sel { background:var(--purple);  border-color:var(--purple);  box-shadow:0 4px 12px rgba(83,74,183,.35); }
-.type-btn.sel .t-name, .type-btn.sel .t-sub { color:white!important; opacity:1; }
+.type-btn { border-radius:10px; padding:12px 8px; text-align:center; cursor:pointer; border:1.5px solid transparent; transition:all .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
+.type-btn:active { transform:scale(.96); }
+.t-icon { font-size:18px; margin-bottom:4px; }
+.t-name { font-size:12px; font-weight:600; line-height:1.3; }
+.t-sub  { font-size:10px; margin-top:2px; }
+.tb-vao   { background:var(--green-lt); border-color:var(--green-bd); } .tb-vao .t-name,  .tb-vao .t-sub   { color:#085041; }
+.tb-ra    { background:var(--blue-lt);  border-color:var(--blue-bd);  } .tb-ra .t-name,   .tb-ra .t-sub    { color:#042C53; }
+.tb-ra-g  { background:var(--amber-lt); border-color:var(--amber-bd); } .tb-ra-g .t-name, .tb-ra-g .t-sub  { color:#412402; }
+.tb-vao-g { background:var(--purple-lt);border-color:var(--purple-bd);} .tb-vao-g .t-name,.tb-vao-g .t-sub { color:#26215C; }
+.tb-vao.sel   { background:var(--green-m); border-color:var(--green-m); }
+.tb-ra.sel    { background:var(--blue);    border-color:var(--blue); }
+.tb-ra-g.sel  { background:var(--amber);   border-color:var(--amber); }
+.tb-vao-g.sel { background:var(--purple);  border-color:var(--purple); }
+.type-btn.sel .t-name, .type-btn.sel .t-sub { color:white!important; }
 
 /* GPS */
 .gps-wrap { padding:10px 12px; }
@@ -203,9 +204,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gc-total td { font-weight:700; color:var(--green); border-top:1.5px solid var(--green-bd) !important; }
 .gc-empty  { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
 
-/* TÀI KHOẢN PAGE (MỚI) */
+/* TÀI KHOẢN PAGE */
 .acc-top   { margin:14px 14px 0; background:white; border-radius:16px; padding:24px 16px; text-align:center; box-shadow:var(--shadow); }
-.acc-avatar{ width:72px; height:72px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:26px; color:white; font-weight:700; margin:0 auto 12px; }
+.acc-avatar{ width:72px; height:72px; border-radius:50%; background:white; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--green); font-weight:700; margin:0 auto 12px; }
 .acc-name  { font-size:17px; font-weight:700; }
 .acc-ma    { font-size:13px; color:var(--text-m); margin-top:3px; }
 .acc-menu  { margin:12px 14px 0; background:white; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
@@ -213,8 +214,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .menu-item:last-child { border-bottom:none; }
 .menu-item:active { background:var(--gray-lt); }
 .menu-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-.mi-green  { background:var(--green-lt); }
-.mi-blue   { background:var(--blue-lt); }
+.mi-green  { background:#E8F4F0; }
+.mi-blue   { background:#E8F4F0; }
+.mi-navy   { background:#E8F4F0; }
 .mi-red    { background:var(--red-lt); }
 .menu-label{ font-size:14px; font-weight:500; flex:1; }
 .menu-arrow{ color:var(--text-lt); font-size:16px; }
@@ -243,6 +245,46 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .pw-msg    { margin-top:10px; padding:9px 13px; border-radius:8px; font-size:13px; display:none; }
 .pw-ok     { background:var(--green-lt); color:#085041; border-left:3px solid var(--green-m); }
 .pw-err    { background:var(--red-lt); color:var(--red); border-left:3px solid var(--red); }
+
+/* CHỈ ĐƯỜNG PAGE */
+.map-search-wrap { margin:14px 14px 0; background:white; border-radius:16px; overflow:visible; box-shadow:var(--shadow); }
+.map-search-inner { padding:12px 16px 14px; position:relative; }
+.map-search-label { font-size:11px; color:var(--text-m); margin-bottom:6px; }
+.map-search-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:1.5px solid var(--border); border-radius:10px; padding:11px 14px 11px 38px; outline:none; background:var(--gray-lt); transition:border-color .15s; }
+.map-search-input:focus { border-color:#073763; background:white; }
+.map-search-ico { position:absolute; left:28px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; margin-top:3px; }
+.map-suggest-list { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:240px; overflow-y:auto; display:none; }
+.map-suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; display:flex; align-items:center; gap:10px; }
+.map-suggest-item:last-child { border-bottom:none; }
+.map-suggest-item:active { background:var(--green-lt); }
+.map-si-pin { font-size:16px; flex-shrink:0; }
+.map-si-main { font-weight:600; color:var(--text); }
+.map-si-sub  { font-size:11px; color:var(--text-m); margin-top:1px; }
+
+.map-result-card { margin:10px 14px 0; background:white; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); display:none; }
+.map-store-header { padding:16px 18px 14px; border-bottom:0.5px solid var(--border); }
+.map-store-name { font-size:16px; font-weight:700; color:var(--text); }
+.map-store-kv   { font-size:12px; color:var(--text-m); margin-top:3px; }
+.map-store-coords{ font-size:11px; color:var(--text-lt); margin-top:4px; font-family:monospace; }
+.map-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px 16px; }
+.map-btn-primary { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:12px; font-size:14px; font-weight:700; background:#073763; color:white; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.map-btn-primary:active { transform:scale(.97); background:#052a4a; }
+.map-btn-secondary { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:12px; font-size:14px; font-weight:600; background:var(--green-lt); color:var(--green); border:1.5px solid var(--green-bd); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.map-btn-secondary:active { transform:scale(.97); }
+.map-btn-icon { font-size:18px; }
+.map-distance-bar { margin:0 16px 14px; padding:10px 14px; background:var(--gray-lt); border-radius:10px; font-size:12px; color:var(--text-m); display:none; }
+.map-distance-val { font-weight:700; color:#073763; font-size:14px; }
+
+.map-nearby { margin:10px 14px 0; }
+.map-nearby-title { font-size:11px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding-left:2px; }
+.map-nearby-list { background:white; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
+.map-nearby-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:0.5px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.map-nearby-item:last-child { border-bottom:none; }
+.map-nearby-item:active { background:var(--green-lt); }
+.map-nearby-pin { width:36px; height:36px; border-radius:10px; background:#E8F1FA; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.map-nearby-name { font-size:13px; font-weight:600; color:var(--text); }
+.map-nearby-kv   { font-size:11px; color:var(--text-m); margin-top:1px; }
+.map-nearby-arrow{ margin-left:auto; font-size:14px; color:var(--text-lt); }
 
 @keyframes spin { to{transform:rotate(360deg);} }
 .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
@@ -317,10 +359,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="field">
         <label>Mã nhân viên</label>
         <div class="field-val" id="disp-ma-nv">--</div>
-      </div>
-      <div class="field">
-        <label>Cửa hàng</label>
-        <div class="field-val" id="disp-cua-hang">--</div>
       </div>
     </div>
 
@@ -438,13 +476,18 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div class="acc-menu">
       <div class="menu-item" onclick="openPwModal()">
-        <div class="menu-icon mi-green">🔐</div>
+        <div class="menu-icon mi-navy">🔐</div>
         <div class="menu-label">Đổi mật khẩu</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="goToPage('chamcong')">
-        <div class="menu-icon mi-blue">⏱️</div>
+        <div class="menu-icon mi-navy">⏱️</div>
         <div class="menu-label">Chấm công hôm nay</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="goToPage('bandochidung')">
+        <div class="menu-icon mi-navy">📍</div>
+        <div class="menu-label">Bản đồ cửa hàng</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="doLogout()">
@@ -455,13 +498,59 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
+  <!-- PAGE: BẢN ĐỒ CHỈ ĐƯỜNG -->
+  <div class="page" id="page-bandochidung">
+    <div class="map-search-wrap">
+      <div class="map-search-inner">
+        <div class="map-search-label">Tìm cửa hàng cần chỉ đường</div>
+        <div style="position:relative">
+          <span class="map-search-ico">🔍</span>
+          <input type="text" class="map-search-input" id="map-search-input"
+                 placeholder="Nhập mã hoặc tên cửa hàng..."
+                 autocomplete="off"
+                 oninput="onMapSearch()" onblur="hideMapSuggest()" onfocus="onMapSearch()">
+        </div>
+        <div class="map-suggest-list" id="map-suggest-list"></div>
+      </div>
+    </div>
+
+    <div class="map-result-card" id="map-result-card">
+      <div class="map-store-header">
+        <div class="map-store-name" id="map-store-name">--</div>
+        <div class="map-store-kv"   id="map-store-kv">--</div>
+        <div class="map-store-coords" id="map-store-coords">--</div>
+      </div>
+      <div class="map-distance-bar" id="map-distance-bar">
+        Khoảng cách từ vị trí của bạn: <span class="map-distance-val" id="map-distance-val">--</span>
+      </div>
+      <div class="map-actions">
+        <div class="map-btn-primary" onclick="chiDuong()">
+          <span class="map-btn-icon">🗺️</span>
+          <span>Chỉ đường</span>
+        </div>
+        <div class="map-btn-secondary" onclick="tinhKhoangCach()">
+          <span class="map-btn-icon">📏</span>
+          <span>Tính khoảng cách</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-nearby" id="map-nearby-wrap" style="display:none">
+      <div class="map-nearby-title">Cửa hàng gần đây</div>
+      <div class="map-nearby-list" id="map-nearby-list"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV — 4 tab -->
   <div class="bottom-nav">
     <button class="nav-item active" id="nav-chamcong" onclick="goToPage('chamcong')">
       <div class="nav-icon">⏱️</div><div class="nav-label">Chấm công</div>
     </button>
     <button class="nav-item" id="nav-giocong" onclick="goToPage('giocong')">
       <div class="nav-icon">📊</div><div class="nav-label">Giờ công</div>
+    </button>
+    <button class="nav-item" id="nav-bandochidung" onclick="goToPage('bandochidung')">
+      <div class="nav-icon">📍</div><div class="nav-label">Bản đồ</div>
     </button>
     <button class="nav-item" id="nav-taikhoan" onclick="goToPage('taikhoan')">
       <div class="nav-icon">👤</div><div class="nav-label">Tài khoản</div>
@@ -495,16 +584,18 @@ function tick(){
 setInterval(tick,1000);tick();
 
 // ── NAVIGATION ──
-const PAGE_TITLES={chamcong:'CHẤM CÔNG',giocong:'GIỜ CÔNG',taikhoan:'TÀI KHOẢN'};
+const PAGE_TITLES={chamcong:'CHẤM CÔNG',giocong:'GIỜ CÔNG',taikhoan:'TÀI KHOẢN',bandochidung:'BẢN ĐỒ CỬA HÀNG'};
 function goToPage(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  document.getElementById('nav-'+page).classList.add('active');
-  document.getElementById('header-page-title').textContent=PAGE_TITLES[page];
+  const navEl=document.getElementById('nav-'+page);
+  if(navEl)navEl.classList.add('active');
+  document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
   if(page==='giocong')taiGioCong();
   if(page==='taikhoan')renderTaiKhoan();
+  if(page==='bandochidung')khoiDongBanDo();
 }
 
 // ── LOGIN ──
@@ -552,7 +643,7 @@ function khoiDongApp(){
   fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
     CH_LIST=d.cuaHangList||[];
     selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);
-    document.getElementById('disp-cua-hang').textContent=SESSION.cuaHangTen||SESSION.cuaHangMa;
+    renderNearby();
   }).catch(()=>{selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);});
   taiLichSu();
 }
@@ -809,7 +900,127 @@ function renderTaiKhoan(){
   document.getElementById('acc-ma').textContent=SESSION.ma+' · '+SESSION.cuaHangTen;
 }
 
-// ── ĐỔI MẬT KHẨU ──
+// ── BẢN ĐỒ CHỈ ĐƯỜNG ──
+let mapSelectedCH = null; // {ma, ten, khuVuc, lat, lng}
+let userLatLng    = null; // {lat, lng} vị trí người dùng
+
+function khoiDongBanDo(){
+  // Lấy vị trí người dùng để tính khoảng cách
+  if(navigator.geolocation && !userLatLng){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{ userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude}; },
+      ()=>{}
+    );
+  }
+  // Hiện gợi ý cửa hàng gần đây nếu có vị trí
+  renderNearby();
+}
+
+function onMapSearch(){
+  const q=document.getElementById('map-search-input').value.trim().toLowerCase();
+  const list=document.getElementById('map-suggest-list');
+  if(!q){list.style.display='none';return;}
+  const matched=CH_LIST.filter(ch=>
+    ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)
+  ).slice(0,10);
+  if(!matched.length){list.style.display='none';return;}
+  list.innerHTML=matched.map(ch=>`
+    <div class="map-suggest-item" onmousedown="chonCuaHangBanDo('${esc(ch.ma)}','${esc(ch.ten)}','${esc(ch.khuVuc||'')}','${esc(ch.lat||'')}','${esc(ch.lng||'')}')">
+      <span class="map-si-pin">📍</span>
+      <div><div class="map-si-main">${ch.ten}</div><div class="map-si-sub">${ch.ma}${ch.khuVuc?' · '+ch.khuVuc:''}</div></div>
+    </div>`).join('');
+  list.style.display='block';
+}
+function hideMapSuggest(){setTimeout(()=>{document.getElementById('map-suggest-list').style.display='none';},150);}
+
+function chonCuaHangBanDo(ma,ten,khuVuc,lat,lng){
+  mapSelectedCH={ma,ten,khuVuc,lat:parseFloat(lat),lng:parseFloat(lng)};
+  document.getElementById('map-search-input').value=ten;
+  document.getElementById('map-suggest-list').style.display='none';
+
+  // Hiện card kết quả
+  document.getElementById('map-store-name').textContent=ten;
+  document.getElementById('map-store-kv').textContent=khuVuc||ma;
+  document.getElementById('map-store-coords').textContent=
+    lat&&lng ? 'LAT: '+parseFloat(lat).toFixed(6)+'  LNG: '+parseFloat(lng).toFixed(6) : 'Chưa có tọa độ';
+
+  document.getElementById('map-distance-bar').style.display='none';
+  document.getElementById('map-result-card').style.display='block';
+
+  // Tự tính khoảng cách nếu đã có vị trí
+  if(userLatLng && lat && lng) tinhKhoangCach();
+}
+
+function chiDuong(){
+  if(!mapSelectedCH){return;}
+  const {lat,lng,ten}=mapSelectedCH;
+  if(!lat||!lng||isNaN(lat)||isNaN(lng)){
+    alert('Cửa hàng này chưa có tọa độ GPS.');return;
+  }
+  // Mở Google Maps chỉ đường — ưu tiên app native nếu có
+  const url=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  window.open(url,'_blank');
+}
+
+function tinhKhoangCach(){
+  if(!mapSelectedCH)return;
+  const {lat,lng}=mapSelectedCH;
+  if(!lat||!lng||isNaN(lat)||isNaN(lng)){return;}
+
+  const bar=document.getElementById('map-distance-bar');
+  const val=document.getElementById('map-distance-val');
+
+  if(!userLatLng){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};
+        const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
+        val.textContent=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
+        bar.style.display='block';
+      },
+      ()=>{val.textContent='Không lấy được vị trí';bar.style.display='block';}
+    );
+  } else {
+    const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
+    val.textContent=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
+    bar.style.display='block';
+  }
+}
+
+function haversineMap(lat1,lon1,lat2,lon2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function renderNearby(){
+  // Hiện 6 cửa hàng đầu, nếu có vị trí thì sort theo khoảng cách
+  let list=[...CH_LIST];
+  if(userLatLng){
+    list=list
+      .filter(ch=>ch.lat&&ch.lng)
+      .map(ch=>({...ch,dist:haversineMap(userLatLng.lat,userLatLng.lng,parseFloat(ch.lat),parseFloat(ch.lng))}))
+      .sort((a,b)=>a.dist-b.dist)
+      .slice(0,6);
+  } else {
+    list=list.slice(0,6);
+  }
+  if(!list.length){document.getElementById('map-nearby-wrap').style.display='none';return;}
+
+  document.getElementById('map-nearby-list').innerHTML=list.map(ch=>{
+    const distTxt=ch.dist!=null?(ch.dist<1000?Math.round(ch.dist)+'m':(ch.dist/1000).toFixed(1)+'km'):'';
+    return `<div class="map-nearby-item" onclick="chonCuaHangBanDo('${esc(ch.ma)}','${esc(ch.ten)}','${esc(ch.khuVuc||'')}','${esc(ch.lat||'')}','${esc(ch.lng||'')}')">
+      <div class="map-nearby-pin">📍</div>
+      <div>
+        <div class="map-nearby-name">${ch.ten}</div>
+        <div class="map-nearby-kv">${ch.khuVuc||ch.ma}${distTxt?' · '+distTxt:''}</div>
+      </div>
+      <div class="map-nearby-arrow">›</div>
+    </div>`;
+  }).join('');
+  document.getElementById('map-nearby-wrap').style.display='block';
+}
+</script>
 function openPwModal(){
   ['pw-cu','pw-moi','pw-xn'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pw-msg').style.display='none';
