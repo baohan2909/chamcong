@@ -72,16 +72,19 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .field-val-readonly { font-size:15px; font-weight:400; color:var(--text-m); }
 .field-val-name     { font-size:15px; font-weight:700; color:var(--text-m); }
 
-/* CỬA HÀNG (FIX 1) */
-.ch-field { padding:11px 16px; border-bottom:0.5px solid var(--border); position:relative; }
-.ch-field label { display:block; font-size:11px; color:var(--text-m); margin-bottom:4px; }
-.ch-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:none; outline:none; background:transparent; padding:0; padding-right:80px; }
+/* CỬA HÀNG */
+.ch-field { padding:12px 16px; }
+.ch-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:none; outline:none; background:transparent; padding:0; }
 .ch-input::placeholder { color:var(--text-lt); font-weight:400; }
-.ch-change-btn { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--green); font-weight:600; cursor:pointer; padding:3px 8px; border:1px solid var(--green-bd); border-radius:99px; background:var(--green-lt); white-space:nowrap; }
-.autocomplete-wrap { position:relative; }
-/* Giới hạn 3 dòng hiển thị (~148px), kéo để xem thêm */
-.suggest-list { position:absolute; top:calc(100% + 4px); left:-16px; right:-16px; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:148px; overflow-y:auto; display:none; -webkit-overflow-scrolling:touch; }
-.suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; min-height:49px; }
+/* suggest-list dùng fixed để thoát khỏi card overflow */
+.suggest-list {
+  position:fixed; left:14px; right:14px; z-index:500;
+  background:white; border:0.5px solid var(--border);
+  border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18);
+  max-height:165px; overflow-y:auto; display:none;
+  -webkit-overflow-scrolling:touch;
+}
+.suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; }
 .suggest-item:last-child { border-bottom:none; }
 .suggest-item:active { background:var(--green-lt); }
 .s-ma  { font-weight:600; color:var(--green); display:block; }
@@ -366,19 +369,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <!-- CỬA HÀNG (FIX 1: gợi ý, không lặp tên) -->
+    <!-- CỬA HÀNG CHẤM CÔNG -->
     <div class="card" style="margin-top:12px">
       <div class="card-section">Cửa hàng chấm công</div>
       <div class="ch-field">
-        <label>Nhập mã hoặc tên để tìm kiếm</label>
-        <div class="autocomplete-wrap">
-          <input type="text" class="ch-input" id="input-ch-display"
-                 placeholder="Tên cửa hàng..." autocomplete="off"
-                 oninput="onCHInput()" onblur="hideCHSuggest()" onfocus="onCHFocus()">
-          <input type="hidden" id="sel-cuahang">
-          <div class="suggest-list" id="ch-suggest-list"></div>
-        </div>
-        <span class="ch-change-btn" onclick="resetCH()">Đổi cửa hàng</span>
+        <input type="text" class="ch-input" id="input-ch-display"
+               placeholder="🔍  Nhập mã hoặc tên cửa hàng..." autocomplete="off"
+               oninput="onCHInput()" onblur="hideCHSuggest()" onfocus="onCHInput()">
+        <input type="hidden" id="sel-cuahang">
+        <div class="suggest-list" id="ch-suggest-list"></div>
       </div>
     </div>
 
@@ -525,16 +524,14 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="map-store-diachi" id="map-store-diachi"></div>
       </div>
       <div class="map-distance-bar" id="map-distance-bar">
-        Khoảng cách từ vị trí của bạn: <span class="map-distance-val" id="map-distance-val">--</span>
+        <span id="map-dist-label">Khoảng cách đường đi:</span>
+        <span class="map-distance-val" id="map-distance-val"> --</span>
+        <span id="map-dist-loading" style="display:none;font-size:11px;color:var(--text-m)"> ⏳ Đang tính...</span>
       </div>
       <div class="map-actions">
-        <div class="map-btn-primary" onclick="chiDuong()">
-          <span class="map-btn-icon">🗺️</span>
-          <span>Chỉ đường</span>
-        </div>
-        <div class="map-btn-secondary" onclick="tinhKhoangCach()">
-          <span class="map-btn-icon">📏</span>
-          <span>Tính khoảng cách</span>
+        <div class="map-btn-primary" onclick="chiDuong()" style="grid-column:1/-1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <span>Chỉ đường trên Google Maps</span>
         </div>
       </div>
     </div>
@@ -650,45 +647,39 @@ function khoiDongApp(){
   lastDay=now.getDate();
   fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
     CH_LIST=d.cuaHangList||[];
-    selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);
     renderNearby();
-  }).catch(()=>{selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);});
+  }).catch(()=>{});
   taiLichSu();
 }
 
-// ── CỬA HÀNG AUTOCOMPLETE (FIX 1: chỉ hiện tên, không lặp) ──
+// ── CỬA HÀNG AUTOCOMPLETE ──
 function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\'");}
 let chTimer=null;
+
 function onCHInput(){
   clearTimeout(chTimer);
   chTimer=setTimeout(()=>{
-    const q=document.getElementById('input-ch-display').value.trim().toLowerCase();
+    const inp=document.getElementById('input-ch-display');
+    const q=inp.value.trim().toLowerCase();
     const list=document.getElementById('ch-suggest-list');
     if(!q){list.style.display='none';return;}
     const matched=CH_LIST.filter(ch=>ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)).slice(0,10);
     if(!matched.length){list.style.display='none';document.getElementById('sel-cuahang').value='';updateSubmitBtn();return;}
     list.innerHTML=matched.map(ch=>'<div class="suggest-item" onmousedown="selectCH(\''+esc(ch.ma)+'\',\''+esc(ch.ten)+'\')"><span class="s-ma">'+ch.ma+'</span><span class="s-ten">'+ch.ten+'</span></div>').join('');
+    // Đặt vị trí fixed theo bounding rect của input
+    const rect=inp.getBoundingClientRect();
+    list.style.top=(rect.bottom+6)+'px';
     list.style.display='block';
-  },180);
+  },160);
 }
-function onCHFocus(){
-  // Khi focus vào ô trống → hiện gợi ý nếu đang có CH mặc định đã chọn
-  const q=document.getElementById('input-ch-display').value.trim();
-  if(!q) onCHInput();
-}
+
 function selectCH(ma,ten){
-  document.getElementById('input-ch-display').value=ten||ma;  // FIX: chỉ hiện TÊN
+  document.getElementById('input-ch-display').value=ten||ma;
   document.getElementById('sel-cuahang').value=ma;
   document.getElementById('ch-suggest-list').style.display='none';
   updateSubmitBtn();
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
-function resetCH(){
-  document.getElementById('input-ch-display').value='';
-  document.getElementById('sel-cuahang').value='';
-  document.getElementById('input-ch-display').focus();
-  updateSubmitBtn();
-}
 
 // ── LOẠI CHẤM CÔNG ──
 const TYPE_MAP={vao:{cls:'tb-vao'},ra:{cls:'tb-ra'},'ra-g':{cls:'tb-ra-g'},'vao-g':{cls:'tb-vao-g'}};
@@ -889,13 +880,13 @@ function renderGioCong(){
     const dt=new Date(r.ngay+'T00:00:00');
     const thu=THU_VI[dt.getDay()];
     const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
-    let bcls='gc-hoan',btxt='Hoàn thành';
-    if(r.trangThai==='ĐANG CA'){bcls='gc-dang';btxt='Đang ca';}
-    if(r.trangThai==='THIẾU DỮ LIỆU'){bcls='gc-thieu';btxt='Thiếu DL';}
-    rows+=`<tr><td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td><td class="gc-gio">${r.gioCaVao||'--'}</td><td class="gc-gio">${r.gioCaRa||'--'}</td><td class="gc-tong">${r.tongGioCong||'--'}</td><td><span class="gc-badge ${bcls}">${btxt}</span></td></tr>`;
+    // Tên cửa hàng — rút gọn nếu quá dài
+    const chName=r.cuaHang||'--';
+    const chShort=chName.length>14?chName.substring(0,13)+'…':chName;
+    rows+=`<tr><td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td><td class="gc-gio">${r.gioCaVao||'--'}</td><td class="gc-gio">${r.gioCaRa||'--'}</td><td class="gc-tong">${r.tongGioCong||'--'}</td><td style="font-size:11px;color:var(--text-m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td></tr>`;
   });
   rows+=`<tr class="gc-total"><td colspan="3" style="font-size:11px">Tổng (${soNgayHT} ngày)</td><td class="gc-tong">${fmtPhut(tongPhutAll)}</td><td></td></tr>`;
-  document.getElementById('gc-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Vào ca</th><th>Ra ca</th><th>Tổng</th><th>T.Thái</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('gc-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Vào ca</th><th>Ra ca</th><th>Tổng</th><th>Cửa hàng</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function parseGioCong(str){if(!str)return 0;const g=str.match(/(\d+)g/),p=str.match(/(\d+)p/);return(g?parseInt(g[1]):0)*60+(p?parseInt(p[1]):0);}
 
@@ -956,7 +947,6 @@ function chonCuaHangBanDo(ch){
   document.getElementById('map-store-name').textContent=ch.ten;
   document.getElementById('map-store-kv').textContent=ch.khuVuc||ch.ma;
 
-  // Địa chỉ từ cột G
   const diaChiEl=document.getElementById('map-store-diachi');
   if(ch.diaChi){
     diaChiEl.innerHTML='<span class="map-store-diachi-pin">📍</span><span>'+ch.diaChi+'</span>';
@@ -964,10 +954,71 @@ function chonCuaHangBanDo(ch){
     diaChiEl.innerHTML='';
   }
 
-  document.getElementById('map-distance-bar').style.display='none';
+  // Reset khoảng cách
+  const bar=document.getElementById('map-distance-bar');
+  bar.style.display='none';
+
   document.getElementById('map-result-card').style.display='block';
 
-  if(userLatLng && ch.lat && ch.lng) tinhKhoangCach();
+  // Tự tính khoảng cách đường đi nếu có GPS
+  if(ch.lat && ch.lng && !isNaN(parseFloat(ch.lat))){
+    if(userLatLng){ tinhKhoangCachOSRM(ch); }
+    else {
+      navigator.geolocation.getCurrentPosition(
+        pos=>{ userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude}; tinhKhoangCachOSRM(ch); },
+        ()=>{},
+        {enableHighAccuracy:false,timeout:5000,maximumAge:30000}
+      );
+    }
+  }
+}
+
+function tinhKhoangCachOSRM(ch){
+  if(!userLatLng || !ch.lat || !ch.lng) return;
+  const lat=parseFloat(ch.lat), lng=parseFloat(ch.lng);
+  if(isNaN(lat)||isNaN(lng)) return;
+
+  const bar=document.getElementById('map-distance-bar');
+  const val=document.getElementById('map-distance-val');
+  const loading=document.getElementById('map-dist-loading');
+  const label=document.getElementById('map-dist-label');
+
+  bar.style.display='block';
+  val.textContent='';
+  loading.style.display='inline';
+  label.textContent='Khoảng cách đường đi:';
+
+  // OSRM public API — miễn phí, không cần key
+  const url=`https://router.project-osrm.org/route/v1/driving/`
+    +`${userLatLng.lng},${userLatLng.lat};${lng},${lat}`
+    +`?overview=false&alternatives=false`;
+
+  fetch(url, {signal: AbortSignal.timeout(8000)})
+  .then(r=>r.json())
+  .then(data=>{
+    loading.style.display='none';
+    if(data.code==='Ok' && data.routes && data.routes[0]){
+      const dist=data.routes[0].distance; // mét
+      const dur =data.routes[0].duration; // giây
+      const distTxt = dist<1000 ? Math.round(dist)+'m' : (dist/1000).toFixed(1)+'km';
+      const durTxt  = dur<60 ? Math.round(dur)+'s'
+                    : dur<3600 ? Math.round(dur/60)+'p'
+                    : Math.floor(dur/3600)+'g '+Math.round((dur%3600)/60)+'p';
+      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe';
+    } else {
+      // Fallback: khoảng cách thẳng
+      const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
+      val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
+      label.textContent='Khoảng cách:';
+    }
+  })
+  .catch(()=>{
+    loading.style.display='none';
+    // Fallback: khoảng cách thẳng
+    const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
+    val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
+    label.textContent='Khoảng cách:';
+  });
 }
 
 function chiDuong(){
@@ -975,28 +1026,6 @@ function chiDuong(){
   const {lat,lng}=mapSelectedCH;
   if(!lat||!lng||isNaN(lat)||isNaN(lng)){alert('Cửa hàng này chưa có tọa độ GPS.');return;}
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`,'_blank');
-}
-
-function tinhKhoangCach(){
-  if(!mapSelectedCH)return;
-  const {lat,lng}=mapSelectedCH;
-  if(!lat||!lng||isNaN(lat)||isNaN(lng))return;
-  const bar=document.getElementById('map-distance-bar');
-  const val=document.getElementById('map-distance-val');
-  const showDist=()=>{
-    if(!userLatLng){val.textContent='Không lấy được vị trí';bar.style.display='block';return;}
-    const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
-    val.textContent=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
-    bar.style.display='block';
-  };
-  if(userLatLng){showDist();}
-  else{
-    navigator.geolocation.getCurrentPosition(
-      pos=>{userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};showDist();},
-      ()=>showDist(),
-      {enableHighAccuracy:false,timeout:5000}
-    );
-  }
 }
 
 function haversineMap(lat1,lon1,lat2,lon2){
