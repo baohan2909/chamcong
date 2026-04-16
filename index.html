@@ -17,8 +17,8 @@
   --text:#1a1a18; --text-m:#6b6b67; --text-lt:#9b9a96; --bg:#f4f3ef;
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); min-height:100vh; display:flex; justify-content:center; color:var(--text); font-size:15px; }
-.app { width:100%; max-width:430px; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); min-height:100vh; color:var(--text); font-size:15px; }
+.app { width:100%; max-width:430px; margin:0 auto; }
 
 /* LOGIN */
 #login-screen {
@@ -42,8 +42,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .login-btn:disabled { background:#c5c3bb; cursor:default; }
 .login-err { margin-top:12px; padding:10px 14px; background:var(--red-lt); border-radius:8px; font-size:13px; color:var(--red); display:none; border-left:3px solid var(--red); }
 
-/* HEADER */
-.header { background:var(--green); padding:14px 20px 10px; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+/* HEADER — full width, không bị hở 2 bên */
+.header { background:var(--green); padding:14px 20px 10px; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15); width:100%; }
 .header-title { font-size:16px; font-weight:700; color:white; letter-spacing:.3px; }
 .header-time  { font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; }
 .header-nv    { font-size:12px; color:rgba(255,255,255,.9); margin-top:5px; font-weight:500; }
@@ -73,16 +73,25 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .field-val-name     { font-size:15px; font-weight:700; color:var(--text-m); }
 
 /* CỬA HÀNG */
-.ch-field { padding:12px 16px; }
+.ch-field { padding:12px 16px; position:relative; }
 .ch-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:none; outline:none; background:transparent; padding:0; }
 .ch-input::placeholder { color:var(--text-lt); font-weight:400; }
-/* suggest-list dùng fixed để thoát khỏi card overflow */
+/* overflow:visible để suggest tràn ra ngoài card */
+.card-ch-overflow { overflow:visible !important; }
+/* suggest-list luôn bên dưới input, không bao giờ lên trên */
 .suggest-list {
-  position:fixed; left:14px; right:14px; z-index:500;
-  background:white; border:0.5px solid var(--border);
-  border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18);
-  max-height:165px; overflow-y:auto; display:none;
+  position:absolute;
+  top:100%; left:0; right:0;
+  z-index:999;
+  background:white;
+  border:0.5px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 12px 32px rgba(0,0,0,.18);
+  max-height:165px;
+  overflow-y:auto;
+  display:none;
   -webkit-overflow-scrolling:touch;
+  margin-top:4px;
 }
 .suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; }
 .suggest-item:last-child { border-bottom:none; }
@@ -370,7 +379,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
 
     <!-- CỬA HÀNG CHẤM CÔNG -->
-    <div class="card" style="margin-top:12px">
+    <div class="card card-ch-overflow" style="margin-top:12px">
       <div class="card-section">Cửa hàng chấm công</div>
       <div class="ch-field">
         <input type="text" class="ch-input" id="input-ch-display"
@@ -666,9 +675,6 @@ function onCHInput(){
     const matched=CH_LIST.filter(ch=>ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)).slice(0,10);
     if(!matched.length){list.style.display='none';document.getElementById('sel-cuahang').value='';updateSubmitBtn();return;}
     list.innerHTML=matched.map(ch=>'<div class="suggest-item" onmousedown="selectCH(\''+esc(ch.ma)+'\',\''+esc(ch.ten)+'\')"><span class="s-ma">'+ch.ma+'</span><span class="s-ten">'+ch.ten+'</span></div>').join('');
-    // Đặt vị trí fixed theo bounding rect của input
-    const rect=inp.getBoundingClientRect();
-    list.style.top=(rect.bottom+6)+'px';
     list.style.display='block';
   },160);
 }
