@@ -43,7 +43,18 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .login-err { margin-top:12px; padding:10px 14px; background:var(--red-lt); border-radius:8px; font-size:13px; color:var(--red); display:none; border-left:3px solid var(--red); }
 
 /* HEADER — full width, không bị hở 2 bên */
-.header { background:var(--green); padding:14px 20px 10px; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15); width:100%; }
+.header {
+  background:var(--green);
+  padding:0;
+  position:sticky; top:0; z-index:10;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  width:100%;
+}
+.header-inner {
+  max-width:430px;
+  margin:0 auto;
+  padding:14px 20px 10px;
+}
 .header-title { font-size:16px; font-weight:700; color:white; letter-spacing:.3px; }
 .header-time  { font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; }
 .header-nv    { font-size:12px; color:rgba(255,255,255,.9); margin-top:5px; font-weight:500; }
@@ -349,13 +360,17 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   </div>
 </div>
 
-<!-- APP CHÍNH -->
-<div class="app" id="main-app" style="display:none">
-  <div class="header">
+<!-- HEADER — nằm ngoài .app để full width -->
+<div class="header" id="main-header" style="display:none">
+  <div class="header-inner">
     <div class="header-title" id="header-page-title">CHẤM CÔNG</div>
     <div class="header-time" id="clock">--</div>
     <div class="header-nv" id="header-nv-info">--</div>
   </div>
+</div>
+
+<!-- APP CHÍNH -->
+<div class="app" id="main-app" style="display:none">
 
   <!-- PAGE: CHẤM CÔNG -->
   <div class="page active" id="page-chamcong">
@@ -634,6 +649,7 @@ function doLogout(){
   SESSION=null;sessionStorage.removeItem('session_cc');stopCamera();
   state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
   document.getElementById('main-app').style.display='none';
+  document.getElementById('main-header').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
@@ -650,6 +666,7 @@ function khoiDongApp(){
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
   document.getElementById('banner-pw').style.display=SESSION.laDatMacDinh?'block':'none';
   document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
   const now=new Date();
   gcThang=now.getFullYear()+'-'+pad(now.getMonth()+1);
@@ -1004,15 +1021,15 @@ function tinhKhoangCachOSRM(ch){
   .then(data=>{
     loading.style.display='none';
     if(data.code==='Ok' && data.routes && data.routes[0]){
-      const dist=data.routes[0].distance; // mét
-      const dur =data.routes[0].duration; // giây
+      const dist = data.routes[0].distance; // mét
+      const dur  = data.routes[0].duration * 1.6; // giây — nhân 1.6 cho thực tế VN
       const distTxt = dist<1000 ? Math.round(dist)+'m' : (dist/1000).toFixed(1)+'km';
-      const durTxt  = dur<60 ? Math.round(dur)+'s'
-                    : dur<3600 ? Math.round(dur/60)+'p'
-                    : Math.floor(dur/3600)+'g '+Math.round((dur%3600)/60)+'p';
-      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe';
+      const durPhut = Math.round(dur/60);
+      const durTxt  = durPhut < 60
+        ? durPhut+'p'
+        : Math.floor(durPhut/60)+'g '+String(durPhut%60).padStart(2,'0')+'p';
+      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe (ước tính)';
     } else {
-      // Fallback: khoảng cách thẳng
       const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
       val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
       label.textContent='Khoảng cách:';
@@ -1020,7 +1037,6 @@ function tinhKhoangCachOSRM(ch){
   })
   .catch(()=>{
     loading.style.display='none';
-    // Fallback: khoảng cách thẳng
     const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
     val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
     label.textContent='Khoảng cách:';
