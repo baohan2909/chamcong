@@ -13,164 +13,154 @@
   --purple:#534AB7; --purple-lt:#EEEDFE; --purple-bd:#CECBF6;
   --red:#A32D2D; --red-lt:#FCEBEB; --red-bd:#F09595;
   --gray-lt:#F1EFE8; --gray:#888780;
-  --border:rgba(0,0,0,0.11);
+  --border:rgba(0,0,0,0.10);
   --text:#1a1a18; --text-m:#6b6b67; --text-lt:#9b9a96; --bg:#f4f3ef;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
 }
-
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); min-height:100vh; display:flex; justify-content:center; color:var(--text); font-size:15px; }
 .app { width:100%; max-width:430px; }
 
-/* ===== HEADER ===== */
-.header { background:var(--green); padding:16px 20px 12px; position:sticky; top:0; z-index:10; }
-.header-title { font-size:17px; font-weight:600; color:white; }
-.header-time  { font-size:12px; color:rgba(255,255,255,.7); margin-top:3px; }
-.header-user  { font-size:12px; color:rgba(255,255,255,.9); margin-top:4px; display:flex; align-items:center; justify-content:space-between; }
-.header-user-name { font-weight:600; }
-.logout-btn   { font-size:11px; color:rgba(255,255,255,.75); cursor:pointer; padding:2px 8px; border:1px solid rgba(255,255,255,.3); border-radius:99px; }
-.logout-btn:active { background:rgba(255,255,255,.15); }
+/* LOGIN */
+#login-screen {
+  position:fixed; inset:0; z-index:1000;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px;
+  background: var(--bg);
+}
+.login-logo-wrap { margin-bottom:24px; text-align:center; }
+.login-logo-icon { width:72px; height:72px; background:var(--green-lt); border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:36px; }
+.login-title { font-size:22px; font-weight:700; color:var(--green); letter-spacing:.5px; }
+.login-sub   { font-size:13px; color:var(--text-m); margin-top:4px; }
+.login-box { background:white; border-radius:20px; padding:28px 24px; width:100%; max-width:360px; border:0.5px solid var(--border); box-shadow:0 4px 24px rgba(0,0,0,.07); }
+.login-field { margin-bottom:16px; }
+.login-field label { display:block; font-size:11px; font-weight:700; color:var(--text-m); margin-bottom:7px; text-transform:uppercase; letter-spacing:.05em; }
+.login-input { width:100%; border:1.5px solid #e5e3dc; border-radius:10px; padding:13px 14px; font-size:15px; color:var(--text); outline:none; transition:border-color .15s; background:var(--gray-lt); }
+.login-input:focus { border-color:var(--green); background:white; }
+.login-pw-wrap { position:relative; }
+.login-pw-toggle { position:absolute; right:13px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:17px; color:var(--text-m); padding:4px; }
+.login-btn { width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:700; background:var(--green); color:white; border:none; cursor:pointer; transition:all .15s; margin-top:4px; }
+.login-btn:active { transform:scale(.98); }
+.login-btn:disabled { background:#c5c3bb; cursor:default; }
+.login-err { margin-top:12px; padding:10px 14px; background:var(--red-lt); border-radius:8px; font-size:13px; color:var(--red); display:none; border-left:3px solid var(--red); }
 
-/* ===== CARD ===== */
-.card { background:white; border-radius:14px; margin:12px 14px 0; overflow:hidden; border:0.5px solid var(--border); }
-.card-section { padding:8px 16px 4px; font-size:10px; color:var(--text-m); text-transform:uppercase; letter-spacing:.05em; border-bottom:0.5px solid var(--border); }
-.field { padding:11px 16px; border-bottom:0.5px solid var(--border); position:relative; }
+/* HEADER */
+.header { background:var(--green); padding:14px 20px 10px; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+.header-title { font-size:16px; font-weight:700; color:white; letter-spacing:.3px; }
+.header-time  { font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; }
+.header-nv    { font-size:12px; color:rgba(255,255,255,.9); margin-top:5px; font-weight:500; }
+
+/* BOTTOM NAV */
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:white; border-top:0.5px solid var(--border); display:flex; z-index:20; box-shadow:0 -2px 12px rgba(0,0,0,.08); }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 4px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:none; background:none; }
+.nav-icon  { font-size:20px; margin-bottom:3px; }
+.nav-label { font-size:10px; font-weight:500; color:var(--text-lt); }
+.nav-item.active .nav-label { color:var(--green); font-weight:700; }
+
+/* PAGES */
+.page { display:none; padding-bottom:84px; }
+.page.active { display:block; }
+
+/* CARD */
+.card { background:white; border-radius:16px; margin:12px 14px 0; overflow:hidden; box-shadow:var(--shadow); }
+.card-section { padding:10px 16px 6px; font-size:10px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.08em; border-bottom:0.5px solid var(--border); }
+.field { padding:12px 16px; border-bottom:0.5px solid var(--border); }
 .field:last-child { border-bottom:none; }
 .field label { display:block; font-size:11px; color:var(--text-m); margin-bottom:4px; }
-.field-val { font-size:15px; font-weight:500; color:var(--text); }
-.field-val.muted { color:var(--text-m); font-weight:400; }
+.field-val { font-size:15px; font-weight:500; }
 
-/* ===== LOGIN SCREEN ===== */
-#login-screen {
-  position:fixed; inset:0; background:var(--bg); z-index:1000;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:24px;
-}
-.login-logo { font-size:40px; margin-bottom:8px; }
-.login-title { font-size:20px; font-weight:700; color:var(--green); margin-bottom:4px; text-align:center; }
-.login-sub { font-size:13px; color:var(--text-m); text-align:center; margin-bottom:28px; }
-.login-box { background:white; border-radius:16px; border:0.5px solid var(--border); padding:24px; width:100%; max-width:360px; box-shadow:0 4px 24px rgba(0,0,0,.07); }
-.login-field { margin-bottom:16px; }
-.login-field label { display:block; font-size:12px; color:var(--text-m); margin-bottom:6px; font-weight:500; }
-.login-input {
-  width:100%; border:1.5px solid var(--border); border-radius:10px;
-  padding:12px 14px; font-size:15px; color:var(--text); outline:none;
-  transition:border-color .15s;
-}
-.login-input:focus { border-color:var(--green); }
-.login-pw-wrap { position:relative; }
-.login-pw-toggle {
-  position:absolute; right:12px; top:50%; transform:translateY(-50%);
-  cursor:pointer; font-size:18px; color:var(--text-m); padding:4px;
-}
-.login-btn {
-  width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:700;
-  background:var(--green); color:white; border:none; cursor:pointer;
-  transition:all .15s; margin-top:4px;
-}
-.login-btn:active { transform:scale(.98); background:var(--green-m); }
-.login-btn:disabled { background:#ccc; cursor:default; }
-.login-err { margin-top:12px; padding:10px 14px; background:var(--red-lt); border-radius:8px; font-size:13px; color:var(--red); display:none; }
+/* NV INFO */
+.nv-info-card { margin:14px 14px 0; background:var(--green); border-radius:16px; padding:16px 18px; box-shadow:0 4px 16px rgba(15,110,86,.20); }
+.nv-info-name { font-size:17px; font-weight:700; color:white; }
+.nv-info-ma   { font-size:12px; color:rgba(255,255,255,.75); margin-top:2px; }
+.nv-info-ch   { font-size:13px; color:rgba(255,255,255,.9); margin-top:8px; }
 
-/* ===== ĐỔI MẬT KHẨU MODAL ===== */
-#pw-modal {
-  position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000;
-  display:none; align-items:center; justify-content:center; padding:24px;
-}
-#pw-modal.show { display:flex; }
-.pw-modal-box { background:white; border-radius:16px; width:100%; max-width:360px; overflow:hidden; }
-.pw-modal-header { background:var(--green); padding:16px 20px; color:white; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
-.pw-modal-close { cursor:pointer; font-size:20px; line-height:1; }
-.pw-modal-body { padding:20px; }
-.pw-field { margin-bottom:14px; }
-.pw-field label { display:block; font-size:12px; color:var(--text-m); margin-bottom:5px; }
-.pw-input { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:10px 12px; font-size:14px; outline:none; }
-.pw-input:focus { border-color:var(--green); }
-.pw-btn { width:100%; padding:12px; border-radius:8px; font-size:14px; font-weight:600; background:var(--green); color:white; border:none; cursor:pointer; }
-.pw-btn:disabled { background:#ccc; }
-.pw-msg { margin-top:10px; padding:8px 12px; border-radius:8px; font-size:13px; display:none; }
-.pw-ok  { background:var(--green-lt); color:#085041; }
-.pw-err { background:var(--red-lt); color:var(--red); }
+/* CỬA HÀNG (FIX 1) */
+.ch-field { padding:11px 16px; border-bottom:0.5px solid var(--border); position:relative; }
+.ch-field label { display:block; font-size:11px; color:var(--text-m); margin-bottom:4px; }
+.ch-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:none; outline:none; background:transparent; padding:0; padding-right:80px; }
+.ch-input::placeholder { color:var(--text-lt); font-weight:400; }
+.ch-change-btn { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--green); font-weight:600; cursor:pointer; padding:3px 8px; border:1px solid var(--green-bd); border-radius:99px; background:var(--green-lt); white-space:nowrap; }
+.autocomplete-wrap { position:relative; }
+.suggest-list { position:absolute; top:calc(100% + 4px); left:-16px; right:-16px; z-index:200; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:230px; overflow-y:auto; display:none; }
+.suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; }
+.suggest-item:last-child { border-bottom:none; }
+.suggest-item:active { background:var(--green-lt); }
+.s-ma  { font-weight:600; color:var(--green); display:block; }
+.s-ten { color:var(--text-m); font-size:12px; margin-top:1px; display:block; }
 
-/* ===== BANNER MẬT KHẨU MẶC ĐỊNH ===== */
-.banner-pw { margin:12px 14px 0; padding:12px 16px; background:var(--amber-lt); border:1px solid var(--amber-bd); border-radius:12px; font-size:13px; color:#412402; display:none; }
-.banner-pw strong { display:block; margin-bottom:4px; }
-.banner-pw-btn { margin-top:8px; padding:8px 16px; background:var(--amber); color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
-
-/* ===== LOẠI CHẤM CÔNG ===== */
+/* LOẠI */
 .type-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
-.type-btn { border-radius:10px; padding:12px 8px; text-align:center; cursor:pointer; border:1.5px solid transparent; transition:all .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
-.type-btn:active { transform:scale(.96); }
-.t-icon { font-size:18px; margin-bottom:4px; }
-.t-name { font-size:12px; font-weight:600; line-height:1.3; }
-.t-sub  { font-size:10px; margin-top:2px; }
-.tb-vao   { background:var(--green-lt); border-color:var(--green-bd); }   .tb-vao .t-name,  .tb-vao .t-sub   { color:#085041; }
-.tb-ra    { background:var(--blue-lt);  border-color:var(--blue-bd);  }   .tb-ra .t-name,   .tb-ra .t-sub    { color:#042C53; }
-.tb-ra-g  { background:var(--amber-lt); border-color:var(--amber-bd); }   .tb-ra-g .t-name, .tb-ra-g .t-sub  { color:#412402; }
-.tb-vao-g { background:var(--purple-lt);border-color:var(--purple-bd);}   .tb-vao-g .t-name,.tb-vao-g .t-sub { color:#26215C; }
-.tb-vao.sel   { background:var(--green-m); border-color:var(--green-m); }
-.tb-ra.sel    { background:var(--blue);    border-color:var(--blue); }
-.tb-ra-g.sel  { background:var(--amber);   border-color:var(--amber); }
-.tb-vao-g.sel { background:var(--purple);  border-color:var(--purple); }
-.type-btn.sel .t-name, .type-btn.sel .t-sub { color:white!important; }
+.type-btn { border-radius:12px; padding:13px 8px; text-align:center; cursor:pointer; border:1.5px solid transparent; transition:all .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
+.type-btn:active { transform:scale(.95); }
+.t-icon { font-size:20px; margin-bottom:5px; }
+.t-name { font-size:12px; font-weight:700; line-height:1.3; }
+.t-sub  { font-size:10px; margin-top:2px; opacity:.75; }
+.tb-vao   { background:var(--green-lt); border-color:var(--green-bd); } .tb-vao .t-name   { color:#085041; }
+.tb-ra    { background:var(--blue-lt);  border-color:var(--blue-bd);  } .tb-ra .t-name    { color:#042C53; }
+.tb-ra-g  { background:var(--amber-lt); border-color:var(--amber-bd); } .tb-ra-g .t-name  { color:#412402; }
+.tb-vao-g { background:var(--purple-lt);border-color:var(--purple-bd);} .tb-vao-g .t-name { color:#26215C; }
+.tb-vao.sel   { background:var(--green-m); border-color:var(--green-m); box-shadow:0 4px 12px rgba(29,158,117,.35); }
+.tb-ra.sel    { background:var(--blue);    border-color:var(--blue);    box-shadow:0 4px 12px rgba(24,95,165,.35); }
+.tb-ra-g.sel  { background:var(--amber);   border-color:var(--amber);   box-shadow:0 4px 12px rgba(186,117,23,.35); }
+.tb-vao-g.sel { background:var(--purple);  border-color:var(--purple);  box-shadow:0 4px 12px rgba(83,74,183,.35); }
+.type-btn.sel .t-name, .type-btn.sel .t-sub { color:white!important; opacity:1; }
 
-/* ===== GPS ===== */
-.gps-wrap { padding:10px 12px 8px; }
-.gps-btn { width:100%; display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--gray-lt); border:0.5px solid var(--border); border-radius:10px; cursor:pointer; transition:all .15s; -webkit-tap-highlight-color:transparent; }
-.gps-btn:active { transform:scale(.98); }
+/* GPS */
+.gps-wrap { padding:10px 12px; }
+.gps-btn { width:100%; display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--gray-lt); border:0.5px solid var(--border); border-radius:12px; cursor:pointer; transition:all .15s; -webkit-tap-highlight-color:transparent; }
 .gps-left { display:flex; align-items:center; gap:10px; }
-.gps-icon  { width:34px; height:34px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-.gps-label { font-size:14px; font-weight:500; }
-.gps-sub   { font-size:11px; color:var(--text-m); margin-top:1px; }
-.gps-badge { font-size:12px; font-weight:600; padding:5px 13px; border-radius:99px; background:var(--green); color:white; white-space:nowrap; }
+.gps-icon  { width:36px; height:36px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:var(--shadow); }
+.gps-label { font-size:14px; font-weight:600; }
+.gps-sub   { font-size:11px; color:var(--text-m); margin-top:2px; }
+.gps-badge { font-size:12px; font-weight:700; padding:6px 14px; border-radius:99px; background:var(--green); color:white; white-space:nowrap; }
 .gps-btn.loading .gps-badge { background:var(--amber-lt); color:var(--amber); }
 .gps-btn.success  { background:var(--green-lt); border-color:var(--green-bd); }
 .gps-btn.success .gps-icon  { background:var(--green-bd); }
 .gps-btn.success .gps-badge { background:var(--green-m); color:white; }
 .gps-btn.error    { background:var(--red-lt); border-color:#F7C1C1; }
 .gps-btn.error .gps-badge   { background:var(--red-lt); color:var(--red); border:1px solid #F09595; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.25} }
 .blinking { animation:blink .8s infinite; }
 
-/* ===== CAMERA SELFIE ===== */
-.selfie-wrap { padding:6px 12px 10px; }
-.camera-area { border:1.5px solid var(--amber-bd); border-radius:12px; overflow:hidden; background:#000; position:relative; display:none; }
+/* CAMERA */
+.selfie-wrap { padding:8px 12px 12px; }
+.camera-area { border:1.5px solid var(--amber-bd); border-radius:14px; overflow:hidden; background:#000; position:relative; display:none; }
 .camera-area video { width:100%; display:block; max-height:260px; object-fit:cover; }
-.camera-overlay { position:absolute; top:0; left:0; right:0; padding:8px 12px; background:linear-gradient(to bottom, rgba(0,0,0,.5), transparent); display:flex; justify-content:space-between; align-items:center; }
-.camera-label { font-size:12px; color:white; font-weight:500; }
-.camera-close { font-size:20px; color:white; cursor:pointer; line-height:1; }
+.camera-overlay { position:absolute; top:0; left:0; right:0; padding:8px 12px; background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent); display:flex; justify-content:space-between; align-items:center; }
+.camera-label { font-size:12px; color:white; font-weight:600; }
+.camera-close { font-size:22px; color:white; cursor:pointer; }
 .camera-controls { padding:12px; display:flex; gap:10px; align-items:center; justify-content:center; }
-.btn-capture { flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:700; background:var(--green); color:white; border:none; cursor:pointer; }
-.btn-flip { padding:12px 14px; border-radius:10px; font-size:18px; background:var(--gray-lt); border:none; cursor:pointer; }
-.selfie-btn { width:100%; display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--gray-lt); border:1.5px solid var(--amber-bd); border-radius:10px; cursor:pointer; transition:all .15s; }
-.selfie-btn:active { transform:scale(.98); }
-.selfie-btn.done  { background:var(--green-lt); border-color:var(--green-bd); }
-.selfie-icon { width:44px; height:44px; border-radius:8px; background:white; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.btn-capture { flex:1; padding:13px; border-radius:10px; font-size:14px; font-weight:700; background:var(--green); color:white; border:none; cursor:pointer; }
+.btn-flip    { padding:13px 15px; border-radius:10px; font-size:18px; background:var(--gray-lt); border:none; cursor:pointer; }
+.selfie-btn { width:100%; display:flex; align-items:center; gap:12px; padding:13px 14px; background:var(--gray-lt); border:1.5px dashed var(--amber-bd); border-radius:12px; cursor:pointer; transition:all .15s; }
+.selfie-btn.done { background:var(--green-lt); border-style:solid; border-color:var(--green-bd); }
+.selfie-icon { width:44px; height:44px; border-radius:10px; background:white; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:var(--shadow); }
 .selfie-btn.done .selfie-icon { background:var(--green-bd); }
-img.selfie-preview { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; display:none; }
-.selfie-text { font-size:13px; font-weight:500; }
+img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cover; flex-shrink:0; display:none; }
+.selfie-text { font-size:13px; font-weight:600; }
 .selfie-sub  { font-size:11px; color:var(--amber); margin-top:2px; }
 .selfie-btn.done .selfie-sub { color:#085041; }
-.camera-err { margin-top:8px; padding:8px 12px; background:var(--red-lt); border-radius:8px; font-size:12px; color:var(--red); display:none; }
+.camera-err { margin-top:8px; padding:9px 13px; background:var(--red-lt); border-radius:10px; font-size:12px; color:var(--red); display:none; border-left:3px solid var(--red); }
 
-/* ===== RESULT & SUBMIT ===== */
-.result-box  { margin:0 12px 8px; padding:10px 14px; border-radius:10px; font-size:12px; line-height:1.5; display:none; }
-.r-ok   { background:var(--green-lt); color:#085041; }
-.r-warn { background:var(--amber-lt); color:#412402; }
-.r-err  { background:var(--red-lt); color:var(--red); }
+/* RESULT & SUBMIT */
+.result-box { margin:0 12px 8px; padding:11px 14px; border-radius:12px; font-size:12px; line-height:1.6; display:none; }
+.r-ok  { background:var(--green-lt); color:#085041; border-left:3px solid var(--green-m); }
+.r-warn{ background:var(--amber-lt); color:#412402; border-left:3px solid var(--amber); }
+.r-err { background:var(--red-lt);   color:var(--red); border-left:3px solid var(--red); }
 .countdown-bar { margin:0 12px 8px; background:var(--green-lt); border-radius:10px; padding:10px 14px; font-size:12px; color:#085041; display:none; text-align:center; }
 .submit-wrap { padding:8px 12px 14px; }
-.submit-btn { width:100%; padding:15px; border-radius:12px; font-size:15px; font-weight:700; text-align:center; cursor:pointer; border:none; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.submit-btn { width:100%; padding:16px; border-radius:14px; font-size:15px; font-weight:700; text-align:center; cursor:pointer; border:none; transition:all .15s; letter-spacing:.3px; }
 .submit-btn:active { transform:scale(.98); }
-.s-disabled { background:#e2e1da; color:#aaa9a3; cursor:default; }
-.s-ready    { background:var(--green); color:white; }
-.s-loading  { background:var(--green-m); color:white; opacity:.85; cursor:default; }
+.s-disabled { background:#e5e3db; color:#b0ada6; cursor:default; }
+.s-ready    { background:var(--green); color:white; box-shadow:0 4px 14px rgba(15,110,86,.35); }
+.s-loading  { background:var(--green-m); color:white; opacity:.9; cursor:default; }
 .s-done     { background:var(--green-lt); color:var(--green); border:1.5px solid var(--green-bd); }
 
-/* ===== LOG ===== */
-.log-list { padding:4px 0; }
-.log-empty { padding:14px 16px; font-size:13px; color:var(--text-m); }
-.log-item  { display:flex; align-items:center; gap:8px; padding:9px 16px; border-bottom:0.5px solid var(--border); font-size:13px; }
+/* LOG */
+.log-list  { padding:4px 0; }
+.log-empty { padding:16px; font-size:13px; color:var(--text-m); text-align:center; }
+.log-item  { display:flex; align-items:center; gap:8px; padding:10px 16px; border-bottom:0.5px solid var(--border); font-size:13px; }
 .log-item:last-child { border-bottom:none; }
-.log-badge { font-size:10px; padding:2px 8px; border-radius:99px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+.log-badge { font-size:10px; padding:3px 9px; border-radius:99px; font-weight:700; white-space:nowrap; flex-shrink:0; }
 .lb-v  { background:var(--green-lt); color:#085041; }
 .lb-r  { background:var(--blue-lt);  color:#042C53; }
 .lb-rg { background:var(--amber-lt); color:#412402; }
@@ -178,18 +168,85 @@ img.selfie-preview { width:44px; height:44px; border-radius:8px; object-fit:cove
 .log-time { color:var(--text-m); font-size:12px; }
 .log-dist { font-size:12px; color:var(--gray); }
 .log-st   { margin-left:auto; font-size:12px; font-weight:600; }
-.ls-ok  { color:var(--green-m); }
-.ls-err { color:var(--red); }
+.ls-ok { color:var(--green-m); } .ls-err { color:var(--red); }
 
-/* ===== SUMMARY ===== */
-.summary-card  { margin:0 12px 8px; background:white; border-radius:12px; border:1.5px solid var(--blue-bd); padding:14px 16px; display:none; }
-.summary-title { font-size:13px; font-weight:600; color:var(--blue); margin-bottom:10px; }
+/* SUMMARY */
+.summary-card  { margin:0 12px 8px; background:white; border-radius:14px; border:1.5px solid var(--blue-bd); padding:14px 16px; display:none; box-shadow:var(--shadow); }
+.summary-title { font-size:13px; font-weight:700; color:var(--blue); margin-bottom:10px; }
 .summary-row   { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:0.5px solid var(--border); }
 .summary-row:last-child { border-bottom:none; }
 .summary-label { color:var(--text-m); }
-.summary-value { font-weight:500; color:var(--text); }
-.summary-total { display:flex; justify-content:space-between; font-size:14px; font-weight:600; padding:8px 0 0; margin-top:4px; border-top:1.5px solid var(--blue-bd); }
+.summary-value { font-weight:600; }
+.summary-total { display:flex; justify-content:space-between; font-size:14px; font-weight:700; padding:8px 0 0; margin-top:4px; border-top:1.5px solid var(--blue-bd); }
 .summary-total .summary-value { color:var(--blue); }
+
+/* GIỜ CÔNG PAGE (MỚI) */
+.gc-header { margin:14px 14px 0; display:flex; align-items:center; gap:10px; }
+.thang-btn   { width:38px; height:38px; border-radius:50%; background:white; border:0.5px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; box-shadow:var(--shadow); flex-shrink:0; -webkit-tap-highlight-color:transparent; border:none; }
+.thang-btn:active { background:var(--green-lt); }
+.thang-label { flex:1; text-align:center; font-size:15px; font-weight:700; }
+.gc-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:10px 14px 0; }
+.stat-card { background:white; border-radius:14px; padding:14px 10px; text-align:center; box-shadow:var(--shadow); }
+.stat-val  { font-size:20px; font-weight:700; color:var(--green); }
+.stat-lbl  { font-size:10px; color:var(--text-m); margin-top:3px; }
+.stat-card.warn .stat-val { color:var(--red); }
+.gc-table-wrap { margin:10px 14px 0; background:white; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
+.gc-table { width:100%; border-collapse:collapse; font-size:12px; }
+.gc-table thead th { padding:10px 8px; text-align:left; font-size:10px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.05em; background:#fafaf8; border-bottom:1px solid var(--border); }
+.gc-table tbody td { padding:11px 8px; border-bottom:0.5px solid var(--border); vertical-align:middle; }
+.gc-table tbody tr:last-child td { border-bottom:none; }
+.gc-ngay   { font-weight:600; white-space:nowrap; }
+.gc-thu    { font-size:10px; color:var(--text-m); }
+.gc-gio    { color:var(--text-m); white-space:nowrap; }
+.gc-tong   { font-weight:700; color:var(--green); }
+.gc-badge  { display:inline-block; font-size:9px; padding:2px 7px; border-radius:99px; font-weight:700; white-space:nowrap; }
+.gc-hoan   { background:var(--green-lt); color:#085041; }
+.gc-dang   { background:var(--amber-lt); color:#412402; }
+.gc-thieu  { background:var(--red-lt);   color:var(--red); }
+.gc-total  { background:#f4fbf8; }
+.gc-total td { font-weight:700; color:var(--green); border-top:1.5px solid var(--green-bd) !important; }
+.gc-empty  { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
+
+/* TÀI KHOẢN PAGE (MỚI) */
+.acc-top   { margin:14px 14px 0; background:white; border-radius:16px; padding:24px 16px; text-align:center; box-shadow:var(--shadow); }
+.acc-avatar{ width:72px; height:72px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:26px; color:white; font-weight:700; margin:0 auto 12px; }
+.acc-name  { font-size:17px; font-weight:700; }
+.acc-ma    { font-size:13px; color:var(--text-m); margin-top:3px; }
+.acc-menu  { margin:12px 14px 0; background:white; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
+.menu-item { display:flex; align-items:center; gap:14px; padding:15px 18px; border-bottom:0.5px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.menu-item:last-child { border-bottom:none; }
+.menu-item:active { background:var(--gray-lt); }
+.menu-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.mi-green  { background:var(--green-lt); }
+.mi-blue   { background:var(--blue-lt); }
+.mi-red    { background:var(--red-lt); }
+.menu-label{ font-size:14px; font-weight:500; flex:1; }
+.menu-arrow{ color:var(--text-lt); font-size:16px; }
+
+/* BANNER */
+.banner-pw { margin:12px 14px 0; padding:13px 16px; background:var(--amber-lt); border:1px solid var(--amber-bd); border-radius:14px; font-size:13px; color:#412402; display:none; }
+.banner-pw strong { display:block; margin-bottom:3px; }
+.banner-pw-btn { margin-top:8px; padding:7px 16px; background:var(--amber); color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+
+/* MODAL ĐỔI MẬT KHẨU */
+#pw-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
+#pw-modal.show { display:flex; }
+.pw-box { background:white; border-radius:20px 20px 0 0; width:100%; max-width:430px; animation:slideUp .25s ease; }
+@keyframes slideUp { from{transform:translateY(100%)}to{transform:translateY(0)} }
+.pw-handle { width:40px; height:4px; background:#e0ddd5; border-radius:99px; margin:12px auto 0; }
+.pw-title  { padding:14px 20px 10px; font-size:16px; font-weight:700; }
+.pw-body   { padding:0 20px 28px; }
+.pw-field  { margin-bottom:14px; }
+.pw-field label { display:block; font-size:11px; font-weight:700; color:var(--text-m); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
+.pw-row    { position:relative; }
+.pw-input  { width:100%; border:1.5px solid #e5e3dc; border-radius:10px; padding:12px 40px 12px 14px; font-size:15px; outline:none; background:#fafaf8; transition:border-color .15s; }
+.pw-input:focus { border-color:var(--green); background:white; }
+.pw-eye    { position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:16px; color:var(--text-m); }
+.pw-btn    { width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:700; background:var(--green); color:white; border:none; cursor:pointer; margin-top:4px; }
+.pw-btn:disabled { background:#ccc; }
+.pw-msg    { margin-top:10px; padding:9px 13px; border-radius:8px; font-size:13px; display:none; }
+.pw-ok     { background:var(--green-lt); color:#085041; border-left:3px solid var(--green-m); }
+.pw-err    { background:var(--red-lt); color:var(--red); border-left:3px solid var(--red); }
 
 @keyframes spin { to{transform:rotate(360deg);} }
 .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
@@ -197,18 +254,20 @@ img.selfie-preview { width:44px; height:44px; border-radius:8px; object-fit:cove
 </head>
 <body>
 
-<!-- ===== MÀN HÌNH LOGIN ===== -->
+<!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-logo">⏱️</div>
-  <div class="login-title">PHẦN MỀM CHẤM CÔNG</div>
-  <div class="login-sub">Đăng nhập bằng mã nhân viên</div>
+  <div class="login-logo-wrap">
+    <div class="login-logo-icon">⏱️</div>
+    <div class="login-title">CHẤM CÔNG</div>
+    <div class="login-sub">Hệ thống quản lý thời gian làm việc</div>
+  </div>
   <div class="login-box">
     <div class="login-field">
       <label>Mã nhân viên</label>
       <input class="login-input" id="ln-ma" type="text" placeholder="VD: NS01242" autocomplete="username"
-             style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')document.getElementById('ln-pw').focus()">
+             oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')document.getElementById('ln-pw').focus()">
     </div>
-    <div class="login-field">
+    <div class="login-field" style="margin-bottom:20px">
       <label>Mật khẩu</label>
       <div class="login-pw-wrap">
         <input class="login-input" id="ln-pw" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password"
@@ -221,644 +280,555 @@ img.selfie-preview { width:44px; height:44px; border-radius:8px; object-fit:cove
   </div>
 </div>
 
-<!-- ===== MODAL ĐỔI MẬT KHẨU ===== -->
-<div id="pw-modal">
-  <div class="pw-modal-box">
-    <div class="pw-modal-header">
-      <span>Đổi mật khẩu</span>
-      <span class="pw-modal-close" onclick="closePwModal()">✕</span>
-    </div>
-    <div class="pw-modal-body">
-      <div class="pw-field">
-        <label>Mật khẩu hiện tại</label>
-        <input class="pw-input" id="pw-cu" type="password" placeholder="Nhập mật khẩu hiện tại">
-      </div>
-      <div class="pw-field">
-        <label>Mật khẩu mới</label>
-        <input class="pw-input" id="pw-moi" type="password" placeholder="Tối thiểu 6 ký tự">
-      </div>
-      <div class="pw-field">
-        <label>Xác nhận mật khẩu mới</label>
-        <input class="pw-input" id="pw-xn" type="password" placeholder="Nhập lại mật khẩu mới">
-      </div>
-      <button class="pw-btn" id="pw-btn" onclick="doDoiMatKhau()">XÁC NHẬN ĐỔI</button>
+<!-- MODAL ĐỔI MẬT KHẨU -->
+<div id="pw-modal" onclick="if(event.target===this)closePwModal()">
+  <div class="pw-box">
+    <div class="pw-handle"></div>
+    <div class="pw-title">🔐 Đổi mật khẩu</div>
+    <div class="pw-body">
+      <div class="pw-field"><label>Mật khẩu hiện tại</label><div class="pw-row"><input class="pw-input" id="pw-cu" type="password" placeholder="Nhập mật khẩu hiện tại"><span class="pw-eye" onclick="togglePwVis('pw-cu',this)">👁️</span></div></div>
+      <div class="pw-field"><label>Mật khẩu mới</label><div class="pw-row"><input class="pw-input" id="pw-moi" type="password" placeholder="Tối thiểu 6 ký tự"><span class="pw-eye" onclick="togglePwVis('pw-moi',this)">👁️</span></div></div>
+      <div class="pw-field"><label>Xác nhận mật khẩu mới</label><div class="pw-row"><input class="pw-input" id="pw-xn" type="password" placeholder="Nhập lại mật khẩu mới"><span class="pw-eye" onclick="togglePwVis('pw-xn',this)">👁️</span></div></div>
+      <button class="pw-btn" id="pw-btn" onclick="doDoiMatKhau()">XÁC NHẬN ĐỔI MẬT KHẨU</button>
       <div class="pw-msg" id="pw-msg"></div>
     </div>
   </div>
 </div>
 
-<!-- ===== APP CHÍNH ===== -->
-<div class="app" id="main-app" style="display:none; padding-bottom:40px">
-
+<!-- APP CHÍNH -->
+<div class="app" id="main-app" style="display:none">
   <div class="header">
-    <div class="header-title">CHẤM CÔNG</div>
+    <div class="header-title" id="header-page-title">CHẤM CÔNG</div>
     <div class="header-time" id="clock">--</div>
-    <div class="header-user">
-      <span class="header-user-name" id="header-nv-info">--</span>
-      <span class="logout-btn" onclick="doLogout()">Đăng xuất</span>
-    </div>
+    <div class="header-nv" id="header-nv-info">--</div>
   </div>
 
-  <!-- Banner mật khẩu mặc định -->
-  <div class="banner-pw" id="banner-pw">
-    <strong>⚠️ Bạn đang dùng mật khẩu mặc định</strong>
-    Vui lòng đổi mật khẩu để bảo mật tài khoản.
-    <br><button class="banner-pw-btn" onclick="openPwModal()">Đổi mật khẩu ngay</button>
-  </div>
+  <!-- PAGE: CHẤM CÔNG -->
+  <div class="page active" id="page-chamcong">
+    <div class="banner-pw" id="banner-pw">
+      <strong>⚠️ Bạn đang dùng mật khẩu mặc định</strong>
+      Vui lòng đổi mật khẩu để bảo mật tài khoản.
+      <br><button class="banner-pw-btn" onclick="openPwModal()">Đổi mật khẩu ngay</button>
+    </div>
 
-  <!-- Thông tin nhân viên (chỉ đọc) -->
-  <div class="card" style="margin-top:16px">
-    <div class="card-section">Thông tin nhân viên</div>
-    <div class="field">
-      <label>Họ và tên</label>
-      <div class="field-val" id="disp-ten-nv">--</div>
+    <div class="nv-info-card">
+      <div class="nv-info-name" id="disp-ten-nv">--</div>
+      <div class="nv-info-ma"   id="disp-ma-nv">--</div>
+      <div class="nv-info-ch">📍 <span id="disp-cua-hang">--</span></div>
     </div>
-    <div class="field">
-      <label>Mã nhân viên</label>
-      <div class="field-val" id="disp-ma-nv">--</div>
-    </div>
-    <div class="field">
-      <label>Cửa hàng</label>
-      <div class="field-val" id="disp-cua-hang">--</div>
-    </div>
-  </div>
 
-  <!-- Loại chấm công -->
-  <div class="card">
-    <div class="card-section">Thời điểm chấm công</div>
-    <div class="type-grid">
-      <div class="type-btn tb-vao"   id="btn-vao"   onclick="selType('Vào ca','vao')">  <div class="t-icon">▶</div><div class="t-name">Vào ca</div>      <div class="t-sub">Bắt đầu ca làm</div></div>
-      <div class="type-btn tb-ra"    id="btn-ra"    onclick="selType('Ra ca','ra')">     <div class="t-icon">■</div><div class="t-name">Ra ca</div>        <div class="t-sub">Kết thúc ca làm</div></div>
-      <div class="type-btn tb-ra-g"  id="btn-ra-g"  onclick="selType('Ra giữa ca','ra-g')"><div class="t-icon">↪</div><div class="t-name">Ra giữa ca</div><div class="t-sub">Tạm rời cửa hàng</div></div>
-      <div class="type-btn tb-vao-g" id="btn-vao-g" onclick="selType('Vào giữa ca','vao-g')"><div class="t-icon">↩</div><div class="t-name">Vào giữa ca</div><div class="t-sub">Quay lại làm việc</div></div>
-    </div>
-  </div>
-
-  <!-- GPS -->
-  <div class="card">
-    <div class="card-section">Vị trí hiện tại</div>
-    <div class="gps-wrap">
-      <div class="gps-btn" id="gps-btn" onclick="layViTri()">
-        <div class="gps-left">
-          <div class="gps-icon" id="gps-icon">📍</div>
-          <div><div class="gps-label" id="gps-label">Chưa xác nhận vị trí</div><div class="gps-sub" id="gps-sub">Bấm để lấy tọa độ GPS</div></div>
+    <!-- CỬA HÀNG (FIX 1: gợi ý, không lặp tên) -->
+    <div class="card" style="margin-top:12px">
+      <div class="card-section">Cửa hàng chấm công</div>
+      <div class="ch-field">
+        <label>Nhập mã hoặc tên để tìm kiếm</label>
+        <div class="autocomplete-wrap">
+          <input type="text" class="ch-input" id="input-ch-display"
+                 placeholder="Tên cửa hàng..." autocomplete="off"
+                 oninput="onCHInput()" onblur="hideCHSuggest()" onfocus="onCHFocus()">
+          <input type="hidden" id="sel-cuahang">
+          <div class="suggest-list" id="ch-suggest-list"></div>
         </div>
-        <div class="gps-badge" id="gps-badge">XÁC NHẬN VỊ TRÍ</div>
+        <span class="ch-change-btn" onclick="resetCH()">Đổi cửa hàng</span>
+      </div>
+    </div>
+
+    <!-- LOẠI -->
+    <div class="card">
+      <div class="card-section">Thời điểm chấm công</div>
+      <div class="type-grid">
+        <div class="type-btn tb-vao"   id="btn-vao"   onclick="selType('Vào ca','vao')">  <div class="t-icon">▶️</div><div class="t-name">Vào ca</div>      <div class="t-sub">Bắt đầu ca làm</div></div>
+        <div class="type-btn tb-ra"    id="btn-ra"    onclick="selType('Ra ca','ra')">     <div class="t-icon">⏹️</div><div class="t-name">Ra ca</div>        <div class="t-sub">Kết thúc ca làm</div></div>
+        <div class="type-btn tb-ra-g"  id="btn-ra-g"  onclick="selType('Ra giữa ca','ra-g')"><div class="t-icon">↪️</div><div class="t-name">Ra giữa ca</div><div class="t-sub">Tạm rời cửa hàng</div></div>
+        <div class="type-btn tb-vao-g" id="btn-vao-g" onclick="selType('Vào giữa ca','vao-g')"><div class="t-icon">↩️</div><div class="t-name">Vào giữa ca</div><div class="t-sub">Quay lại làm việc</div></div>
+      </div>
+    </div>
+
+    <!-- GPS -->
+    <div class="card">
+      <div class="card-section">Vị trí hiện tại</div>
+      <div class="gps-wrap">
+        <div class="gps-btn" id="gps-btn" onclick="layViTri()">
+          <div class="gps-left">
+            <div class="gps-icon" id="gps-icon">📍</div>
+            <div><div class="gps-label" id="gps-label">Chưa xác nhận vị trí</div><div class="gps-sub" id="gps-sub">Bấm để lấy tọa độ GPS</div></div>
+          </div>
+          <div class="gps-badge" id="gps-badge">XÁC NHẬN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div class="card">
+      <div class="card-section">Ảnh xác minh <span style="color:var(--amber);font-weight:700">— Bắt buộc camera</span></div>
+      <div class="selfie-wrap">
+        <div class="camera-area" id="camera-area">
+          <video id="camera-video" autoplay playsinline muted></video>
+          <div class="camera-overlay">
+            <span class="camera-label" id="camera-label-text">📷 Camera trước</span>
+            <span class="camera-close" onclick="stopCamera()">✕</span>
+          </div>
+          <div class="camera-controls">
+            <button class="btn-flip" onclick="flipCamera()">🔄</button>
+            <button class="btn-capture" onclick="chupAnh()">📸 CHỤP ẢNH</button>
+          </div>
+        </div>
+        <div class="selfie-btn" id="selfie-btn" onclick="moCamera()">
+          <div class="selfie-icon" id="selfie-icon">📷</div>
+          <img id="selfie-preview" class="selfie-preview" alt="selfie">
+          <div>
+            <div class="selfie-text" id="selfie-text">Chụp ảnh xác minh</div>
+            <div class="selfie-sub"  id="selfie-sub">⚠ Bắt buộc — chụp bằng camera</div>
+          </div>
+        </div>
+        <div class="camera-err" id="camera-err"></div>
+      </div>
+    </div>
+
+    <div class="result-box" id="result-box"></div>
+    <div class="summary-card" id="summary-card">
+      <div class="summary-title">Tóm tắt ca làm việc hôm nay</div>
+      <div id="summary-rows"></div>
+      <div class="summary-total"><span class="summary-label">Tổng giờ làm việc</span><span class="summary-value" id="summary-total-val">--</span></div>
+    </div>
+    <div class="countdown-bar" id="countdown-bar"></div>
+
+    <div class="card" style="margin-bottom:4px">
+      <div class="submit-wrap">
+        <div class="submit-btn s-disabled" id="submit-btn" onclick="doSubmit()">Chọn thời điểm chấm công</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:4px">
+      <div class="card-section">Lịch sử hôm nay</div>
+      <div class="log-list" id="log-list"><div class="log-empty">Chưa có dữ liệu hôm nay.</div></div>
+    </div>
+  </div><!-- /page-chamcong -->
+
+  <!-- PAGE: GIỜ CÔNG (MỚI) -->
+  <div class="page" id="page-giocong">
+    <div class="gc-header">
+      <button class="thang-btn" onclick="doiThang(-1)">‹</button>
+      <div class="thang-label" id="thang-label">--</div>
+      <button class="thang-btn" onclick="doiThang(1)">›</button>
+    </div>
+    <div class="gc-stats">
+      <div class="stat-card"><div class="stat-val" id="gc-so-ngay">--</div><div class="stat-lbl">Ngày công</div></div>
+      <div class="stat-card"><div class="stat-val" id="gc-tong-gio">--</div><div class="stat-lbl">Tổng giờ</div></div>
+      <div class="stat-card warn"><div class="stat-val" id="gc-thieu">--</div><div class="stat-lbl">Thiếu DL</div></div>
+    </div>
+    <div class="gc-table-wrap">
+      <div id="gc-content"><div class="gc-empty">📊 Chọn tab Giờ công để xem</div></div>
+    </div>
+  </div>
+
+  <!-- PAGE: TÀI KHOẢN (MỚI) -->
+  <div class="page" id="page-taikhoan">
+    <div class="acc-top">
+      <div class="acc-avatar" id="acc-avatar">?</div>
+      <div class="acc-name" id="acc-name">--</div>
+      <div class="acc-ma"   id="acc-ma">--</div>
+    </div>
+    <div class="acc-menu">
+      <div class="menu-item" onclick="openPwModal()">
+        <div class="menu-icon mi-green">🔐</div>
+        <div class="menu-label">Đổi mật khẩu</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="goToPage('chamcong')">
+        <div class="menu-icon mi-blue">⏱️</div>
+        <div class="menu-label">Chấm công hôm nay</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="doLogout()">
+        <div class="menu-icon mi-red">🚪</div>
+        <div class="menu-label" style="color:var(--red)">Đăng xuất</div>
+        <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
   </div>
 
-  <!-- Selfie bằng camera thật -->
-  <div class="card">
-    <div class="card-section">Ảnh xác minh danh tính <span style="color:var(--amber);font-weight:600">— Bắt buộc chụp camera</span></div>
-    <div class="selfie-wrap">
-      <!-- Khu vực camera stream -->
-      <div class="camera-area" id="camera-area">
-        <video id="camera-video" autoplay playsinline muted></video>
-        <div class="camera-overlay">
-          <span class="camera-label" id="camera-label-text">📷 Camera trước</span>
-          <span class="camera-close" onclick="stopCamera()">✕</span>
-        </div>
-        <div class="camera-controls">
-          <button class="btn-flip" onclick="flipCamera()" title="Đổi camera">🔄</button>
-          <button class="btn-capture" onclick="chupAnh()">📸 CHỤP ẢNH</button>
-        </div>
-      </div>
-      <!-- Nút mở camera -->
-      <div class="selfie-btn" id="selfie-btn" onclick="moCamera()">
-        <div class="selfie-icon" id="selfie-icon">📷</div>
-        <img id="selfie-preview" class="selfie-preview" alt="selfie">
-        <div>
-          <div class="selfie-text" id="selfie-text">Chụp ảnh xác minh</div>
-          <div class="selfie-sub"  id="selfie-sub">⚠ Bắt buộc chụp bằng camera</div>
-        </div>
-      </div>
-      <div class="camera-err" id="camera-err"></div>
-    </div>
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-chamcong" onclick="goToPage('chamcong')">
+      <div class="nav-icon">⏱️</div><div class="nav-label">Chấm công</div>
+    </button>
+    <button class="nav-item" id="nav-giocong" onclick="goToPage('giocong')">
+      <div class="nav-icon">📊</div><div class="nav-label">Giờ công</div>
+    </button>
+    <button class="nav-item" id="nav-taikhoan" onclick="goToPage('taikhoan')">
+      <div class="nav-icon">👤</div><div class="nav-label">Tài khoản</div>
+    </button>
   </div>
-
-  <div class="result-box" id="result-box"></div>
-  <div class="summary-card" id="summary-card">
-    <div class="summary-title">Tóm tắt ca làm việc hôm nay</div>
-    <div id="summary-rows"></div>
-    <div class="summary-total">
-      <span class="summary-label">Tổng giờ làm việc</span>
-      <span class="summary-value" id="summary-total-val">--</span>
-    </div>
-  </div>
-  <div class="countdown-bar" id="countdown-bar"></div>
-
-  <div class="card">
-    <div class="submit-wrap">
-      <div class="submit-btn s-disabled" id="submit-btn" onclick="doSubmit()">Chọn thời điểm chấm công</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px">
-    <div class="card-section">Lịch sử hôm nay</div>
-    <div class="log-list" id="log-list"><div class="log-empty">Chưa có dữ liệu hôm nay.</div></div>
-  </div>
-
-</div><!-- /main-app -->
+</div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUD6lPh-O38z6hnntKxFqbGkvWseoCx1z7DAX8NfXncBLGOURXXmP522g1cnIJfK6U/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwUD6lPh-O38z6hnntKxFqbGkvWseoCx1z7DAX8NfXncBLGOURXXmP522g1cnIJfK6U/exec';
 
-// ============================================================
-// STATE
-// ============================================================
-let SESSION = null; // { ma, ten, cuaHangMa, cuaHangTen, laDatMacDinh }
-let CH_LIST  = [];
-let state = {
-  loai:null, btnId:null,
-  lat:null, lng:null, gpsAcc:null, gpsOk:false,
-  selfieB64:null, selfieOk:false,
-  submitting:false, submitted:false,
-};
-const logs = [];
+let SESSION=null, CH_LIST=[], currentPage='chamcong';
+let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
+const logs=[];
+let cameraStream=null, facingMode='user';
+let gcThang='', gcData=[];
+let lastDay=new Date().getDate();
 
-// Camera state
-let cameraStream  = null;
-let facingMode    = 'user'; // 'user' = camera trước, 'environment' = sau
-
-// ============================================================
-// CLOCK
-// ============================================================
+// ── CLOCK + AUTO LOGOUT LÚC 0:00 ──
 function pad(n){return String(n).padStart(2,'0');}
 function tick(){
-  const d=new Date(), days=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+  const d=new Date(),days=['CN','T2','T3','T4','T5','T6','T7'];
   const el=document.getElementById('clock');
-  if(el) el.textContent=days[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  // AUTO LOGOUT KHI SANG NGÀY MỚI (YC 3)
+  if(SESSION&&d.getDate()!==lastDay){
+    lastDay=d.getDate();
+    sessionStorage.removeItem('session_cc');SESSION=null;stopCamera();
+    alert('Đã sang ngày mới. Vui lòng đăng nhập lại.');location.reload();
+  }
 }
-setInterval(tick,1000); tick();
+setInterval(tick,1000);tick();
 
-// ============================================================
-// LOGIN
-// ============================================================
-function togglePwVis(inputId, iconEl) {
-  const inp = document.getElementById(inputId);
-  if (inp.type === 'password') { inp.type='text'; iconEl.textContent='🙈'; }
-  else { inp.type='password'; iconEl.textContent='👁️'; }
-}
-
-function doLogin() {
-  const ma = document.getElementById('ln-ma').value.trim().toUpperCase();
-  const pw = document.getElementById('ln-pw').value.trim();
-  const errEl = document.getElementById('login-err');
-  const btn   = document.getElementById('login-btn');
-
-  errEl.style.display='none';
-  if (!ma || !pw) { showLoginErr('Vui lòng nhập mã nhân viên và mật khẩu.'); return; }
-
-  btn.disabled=true; btn.textContent='Đang xác thực...';
-
-  fetch(SCRIPT_URL, {
-    method:'POST',
-    body: JSON.stringify({ action:'login', maNhanVien:ma, matKhau:pw }),
-  })
-  .then(r=>r.json())
-  .then(res => {
-    btn.disabled=false; btn.textContent='ĐĂNG NHẬP';
-    if (!res.success) { showLoginErr(res.error || 'Đăng nhập thất bại.'); return; }
-
-    // Lưu session
-    SESSION = res.nhanVien;
-    sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
-
-    khoiDongApp();
-  })
-  .catch(() => {
-    btn.disabled=false; btn.textContent='ĐĂNG NHẬP';
-    showLoginErr('Lỗi kết nối. Vui lòng thử lại.');
-  });
+// ── NAVIGATION ──
+const PAGE_TITLES={chamcong:'CHẤM CÔNG',giocong:'GIỜ CÔNG',taikhoan:'TÀI KHOẢN'};
+function goToPage(page){
+  currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  document.getElementById('header-page-title').textContent=PAGE_TITLES[page];
+  if(page==='giocong')taiGioCong();
+  if(page==='taikhoan')renderTaiKhoan();
 }
 
-function showLoginErr(msg) {
-  const el = document.getElementById('login-err');
-  el.textContent = msg;
-  el.style.display = 'block';
+// ── LOGIN ──
+function togglePwVis(id,el){const i=document.getElementById(id);if(i.type==='password'){i.type='text';el.textContent='🙈';}else{i.type='password';el.textContent='👁️';}}
+function doLogin(){
+  const ma=document.getElementById('ln-ma').value.trim().toUpperCase();
+  const pw=document.getElementById('ln-pw').value.trim();
+  const btn=document.getElementById('login-btn');
+  document.getElementById('login-err').style.display='none';
+  if(!ma||!pw){showLoginErr('Vui lòng nhập mã nhân viên và mật khẩu.');return;}
+  btn.disabled=true;btn.textContent='Đang xác thực...';
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
+  .then(r=>r.json()).then(res=>{
+    btn.disabled=false;btn.textContent='ĐĂNG NHẬP';
+    if(!res.success){showLoginErr(res.error||'Đăng nhập thất bại.');return;}
+    SESSION=res.nhanVien;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
+  }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
 }
-
-function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất?')) return;
-  SESSION = null;
-  sessionStorage.removeItem('session_cc');
-  stopCamera();
-  // Reset state
-  state = { loai:null, btnId:null, lat:null, lng:null, gpsAcc:null, gpsOk:false, selfieB64:null, selfieOk:false, submitting:false, submitted:false };
+function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
+function doLogout(){
+  if(!confirm('Bạn có chắc muốn đăng xuất?'))return;
+  SESSION=null;sessionStorage.removeItem('session_cc');stopCamera();
+  state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
   document.getElementById('main-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  document.getElementById('ln-ma').value='';
-  document.getElementById('ln-pw').value='';
+  document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
 }
+window.addEventListener('load',()=>{
+  const s=sessionStorage.getItem('session_cc');
+  if(s){try{SESSION=JSON.parse(s);khoiDongApp();}catch(e){sessionStorage.removeItem('session_cc');}}
+});
 
-// ============================================================
-// KHỞI ĐỘNG APP SAU LOGIN
-// ============================================================
-function khoiDongApp() {
-  // Hiển thị thông tin NV
-  document.getElementById('disp-ten-nv').textContent  = SESSION.ten;
-  document.getElementById('disp-ma-nv').textContent   = SESSION.ma;
-  document.getElementById('disp-cua-hang').textContent = SESSION.cuaHangMa + ' — ' + SESSION.cuaHangTen;
-  document.getElementById('header-nv-info').textContent = SESSION.ten + ' (' + SESSION.ma + ')';
-
-  // Hiện banner đổi mật khẩu nếu đang dùng mặc định
-  document.getElementById('banner-pw').style.display = SESSION.laDatMacDinh ? 'block' : 'none';
-
-  // Ẩn login, hiện app
+// ── KHỞI ĐỘNG ──
+function khoiDongApp(){
+  document.getElementById('disp-ten-nv').textContent=SESSION.ten;
+  document.getElementById('disp-ma-nv').textContent=SESSION.ma;
+  document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
+  document.getElementById('banner-pw').style.display=SESSION.laDatMacDinh?'block':'none';
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
-
-  // Tải dữ liệu cửa hàng (cho sau này nếu cần)
-  fetch(SCRIPT_URL + '?type=data')
-    .then(r=>r.json())
-    .then(d => { CH_LIST = d.cuaHangList || []; })
-    .catch(() => {});
-
-  // Tải lịch sử hôm nay
+  const now=new Date();
+  gcThang=now.getFullYear()+'-'+pad(now.getMonth()+1);
+  lastDay=now.getDate();
+  fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
+    CH_LIST=d.cuaHangList||[];
+    selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);
+    document.getElementById('disp-cua-hang').textContent=SESSION.cuaHangTen||SESSION.cuaHangMa;
+  }).catch(()=>{selectCH(SESSION.cuaHangMa,SESSION.cuaHangTen);});
   taiLichSu();
 }
 
-// Kiểm tra session cũ khi load
-window.addEventListener('load', () => {
-  const saved = sessionStorage.getItem('session_cc');
-  if (saved) {
-    try {
-      SESSION = JSON.parse(saved);
-      khoiDongApp();
-    } catch(e) {
-      sessionStorage.removeItem('session_cc');
-    }
-  }
-});
-
-// ============================================================
-// ĐỔI MẬT KHẨU
-// ============================================================
-function openPwModal() {
-  document.getElementById('pw-cu').value='';
-  document.getElementById('pw-moi').value='';
-  document.getElementById('pw-xn').value='';
-  document.getElementById('pw-msg').style.display='none';
-  document.getElementById('pw-btn').disabled=false;
-  document.getElementById('pw-modal').classList.add('show');
+// ── CỬA HÀNG AUTOCOMPLETE (FIX 1: chỉ hiện tên, không lặp) ──
+function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\'");}
+let chTimer=null;
+function onCHInput(){
+  clearTimeout(chTimer);
+  chTimer=setTimeout(()=>{
+    const q=document.getElementById('input-ch-display').value.trim().toLowerCase();
+    const list=document.getElementById('ch-suggest-list');
+    if(!q){list.style.display='none';return;}
+    const matched=CH_LIST.filter(ch=>ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)).slice(0,10);
+    if(!matched.length){list.style.display='none';document.getElementById('sel-cuahang').value='';updateSubmitBtn();return;}
+    list.innerHTML=matched.map(ch=>'<div class="suggest-item" onmousedown="selectCH(\''+esc(ch.ma)+'\',\''+esc(ch.ten)+'\')"><span class="s-ma">'+ch.ma+'</span><span class="s-ten">'+ch.ten+'</span></div>').join('');
+    list.style.display='block';
+  },180);
 }
-function closePwModal() {
-  document.getElementById('pw-modal').classList.remove('show');
+function onCHFocus(){
+  // Khi focus vào ô trống → hiện gợi ý nếu đang có CH mặc định đã chọn
+  const q=document.getElementById('input-ch-display').value.trim();
+  if(!q) onCHInput();
 }
-
-function doDoiMatKhau() {
-  const cu  = document.getElementById('pw-cu').value.trim();
-  const moi = document.getElementById('pw-moi').value.trim();
-  const xn  = document.getElementById('pw-xn').value.trim();
-  const msgEl = document.getElementById('pw-msg');
-  const btn   = document.getElementById('pw-btn');
-
-  msgEl.style.display='none';
-  if (!cu||!moi||!xn) { showPwMsg('Vui lòng nhập đầy đủ.','err'); return; }
-  if (moi.length < 6)  { showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err'); return; }
-  if (moi !== xn)      { showPwMsg('Mật khẩu mới và xác nhận không khớp.','err'); return; }
-
-  btn.disabled=true; btn.textContent='Đang xử lý...';
-
-  fetch(SCRIPT_URL, {
-    method:'POST',
-    body: JSON.stringify({ action:'doiMatKhau', maNhanVien:SESSION.ma, matKhauCu:cu, matKhauMoi:moi }),
-  })
-  .then(r=>r.json())
-  .then(res => {
-    btn.disabled=false; btn.textContent='XÁC NHẬN ĐỔI';
-    if (!res.success) { showPwMsg(res.error,'err'); return; }
-    showPwMsg('✓ Đổi mật khẩu thành công!','ok');
-    SESSION.laDatMacDinh = false;
-    sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
-    document.getElementById('banner-pw').style.display='none';
-    setTimeout(closePwModal, 2000);
-  })
-  .catch(() => {
-    btn.disabled=false; btn.textContent='XÁC NHẬN ĐỔI';
-    showPwMsg('Lỗi kết nối.','err');
-  });
+function selectCH(ma,ten){
+  document.getElementById('input-ch-display').value=ten||ma;  // FIX: chỉ hiện TÊN
+  document.getElementById('sel-cuahang').value=ma;
+  document.getElementById('ch-suggest-list').style.display='none';
+  updateSubmitBtn();
 }
-
-function showPwMsg(msg, type) {
-  const el = document.getElementById('pw-msg');
-  el.textContent = msg;
-  el.className = 'pw-msg ' + (type==='ok' ? 'pw-ok' : 'pw-err');
-  el.style.display='block';
-}
-
-// ============================================================
-// LOẠI CHẤM CÔNG
-// ============================================================
-const TYPE_MAP = {
-  'vao':   {cls:'tb-vao',  label:'Vào ca',      lbcls:'lb-v'},
-  'ra':    {cls:'tb-ra',   label:'Ra ca',        lbcls:'lb-r'},
-  'ra-g':  {cls:'tb-ra-g', label:'Ra giữa ca',   lbcls:'lb-rg'},
-  'vao-g': {cls:'tb-vao-g',label:'Vào giữa ca',  lbcls:'lb-vg'},
-};
-function selType(loai, btnId) {
-  if(state.submitted) return;
-  state.loai=loai; state.btnId=btnId;
-  Object.keys(TYPE_MAP).forEach(k => {
-    document.getElementById('btn-'+k).className='type-btn '+TYPE_MAP[k].cls+(k===btnId?' sel':'');
-  });
+function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
+function resetCH(){
+  document.getElementById('input-ch-display').value='';
+  document.getElementById('sel-cuahang').value='';
+  document.getElementById('input-ch-display').focus();
   updateSubmitBtn();
 }
 
-// ============================================================
-// GPS
-// ============================================================
-function layViTri() {
-  if(state.gpsOk||state.submitted) return;
-  const btn=document.getElementById('gps-btn'), label=document.getElementById('gps-label'),
-        sub=document.getElementById('gps-sub'), badge=document.getElementById('gps-badge');
-  btn.className='gps-btn loading';
-  label.textContent='Đang lấy tọa độ...'; sub.textContent='Vui lòng giữ yên thiết bị';
-  badge.innerHTML='<span class="blinking">●</span> Đang lấy';
+// ── LOẠI CHẤM CÔNG ──
+const TYPE_MAP={vao:{cls:'tb-vao'},ra:{cls:'tb-ra'},'ra-g':{cls:'tb-ra-g'},'vao-g':{cls:'tb-vao-g'}};
+function selType(loai,btnId){
+  if(state.submitted)return;
+  state.loai=loai;state.btnId=btnId;
+  Object.keys(TYPE_MAP).forEach(k=>{document.getElementById('btn-'+k).className='type-btn '+TYPE_MAP[k].cls+(k===btnId?' sel':'');});
+  updateSubmitBtn();
+}
+
+// ── GPS ──
+function layViTri(){
+  if(state.gpsOk||state.submitted)return;
+  const btn=document.getElementById('gps-btn'),label=document.getElementById('gps-label'),sub=document.getElementById('gps-sub'),badge=document.getElementById('gps-badge');
+  btn.className='gps-btn loading';label.textContent='Đang lấy tọa độ...';sub.textContent='Vui lòng giữ yên thiết bị';badge.innerHTML='<span class="blinking">●</span> Đang lấy';
   if(!navigator.geolocation){setGpsErr('Thiết bị không hỗ trợ GPS');return;}
   navigator.geolocation.getCurrentPosition(
-    pos=>{
-      state.lat=pos.coords.latitude.toFixed(6); state.lng=pos.coords.longitude.toFixed(6);
-      state.gpsAcc=Math.round(pos.coords.accuracy); state.gpsOk=true;
-      btn.className='gps-btn success';
-      label.textContent='ĐÃ XÁC NHẬN VỊ TRÍ'; sub.textContent='Độ chính xác ±'+state.gpsAcc+'m';
-      badge.textContent='✓ ĐÃ XÁC NHẬN'; document.getElementById('gps-icon').textContent='✅';
-      updateSubmitBtn();
-    },
-    err=>{
-      const msgs={1:'Từ chối truy cập vị trí',2:'Không lấy được GPS',3:'Quá thời gian chờ'};
-      setGpsErr(msgs[err.code]||'Lỗi GPS — bấm thử lại');
-    },
+    pos=>{state.lat=pos.coords.latitude.toFixed(6);state.lng=pos.coords.longitude.toFixed(6);state.gpsAcc=Math.round(pos.coords.accuracy);state.gpsOk=true;
+      btn.className='gps-btn success';label.textContent='ĐÃ XÁC NHẬN VỊ TRÍ';sub.textContent='Độ chính xác ±'+state.gpsAcc+'m';badge.textContent='✓ ĐÃ XÁC NHẬN';document.getElementById('gps-icon').textContent='✅';updateSubmitBtn();},
+    err=>{const msgs={1:'Từ chối truy cập vị trí',2:'Không lấy được GPS',3:'Quá thời gian chờ'};setGpsErr(msgs[err.code]||'Lỗi GPS');},
     {enableHighAccuracy:true,timeout:10000,maximumAge:0}
   );
 }
-function setGpsErr(msg){
-  document.getElementById('gps-btn').className='gps-btn error';
-  document.getElementById('gps-label').textContent=msg;
-  document.getElementById('gps-sub').textContent='Bấm để thử lại';
-  document.getElementById('gps-badge').textContent='Thử lại';
-  document.getElementById('gps-icon').textContent='❌';
-  state.gpsOk=false; updateSubmitBtn();
-}
+function setGpsErr(msg){document.getElementById('gps-btn').className='gps-btn error';document.getElementById('gps-label').textContent=msg;document.getElementById('gps-sub').textContent='Bấm để thử lại';document.getElementById('gps-badge').textContent='Thử lại';document.getElementById('gps-icon').textContent='❌';state.gpsOk=false;updateSubmitBtn();}
 
-// ============================================================
-// CAMERA SELFIE — CHỈ getUserMedia, KHÔNG cho upload file
-// ============================================================
-async function moCamera() {
-  if(state.submitted) return;
-  const errEl = document.getElementById('camera-err');
-  errEl.style.display='none';
-
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    errEl.textContent='⚠ Thiết bị không hỗ trợ camera trực tiếp. Vui lòng dùng điện thoại hoặc trình duyệt Chrome/Safari mới nhất.';
-    errEl.style.display='block';
-    return;
-  }
-
-  try {
-    // Dừng stream cũ nếu có
-    if(cameraStream) stopCamera(false);
-
-    const constraints = {
-      video: {
-        facingMode: facingMode,
-        width: { ideal: 800 },
-        height: { ideal: 600 },
-      },
-      audio: false
-    };
-
-    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-    const video  = document.getElementById('camera-video');
-    video.srcObject = cameraStream;
-
-    // Hiện camera, ẩn nút mở camera
+// ── CAMERA ──
+async function moCamera(){
+  if(state.submitted)return;
+  const errEl=document.getElementById('camera-err');errEl.style.display='none';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){errEl.textContent='⚠ Thiết bị không hỗ trợ camera. Dùng Chrome/Safari mới nhất.';errEl.style.display='block';return;}
+  try{
+    if(cameraStream)stopCamera(false);
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:800},height:{ideal:600}},audio:false});
+    document.getElementById('camera-video').srcObject=cameraStream;
     document.getElementById('camera-area').style.display='block';
     document.getElementById('selfie-btn').style.display='none';
-    document.getElementById('camera-label-text').textContent =
-      facingMode === 'user' ? '📷 Camera trước' : '📷 Camera sau';
-
-  } catch(err) {
-    let msg = '⚠ Không thể mở camera.';
-    if(err.name==='NotAllowedError')  msg='⚠ Bạn đã từ chối quyền camera. Vui lòng cấp phép trong cài đặt trình duyệt.';
-    if(err.name==='NotFoundError')    msg='⚠ Không tìm thấy camera trên thiết bị này.';
-    if(err.name==='NotReadableError') msg='⚠ Camera đang được ứng dụng khác sử dụng.';
-    errEl.textContent = msg;
-    errEl.style.display='block';
+    document.getElementById('camera-label-text').textContent=facingMode==='user'?'📷 Camera trước':'📷 Camera sau';
+  }catch(err){
+    let msg='⚠ Không thể mở camera.';
+    if(err.name==='NotAllowedError')msg='⚠ Từ chối quyền camera. Vào cài đặt trình duyệt để cấp phép.';
+    if(err.name==='NotFoundError')msg='⚠ Không tìm thấy camera trên thiết bị.';
+    if(err.name==='NotReadableError')msg='⚠ Camera đang được ứng dụng khác dùng.';
+    errEl.textContent=msg;errEl.style.display='block';
   }
 }
-
-async function flipCamera() {
-  facingMode = (facingMode === 'user') ? 'environment' : 'user';
-  await moCamera();
-}
-
-function stopCamera(showBtn=true) {
-  if(cameraStream) {
-    cameraStream.getTracks().forEach(t=>t.stop());
-    cameraStream=null;
-  }
+async function flipCamera(){facingMode=(facingMode==='user')?'environment':'user';await moCamera();}
+function stopCamera(showBtn=true){
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
   document.getElementById('camera-video').srcObject=null;
   document.getElementById('camera-area').style.display='none';
-  if(showBtn) document.getElementById('selfie-btn').style.display='flex';
+  if(showBtn)document.getElementById('selfie-btn').style.display='flex';
 }
-
-function chupAnh() {
-  const video  = document.getElementById('camera-video');
-  const canvas = document.createElement('canvas');
-
-  // Resize tối đa 800px
-  const MAX=800;
-  let w=video.videoWidth, h=video.videoHeight;
-  if(w>h){ if(w>MAX){h=h*MAX/w; w=MAX;} } else { if(h>MAX){w=w*MAX/h; h=MAX;} }
-  canvas.width=w; canvas.height=h;
-
-  const ctx = canvas.getContext('2d');
-  // Mirror nếu camera trước
-  if(facingMode==='user') {
-    ctx.translate(w,0); ctx.scale(-1,1);
-  }
+function chupAnh(){
+  const video=document.getElementById('camera-video');
+  const canvas=document.createElement('canvas');
+  const MAX=800;let w=video.videoWidth,h=video.videoHeight;
+  if(w>h){if(w>MAX){h=h*MAX/w;w=MAX;}}else{if(h>MAX){w=w*MAX/h;h=MAX;}}
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  if(facingMode==='user'){ctx.translate(w,0);ctx.scale(-1,1);}
   ctx.drawImage(video,0,0,w,h);
-
-  // Watermark timestamp (chống gian lận)
-  ctx.setTransform(1,0,0,1,0,0); // reset transform
-  const now     = new Date();
-  const tsLabel = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())
-                + '  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
-  ctx.font = '14px monospace';
-  ctx.fillStyle='rgba(0,0,0,0.45)';
-  ctx.fillRect(0, h-28, w, 28);
-  ctx.fillStyle='white';
-  ctx.fillText('📍 '+tsLabel+'  '+SESSION.ma, 8, h-10);
-
-  state.selfieB64 = canvas.toDataURL('image/jpeg', 0.75);
-  state.selfieOk  = true;
-
-  // Hiện preview
-  const preview = document.getElementById('selfie-preview');
-  preview.src = state.selfieB64;
-  preview.style.display='block';
+  ctx.setTransform(1,0,0,1,0,0);
+  const now=new Date();
+  const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+  ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
+  state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
+  const preview=document.getElementById('selfie-preview');
+  preview.src=state.selfieB64;preview.style.display='block';
   document.getElementById('selfie-icon').style.display='none';
   document.getElementById('selfie-btn').className='selfie-btn done';
   document.getElementById('selfie-text').textContent='Ảnh đã chụp ✓';
   document.getElementById('selfie-sub').textContent='Bấm để chụp lại nếu cần';
-
-  // Tắt camera
-  stopCamera(true);
-  updateSubmitBtn();
+  stopCamera(true);updateSubmitBtn();
 }
 
-// ============================================================
-// SUBMIT
-// ============================================================
-function updateSubmitBtn() {
-  if(state.submitted) return;
-  if(!state.loai)    { setBtn('s-disabled','Chọn thời điểm chấm công'); return; }
-  if(!state.gpsOk)   { setBtn('s-disabled','Cần xác nhận vị trí GPS'); return; }
-  if(!state.selfieOk){ setBtn('s-disabled','Cần chụp ảnh xác minh'); return; }
+// ── SUBMIT ──
+function updateSubmitBtn(){
+  if(state.submitted)return;
+  const maCH=document.getElementById('sel-cuahang').value;
+  if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
+  if(!state.loai) {setBtn('s-disabled','Chọn thời điểm chấm công');return;}
+  if(!state.gpsOk){setBtn('s-disabled','Cần xác nhận vị trí GPS');return;}
+  if(!state.selfieOk){setBtn('s-disabled','Cần chụp ảnh xác minh');return;}
   setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
 }
-function setBtn(cls,txt){
-  const b=document.getElementById('submit-btn');
-  b.className='submit-btn '+cls; b.textContent=txt;
-}
+function setBtn(cls,txt){const b=document.getElementById('submit-btn');b.className='submit-btn '+cls;b.textContent=txt;}
 
-function doSubmit() {
-  if(state.submitting||state.submitted) return;
-  if(document.getElementById('submit-btn').classList.contains('s-disabled')) return;
-  if(!SESSION) return;
-
+function doSubmit(){
+  if(state.submitting||state.submitted)return;
+  if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
+  if(!SESSION)return;
   state.submitting=true;
   document.getElementById('submit-btn').className='submit-btn s-loading';
   document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
-
-  fetch(SCRIPT_URL,{
-    method:'POST',
-    body:JSON.stringify({
-      action:       'chamcong',
-      maCuaHang:    SESSION.cuaHangMa,
-      tenCuaHang:   SESSION.cuaHangTen,
-      maNhanVien:   SESSION.ma,
-      tenNhanVien:  SESSION.ten,
-      loaiChamCong: state.loai,
-      lat:          state.lat,
-      lng:          state.lng,
-      gpsAccuracy:  state.gpsAcc,
-      selfieBase64: state.selfieB64 || null,
-    }),
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    state.submitting=false; state.submitted=true;
-    setBtn('s-done','✓ Đã chấm công thành công');
-
-    const rb=document.getElementById('result-box');
-    rb.style.display='block';
-    if(res.gpsStatus==='HỢP LỆ'){
-      rb.className='result-box r-ok';
-      rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);
-    } else if(res.gpsStatus==='NGOÀI VÙNG'){
-      rb.className='result-box r-warn';
-      rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';
-    } else {
-      rb.className='result-box r-warn';
-      rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';
-    }
-
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'chamcong',maCuaHang:document.getElementById('sel-cuahang').value,
+    tenCuaHang:document.getElementById('input-ch-display').value,
+    maNhanVien:SESSION.ma,tenNhanVien:SESSION.ten,loaiChamCong:state.loai,
+    lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,selfieBase64:state.selfieB64||null,
+  })})
+  .then(r=>r.json()).then(res=>{
+    state.submitting=false;state.submitted=true;setBtn('s-done','✓ Đã chấm công thành công');
+    const rb=document.getElementById('result-box');rb.style.display='block';
+    if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
+    else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo quản lý';}
+    else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
     const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
     logs.unshift({loai:state.loai,lbcls:lbMap[state.loai]||'lb-v',time:res.timestamp.substring(11,19),dist:res.khoangCach?res.khoangCach+'m':'--',ok:res.gpsStatus==='HỢP LỆ'});
     renderLog();
-
-    if(state.loai==='Ra ca'){
-      hienTomTatCa(res.timestamp.substring(11,19));
-      startCountdown(30);
-    } else {
-      startCountdown(10);
-    }
-  })
-  .catch(()=>{
-    state.submitting=false;
-    setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
-    const rb=document.getElementById('result-box');
-    rb.style.display='block'; rb.className='result-box r-err';
-    rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';
-  });
+    if(state.loai==='Ra ca'){hienTomTatCa(res.timestamp.substring(11,19));startCountdown(30);}else{startCountdown(10);}
+  }).catch(()=>{state.submitting=false;setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());const rb=document.getElementById('result-box');rb.style.display='block';rb.className='result-box r-err';rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';});
 }
 
-// ============================================================
-// ĐẾM NGƯỢC RELOAD
-// ============================================================
+// ── COUNTDOWN ──
 function startCountdown(giay){
-  const bar=document.getElementById('countdown-bar');
-  bar.style.display='block';
-  let dem=giay;
+  const bar=document.getElementById('countdown-bar');bar.style.display='block';let dem=giay;
   bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';
-  const timer=setInterval(()=>{
-    dem--;
-    if(dem<=0){ clearInterval(timer); location.reload(); }
-    else { bar.textContent='Trang sẽ làm mới sau '+dem+' giây...'; }
-  },1000);
+  const t=setInterval(()=>{dem--;if(dem<=0){clearInterval(t);location.reload();}else{bar.textContent='Trang sẽ làm mới sau '+dem+' giây...';}},1000);
 }
 
-// ============================================================
-// TÓM TẮT CA
-// ============================================================
+// ── TÓM TẮT CA ──
 function hienTomTatCa(gioRaCa){
-  const card=document.getElementById('summary-card');
-  const rows=document.getElementById('summary-rows');
-  card.style.display='block';
-  rows.innerHTML='<div style="font-size:12px;color:var(--text-m);padding:4px 0">Đang tải...</div>';
+  const card=document.getElementById('summary-card'),rows=document.getElementById('summary-rows');
+  card.style.display='block';rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Đang tải...</div>';
   document.getElementById('summary-total-val').textContent='--';
-
-  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma))
-    .then(r=>r.json())
-    .then(d=>{
-      const lichSu=d.lichSu||[];
-      if(!lichSu.length){rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Không có dữ liệu</div>';return;}
-      let html='', gioVaoCa='', gioRaGiua='', thoiGianRaNgoai=0;
-      lichSu.forEach(l=>{
-        html+='<div class="summary-row"><span class="summary-label">'+l.loai+'</span><span class="summary-value">'+l.gio+'</span></div>';
-        if(l.loai==='Vào ca')      gioVaoCa=l.gio;
-        if(l.loai==='Ra giữa ca')  gioRaGiua=l.gio;
-        if(l.loai==='Vào giữa ca'&&gioRaGiua){ thoiGianRaNgoai+=toPhut(l.gio)-toPhut(gioRaGiua); gioRaGiua=''; }
-      });
-      const tongPhut=gioVaoCa?toPhut(gioRaCa)-toPhut(gioVaoCa)-thoiGianRaNgoai:0;
-      rows.innerHTML=html;
-      document.getElementById('summary-total-val').textContent=tongPhut>0?formatPhut(tongPhut):'--';
-    })
-    .catch(()=>{rows.innerHTML='<div style="font-size:12px;color:var(--red)">Lỗi tải dữ liệu</div>';});
+  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma)).then(r=>r.json()).then(d=>{
+    const ls=d.lichSu||[];if(!ls.length){rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Không có dữ liệu</div>';return;}
+    let html='',gioVao='',gioRaG='',tgRaNgoai=0;
+    ls.forEach(l=>{
+      html+='<div class="summary-row"><span class="summary-label">'+l.loai+'</span><span class="summary-value">'+l.gio+'</span></div>';
+      if(l.loai==='Vào ca')gioVao=l.gio;if(l.loai==='Ra giữa ca')gioRaG=l.gio;
+      if(l.loai==='Vào giữa ca'&&gioRaG){tgRaNgoai+=toPhut(l.gio)-toPhut(gioRaG);gioRaG='';}
+    });
+    const tp=gioVao?toPhut(gioRaCa)-toPhut(gioVao)-tgRaNgoai:0;
+    rows.innerHTML=html;document.getElementById('summary-total-val').textContent=tp>0?fmtPhut(tp):'--';
+  }).catch(()=>{rows.innerHTML='<div style="font-size:12px;color:var(--red)">Lỗi tải</div>';});
 }
 function toPhut(s){if(!s)return 0;const p=s.split(':').map(Number);return p[0]*60+(p[1]||0)+(p[2]||0)/60;}
-function formatPhut(phut){const g=Math.floor(phut/60),p=Math.round(phut%60);return g+'g '+String(p).padStart(2,'0')+'p';}
+function fmtPhut(m){const g=Math.floor(m/60),p=Math.round(m%60);return g+'g '+String(p).padStart(2,'0')+'p';}
 
-// ============================================================
-// LỊCH SỬ
-// ============================================================
+// ── LỊCH SỬ ──
 function taiLichSu(){
-  if(!SESSION) return;
-  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma))
-    .then(r=>r.json())
-    .then(d=>{
-      const lichSu=d.lichSu||[];
-      if(!lichSu.length) return;
-      const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-      // Reset logs
-      logs.length=0;
-      lichSu.slice().reverse().forEach(l=>{
-        logs.push({loai:l.loai, lbcls:lbMap[l.loai]||'lb-v', time:l.gio.substring(0,5), dist:'--', ok:true});
-      });
-      renderLog();
-    })
-    .catch(()=>{});
+  if(!SESSION)return;
+  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma)).then(r=>r.json()).then(d=>{
+    const ls=d.lichSu||[];if(!ls.length)return;
+    const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+    logs.length=0;ls.slice().reverse().forEach(l=>{logs.push({loai:l.loai,lbcls:lbMap[l.loai]||'lb-v',time:l.gio.substring(0,5),dist:'--',ok:true});});
+    renderLog();
+  }).catch(()=>{});
 }
-
 function renderLog(){
   const el=document.getElementById('log-list');
   if(!logs.length){el.innerHTML='<div class="log-empty">Chưa có dữ liệu hôm nay.</div>';return;}
   el.innerHTML=logs.map(l=>'<div class="log-item"><span class="log-badge '+l.lbcls+'">'+l.loai+'</span><span class="log-time">'+l.time+'</span><span class="log-dist">· '+l.dist+'</span><span class="log-st '+(l.ok?'ls-ok':'ls-err')+'">'+(l.ok?'Hợp lệ':'Ngoài vùng')+'</span></div>').join('');
 }
+
+// ── GIỜ CÔNG (MỚI) ──
+const THANG_VI=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+const THU_VI=['CN','T2','T3','T4','T5','T6','T7'];
+
+function doiThang(delta){
+  const [y,m]=gcThang.split('-').map(Number);
+  const d=new Date(y,m-1+delta,1);
+  const now=new Date();if(d>new Date(now.getFullYear(),now.getMonth(),1))return;
+  gcThang=d.getFullYear()+'-'+pad(d.getMonth()+1);taiGioCong();
+}
+
+function taiGioCong(){
+  if(!SESSION)return;
+  const [y,m]=gcThang.split('-').map(Number);
+  document.getElementById('thang-label').textContent=THANG_VI[m]+' '+y;
+  document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
+  ['gc-so-ngay','gc-tong-gio','gc-thieu'].forEach(id=>document.getElementById(id).textContent='--');
+  fetch(SCRIPT_URL+'?type=tonghop&maNV='+encodeURIComponent(SESSION.ma)+'&thang='+gcThang)
+  .then(r=>r.json()).then(d=>{gcData=d.tonghop||[];renderGioCong();})
+  .catch(()=>{document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
+}
+
+function renderGioCong(){
+  if(!gcData.length){
+    document.getElementById('gc-so-ngay').textContent='0';
+    document.getElementById('gc-tong-gio').textContent='0g';
+    document.getElementById('gc-thieu').textContent='0';
+    document.getElementById('gc-content').innerHTML='<div class="gc-empty">📭 Chưa có dữ liệu tháng này</div>';
+    return;
+  }
+  let tongPhutAll=0,soNgayHT=0,soThieu=0;
+  gcData.forEach(r=>{
+    if(r.trangThai==='HOÀN THÀNH'){soNgayHT++;tongPhutAll+=parseGioCong(r.tongGioCong);}
+    if(r.trangThai==='THIẾU DỮ LIỆU')soThieu++;
+  });
+  document.getElementById('gc-so-ngay').textContent=soNgayHT;
+  document.getElementById('gc-tong-gio').textContent=fmtPhut(tongPhutAll);
+  document.getElementById('gc-thieu').textContent=soThieu;
+
+  let rows='';
+  gcData.forEach(r=>{
+    const dt=new Date(r.ngay+'T00:00:00');
+    const thu=THU_VI[dt.getDay()];
+    const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
+    let bcls='gc-hoan',btxt='Hoàn thành';
+    if(r.trangThai==='ĐANG CA'){bcls='gc-dang';btxt='Đang ca';}
+    if(r.trangThai==='THIẾU DỮ LIỆU'){bcls='gc-thieu';btxt='Thiếu DL';}
+    rows+=`<tr><td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td><td class="gc-gio">${r.gioCaVao||'--'}</td><td class="gc-gio">${r.gioCaRa||'--'}</td><td class="gc-tong">${r.tongGioCong||'--'}</td><td><span class="gc-badge ${bcls}">${btxt}</span></td></tr>`;
+  });
+  rows+=`<tr class="gc-total"><td colspan="3" style="font-size:11px">Tổng (${soNgayHT} ngày)</td><td class="gc-tong">${fmtPhut(tongPhutAll)}</td><td></td></tr>`;
+  document.getElementById('gc-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Vào ca</th><th>Ra ca</th><th>Tổng</th><th>T.Thái</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function parseGioCong(str){if(!str)return 0;const g=str.match(/(\d+)g/),p=str.match(/(\d+)p/);return(g?parseInt(g[1]):0)*60+(p?parseInt(p[1]):0);}
+
+// ── TÀI KHOẢN ──
+function renderTaiKhoan(){
+  if(!SESSION)return;
+  const init=SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+  document.getElementById('acc-avatar').textContent=init;
+  document.getElementById('acc-name').textContent=SESSION.ten;
+  document.getElementById('acc-ma').textContent=SESSION.ma+' · '+SESSION.cuaHangTen;
+}
+
+// ── ĐỔI MẬT KHẨU ──
+function openPwModal(){
+  ['pw-cu','pw-moi','pw-xn'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pw-msg').style.display='none';
+  const btn=document.getElementById('pw-btn');btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
+  document.getElementById('pw-modal').classList.add('show');
+}
+function closePwModal(){document.getElementById('pw-modal').classList.remove('show');}
+function doDoiMatKhau(){
+  const cu=document.getElementById('pw-cu').value.trim(),moi=document.getElementById('pw-moi').value.trim(),xn=document.getElementById('pw-xn').value.trim();
+  const btn=document.getElementById('pw-btn');
+  document.getElementById('pw-msg').style.display='none';
+  if(!cu||!moi||!xn){showPwMsg('Vui lòng nhập đầy đủ.','err');return;}
+  if(moi.length<6){showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err');return;}
+  if(moi!==xn){showPwMsg('Mật khẩu mới và xác nhận không khớp.','err');return;}
+  btn.disabled=true;btn.textContent='Đang xử lý...';
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi})})
+  .then(r=>r.json()).then(res=>{
+    btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
+    if(!res.success){showPwMsg(res.error,'err');return;}
+    showPwMsg('✓ Đổi mật khẩu thành công!','ok');
+    SESSION.laDatMacDinh=false;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));
+    document.getElementById('banner-pw').style.display='none';
+    setTimeout(closePwModal,2000);
+  }).catch(()=>{btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';showPwMsg('Lỗi kết nối.','err');});
+}
+function showPwMsg(msg,type){const el=document.getElementById('pw-msg');el.textContent=msg;el.className='pw-msg '+(type==='ok'?'pw-ok':'pw-err');el.style.display='block';}
 </script>
 </body>
 </html>
