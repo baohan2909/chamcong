@@ -550,9 +550,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <div class="map-nearby" id="map-nearby-wrap" style="display:none">
+    <div class="map-nearby" id="map-nearby-wrap">
       <div class="map-nearby-title">Cửa hàng gần đây</div>
-      <div class="map-nearby-list" id="map-nearby-list"></div>
+      <div class="map-nearby-list" id="map-nearby-list">
+        <div style="padding:16px;font-size:13px;color:var(--text-m);text-align:center">⏳ Đang tải cửa hàng...</div>
+      </div>
     </div>
   </div>
 
@@ -578,7 +580,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwQxjjsEpi93nIajgv2qqaOOCNZq5l4_gJxm54upwRbaJ3C23ESojYWKnL1X2jj4mHC/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwUD6lPh-O38z6hnntKxFqbGkvWseoCx1z7DAX8NfXncBLGOURXXmP522g1cnIJfK6U/exec';
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
 let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
@@ -909,8 +911,13 @@ function renderTaiKhoan(){
 let mapSelectedCH = null;
 let userLatLng    = null;
 let nearbyRendered = false;
+// Cache kết quả tìm kiếm để event delegation dùng
+let mapSearchResults = [];
 
 function khoiDongBanDo(){
+  // Hiện wrap ngay (đã có skeleton bên trong)
+  document.getElementById('map-nearby-wrap').style.display='block';
+
   // Render nearby ngay với danh sách hiện có (không chờ GPS)
   if(!nearbyRendered && CH_LIST.length) { renderNearby(); nearbyRendered=true; }
 
@@ -919,7 +926,7 @@ function khoiDongBanDo(){
     navigator.geolocation.getCurrentPosition(
       pos=>{
         userLatLng={lat:pos.coords.latitude,lng:pos.coords.longitude};
-        renderNearby(); // cập nhật lại theo khoảng cách
+        renderNearby();
       },
       ()=>{},
       {enableHighAccuracy:false, timeout:5000, maximumAge:30000}
@@ -930,19 +937,28 @@ function khoiDongBanDo(){
 function onMapSearch(){
   const q=document.getElementById('map-search-input').value.trim().toLowerCase();
   const list=document.getElementById('map-suggest-list');
-  if(!q){list.style.display='none';return;}
-  const matched=CH_LIST.filter(ch=>
+  if(!q){list.style.display='none';mapSearchResults=[];return;}
+  mapSearchResults=CH_LIST.filter(ch=>
     ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)
   ).slice(0,10);
-  if(!matched.length){list.style.display='none';return;}
-  list.innerHTML=matched.map(ch=>`
-    <div class="map-suggest-item" onmousedown="chonCuaHangBanDo(${JSON.stringify(ch)})">
+  if(!mapSearchResults.length){list.style.display='none';return;}
+  // Dùng data-idx thay vì inline JSON để tránh lỗi ký tự đặc biệt
+  list.innerHTML=mapSearchResults.map((ch,i)=>`
+    <div class="map-suggest-item" data-idx="${i}">
       <span class="map-si-pin">📍</span>
       <div><div class="map-si-main">${ch.ten}</div><div class="map-si-sub">${ch.ma}${ch.khuVuc?' · '+ch.khuVuc:''}</div></div>
     </div>`).join('');
   list.style.display='block';
 }
 function hideMapSuggest(){setTimeout(()=>{document.getElementById('map-suggest-list').style.display='none';},150);}
+
+// Event delegation cho suggest list — tránh vấn đề inline JSON
+document.addEventListener('mousedown', e=>{
+  const item=e.target.closest('.map-suggest-item[data-idx]');
+  if(!item)return;
+  const idx=parseInt(item.dataset.idx);
+  if(!isNaN(idx) && mapSearchResults[idx]) chonCuaHangBanDo(mapSearchResults[idx]);
+});
 
 function chonCuaHangBanDo(ch){
   if(typeof ch==='string') ch=JSON.parse(ch);
@@ -1050,8 +1066,14 @@ function renderNearby(){
   } else {
     list=list.slice(0,8);
   }
-  if(!list.length){document.getElementById('map-nearby-wrap').style.display='none';return;}
-  document.getElementById('map-nearby-list').innerHTML=list.map(ch=>{
+  const wrap=document.getElementById('map-nearby-wrap');
+  const el=document.getElementById('map-nearby-list');
+  if(!list.length){
+    el.innerHTML='<div style="padding:16px;font-size:13px;color:var(--text-m);text-align:center">Chưa có dữ liệu cửa hàng.</div>';
+    wrap.style.display='block';
+    return;
+  }
+  el.innerHTML=list.map(ch=>{
     const distTxt=ch.dist!=null?(ch.dist<1000?Math.round(ch.dist)+'m':(ch.dist/1000).toFixed(1)+'km'):'';
     const sub=ch.diaChi||ch.khuVuc||ch.ma;
     return `<div class="map-nearby-item" onclick="chonCuaHangBanDo(${JSON.stringify(ch).replace(/"/g,'&quot;')})">
@@ -1063,7 +1085,7 @@ function renderNearby(){
       <div class="map-nearby-arrow">›</div>
     </div>`;
   }).join('');
-  document.getElementById('map-nearby-wrap').style.display='block';
+  wrap.style.display='block';
 }
 
 // ── ĐỔI MẬT KHẨU ──
