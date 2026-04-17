@@ -434,17 +434,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="card">
       <div class="card-section">Ảnh xác minh <span style="color:var(--amber);font-weight:700">— Bắt buộc camera</span></div>
       <div class="selfie-wrap">
-        <div class="camera-area" id="camera-area">
-          <video id="camera-video" autoplay playsinline muted></video>
-          <div class="camera-overlay">
-            <span class="camera-label" id="camera-label-text">📷 Camera trước</span>
-            <span class="camera-close" onclick="stopCamera()">✕</span>
-          </div>
-          <div class="camera-controls">
-            <button class="btn-flip" onclick="flipCamera()">🔄</button>
-            <button class="btn-capture" onclick="chupAnh()">📸 CHỤP ẢNH</button>
-          </div>
-        </div>
+        <input type="file" id="camera-file-input" accept="image/*" capture="user"
+               style="display:none" onchange="xuLyAnhChup(this)">
         <div class="selfie-btn" id="selfie-btn" onclick="moCamera()">
           <div class="selfie-icon" id="selfie-icon">📷</div>
           <img id="selfie-preview" class="selfie-preview" alt="selfie">
@@ -484,10 +475,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="thang-label" id="thang-label">--</div>
       <button class="thang-btn" onclick="doiThang(1)">›</button>
     </div>
-    <div class="gc-stats">
+    <div class="gc-stats" style="grid-template-columns:1fr 1fr">
       <div class="stat-card"><div class="stat-val" id="gc-so-ngay">--</div><div class="stat-lbl">Ngày công</div></div>
       <div class="stat-card"><div class="stat-val" id="gc-tong-gio">--</div><div class="stat-lbl">Tổng giờ</div></div>
-      <div class="stat-card warn"><div class="stat-val" id="gc-thieu">--</div><div class="stat-lbl">Thiếu DL</div></div>
     </div>
     <div class="gc-table-wrap">
       <div id="gc-content"><div class="gc-empty">📊 Chọn tab Giờ công để xem</div></div>
@@ -593,7 +583,7 @@ const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwUD6lPh-O38z6hnntKxFq
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
 let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
 const logs=[];
-let cameraStream=null, facingMode='user';
+let cameraStream=null; // giữ lại để không lỗi nếu còn tham chiếu
 let gcThang='', gcData=[];
 let lastDay=new Date().getDate();
 
@@ -728,55 +718,51 @@ function layViTri(){
 }
 function setGpsErr(msg){document.getElementById('gps-btn').className='gps-btn error';document.getElementById('gps-label').textContent=msg;document.getElementById('gps-sub').textContent='Bấm để thử lại';document.getElementById('gps-badge').textContent='Thử lại';document.getElementById('gps-icon').textContent='❌';state.gpsOk=false;updateSubmitBtn();}
 
-// ── CAMERA ──
-async function moCamera(){
+// ── CAMERA — dùng app camera hệ thống toàn màn hình ──
+function moCamera(){
   if(state.submitted)return;
-  const errEl=document.getElementById('camera-err');errEl.style.display='none';
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){errEl.textContent='⚠ Thiết bị không hỗ trợ camera. Dùng Chrome/Safari mới nhất.';errEl.style.display='block';return;}
-  try{
-    if(cameraStream)stopCamera(false);
-    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:800},height:{ideal:600}},audio:false});
-    document.getElementById('camera-video').srcObject=cameraStream;
-    document.getElementById('camera-area').style.display='block';
-    document.getElementById('selfie-btn').style.display='none';
-    document.getElementById('camera-label-text').textContent=facingMode==='user'?'📷 Camera trước':'📷 Camera sau';
-  }catch(err){
-    let msg='⚠ Không thể mở camera.';
-    if(err.name==='NotAllowedError')msg='⚠ Từ chối quyền camera. Vào cài đặt trình duyệt để cấp phép.';
-    if(err.name==='NotFoundError')msg='⚠ Không tìm thấy camera trên thiết bị.';
-    if(err.name==='NotReadableError')msg='⚠ Camera đang được ứng dụng khác dùng.';
-    errEl.textContent=msg;errEl.style.display='block';
-  }
+  document.getElementById('camera-file-input').value=''; // reset để onChange luôn fire
+  document.getElementById('camera-file-input').click();
 }
-async function flipCamera(){facingMode=(facingMode==='user')?'environment':'user';await moCamera();}
-function stopCamera(showBtn=true){
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-  document.getElementById('camera-video').srcObject=null;
-  document.getElementById('camera-area').style.display='none';
-  if(showBtn)document.getElementById('selfie-btn').style.display='flex';
+
+function xuLyAnhChup(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      // Resize tối đa 800px
+      const MAX=800;let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      // Watermark timestamp + mã NV
+      const now=new Date();
+      const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())
+               +'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+      ctx.font='13px monospace';
+      ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
+      ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
+      state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
+      // Hiện preview
+      const preview=document.getElementById('selfie-preview');
+      preview.src=state.selfieB64;preview.style.display='block';
+      document.getElementById('selfie-icon').style.display='none';
+      document.getElementById('selfie-btn').className='selfie-btn done';
+      document.getElementById('selfie-text').textContent='Ảnh đã chụp ✓';
+      document.getElementById('selfie-sub').textContent='Bấm để chụp lại nếu cần';
+      updateSubmitBtn();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
-function chupAnh(){
-  const video=document.getElementById('camera-video');
-  const canvas=document.createElement('canvas');
-  const MAX=800;let w=video.videoWidth,h=video.videoHeight;
-  if(w>h){if(w>MAX){h=h*MAX/w;w=MAX;}}else{if(h>MAX){w=w*MAX/h;h=MAX;}}
-  canvas.width=w;canvas.height=h;
-  const ctx=canvas.getContext('2d');
-  if(facingMode==='user'){ctx.translate(w,0);ctx.scale(-1,1);}
-  ctx.drawImage(video,0,0,w,h);
-  ctx.setTransform(1,0,0,1,0,0);
-  const now=new Date();
-  const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
-  ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
-  state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
-  const preview=document.getElementById('selfie-preview');
-  preview.src=state.selfieB64;preview.style.display='block';
-  document.getElementById('selfie-icon').style.display='none';
-  document.getElementById('selfie-btn').className='selfie-btn done';
-  document.getElementById('selfie-text').textContent='Ảnh đã chụp ✓';
-  document.getElementById('selfie-sub').textContent='Bấm để chụp lại nếu cần';
-  stopCamera(true);updateSubmitBtn();
-}
+
+function stopCamera(){} // giữ lại để không báo lỗi nếu còn tham chiếu
 
 // ── SUBMIT ──
 function updateSubmitBtn(){
@@ -875,7 +861,7 @@ function taiGioCong(){
   const [y,m]=gcThang.split('-').map(Number);
   document.getElementById('thang-label').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
-  ['gc-so-ngay','gc-tong-gio','gc-thieu'].forEach(id=>document.getElementById(id).textContent='--');
+  ['gc-so-ngay','gc-tong-gio'].forEach(id=>document.getElementById(id).textContent='--');
   fetch(SCRIPT_URL+'?type=tonghop&maNV='+encodeURIComponent(SESSION.ma)+'&thang='+gcThang)
   .then(r=>r.json()).then(d=>{gcData=d.tonghop||[];renderGioCong();})
   .catch(()=>{document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
@@ -885,18 +871,15 @@ function renderGioCong(){
   if(!gcData.length){
     document.getElementById('gc-so-ngay').textContent='0';
     document.getElementById('gc-tong-gio').textContent='0g';
-    document.getElementById('gc-thieu').textContent='0';
     document.getElementById('gc-content').innerHTML='<div class="gc-empty">📭 Chưa có dữ liệu tháng này</div>';
     return;
   }
-  let tongPhutAll=0,soNgayHT=0,soThieu=0;
+  let tongPhutAll=0,soNgayHT=0;
   gcData.forEach(r=>{
     if(r.trangThai==='HOÀN THÀNH'){soNgayHT++;tongPhutAll+=parseGioCong(r.tongGioCong);}
-    if(r.trangThai==='THIẾU DỮ LIỆU')soThieu++;
   });
   document.getElementById('gc-so-ngay').textContent=soNgayHT;
   document.getElementById('gc-tong-gio').textContent=fmtPhut(tongPhutAll);
-  document.getElementById('gc-thieu').textContent=soThieu;
 
   let rows='';
   gcData.forEach(r=>{
@@ -1022,13 +1005,13 @@ function tinhKhoangCachOSRM(ch){
     loading.style.display='none';
     if(data.code==='Ok' && data.routes && data.routes[0]){
       const dist = data.routes[0].distance; // mét
-      const dur  = data.routes[0].duration * 2.3; // giây — nhân 2.3 cho thực tế VN
+      const dur  = data.routes[0].duration * 1.6; // giây — nhân 1.6 cho thực tế VN
       const distTxt = dist<1000 ? Math.round(dist)+'m' : (dist/1000).toFixed(1)+'km';
       const durPhut = Math.round(dur/60);
       const durTxt  = durPhut < 60
         ? durPhut+'p'
         : Math.floor(durPhut/60)+'g '+String(durPhut%60).padStart(2,'0')+'p';
-      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe';
+      val.textContent=' '+distTxt+' · ~'+durTxt+' lái xe (ước tính)';
     } else {
       const d=haversineMap(userLatLng.lat,userLatLng.lng,lat,lng);
       val.textContent=' ~'+(d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km')+' (đường thẳng)';
