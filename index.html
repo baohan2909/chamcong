@@ -363,6 +363,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-btn-ok   { flex:1; padding:7px; border-radius:8px; border:none; background:var(--green-lt); color:#085041; font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .ns-btn-no   { flex:1; padding:7px; border-radius:8px; border:none; background:var(--red-lt); color:var(--red); font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .ns-empty    { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
+.ns-group-sep { padding:6px 16px 4px; font-size:10px; font-weight:700; color:var(--text-lt); text-transform:uppercase; letter-spacing:.08em; background:var(--bg); border-bottom:0.5px solid var(--border); display:flex; align-items:center; gap:6px; }
+.ns-group-dot { width:6px; height:6px; border-radius:50%; background:var(--green-m); flex-shrink:0; }
 .ns-updated  { font-size:11px; color:var(--text-lt); text-align:center; padding:8px; }
 .ns-refresh  { position:fixed; bottom:90px; right:16px; width:48px; height:48px; border-radius:50%; background:var(--green); color:white; display:none; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 14px rgba(15,110,86,.4); cursor:pointer; z-index:15; border:none; -webkit-tap-highlight-color:transparent; }
 
@@ -664,7 +666,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <!-- Banner cần duyệt nổi bật -->
     <div class="ns-loi-banner" id="ns-loi-banner" style="display:none" onclick="setNSFilter('__loi__')">
       <span class="ns-loi-count" id="ns-loi-count">0</span>
-      <span class="ns-loi-txt">nhân viên cần duyệt công · Bấm để xem</span>
+      <span class="ns-loi-txt">trường hợp cần duyệt công · Bấm để xem</span>
     </div>
     <div class="ns-stats-grid">
       <div class="ns-stat"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm</div></div>
@@ -673,7 +675,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div class="ns-stats-grid" style="margin-top:8px">
       <div class="ns-stat"><div class="ns-stat-val ns-v-gray" id="ns-s-chua">--</div><div class="ns-stat-lbl">Chưa chấm</div></div>
-      <div class="ns-stat"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Cần duyệt</div></div>
+      <div class="ns-stat"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Trường hợp</div></div>
       <div class="ns-stat"><div class="ns-stat-val"           id="ns-s-tong">--</div><div class="ns-stat-lbl">Tổng NS</div></div>
     </div>
     <div class="ns-list" id="ns-list"><div class="ns-empty">⏳ Đang tải nhân sự...</div></div>
@@ -1448,13 +1450,28 @@ function _capNhatBadgeNS(soLoi){
 let nsData=[], nsCBList=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
 let nsSuggestAll=[]; // dữ liệu gợi ý tìm kiếm
 
-// Xây dựng danh sách gợi ý từ CH_LIST + nsData
+// Xây dựng danh sách gợi ý: Cửa hàng + Khu vực từ CH_LIST, NV từ nsData
 function buildNSSuggestData(){
   nsSuggestAll=[];
+  // Khu vực trước (icon 📍)
+  const kvSet=new Set();
   CH_LIST.forEach(ch=>{
-    nsSuggestAll.push({type:'ch',icon:'🏪',main:ch.ten,sub:ch.ma});
-    if(ch.khuVuc&&!nsSuggestAll.find(x=>x.main===ch.khuVuc&&x.type==='kv'))
+    if(ch.khuVuc&&!kvSet.has(ch.khuVuc)){
+      kvSet.add(ch.khuVuc);
       nsSuggestAll.push({type:'kv',icon:'📍',main:ch.khuVuc,sub:'Khu vực'});
+    }
+  });
+  // Cửa hàng (icon 🏪)
+  CH_LIST.forEach(ch=>{
+    nsSuggestAll.push({type:'ch',icon:'🏪',main:ch.ten,sub:ch.ma+(ch.khuVuc?' · '+ch.khuVuc:'')});
+  });
+  // NV thêm sau khi taiNhanSu xong (gọi lại từ taiNhanSu)
+}
+
+function _addNVToSuggest(){
+  nsData.forEach(nv=>{
+    if(!nsSuggestAll.find(x=>x.type==='nv'&&x.sub===nv.ma))
+      nsSuggestAll.push({type:'nv',icon:'👤',main:nv.ten,sub:nv.ma});
   });
 }
 
@@ -1464,10 +1481,13 @@ function onNSSearch(){
   const q=nsSearchQ.toLowerCase();
   const sug=document.getElementById('ns-suggest');
   if(!q){sug.style.display='none';renderNhanSu();return;}
-  // Gợi ý
-  const matched=nsSuggestAll.filter(x=>x.main.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q)).slice(0,6);
+  // Gợi ý — lấy tối đa 3 mỗi loại: khu vực, cửa hàng, nhân viên
+  const kvMatched =nsSuggestAll.filter(x=>x.type==='kv'&&(x.main.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q))).slice(0,3);
+  const chMatched =nsSuggestAll.filter(x=>x.type==='ch'&&(x.main.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q))).slice(0,3);
+  const nvMatched =nsSuggestAll.filter(x=>x.type==='nv'&&(x.main.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q))).slice(0,3);
+  const matched=[...kvMatched,...chMatched,...nvMatched];
   if(matched.length){
-    sug.innerHTML=matched.map((x,i)=>`<div class="ns-sug-item" data-idx="${i}" onclick="chonNSSuggest('${escHtml(x.main)}','${x.type}')"><span class="ns-sug-icon">${x.icon}</span><div><div class="ns-sug-main">${x.main}</div><div class="ns-sug-sub">${x.sub}</div></div></div>`).join('');
+    sug.innerHTML=matched.map((x,i)=>`<div class="ns-sug-item" onclick="chonNSSuggest('${escHtml(x.main)}','${x.type}')"><span class="ns-sug-icon">${x.icon}</span><div><div class="ns-sug-main">${x.main}</div><div class="ns-sug-sub">${x.sub}</div></div></div>`).join('');
     sug.style.display='block';
   } else {
     sug.style.display='none';
@@ -1519,11 +1539,7 @@ function taiNhanSu(forceRefresh){
       banner.style.display='none';
     }
     _capNhatBadgeNS(soCB);
-    // Thêm vào gợi ý tìm kiếm
-    nsData.forEach(nv=>{
-      if(!nsSuggestAll.find(x=>x.main===nv.ten&&x.type==='nv'))
-        nsSuggestAll.push({type:'nv',icon:'👤',main:nv.ten,sub:nv.ma});
-    });
+    _addNVToSuggest(); // thêm NV vào gợi ý
     const now=new Date();
     document.getElementById('ns-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
     _pollLastCount=nsCBList.length; // sync với poll để tránh re-render thừa
@@ -1598,10 +1614,16 @@ function renderNhanSu(){
     return;
   }
 
-  // Các tab khác: hiển thị theo NV như cũ
+  // Các tab khác: hiển thị theo NV, sắp xếp Khu vực → Cửa hàng → Tên
   const list=filtered.filter(nv=>{
     if(nsFilter!=='all'&&nv.trangThai!==nsFilter)return false;
     return true;
+  }).sort((a,b)=>{
+    const kv=(a.khuVuc||'').localeCompare(b.khuVuc||'');
+    if(kv!==0)return kv;
+    const ch=(a.cuaHang||'').localeCompare(b.cuaHang||'');
+    if(ch!==0)return ch;
+    return (a.ten||'').localeCompare(b.ten||'');
   });
   if(!list.length){el.innerHTML='<div class="ns-empty">Không có nhân sự phù hợp.</div>';return;}
 
@@ -1609,6 +1631,7 @@ function renderNhanSu(){
   const avCls={'ĐANG LÀM VIỆC':'ns-av-dang','RA NGOÀI':'ns-av-ra','KẾT THÚC':'ns-av-ket','CHƯA CHẤM':'ns-av-chua'};
   const ttLbl={'ĐANG LÀM VIỆC':'Đang làm','RA NGOÀI':'Ra ngoài','KẾT THÚC':'Hết ca','CHƯA CHẤM':'Chưa chấm'};
 
+  let lastKV='';
   el.innerHTML=list.map(nv=>{
     const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
     const isLoi=nv.xacNhan==='KHÔNG HỢP LỆ';
@@ -1616,14 +1639,17 @@ function renderNhanSu(){
     const badgeCls=isLoi?'nsb-loi':(ttCls[nv.trangThai]||'nsb-chua');
     const badgeLbl=isLoi?'⚠ Cần duyệt':(ttLbl[nv.trangThai]||nv.trangThai);
     const gio=nv.gio?' · '+nv.gio:'';
-    // Nếu NV có lỗi → hiện số cảnh báo
     const nvCB=nsCBList.filter(cb=>cb.maNV===nv.ma);
     const nvCBTxt=nvCB.length>0?`<span style="font-size:10px;color:var(--red);margin-left:4px">(${nvCB.length} CB)</span>`:'';
-    return `<div class="ns-item">
+    // Group separator khi khu vực thay đổi
+    let sep='';
+    const kv=nv.khuVuc||'Chưa phân khu';
+    if(kv!==lastKV){sep=`<div class="ns-group-sep"><span class="ns-group-dot"></span>${kv}</div>`;lastKV=kv;}
+    return sep+`<div class="ns-item">
       <div class="ns-avatar ${avClass}">${initials}</div>
       <div class="ns-info">
         <div class="ns-ten">${nv.ten} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.ma}</span>${nvCBTxt}</div>
-        <div class="ns-sub">${nv.cuaHang}${gio} · ${nv.khuVuc||nv.chucVu}</div>
+        <div class="ns-sub">${nv.cuaHang}${gio}</div>
       </div>
       <span class="ns-badge ${badgeCls}">${badgeLbl}</span>
     </div>`;
