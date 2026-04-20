@@ -204,6 +204,14 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* Giờ công QLNS */
 .gcql-filter { margin:10px 14px 0; display:flex; gap:8px; }
 .gcql-search { flex:1; padding:10px 14px; border-radius:10px; border:1.5px solid var(--border); font-size:14px; outline:none; background:white; box-shadow:var(--shadow); }
+.gcql-daterange { display:flex; align-items:center; gap:6px; margin:8px 14px 0; }
+.gcql-date-inp { flex:1; padding:9px 10px; border-radius:10px; border:1.5px solid var(--border); font-size:13px; outline:none; background:white; box-shadow:var(--shadow); color:var(--text); }
+.gcql-date-inp:focus { border-color:var(--green); }
+.gcql-date-sep { font-size:13px; color:var(--text-m); flex-shrink:0; }
+.gcql-date-btn { padding:9px 14px; border-radius:10px; background:var(--green); color:white; border:none; font-size:13px; font-weight:700; cursor:pointer; flex-shrink:0; -webkit-tap-highlight-color:transparent; }
+.gcql-mode-tabs { display:flex; gap:6px; margin:8px 14px 0; }
+.gcql-mode-tab  { padding:7px 14px; border-radius:20px; border:1.5px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; background:white; color:var(--text-m); -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.gcql-mode-tab.active { border-color:var(--green); background:var(--green-lt); color:#085041; }
 .gcql-search:focus { border-color:var(--green); }
 .gcql-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 14px 0; }
 
@@ -456,25 +464,25 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="gt-sub" id="gt-sub">Chấm công có bất thường. Vui lòng chọn lý do để QLNS xem xét.</div>
     <div class="gt-body">
       <div class="gt-opts" id="gt-opts">
-        <div class="gt-opt" onclick="chonLyDo(this,'GPS yếu / trong TTTM')">
-          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M10.3 15.1a6 6 0 0 1 3.4 0"/><path d="M12 20h.01"/></svg>
-          <span>GPS yếu / TTTM</span>
+        <div class="gt-opt" onclick="chonLyDo(this,'Đi nộp tiền')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          <span>Đi nộp tiền</span>
         </div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Hỗ trợ cửa hàng khác')">
-          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Hỗ trợ CH khác</span>
+        <div class="gt-opt" onclick="chonLyDo(this,'BQL chỉ đạo đi công việc')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>BQL chỉ đạo</span>
         </div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Vừa ra lấy hàng')">
-          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-          <span>Vừa ra lấy hàng</span>
+        <div class="gt-opt" onclick="chonLyDo(this,'Lỗi mạng')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><path d="M12 20h.01"/></svg>
+          <span>Lỗi mạng</span>
         </div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Quên bấm lần trước')">
-          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>Quên bấm trước</span>
-        </div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Lỗi ứng dụng / GPS')">
+        <div class="gt-opt" onclick="chonLyDo(this,'Lỗi ứng dụng')">
           <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
           <span>Lỗi ứng dụng</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'Hỗ trợ cửa hàng khác')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Hỗ trợ CH khác</span>
         </div>
         <div class="gt-opt" onclick="chonLyDo(this,'__khac__')">
           <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
@@ -627,10 +635,28 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
   <!-- PAGE: GIỜ CÔNG TOÀN HỆ THỐNG (QLNS) -->
   <div class="page" id="page-giocong-ql">
-    <div class="gc-header">
+    <div class="gc-header" id="gcql-nav-thang">
       <button class="thang-btn" onclick="doiThangQL(-1)">‹</button>
       <div class="thang-label" id="thang-label-ql">--</div>
       <button class="thang-btn" onclick="doiThangQL(1)">›</button>
+    </div>
+    <div class="gc-header" id="gcql-nav-range" style="display:none">
+      <div class="thang-label" id="thang-label-ql-range" style="font-size:13px">Chọn khoảng ngày bên dưới</div>
+    </div>
+    <!-- Chọn chế độ: tháng hoặc khoảng ngày -->
+    <div class="gcql-mode-tabs">
+      <button class="gcql-mode-tab active" id="gcqlm-thang" onclick="setGCQLMode('thang')">Theo tháng</button>
+      <button class="gcql-mode-tab"        id="gcqlm-range" onclick="setGCQLMode('range')">Khoảng ngày</button>
+    </div>
+    <!-- Lọc tháng (mặc định) -->
+    <div id="gcql-filter-thang" style="margin:8px 14px 0">
+      <!-- điều hướng tháng ở gc-header bên trên -->
+    </div>
+    <!-- Lọc khoảng ngày -->
+    <div id="gcql-filter-range" class="gcql-daterange" style="display:none">
+      <input type="date" class="gcql-date-inp" id="gcql-tu" onchange="taiGioCongQLRange()">
+      <span class="gcql-date-sep">→</span>
+      <input type="date" class="gcql-date-inp" id="gcql-den" onchange="taiGioCongQLRange()">
     </div>
     <div class="gcql-filter">
       <input type="text" class="gcql-search" id="gcql-search"
@@ -655,13 +681,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
              oninput="onNSSearch()" onblur="hideNSSuggest()" autocomplete="off">
       <div class="ns-suggest" id="ns-suggest"></div>
     </div>
-    <div class="ns-tabs">
-      <button class="ns-tab active" id="nst-all"  onclick="setNSFilter('all')">Tất cả</button>
-      <button class="ns-tab"        id="nst-dang" onclick="setNSFilter('ĐANG LÀM VIỆC')">🟢 Đang làm</button>
-      <button class="ns-tab"        id="nst-ra"   onclick="setNSFilter('RA NGOÀI')">🟡 Ra ngoài</button>
-      <button class="ns-tab"        id="nst-ket"  onclick="setNSFilter('KẾT THÚC')">⚫ Hết ca</button>
-      <button class="ns-tab"        id="nst-chua" onclick="setNSFilter('CHƯA CHẤM')">⚪ Chưa chấm</button>
-      <button class="ns-tab"        id="nst-loi"  onclick="setNSFilter('__loi__')">🔴 Cần duyệt</button>
+    <!-- Tab khu vực — tự động từ dữ liệu, xây dựng sau khi tải CH_LIST -->
+    <div class="ns-tabs" id="ns-kv-tabs">
+      <button class="ns-tab active" id="nst-all" title="Tất cả khu vực" onclick="setNSKhuVuc('')">Tất cả</button>
+      <!-- Các tab khu vực được inject bởi JS -->
     </div>
     <!-- Banner cần duyệt nổi bật -->
     <div class="ns-loi-banner" id="ns-loi-banner" style="display:none" onclick="setNSFilter('__loi__')">
@@ -669,14 +692,14 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <span class="ns-loi-txt">trường hợp cần duyệt công · Bấm để xem</span>
     </div>
     <div class="ns-stats-grid">
-      <div class="ns-stat"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm</div></div>
-      <div class="ns-stat"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Ra ngoài</div></div>
-      <div class="ns-stat"><div class="ns-stat-val ns-v-blue"  id="ns-s-ket">--</div><div class="ns-stat-lbl">Hết ca</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('ĐANG LÀM VIỆC')"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm ›</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('RA NGOÀI')"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Ra ngoài ›</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('KẾT THÚC')"><div class="ns-stat-val ns-v-blue"  id="ns-s-ket">--</div><div class="ns-stat-lbl">Hết ca ›</div></div>
     </div>
     <div class="ns-stats-grid" style="margin-top:8px">
-      <div class="ns-stat"><div class="ns-stat-val ns-v-gray" id="ns-s-chua">--</div><div class="ns-stat-lbl">Chưa chấm</div></div>
-      <div class="ns-stat"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Trường hợp</div></div>
-      <div class="ns-stat"><div class="ns-stat-val"           id="ns-s-tong">--</div><div class="ns-stat-lbl">Tổng NS</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('CHƯA CHẤM')"><div class="ns-stat-val ns-v-gray" id="ns-s-chua">--</div><div class="ns-stat-lbl">Chưa chấm ›</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('__loi__')"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Chờ duyệt ›</div></div>
+      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('all')"><div class="ns-stat-val" id="ns-s-tong">--</div><div class="ns-stat-lbl">Tất cả ›</div></div>
     </div>
     <div class="ns-list" id="ns-list"><div class="ns-empty">⏳ Đang tải nhân sự...</div></div>
     <div class="ns-updated" id="ns-updated"></div>
@@ -788,7 +811,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbynIshMfxDkRStoNnXMKXf7QSXBqShbxo0sLZr6Cleloyy7vuEANPLz1AfRz98M-9ZA/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyLsObUM0Zcv_zekE55EDJ4ScA28XHx7bk5nEfuJULL1C_498de-UjnDhwbly8vY4GG/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -903,6 +926,7 @@ function khoiDongApp(){
     CH_LIST=d.cuaHangList||[];
     renderNearby();
     buildNSSuggestData(); // xây dựng gợi ý tìm kiếm nhân sự
+    buildKVTabs();       // xây dựng tab khu vực viết tắt
   }).catch(()=>{});
   taiLichSu();
 }
@@ -1046,11 +1070,11 @@ function doSubmit(){
     if(res.canhBao&&res.canhBao.length>0){
       // Có lỗi → mở modal giải trình, đếm ngược 5 phút
       if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-      const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ GPS ngoài vùng + Sai thứ tự'
-                 :res.coLoiGPS?'⚠️ GPS ngoài vùng':'⚠️ Sai thứ tự chấm công';
+      const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ Chấm công cần xác nhận'
+                 :res.coLoiGPS?'⚠️ Xác nhận cửa hàng':'⚠️ Xác nhận ca làm việc';
       const sub=res.coLoiGPS
-        ?`GPS của bạn cách cửa hàng ${res.khoangCach}m (cho phép ${GPS_RADIUS}m). Vui lòng giải trình để QLNS xét duyệt.`
-        :'Thứ tự chấm công không đúng. Vui lòng giải trình để QLNS xét duyệt.';
+        ?'Thông tin chấm công tại cửa hàng này cần được xác nhận. Vui lòng giải trình để quản lý duyệt.'
+        :'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
       openGiaiTrinh(title,sub,ngayCham);
       startGtTimer(300); // 5 phút
     } else {
@@ -1113,8 +1137,10 @@ function taiLichSu(){
       let loiType='';
       if(isLoi){
         const gc=(l.ghiChu||'').toLowerCase();
-        if(gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
-        else if(gc.includes('thiếu')||gc.includes('chưa ra ca')) loiType='thieu';
+        const xn=(l.xacNhan||'').toLowerCase();
+        // Dùng tên loại cảnh báo mới: SAI CỬA HÀNG, SAI CA, THIẾU CA
+        if(gc.includes('sai cửa hàng')||gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
+        else if(gc.includes('thiếu')||gc.includes('chưa ra ca')||gc.includes('thiếu ca')) loiType='thieu';
         else loiType='ca';
       }
       logs.push({
@@ -1139,7 +1165,7 @@ function renderLog(){
     let stTxt='',stCls='ls-ok';
     if(isLoi){
       stCls=l.loiType==='gps'?'ls-gps':'ls-ca';
-      stTxt=l.loiType==='gps'?'Sai vị trí':l.loiType==='thieu'?'Thiếu Ra ca':'Sai ca';
+      stTxt=l.loiType==='gps'?'Sai cửa hàng':l.loiType==='thieu'?'Thiếu Ra ca':'Sai ca';
     }
     // Nút giải trình — chỉ hiện cho dòng lỗi
     let errRow='';
@@ -1226,6 +1252,66 @@ function renderGioCong(){
 function parseGioCong(str){if(!str)return 0;const g=str.match(/(\d+)g/),p=str.match(/(\d+)p/);return(g?parseInt(g[1]):0)*60+(p?parseInt(p[1]):0);}
 
 // ─── GIỜ CÔNG TOÀN HỆ THỐNG (QLNS) ─────────────────────────
+// ─── GIỜ CÔNG QLNS — MODE + DATE RANGE ─────────────────────
+let gcqlMode='thang'; // 'thang' | 'range'
+function setGCQLMode(mode){
+  gcqlMode=mode;
+  document.querySelectorAll('.gcql-mode-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('gcqlm-'+mode).classList.add('active');
+  if(mode==='thang'){
+    document.getElementById('gcql-nav-thang').style.display='';
+    document.getElementById('gcql-nav-range').style.display='none';
+    document.getElementById('gcql-filter-range').style.display='none';
+    taiGioCongQL();
+  } else {
+    document.getElementById('gcql-nav-thang').style.display='none';
+    document.getElementById('gcql-nav-range').style.display='';
+    document.getElementById('gcql-filter-range').style.display='flex';
+    // Mặc định: đầu tháng → hôm nay
+    const now=new Date();
+    const y=now.getFullYear(),m=pad(now.getMonth()+1),d=pad(now.getDate());
+    const dauThang=`${y}-${m}-01`;
+    const homNay=`${y}-${m}-${d}`;
+    if(!document.getElementById('gcql-tu').value)
+      document.getElementById('gcql-tu').value=dauThang;
+    if(!document.getElementById('gcql-den').value)
+      document.getElementById('gcql-den').value=homNay;
+    taiGioCongQLRange();
+  }
+}
+function taiGioCongQLRange(){
+  const tu=document.getElementById('gcql-tu').value;
+  const den=document.getElementById('gcql-den').value;
+  if(!tu||!den)return;
+  if(tu>den){document.getElementById('gcql-den').value=tu;return;}
+  document.getElementById('gcql-nav-range').querySelector('.thang-label').textContent=
+    fmtNgay(tu)+' → '+fmtNgay(den);
+  document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
+  ['gcql-nv','gcql-ngay','gcql-gio'].forEach(id=>document.getElementById(id).textContent='--');
+  // Lấy dữ liệu theo tháng rồi filter theo range
+  // Cần fetch toàn bộ tháng liên quan
+  const thangTu=tu.substring(0,7), thangDen=den.substring(0,7);
+  const fetches=[];
+  let cur=thangTu;
+  while(cur<=thangDen){
+    fetches.push(fetch(SCRIPT_URL+'?type=tonghop_all&thang='+cur).then(r=>r.json()));
+    const [y,m]=cur.split('-').map(Number);
+    const next=new Date(y,m,1);
+    cur=next.getFullYear()+'-'+pad(next.getMonth()+1);
+  }
+  Promise.all(fetches).then(results=>{
+    const all=results.flatMap(r=>r.tonghopAll||[]);
+    gcDataQL=all.filter(r=>r.ngay>=tu&&r.ngay<=den);
+    renderGioCongQL();
+  }).catch(()=>{
+    document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
+  });
+}
+function fmtNgay(s){
+  if(!s)return'--';
+  const p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];
+}
+
 function doiThangQL(delta){
   const [y,m]=gcThangQL.split('-').map(Number);
   const d=new Date(y,m-1+delta,1);
@@ -1450,6 +1536,53 @@ function _capNhatBadgeNS(soLoi){
 let nsData=[], nsCBList=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
 let nsSuggestAll=[]; // dữ liệu gợi ý tìm kiếm
 
+// ─── MAP KHU VỰC VIẾT TẮT ───────────────────────────────────
+const KV_VIET_TAT = {
+  'hồ chí minh':'HCM', 'ho chi minh':'HCM', 'hcm':'HCM',
+  'hà nội':'HN', 'ha noi':'HN', 'hn':'HN',
+  'miền tây':'MT', 'mien tay':'MT', 'mt':'MT',
+  'trung tây nguyên':'TTN', 'tây nguyên':'TTN', 'tay nguyen':'TTN', 'ttn':'TTN',
+  'miền đông':'MĐ', 'mien dong':'MĐ', 'mđ':'MĐ',
+  'bắc trung bộ':'TB', 'bac trung bo':'TB',   // TB = tỉnh bắc
+};
+function _viTatKV(kv){
+  if(!kv)return kv;
+  const lower=kv.toLowerCase();
+  for(const [k,v] of Object.entries(KV_VIET_TAT))
+    if(lower.includes(k))return v;
+  // Tự viết tắt: lấy chữ cái đầu mỗi từ, tối đa 3 ký tự
+  return kv.split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().substring(0,3);
+}
+
+let nsKhuVucFilter=''; // filter khu vực riêng (khác nsFilter)
+
+function buildKVTabs(){
+  const kvSet=new Set(CH_LIST.map(ch=>ch.khuVuc).filter(Boolean));
+  const tabsEl=document.getElementById('ns-kv-tabs');
+  if(!tabsEl)return;
+  // Xóa tab cũ trừ "Tất cả"
+  Array.from(tabsEl.children).slice(1).forEach(el=>el.remove());
+  [...kvSet].sort().forEach(kv=>{
+    const btn=document.createElement('button');
+    btn.className='ns-tab';
+    btn.textContent=_viTatKV(kv);
+    btn.title=kv; // tooltip tên đầy đủ
+    btn.onclick=()=>setNSKhuVuc(kv);
+    tabsEl.appendChild(btn);
+  });
+}
+
+function setNSKhuVuc(kv){
+  nsKhuVucFilter=kv;
+  document.querySelectorAll('#ns-kv-tabs .ns-tab').forEach(b=>{
+    b.classList.toggle('active',
+      (kv===''&&(b.id==='nst-all'||b.title===''||b.title==='Tất cả khu vực')) ||
+      (kv!==''&&b.title===kv)
+    );
+  });
+  renderNhanSu();
+}
+
 // Xây dựng danh sách gợi ý: Cửa hàng + Khu vực từ CH_LIST, NV từ nsData
 function buildNSSuggestData(){
   nsSuggestAll=[];
@@ -1506,9 +1639,9 @@ function hideNSSuggest(){setTimeout(()=>{document.getElementById('ns-suggest').s
 
 function setNSFilter(filter){
   nsFilter=filter;
-  document.querySelectorAll('.ns-tab').forEach(b=>b.classList.remove('active'));
-  const ids={'all':'nst-all','ĐANG LÀM VIỆC':'nst-dang','RA NGOÀI':'nst-ra','KẾT THÚC':'nst-ket','CHƯA CHẤM':'nst-chua','__loi__':'nst-loi'};
-  const el=document.getElementById(ids[filter]);if(el)el.classList.add('active');
+  // Scroll lên đầu danh sách khi bấm filter
+  const listEl=document.getElementById('ns-list');
+  if(listEl)listEl.scrollIntoView({behavior:'smooth',block:'start'});
   renderNhanSu();
 }
 
@@ -1551,8 +1684,13 @@ function taiNhanSu(forceRefresh){
 
 function renderNhanSu(){
   const q=nsSearchQ.toLowerCase();
+  // Lọc theo tab khu vực trước
+  const byKV = nsKhuVucFilter
+    ? nsData.filter(nv=>nv.khuVuc===nsKhuVucFilter)
+    : nsData;
+
   // Lọc theo search query — nếu chọn từ gợi ý, lọc chính xác theo loại
-  const filtered=nsData.filter(nv=>{
+  const filtered=byKV.filter(nv=>{
     if(!q)return true;
     if(nsSuggestType==='kv') return nv.khuVuc.toLowerCase().includes(q);
     if(nsSuggestType==='ch') return nv.cuaHang.toLowerCase().includes(q);
