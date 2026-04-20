@@ -382,6 +382,19 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
 @keyframes spin { to{transform:rotate(360deg);} }
 .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+
+/* Badge thông báo tab Nhân Sự */
+.nav-badge {
+  position:absolute; top:6px; right:4px;
+  min-width:16px; height:16px;
+  background:var(--red); color:white;
+  font-size:10px; font-weight:700;
+  border-radius:99px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+.nav-item { position:relative; }
+
 </style>
 </head>
 <body>
@@ -743,6 +756,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <button class="nav-item" id="nav-nhansu" onclick="goToPage('nhansu')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <div class="nav-label">Nhân sự</div>
+      <span class="nav-badge" id="ns-nav-badge" style="display:none"></span>
     </button>
     <button class="nav-item" id="nav-taikhoan" onclick="goToPage('taikhoan')">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -752,7 +766,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwQxjjsEpi93nIajgv2qqaOOCNZq5l4_gJxm54upwRbaJ3C23ESojYWKnL1X2jj4mHC/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwXtys02HeDQBo_x6yOE-2XsnRiPPdM7wwjQ6IWJarijrm0EtlMEDimvAjQTExgRKhF/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -851,11 +865,9 @@ function khoiDongApp(){
   gcThangQL=gcThang;
   lastDay=now.getDate();
 
-  // Tự điền cửa hàng mặc định
-  if(SESSION.cuaHangMa&&SESSION.cuaHangTen){
-    document.getElementById('input-ch-display').value=SESSION.cuaHangTen;
-    document.getElementById('sel-cuahang').value=SESSION.cuaHangMa;
-  }
+  // Không điền sẵn cửa hàng — nhân viên phải chủ động chọn để tránh sai sót khi đi hỗ trợ
+  // document.getElementById('input-ch-display').value=SESSION.cuaHangTen;
+  // document.getElementById('sel-cuahang').value=SESSION.cuaHangMa;
 
   // Phân quyền QLNS/ADMIN
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
@@ -1125,7 +1137,7 @@ function renderLog(){
         <span class="log-badge ${l.lbcls}">${l.loai}</span>
         <span class="log-time">${l.time}</span>
         ${l.tenCH?`<span class="log-ch">· ${l.tenCH}</span>`:''}
-        ${isLoi?`<span class="log-st ${stCls}">⚠ ${stTxt}</span>`:''}
+        ${isLoi?`<span class="log-st ${stCls}">⚠ ${stTxt}</span>`:`<span class="log-st ls-ok">✓ Hợp lệ</span>`}
       </div>
       ${errRow}
     </div>`;
@@ -1363,8 +1375,17 @@ function guiGiaiTrinh(){
   }).catch(()=>{btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';});
 }
 
+
+// ─── BADGE THÔNG BÁO TAB NHÂN SỰ ───────────────────────────
+function _capNhatBadgeNS(soLoi){
+  const badge=document.getElementById('ns-nav-badge');
+  if(!badge)return;
+  if(soLoi>0){badge.textContent=soLoi>99?'99+':String(soLoi);badge.style.display='flex';}
+  else{badge.style.display='none';}
+}
+
 // ─── TAB NHÂN SỰ (QLNS) ─────────────────────────────────────
-let nsData=[], nsFilter='all', nsSearchQ='';
+let nsData=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
 let nsSuggestAll=[]; // dữ liệu gợi ý tìm kiếm
 
 // Xây dựng danh sách gợi ý từ CH_LIST + nsData
@@ -1378,6 +1399,7 @@ function buildNSSuggestData(){
 }
 
 function onNSSearch(){
+  nsSuggestType=''; // reset khi gõ tay
   nsSearchQ=document.getElementById('ns-search').value.trim();
   const q=nsSearchQ.toLowerCase();
   const sug=document.getElementById('ns-suggest');
@@ -1396,6 +1418,7 @@ function escHtml(s){return String(s).replace(/'/g,"\\'")}
 function chonNSSuggest(val,type){
   document.getElementById('ns-search').value=val;
   nsSearchQ=val;
+  nsSuggestType=type; // lưu type để filter chính xác
   document.getElementById('ns-suggest').style.display='none';
   renderNhanSu();
 }
@@ -1425,7 +1448,7 @@ function taiNhanSu(forceRefresh){
     document.getElementById('ns-s-chua').textContent=d.stats.chuaCham;
     document.getElementById('ns-s-loi').textContent=d.stats.coCanBao;
     document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu;
-    // Banner cần duyệt
+    // Banner cần duyệt + badge tab
     const banner=document.getElementById('ns-loi-banner');
     if(d.stats.coCanBao>0){
       document.getElementById('ns-loi-count').textContent=d.stats.coCanBao;
@@ -1433,6 +1456,7 @@ function taiNhanSu(forceRefresh){
     } else {
       banner.style.display='none';
     }
+    _capNhatBadgeNS(d.stats.coCanBao);
     // Thêm vào gợi ý tìm kiếm
     nsData.forEach(nv=>{
       if(!nsSuggestAll.find(x=>x.main===nv.ten&&x.type==='nv'))
@@ -1448,11 +1472,34 @@ function taiNhanSu(forceRefresh){
 
 function renderNhanSu(){
   const q=nsSearchQ.toLowerCase();
-  const list=nsData.filter(nv=>{
+  // Lọc theo search query — nếu chọn từ gợi ý, lọc chính xác theo loại
+  const filtered=nsData.filter(nv=>{
+    if(!q)return true;
+    if(nsSuggestType==='kv') return nv.khuVuc.toLowerCase().includes(q);
+    if(nsSuggestType==='ch') return nv.cuaHang.toLowerCase().includes(q);
+    return nv.ma.toLowerCase().includes(q)||nv.ten.toLowerCase().includes(q)||
+           nv.cuaHang.toLowerCase().includes(q)||nv.khuVuc.toLowerCase().includes(q);
+  });
+  // Cập nhật thống kê theo kết quả đã lọc (nếu có filter text, stats thay đổi)
+  const statsBase = q ? filtered : nsData;
+  document.getElementById('ns-s-dang').textContent=statsBase.filter(n=>n.trangThai==='ĐANG LÀM VIỆC').length;
+  document.getElementById('ns-s-ra').textContent=statsBase.filter(n=>n.trangThai==='RA NGOÀI').length;
+  document.getElementById('ns-s-ket').textContent=statsBase.filter(n=>n.trangThai==='KẾT THÚC').length;
+  document.getElementById('ns-s-chua').textContent=statsBase.filter(n=>n.trangThai==='CHƯA CHẤM').length;
+  const loiCount=statsBase.filter(n=>n.xacNhan==='KHÔNG HỢP LỆ').length;
+  document.getElementById('ns-s-loi').textContent=loiCount;
+  document.getElementById('ns-s-tong').textContent=statsBase.length;
+  // Banner cần duyệt
+  const banner=document.getElementById('ns-loi-banner');
+  if(loiCount>0){document.getElementById('ns-loi-count').textContent=loiCount;banner.style.display='flex';}
+  else{banner.style.display='none';}
+  // Badge tab Nhân Sự (điểm đỏ thông báo)
+  _capNhatBadgeNS(nsData.filter(n=>n.xacNhan==='KHÔNG HỢP LỆ').length);
+
+  // Áp dụng filter tab lên danh sách đã lọc search
+  const list=filtered.filter(nv=>{
     if(nsFilter==='__loi__'&&nv.xacNhan!=='KHÔNG HỢP LỆ')return false;
     if(nsFilter!=='__loi__'&&nsFilter!=='all'&&nv.trangThai!==nsFilter)return false;
-    if(q&&!nv.ma.toLowerCase().includes(q)&&!nv.ten.toLowerCase().includes(q)&&
-          !nv.cuaHang.toLowerCase().includes(q)&&!nv.khuVuc.toLowerCase().includes(q))return false;
     return true;
   });
   const el=document.getElementById('ns-list');
@@ -1470,12 +1517,18 @@ function renderNhanSu(){
     const badgeCls=isLoi?'nsb-loi':(ttCls[nv.trangThai]||'nsb-chua');
     const badgeLbl=isLoi?'⚠ Cần duyệt':(ttLbl[nv.trangThai]||nv.trangThai);
     const gio=nv.gio?' · '+nv.gio:'';
-    // Preview giải trình (rút gọn)
-    const gtPreview=nv.ghiChu?`<div class="ns-gt-preview" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','${escHtml(nv.ghiChu||'')}','${escHtml(nv.xacNhan||'')}')">💬 ${nv.ghiChu.substring(0,40)}${nv.ghiChu.length>40?'...':''}</div>`:
-                    (isLoi?`<div class="ns-gt-preview" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','','${escHtml(nv.xacNhan||'')}')">Chưa có giải trình · Bấm để xem</div>`:'');
-    // Nút duyệt
+    // Preview giải trình (rút gọn) — luôn hiện khi cần duyệt
+    let gtPreview='';
+    if(isLoi){
+      if(nv.ghiChu){
+        gtPreview=`<div class="ns-gt-preview" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','${escHtml(nv.ghiChu||'')}','${escHtml(nv.xacNhan||'')}')">💬 <strong style="color:var(--amber)">Đã giải trình:</strong> ${nv.ghiChu.substring(0,35)}${nv.ghiChu.length>35?'...':''}</div>`;
+      } else {
+        gtPreview=`<div class="ns-gt-preview" style="color:var(--red)" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','','${escHtml(nv.xacNhan||'')}')">⚠ Chưa giải trình · Bấm để xem chi tiết</div>`;
+      }
+    }
+    // Nút duyệt — luôn hiện khi KHÔNG HỢP LỆ (dù đã giải trình hay chưa)
     const btnDuyet=isLoi&&isQL?`<div class="ns-duyet-wrap">
-      <button class="ns-btn-ok" onclick="duyetNhanSu(event,'${nv.ma}','Duyệt')">✓ Duyệt</button>
+      <button class="ns-btn-ok" onclick="duyetNhanSu(event,'${nv.ma}','Duyệt')">✓ Duyệt công</button>
       <button class="ns-btn-no" onclick="duyetNhanSu(event,'${nv.ma}','Không duyệt')">✗ Từ chối</button>
     </div>`:'';
     return `<div class="ns-item">
