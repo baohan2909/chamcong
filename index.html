@@ -264,9 +264,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gt-sub    { font-size:12px; color:var(--text-m); padding:8px 20px 10px; line-height:1.5; }
 .gt-body   { padding:0 16px 20px; }
 .gt-opts   { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
-.gt-opt    { padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); font-size:13px; font-weight:500; cursor:pointer; text-align:center; transition:all .15s; background:var(--gray-lt); -webkit-tap-highlight-color:transparent; }
-.gt-opt.sel { border-color:var(--green); background:var(--green-lt); color:#085041; }
+.gt-opt    { padding:12px 8px; border-radius:12px; border:1.5px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; text-align:center; transition:all .15s; background:var(--gray-lt); -webkit-tap-highlight-color:transparent; display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--text-m); }
+.gt-opt.sel { border-color:var(--green); background:var(--green-lt); color:var(--green); }
+.gt-opt.sel .gt-opt-svg { stroke:var(--green); }
 .gt-opt:active { transform:scale(.97); }
+.gt-opt-svg { width:22px; height:22px; stroke:var(--text-m); flex-shrink:0; }
 .gt-input  { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; outline:none; background:var(--gray-lt); resize:none; font-family:inherit; transition:border-color .15s; }
 .gt-input:focus { border-color:var(--green); background:white; }
 .gt-btn    { width:100%; padding:14px; border-radius:12px; font-size:15px; font-weight:700; background:var(--green); color:white; border:none; cursor:pointer; margin-top:12px; transition:all .15s; }
@@ -452,12 +454,30 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="gt-sub" id="gt-sub">Chấm công có bất thường. Vui lòng chọn lý do để QLNS xem xét.</div>
     <div class="gt-body">
       <div class="gt-opts" id="gt-opts">
-        <div class="gt-opt" onclick="chonLyDo(this,'GPS yếu / trong TTTM')">📶 GPS yếu / TTTM</div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Hỗ trợ cửa hàng khác')">🤝 Hỗ trợ CH khác</div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Vừa ra lấy hàng')">📦 Vừa ra lấy hàng</div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Quên bấm lần trước')">⏪ Quên bấm trước</div>
-        <div class="gt-opt" onclick="chonLyDo(this,'Lỗi ứng dụng / GPS')">🔧 Lỗi ứng dụng</div>
-        <div class="gt-opt" onclick="chonLyDo(this,'__khac__')">✏️ Lý do khác...</div>
+        <div class="gt-opt" onclick="chonLyDo(this,'GPS yếu / trong TTTM')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M10.3 15.1a6 6 0 0 1 3.4 0"/><path d="M12 20h.01"/></svg>
+          <span>GPS yếu / TTTM</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'Hỗ trợ cửa hàng khác')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Hỗ trợ CH khác</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'Vừa ra lấy hàng')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span>Vừa ra lấy hàng</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'Quên bấm lần trước')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Quên bấm trước</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'Lỗi ứng dụng / GPS')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+          <span>Lỗi ứng dụng</span>
+        </div>
+        <div class="gt-opt" onclick="chonLyDo(this,'__khac__')">
+          <svg class="gt-opt-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          <span>Lý do khác</span>
+        </div>
       </div>
       <textarea class="gt-input" id="gt-input" rows="2" placeholder="Mô tả thêm chi tiết..." style="display:none"></textarea>
       <div class="gt-err" id="gt-err"></div>
@@ -766,7 +786,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwXtys02HeDQBo_x6yOE-2XsnRiPPdM7wwjQ6IWJarijrm0EtlMEDimvAjQTExgRKhF/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbynIshMfxDkRStoNnXMKXf7QSXBqShbxo0sLZr6Cleloyy7vuEANPLz1AfRz98M-9ZA/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -811,7 +831,8 @@ function goToPage(page){
   if(page==='giocong-ql') taiGioCongQL();
   if(page==='taikhoan')   renderTaiKhoan();
   if(page==='bandochidung')khoiDongBanDo();
-  if(page==='nhansu')     taiNhanSu();
+  if(page==='nhansu'){taiNhanSu();startNSPolling();}
+  else{stopNSPolling();}
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
 function navGioCong(){
@@ -1376,6 +1397,45 @@ function guiGiaiTrinh(){
 }
 
 
+// ─── REAL-TIME POLLING CHO QLNS ────────────────────────────
+// Poll nhẹ mỗi 30s khi đang ở tab Nhân Sự
+// Chỉ fetch và cập nhật nếu số cảnh báo thay đổi
+let _pollTimer=null, _pollLastCount=-1;
+function startNSPolling(){
+  stopNSPolling();
+  _pollTimer=setInterval(()=>{
+    if(currentPage!=='nhansu')return;
+    fetch(SCRIPT_URL+'?type=nhansu')
+    .then(r=>r.json()).then(res=>{
+      if(!res.nhanSu)return;
+      const d=res.nhanSu;
+      const newCBList=d.canhBaoChuaXuLy||[];
+      const newCount=newCBList.length;
+      // Chỉ update UI nếu số cảnh báo thay đổi (tránh re-render thừa)
+      if(newCount!==_pollLastCount){
+        _pollLastCount=newCount;
+        nsData=d.danhSach||[];
+        nsCBList=newCBList;
+        // Cập nhật stats
+        document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec;
+        document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
+        document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
+        document.getElementById('ns-s-chua').textContent=d.stats.chuaCham;
+        document.getElementById('ns-s-loi').textContent=newCount;
+        document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu;
+        const banner=document.getElementById('ns-loi-banner');
+        if(newCount>0){document.getElementById('ns-loi-count').textContent=newCount;banner.style.display='flex';}
+        else banner.style.display='none';
+        _capNhatBadgeNS(newCount);
+        renderNhanSu();
+        const now=new Date();
+        document.getElementById('ns-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+' (tự động)';
+      }
+    }).catch(()=>{});
+  },30000); // 30 giây
+}
+function stopNSPolling(){clearInterval(_pollTimer);_pollTimer=null;}
+
 // ─── BADGE THÔNG BÁO TAB NHÂN SỰ ───────────────────────────
 function _capNhatBadgeNS(soLoi){
   const badge=document.getElementById('ns-nav-badge');
@@ -1385,7 +1445,7 @@ function _capNhatBadgeNS(soLoi){
 }
 
 // ─── TAB NHÂN SỰ (QLNS) ─────────────────────────────────────
-let nsData=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
+let nsData=[], nsCBList=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
 let nsSuggestAll=[]; // dữ liệu gợi ý tìm kiếm
 
 // Xây dựng danh sách gợi ý từ CH_LIST + nsData
@@ -1442,21 +1502,23 @@ function taiNhanSu(forceRefresh){
     if(!res.nhanSu)return;
     const d=res.nhanSu;
     nsData=d.danhSach||[];
+    nsCBList=d.canhBaoChuaXuLy||[]; // danh sách từng cảnh báo riêng lẻ
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec;
     document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
     document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
     document.getElementById('ns-s-chua').textContent=d.stats.chuaCham;
-    document.getElementById('ns-s-loi').textContent=d.stats.coCanBao;
+    const soCB=nsCBList.length; // đếm theo số cảnh báo, không theo NV
+    document.getElementById('ns-s-loi').textContent=soCB;
     document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu;
     // Banner cần duyệt + badge tab
     const banner=document.getElementById('ns-loi-banner');
-    if(d.stats.coCanBao>0){
-      document.getElementById('ns-loi-count').textContent=d.stats.coCanBao;
+    if(soCB>0){
+      document.getElementById('ns-loi-count').textContent=soCB;
       banner.style.display='flex';
     } else {
       banner.style.display='none';
     }
-    _capNhatBadgeNS(d.stats.coCanBao);
+    _capNhatBadgeNS(soCB);
     // Thêm vào gợi ý tìm kiếm
     nsData.forEach(nv=>{
       if(!nsSuggestAll.find(x=>x.main===nv.ten&&x.type==='nv'))
@@ -1464,6 +1526,7 @@ function taiNhanSu(forceRefresh){
     });
     const now=new Date();
     document.getElementById('ns-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    _pollLastCount=nsCBList.length; // sync với poll để tránh re-render thừa
     renderNhanSu();
     document.getElementById('ns-refresh-btn').style.display='flex';
   })
@@ -1486,29 +1549,65 @@ function renderNhanSu(){
   document.getElementById('ns-s-ra').textContent=statsBase.filter(n=>n.trangThai==='RA NGOÀI').length;
   document.getElementById('ns-s-ket').textContent=statsBase.filter(n=>n.trangThai==='KẾT THÚC').length;
   document.getElementById('ns-s-chua').textContent=statsBase.filter(n=>n.trangThai==='CHƯA CHẤM').length;
-  const loiCount=statsBase.filter(n=>n.xacNhan==='KHÔNG HỢP LỆ').length;
+  // Đếm cảnh báo theo từng trường hợp (nsCBList) lọc theo search
+  const cbFiltered = q ? nsCBList.filter(cb =>
+    cb.maNV.toLowerCase().includes(q)||cb.tenNV.toLowerCase().includes(q)||
+    (nsSuggestType==='kv'?false:true) // khu vực không filter cb
+  ) : nsCBList;
+  const loiCount=cbFiltered.length;
   document.getElementById('ns-s-loi').textContent=loiCount;
   document.getElementById('ns-s-tong').textContent=statsBase.length;
   // Banner cần duyệt
   const banner=document.getElementById('ns-loi-banner');
   if(loiCount>0){document.getElementById('ns-loi-count').textContent=loiCount;banner.style.display='flex';}
   else{banner.style.display='none';}
-  // Badge tab Nhân Sự (điểm đỏ thông báo)
-  _capNhatBadgeNS(nsData.filter(n=>n.xacNhan==='KHÔNG HỢP LỆ').length);
+  // Badge tab — luôn dùng tổng toàn hệ thống
+  _capNhatBadgeNS(nsCBList.length);
 
-  // Áp dụng filter tab lên danh sách đã lọc search
+  const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
+  const el=document.getElementById('ns-list');
+
+  // Tab "Cần duyệt": hiển thị từng CẢNH BÁO riêng lẻ
+  if(nsFilter==='__loi__'){
+    const cbShow=cbFiltered;
+    if(!cbShow.length){el.innerHTML='<div class="ns-empty">Không có trường hợp cần duyệt.</div>';return;}
+    el.innerHTML=cbShow.map(cb=>{
+      const initials=cb.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
+      const daDaGT=!!cb.giaiTrinh;
+      const gtPreview=daDaGT
+        ?`<div class="ns-gt-preview" onclick="xemCBChiTiet(${cb.cbRowIdx},'${escHtml(cb.maNV)}','${escHtml(cb.tenNV)}','${escHtml(cb.noiDung)}','${escHtml(cb.giaiTrinh)}')">
+            <span style="color:var(--amber);font-weight:700">Đã giải trình:</span> ${cb.giaiTrinh.substring(0,35)}${cb.giaiTrinh.length>35?'...':''}
+          </div>`
+        :`<div class="ns-gt-preview" style="color:var(--red)" onclick="xemCBChiTiet(${cb.cbRowIdx},'${escHtml(cb.maNV)}','${escHtml(cb.tenNV)}','${escHtml(cb.noiDung)}','')">
+            Chưa giải trình · Bấm để xem cảnh báo
+          </div>`;
+      const btnDuyet=isQL?`<div class="ns-duyet-wrap">
+        <button class="ns-btn-ok" onclick="duyetCB(event,${cb.cbRowIdx},'${cb.maNV}','Duyệt')">✓ Duyệt</button>
+        <button class="ns-btn-no" onclick="duyetCB(event,${cb.cbRowIdx},'${cb.maNV}','Không duyệt')">✗ Từ chối</button>
+      </div>`:'';
+      return `<div class="ns-item" id="cb-row-${cb.cbRowIdx}">
+        <div class="ns-avatar ns-av-loi">${initials}</div>
+        <div class="ns-info">
+          <div class="ns-ten">${cb.tenNV} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${cb.maNV}</span></div>
+          <div class="ns-sub">${cb.loaiCB} · ${cb.gio}</div>
+          ${gtPreview}${btnDuyet}
+        </div>
+        <span class="ns-badge nsb-loi">${daDaGT?'Đã giải trình':'Chưa GT'}</span>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // Các tab khác: hiển thị theo NV như cũ
   const list=filtered.filter(nv=>{
-    if(nsFilter==='__loi__'&&nv.xacNhan!=='KHÔNG HỢP LỆ')return false;
-    if(nsFilter!=='__loi__'&&nsFilter!=='all'&&nv.trangThai!==nsFilter)return false;
+    if(nsFilter!=='all'&&nv.trangThai!==nsFilter)return false;
     return true;
   });
-  const el=document.getElementById('ns-list');
   if(!list.length){el.innerHTML='<div class="ns-empty">Không có nhân sự phù hợp.</div>';return;}
 
   const ttCls={'ĐANG LÀM VIỆC':'nsb-dang','RA NGOÀI':'nsb-ra','KẾT THÚC':'nsb-ket','CHƯA CHẤM':'nsb-chua'};
   const avCls={'ĐANG LÀM VIỆC':'ns-av-dang','RA NGOÀI':'ns-av-ra','KẾT THÚC':'ns-av-ket','CHƯA CHẤM':'ns-av-chua'};
   const ttLbl={'ĐANG LÀM VIỆC':'Đang làm','RA NGOÀI':'Ra ngoài','KẾT THÚC':'Hết ca','CHƯA CHẤM':'Chưa chấm'};
-  const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
 
   el.innerHTML=list.map(nv=>{
     const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
@@ -1517,30 +1616,75 @@ function renderNhanSu(){
     const badgeCls=isLoi?'nsb-loi':(ttCls[nv.trangThai]||'nsb-chua');
     const badgeLbl=isLoi?'⚠ Cần duyệt':(ttLbl[nv.trangThai]||nv.trangThai);
     const gio=nv.gio?' · '+nv.gio:'';
-    // Preview giải trình (rút gọn) — luôn hiện khi cần duyệt
-    let gtPreview='';
-    if(isLoi){
-      if(nv.ghiChu){
-        gtPreview=`<div class="ns-gt-preview" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','${escHtml(nv.ghiChu||'')}','${escHtml(nv.xacNhan||'')}')">💬 <strong style="color:var(--amber)">Đã giải trình:</strong> ${nv.ghiChu.substring(0,35)}${nv.ghiChu.length>35?'...':''}</div>`;
-      } else {
-        gtPreview=`<div class="ns-gt-preview" style="color:var(--red)" onclick="xemGiaiTrinhChiTiet('${escHtml(nv.ma)}','${escHtml(nv.ten)}','','${escHtml(nv.xacNhan||'')}')">⚠ Chưa giải trình · Bấm để xem chi tiết</div>`;
-      }
-    }
-    // Nút duyệt — luôn hiện khi KHÔNG HỢP LỆ (dù đã giải trình hay chưa)
-    const btnDuyet=isLoi&&isQL?`<div class="ns-duyet-wrap">
-      <button class="ns-btn-ok" onclick="duyetNhanSu(event,'${nv.ma}','Duyệt')">✓ Duyệt công</button>
-      <button class="ns-btn-no" onclick="duyetNhanSu(event,'${nv.ma}','Không duyệt')">✗ Từ chối</button>
-    </div>`:'';
+    // Nếu NV có lỗi → hiện số cảnh báo
+    const nvCB=nsCBList.filter(cb=>cb.maNV===nv.ma);
+    const nvCBTxt=nvCB.length>0?`<span style="font-size:10px;color:var(--red);margin-left:4px">(${nvCB.length} CB)</span>`:'';
     return `<div class="ns-item">
       <div class="ns-avatar ${avClass}">${initials}</div>
       <div class="ns-info">
-        <div class="ns-ten">${nv.ten} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.ma}</span></div>
+        <div class="ns-ten">${nv.ten} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.ma}</span>${nvCBTxt}</div>
         <div class="ns-sub">${nv.cuaHang}${gio} · ${nv.khuVuc||nv.chucVu}</div>
-        ${gtPreview}${btnDuyet}
       </div>
       <span class="ns-badge ${badgeCls}">${badgeLbl}</span>
     </div>`;
   }).join('');
+}
+
+// Duyệt từng cảnh báo riêng lẻ theo cbRowIdx
+function duyetCB(event,cbRowIdx,maNV,quyetDinh){
+  event.stopPropagation();
+  const ngay=new Date().toISOString().substring(0,10);
+  const wrap=event.target.closest('.ns-duyet-wrap');
+  const btns=wrap?wrap.querySelectorAll('button'):[];
+  // Phản hồi UI ngay lập tức
+  btns.forEach(b=>{b.disabled=true;});
+  const okBtn=event.target.closest('.ns-btn-ok')||event.target.closest('.ns-btn-no');
+  if(okBtn){okBtn.textContent='Đang xử lý...';}
+  // Xóa row khỏi UI ngay (optimistic update)
+  const row=document.getElementById('cb-row-'+cbRowIdx);
+  if(row){row.style.opacity='0.4';row.style.pointerEvents='none';}
+  // Gửi request background — không chờ
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,
+    cbRowIdx,maNguoiDuyet:SESSION.ma
+  })})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo`:`✗ Đã từ chối`,'ok');
+      // Xóa khỏi nsCBList và re-render
+      const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===cbRowIdx);
+      if(idx>=0)nsCBList.splice(idx,1);
+      // Cập nhật xacNhan trong nsData
+      if(quyetDinh==='Duyệt'){
+        const nvIdx=nsData.findIndex(n=>n.ma===maNV);
+        if(nvIdx>=0&&!nsCBList.find(cb=>cb.maNV===maNV))
+          nsData[nvIdx].xacNhan='DUYỆT';
+      }
+      renderNhanSu();
+      _capNhatBadgeNS(nsCBList.length);
+    } else {
+      showToast(res.error||'Lỗi duyệt.','err');
+      if(row){row.style.opacity='1';row.style.pointerEvents='';}
+      btns.forEach(b=>{b.disabled=false;});
+    }
+  }).catch(()=>{
+    showToast('Lỗi kết nối.','err');
+    if(row){row.style.opacity='1';row.style.pointerEvents='';}
+    btns.forEach(b=>{b.disabled=false;});
+  });
+}
+
+// Xem chi tiết 1 cảnh báo cụ thể
+let _nsdCBIdx=0, _nsdCBMaNV='';
+function xemCBChiTiet(cbRowIdx,maNV,tenNV,noiDung,giaiTrinh){
+  _nsdCBIdx=cbRowIdx;_nsdCBMaNV=maNV;
+  document.getElementById('nsd-name').textContent=tenNV+' ('+maNV+')';
+  document.getElementById('nsd-sub').textContent='Cảnh báo hôm nay';
+  document.getElementById('nsd-canhbao').textContent=noiDung||'Chấm công không hợp lệ';
+  const gtSec=document.getElementById('nsd-gt-sec');
+  if(giaiTrinh){document.getElementById('nsd-giaitrinh').textContent=giaiTrinh;gtSec.style.display='block';}
+  else{gtSec.style.display='none';}
+  document.getElementById('ns-detail-modal').classList.add('show');
 }
 
 // Xem chi tiết giải trình trong modal
@@ -1567,7 +1711,25 @@ function xemGiaiTrinhChiTiet(maNV,tenNV,giaiTrinh,xacNhan){
 function closeNsDetail(){document.getElementById('ns-detail-modal').classList.remove('show');}
 function duyetTuModal(quyetDinh){
   closeNsDetail();
-  _duyetNVThuc(_nsdMaNV,_nsdNgay,quyetDinh);
+  if(_nsdCBIdx>0){
+    // Duyệt theo cbRowIdx cụ thể
+    const ngay=new Date().toISOString().substring(0,10);
+    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+      action:'duyetCanhBao',maNhanVien:_nsdCBMaNV,ngay,quyetDinh,
+      cbRowIdx:_nsdCBIdx,maNguoiDuyet:SESSION.ma
+    })})
+    .then(r=>r.json()).then(res=>{
+      if(res.success){
+        showToast(quyetDinh==='Duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
+        const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===_nsdCBIdx);
+        if(idx>=0)nsCBList.splice(idx,1);
+        renderNhanSu();
+        _capNhatBadgeNS(nsCBList.length);
+      }else{showToast(res.error||'Lỗi.','err');}
+    }).catch(()=>showToast('Lỗi kết nối.','err'));
+  } else {
+    _duyetNVThuc(_nsdMaNV,_nsdNgay,quyetDinh);
+  }
 }
 function duyetNhanSu(event,maNV,quyetDinh){
   event.stopPropagation();
@@ -1580,12 +1742,12 @@ function _duyetNVThuc(maNV,ngay,quyetDinh,btns){
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma})})
   .then(r=>r.json()).then(res=>{
     if(res.success){
-      showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt công ${maNV}`:`✗ Đã từ chối ${maNV}`,quyetDinh==='Duyệt'?'ok':'err');
+      showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt`:`✗ Đã từ chối`,'ok');
       const idx=nsData.findIndex(n=>n.ma===maNV);
-      if(idx>=0){nsData[idx].xacNhan=quyetDinh==='Duyệt'?'DUYỆT':'KHÔNG HỢP LỆ';}
+      if(idx>=0)nsData[idx].xacNhan=quyetDinh==='Duyệt'?'DUYỆT':'KHÔNG HỢP LỆ';
       renderNhanSu();
     } else {
-      showToast(res.error||'Lỗi duyệt công.','err');
+      showToast(res.error||'Lỗi duyệt.','err');
       if(btns)btns.forEach(b=>{b.disabled=false;});
     }
   }).catch(()=>{showToast('Lỗi kết nối.','err');if(btns)btns.forEach(b=>{b.disabled=false;});});
