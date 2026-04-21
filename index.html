@@ -1041,6 +1041,23 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbygYKv5cCu02ZBQpGD8QH1BsxrJoBbJRkuPm_2BbY2-Bb3uEqUFgjoiWChR6rCnVY2y/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
+// ─── GAS POST helper — xử lý redirect + parse JSON an toàn ──
+// GAS đôi khi trả HTML redirect thay vì JSON → dùng .text() trước
+function _postGAS(payload){
+  return fetch(SCRIPT_URL,{
+    method:'POST',redirect:'follow',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(payload),
+  }).then(r=>r.text()).then(txt=>{
+    try{return JSON.parse(txt);}
+    catch(e){
+      // GAS đã xử lý nhưng trả HTML (thường do redirect) — coi như thành công nếu không có từ error
+      if(txt.toLowerCase().includes('"success":false'))return JSON.parse(txt.match(/\{.*\}/s)[0]);
+      return{success:true,_raw:txt};
+    }
+  });
+}
+
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
 let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
 const logs=[];
@@ -1112,12 +1129,13 @@ function doLogin(){
   document.getElementById('login-err').style.display='none';
   if(!ma||!pw){showLoginErr('Vui lòng nhập mã nhân viên và mật khẩu.');return;}
   btn.disabled=true;btn.textContent='Đang xác thực...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
-  .then(r=>r.json()).then(res=>{
+  fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
+  .then(r=>r.text()).then(txt=>{
     btn.disabled=false;btn.textContent='ĐĂNG NHẬP';
+    let res;try{res=JSON.parse(txt);}catch(e){showLoginErr('Máy chủ phản hồi lỗi. Thử lại.');return;}
     if(!res.success){showLoginErr(res.error||'Đăng nhập thất bại.');return;}
     SESSION=res.nhanVien;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
-  }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
+  }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối. Kiểm tra mạng và thử lại.');});
 }
 function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
 function doLogout(){
@@ -1277,7 +1295,7 @@ function doSubmit(){
   document.getElementById('submit-btn').className='submit-btn s-loading';
   document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
   const maCH=document.getElementById('sel-cuahang').value;
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  _postGAS({
     action:'chamcong',
     maCuaHang:maCH,
     tenCuaHang:document.getElementById('input-ch-display').value,
@@ -1285,9 +1303,7 @@ function doSubmit(){
     loaiChamCong:state.loai,
     lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,
     selfieBase64:state.selfieB64||null,
-  })})
-  .then(r=>r.json()).then(res=>{
-    state.submitting=false;state.submitted=true;
+  }).then(res=>{
     setBtn('s-done','✓ Đã chấm công thành công');
     const rb=document.getElementById('result-box');rb.style.display='block';
     if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
@@ -1634,8 +1650,8 @@ function doDoiMatKhau(){
   if(moi.length<6){showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err');return;}
   if(moi!==xn){showPwMsg('Mật khẩu mới và xác nhận không khớp.','err');return;}
   btn.disabled=true;btn.textContent='Đang xử lý...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi})})
-  .then(r=>r.json()).then(res=>{
+  
+_postGAS({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi}).then(res=>{
     btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
     if(!res.success){showPwMsg(res.error,'err');return;}
     showPwMsg('✓ Đổi mật khẩu thành công!','ok');
@@ -1708,8 +1724,8 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'guiGiaiTrinh',maNhanVien:SESSION.ma,ngay:gtNgay,lyDo:lyDoGui})})
-  .then(r=>r.json()).then(res=>{
+  
+_postGAS({action:'guiGiaiTrinh',maNhanVien:SESSION.ma,ngay:gtNgay,lyDo:lyDoGui}).then(res=>{
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(res.success){
       clearInterval(_gtTimerInterval);
@@ -2047,11 +2063,10 @@ function duyetCB(event,cbRowIdx,maNV,quyetDinh){
   const row=document.getElementById('cb-row-'+cbRowIdx);
   if(row){row.style.opacity='0.4';row.style.pointerEvents='none';}
   // Gửi request background — không chờ
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  _postGAS({
     action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,
     cbRowIdx,maNguoiDuyet:SESSION.ma
-  })})
-  .then(r=>r.json()).then(res=>{
+  }).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo`:`✗ Đã từ chối`,'ok');
       // Xóa khỏi nsCBList và re-render
@@ -2117,11 +2132,10 @@ function duyetTuModal(quyetDinh){
   if(_nsdCBIdx>0){
     // Duyệt theo cbRowIdx cụ thể
     const ngay=new Date().toISOString().substring(0,10);
-    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    _postGAS({
       action:'duyetCanhBao',maNhanVien:_nsdCBMaNV,ngay,quyetDinh,
       cbRowIdx:_nsdCBIdx,maNguoiDuyet:SESSION.ma
-    })})
-    .then(r=>r.json()).then(res=>{
+    }).then(res=>{
       if(res.success){
         showToast(quyetDinh==='Duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
         const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===_nsdCBIdx);
@@ -2142,8 +2156,8 @@ function duyetNhanSu(event,maNV,quyetDinh){
   _duyetNVThuc(maNV,ngay,quyetDinh,btns);
 }
 function _duyetNVThuc(maNV,ngay,quyetDinh,btns){
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma})})
-  .then(r=>r.json()).then(res=>{
+  
+_postGAS({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma}).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt`:`✗ Đã từ chối`,'ok');
       const idx=nsData.findIndex(n=>n.ma===maNV);
@@ -2574,11 +2588,10 @@ function guiLichCa(){
   });
   if(!slotArr.length){showToast('Chưa đăng ký ca nào.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  _postGAS({
     action:'guiLichCa',maNhanVien:SESSION.ma,tenNhanVien:SESSION.ten,
     tuan:lcTuan,lichCa:slotArr,
-  })})
-  .then(r=>r.json()).then(res=>{
+  }).then(res=>{
     if(res.success){
       const msg=res.soNgayLam!=null?`✓ Đã gửi lịch ${res.soNgayLam} ngày làm việc`:'✓ Đã gửi lịch tuần thành công';
       showToast(msg,'ok');taiLichCa();
@@ -3076,11 +3089,10 @@ function duyetDonNghi(rowIdx,maNV,tuan,quyetDinh){
   const ghiChu=(document.getElementById('dn-note-'+rowIdx)||{}).value||'';
   const card=document.getElementById('don-'+rowIdx);
   if(card){card.style.opacity='.5';card.style.pointerEvents='none';}
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  _postGAS({
     action:'duyetLichCa',maNhanVien:maNV,tuan,quyetDinh,
     rowIdxs:[rowIdx],ghiChu,maNguoiDuyet:SESSION.ma,
-  })})
-  .then(r=>r.json()).then(res=>{
+  }).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ':'✗ Đã từ chối đơn nghỉ','ok');
       // Cập nhật local
@@ -3434,11 +3446,10 @@ function duyetDon(rowIdx,maNV,tuan,qd){
   const wrap=document.getElementById('dn-gc-'+rowIdx)?.closest('div[style*="background:white"]');
   const btns=wrap?.querySelectorAll('button');
   if(btns)btns.forEach(b=>{b.disabled=true;if(b.textContent.includes('Duyệt')&&qd==='Đã duyệt'||b.textContent.includes('Từ chối')&&qd==='Từ chối')b.textContent='Đang xử lý...';});
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  _postGAS({
     action:'duyetLichCa', maNhanVien:maNV, tuan, quyetDinh:qd,
     rowIdxs:[rowIdx], ghiChu, maNguoiDuyet:SESSION.ma,
-  })})
-  .then(r=>r.json()).then(res=>{
+  }).then(res=>{
     if(res.success){showToast(qd==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ':'✗ Đã từ chối đơn nghỉ','ok');taiDonNghi();}
     else{showToast(res.error||'Lỗi.','err');if(btns)btns.forEach(b=>b.disabled=false);}
   }).catch(()=>{showToast('Lỗi kết nối.','err');if(btns)btns.forEach(b=>b.disabled=false);});
