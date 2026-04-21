@@ -38,8 +38,6 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .login-btn:disabled { background:#c5c3bb; cursor:default; }
 .login-err { margin-top:12px; padding:10px 14px; background:var(--red-lt); border-radius:8px; font-size:13px; color:var(--red); display:none; border-left:3px solid var(--red); }
 
-
-
 /* HEADER */
 .header { background:var(--green); padding:0; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15); width:100%; }
 .header-inner { max-width:430px; margin:0 auto; padding:14px 20px 10px; }
@@ -581,8 +579,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .nghi-label { font-size:11px; font-weight:700; color:var(--text-m); text-transform:uppercase;
   letter-spacing:.05em; margin-bottom:6px; margin-top:14px; display:block; }
 .nghi-label:first-child { margin-top:0; }
-.nghi-date-inp { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:11px 14px; font-size:15px; outline:none; background:var(--gray-lt); transition:border-color .15s; box-sizing:border-box; color:var(--text); -webkit-appearance:none; }
-.nghi-date-inp:focus { border-color:var(--green); background:white; }
 .nghi-textarea { width:100%; border:1.5px solid var(--border); border-radius:10px;
   padding:11px 14px; font-size:14px; outline:none; background:var(--gray-lt);
   resize:none; font-family:inherit; transition:border-color .15s; }
@@ -717,7 +713,7 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
       <div class="nghi-title">Xin nghỉ phép</div>
       <div class="nghi-body">
         <span class="nghi-label">Ngày nghỉ</span>
-        <input type="date" class="nghi-date-inp" id="nghi-ngay">
+        <input type="date" class="pw-input" id="nghi-ngay" style="margin-bottom:0;width:100%;max-width:100%;box-sizing:border-box">
         <span class="nghi-label">Lý do xin nghỉ</span>
         <textarea class="nghi-textarea" id="nghi-lydo" rows="3" placeholder="Mô tả lý do xin nghỉ..."></textarea>
         <span class="nghi-label">Đơn xin nghỉ <span style="color:var(--red)">— Bắt buộc chụp</span></span>
@@ -781,12 +777,17 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
 
   <!-- PAGE: LICH CA (NV) -->
   <div class="page" id="page-lichca">
-    <!-- Header lịch làm việc: tiêu đề + tên NV + giờ realtime -->
-    <div style="background:var(--green);padding:14px 20px 14px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:4px" id="lc-clock-top">LỊCH LÀM VIỆC</div>
+    <!-- Header page lịch ca — tên, mã NV, đồng hồ -->
+    <div style="background:var(--green);padding:14px 20px 12px">
+      <div style="font-size:10px;color:rgba(255,255,255,.65);margin-bottom:2px" id="lc-clock-top">--</div>
       <div style="font-size:16px;font-weight:700;color:white" id="lc-nv-name">--</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:3px" id="lc-nv-ma">--</div>
-      <div id="lc-clock-live" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">--</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:2px" id="lc-nv-ma">--</div>
+    </div>
+    <!-- Header: tiêu đề + tên NV + đồng hồ realtime -->
+    <div style="background:var(--green);padding:14px 16px 12px;color:white">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;text-transform:uppercase">Lịch làm việc</div>
+      <div id="lc-nv-info" style="font-size:15px;font-weight:700;margin-top:2px">--</div>
+      <div id="lc-clock-live" style="font-size:12px;opacity:.75;margin-top:2px">--</div>
     </div>
     <div class="lc-header" style="border-radius:0;margin:0;box-shadow:none;border-bottom:0.5px solid var(--border)">
       <div class="lc-tuan-nav">
@@ -1040,25 +1041,8 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbygYKv5cCu02ZBQpGD8QH1BsxrJoBbJRkuPm_2BbY2-Bb3uEqUFgjoiWChR6rCnVY2y/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwUD6lPh-O38z6hnntKxFqbGkvWseoCx1z7DAX8NfXncBLGOURXXmP522g1cnIJfK6U/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
-
-// ─── GAS POST helper — xử lý redirect + parse JSON an toàn ──
-// GAS đôi khi trả HTML redirect thay vì JSON → dùng .text() trước
-function _postGAS(payload){
-  return fetch(SCRIPT_URL,{
-    method:'POST',redirect:'follow',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify(payload),
-  }).then(r=>r.text()).then(txt=>{
-    try{return JSON.parse(txt);}
-    catch(e){
-      // GAS đã xử lý nhưng trả HTML (thường do redirect) — coi như thành công nếu không có từ error
-      if(txt.toLowerCase().includes('"success":false'))return JSON.parse(txt.match(/\{.*\}/s)[0]);
-      return{success:true,_raw:txt};
-    }
-  });
-}
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
 let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
@@ -1131,13 +1115,12 @@ function doLogin(){
   document.getElementById('login-err').style.display='none';
   if(!ma||!pw){showLoginErr('Vui lòng nhập mã nhân viên và mật khẩu.');return;}
   btn.disabled=true;btn.textContent='Đang xác thực...';
-  fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
-  .then(r=>r.text()).then(txt=>{
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
+  .then(r=>r.json()).then(res=>{
     btn.disabled=false;btn.textContent='ĐĂNG NHẬP';
-    let res;try{res=JSON.parse(txt);}catch(e){showLoginErr('Máy chủ phản hồi lỗi. Thử lại.');return;}
     if(!res.success){showLoginErr(res.error||'Đăng nhập thất bại.');return;}
     SESSION=res.nhanVien;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
-  }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối. Kiểm tra mạng và thử lại.');});
+  }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
 }
 function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
 function doLogout(){
@@ -1297,7 +1280,7 @@ function doSubmit(){
   document.getElementById('submit-btn').className='submit-btn s-loading';
   document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
   const maCH=document.getElementById('sel-cuahang').value;
-  _postGAS({
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'chamcong',
     maCuaHang:maCH,
     tenCuaHang:document.getElementById('input-ch-display').value,
@@ -1305,7 +1288,9 @@ function doSubmit(){
     loaiChamCong:state.loai,
     lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,
     selfieBase64:state.selfieB64||null,
-  }).then(res=>{
+  })})
+  .then(r=>r.json()).then(res=>{
+    state.submitting=false;state.submitted=true;
     setBtn('s-done','✓ Đã chấm công thành công');
     const rb=document.getElementById('result-box');rb.style.display='block';
     if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
@@ -1652,8 +1637,8 @@ function doDoiMatKhau(){
   if(moi.length<6){showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err');return;}
   if(moi!==xn){showPwMsg('Mật khẩu mới và xác nhận không khớp.','err');return;}
   btn.disabled=true;btn.textContent='Đang xử lý...';
-  
-_postGAS({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi}).then(res=>{
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi})})
+  .then(r=>r.json()).then(res=>{
     btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
     if(!res.success){showPwMsg(res.error,'err');return;}
     showPwMsg('✓ Đổi mật khẩu thành công!','ok');
@@ -1726,8 +1711,8 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  
-_postGAS({action:'guiGiaiTrinh',maNhanVien:SESSION.ma,ngay:gtNgay,lyDo:lyDoGui}).then(res=>{
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'guiGiaiTrinh',maNhanVien:SESSION.ma,ngay:gtNgay,lyDo:lyDoGui})})
+  .then(r=>r.json()).then(res=>{
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(res.success){
       clearInterval(_gtTimerInterval);
@@ -2065,10 +2050,11 @@ function duyetCB(event,cbRowIdx,maNV,quyetDinh){
   const row=document.getElementById('cb-row-'+cbRowIdx);
   if(row){row.style.opacity='0.4';row.style.pointerEvents='none';}
   // Gửi request background — không chờ
-  _postGAS({
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,
     cbRowIdx,maNguoiDuyet:SESSION.ma
-  }).then(res=>{
+  })})
+  .then(r=>r.json()).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo`:`✗ Đã từ chối`,'ok');
       // Xóa khỏi nsCBList và re-render
@@ -2134,10 +2120,11 @@ function duyetTuModal(quyetDinh){
   if(_nsdCBIdx>0){
     // Duyệt theo cbRowIdx cụ thể
     const ngay=new Date().toISOString().substring(0,10);
-    _postGAS({
+    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
       action:'duyetCanhBao',maNhanVien:_nsdCBMaNV,ngay,quyetDinh,
       cbRowIdx:_nsdCBIdx,maNguoiDuyet:SESSION.ma
-    }).then(res=>{
+    })})
+    .then(r=>r.json()).then(res=>{
       if(res.success){
         showToast(quyetDinh==='Duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
         const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===_nsdCBIdx);
@@ -2158,8 +2145,8 @@ function duyetNhanSu(event,maNV,quyetDinh){
   _duyetNVThuc(maNV,ngay,quyetDinh,btns);
 }
 function _duyetNVThuc(maNV,ngay,quyetDinh,btns){
-  
-_postGAS({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma}).then(res=>{
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma})})
+  .then(r=>r.json()).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt`:`✗ Đã từ chối`,'ok');
       const idx=nsData.findIndex(n=>n.ma===maNV);
@@ -2340,13 +2327,12 @@ function doiTuanLC(delta){
 function taiLichCa(){
   if(!SESSION)return;
   document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
+  // Cập nhật header
   if(SESSION){
-    document.getElementById('lc-nv-name').textContent=SESSION.ten;
-    document.getElementById('lc-nv-ma').textContent=SESSION.ma+(SESSION.cuaHangTen?' · '+SESSION.cuaHangTen:'');
+    document.getElementById('lc-nv-info').textContent=SESSION.ten+' · '+SESSION.ma;
     const now=new Date();
-    const days=['CN','T2','T3','T4','T5','T6','T7'];
     document.getElementById('lc-clock-live').textContent=
-      days[now.getDay()]+' '+pad(now.getDate())+'/'+pad(now.getMonth()+1)
+      ['CN','T2','T3','T4','T5','T6','T7'][now.getDay()]+' '+pad(now.getDate())+'/'+pad(now.getMonth()+1)
       +' '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
   }
   document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
@@ -2590,14 +2576,12 @@ function guiLichCa(){
   });
   if(!slotArr.length){showToast('Chưa đăng ký ca nào.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
-  _postGAS({
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'guiLichCa',maNhanVien:SESSION.ma,tenNhanVien:SESSION.ten,
     tuan:lcTuan,lichCa:slotArr,
-  }).then(res=>{
-    if(res.success){
-      const msg=res.soNgayLam!=null?`✓ Đã gửi lịch ${res.soNgayLam} ngày làm việc`:'✓ Đã gửi lịch tuần thành công';
-      showToast(msg,'ok');taiLichCa();
-    }
+  })})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){showToast('✓ Đã gửi lịch tuần thành công','ok');taiLichCa();}
     else{showToast(res.error||'Lỗi gửi lịch.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';}
   }).catch(()=>{showToast('Lỗi kết nối.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';});
 }
@@ -2605,9 +2589,9 @@ function _updateLCHeader(){
   if(!SESSION)return;
   const nameEl=document.getElementById('lc-nv-name');
   const maEl=document.getElementById('lc-nv-ma');
-  const clockEl=document.getElementById('lc-clock-live');
-  if(nameEl)nameEl.textContent=SESSION.ten;
-  if(maEl)maEl.textContent=SESSION.ma+(SESSION.cuaHangTen?' · '+SESSION.cuaHangTen:'');
+  const clockEl=document.getElementById('lc-clock-top');
+  if(nameEl)nameEl.textContent='LỊCH LÀM VIỆC';
+  if(maEl)maEl.textContent=SESSION.ten+' · '+SESSION.ma;
   if(clockEl){
     const d=new Date(),days=['CN','T2','T3','T4','T5','T6','T7'];
     clockEl.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
@@ -2675,42 +2659,25 @@ function guiNghiPhep(){
   msg.style.display='none';
   if(!ngay){msg.textContent='Vui lòng chọn ngày nghỉ.';msg.className='nghi-msg nghi-err';msg.style.display='block';return;}
   if(!nghiB64){msg.textContent='Vui lòng chụp đơn xin nghỉ.';msg.className='nghi-msg nghi-err';msg.style.display='block';return;}
+  // Tính tuần của ngày nghỉ
   const d=new Date(ngay+'T00:00:00');
   const tuanNghi=_tuanISO(d);
   const btn=document.getElementById('nghi-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
-  fetch(SCRIPT_URL,{method:'POST',redirect:'follow',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({
-      action:'guiNghiPhep', maNhanVien:SESSION.ma, tenNhanVien:SESSION.ten,
-      tuan:tuanNghi, ngay, lyDo, selfieBase64:nghiB64,
-    })
-  })
-  .then(r=>{
-    // GAS sometimes returns text/html on redirect — try json parse
-    return r.text().then(txt=>{
-      try{return JSON.parse(txt);}
-      catch(e){
-        // If we got HTML but request likely succeeded, treat as success if no error keyword
-        if(txt.toLowerCase().includes('error')||txt.toLowerCase().includes('lỗi'))
-          return{success:false,error:'Lỗi từ máy chủ.'};
-        return{success:true,message:'Đã gửi đơn xin nghỉ thành công.'};
-      }
-    });
-  })
-  .then(res=>{
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'guiNghiPhep', maNhanVien:SESSION.ma, tenNhanVien:SESSION.ten,
+    tuan:tuanNghi, ngay, lyDo, selfieBase64:nghiB64,
+  })})
+  .then(r=>r.json()).then(res=>{
     btn.disabled=false;btn.textContent='Gửi đơn xin nghỉ';
     if(res.success){
-      msg.textContent='✓ '+(res.message||'Đã gửi đơn xin nghỉ. QLNS sẽ xem xét.');
-      msg.className='nghi-msg nghi-ok';msg.style.display='block';
+      msg.textContent='✓ '+res.message;msg.className='nghi-msg nghi-ok';msg.style.display='block';
       setTimeout(closeNghiModal,2500);
     } else {
       msg.textContent=res.error||'Lỗi gửi đơn.';msg.className='nghi-msg nghi-err';msg.style.display='block';
     }
-  }).catch(err=>{
-    btn.disabled=false;btn.textContent='Gửi đơn xin nghỉ';
-    msg.textContent='Lỗi kết nối. Vui lòng thử lại.';msg.className='nghi-msg nghi-err';msg.style.display='block';
-  });
+  }).catch(()=>{btn.disabled=false;btn.textContent='Gửi đơn xin nghỉ';
+    msg.textContent='Lỗi kết nối.';msg.className='nghi-msg nghi-err';msg.style.display='block';});
 }
 
 // ── Badge thông báo NV (kết quả duyệt từ QLNS) ──────────────
@@ -2748,17 +2715,9 @@ window.addEventListener('load',()=>{setTimeout(kiemTraBadgeNV,3000);});
 // ─── Helpers ────────────────────────────────────────────────
 function _fmtGioDisplay(s){
   if(!s)return'';
-  // Handle Date object (GS sometimes serializes time as Date)
   if(s instanceof Date)return pad(s.getHours())+':'+pad(s.getMinutes());
-  const str=String(s).trim();
-  // Handle full date-time string like "Sat Dec 30 1899 08:00:00 GMT..."
-  if(str.length>8&&str.includes(' ')){
-    const m=str.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
-    if(m)return pad(parseInt(m[1]))+':'+pad(parseInt(m[2]));
-    return '';
-  }
   // HH:MM:SS → HH:MM
-  return str.substring(0,5);
+  return String(s).substring(0,5);
 }
 
 // Tính tổng giờ làm của 1 CH trong 1 ngày (từ danh sách slot)
@@ -2837,12 +2796,11 @@ function renderLCQL(){
 
   if(lcqlLevel==='heThong'){
     // Thẻ tổng quát
-    const s=lcqlData.stats||lcqlData.heTong||{};
-    const tongGioFmt=s.tongGio!=null?_fmtPhutToGio(Math.round((s.tongGio||0)*60)):'--';
+    const s=lcqlData.stats;
     statGrid.innerHTML=`
-      <div class="lc-ql-stat"><div class="lc-ql-val">${s.tongNV||0}</div><div class="lc-ql-lbl">Tổng NV</div></div>
-      <div class="lc-ql-stat"><div class="lc-ql-val ns-v-green">${s.daDangKy||0}</div><div class="lc-ql-lbl">Đã gửi</div></div>
-      <div class="lc-ql-stat"><div class="lc-ql-val ns-v-red">${s.chuaDangKy||0}</div><div class="lc-ql-lbl">Chưa gửi</div></div>`;
+      <div class="lc-ql-stat"><div class="lc-ql-val">${s.tongNV}</div><div class="lc-ql-lbl">Tổng NV</div></div>
+      <div class="lc-ql-stat"><div class="lc-ql-val ns-v-green">${s.daDangKy}</div><div class="lc-ql-lbl">Đã gửi</div></div>
+      <div class="lc-ql-stat"><div class="lc-ql-val ns-v-red">${s.chuaDangKy}</div><div class="lc-ql-lbl">Chưa gửi</div></div>`;
     // Hiện mini bar tổng hệ thống
     area.innerHTML='<div class="lc-ql-list">'+filtered.slice(0,15).map(nv=>_renderNVRow(nv,ngayTuan)).join('')+'</div>'
       +(filtered.length>15?`<div style="text-align:center;padding:10px;font-size:12px;color:var(--text-m)">+${filtered.length-15} nhân sự khác. Dùng tìm kiếm để lọc.</div>`:'');
@@ -2956,23 +2914,15 @@ function xemLichCaNV(maNV,tenNV){
     }
     return slots.map(slot=>{
       const isNghi=slot.loai==='Nghỉ phép';
-      const dotBg=isNghi?'background:var(--red-lt);border:1.5px solid var(--red-bd)':'background:var(--green-lt);border:1.5px solid var(--green-bd)';
-      const dotTxtColor=isNghi?'color:var(--red)':'color:#085041';
+      const dotCls=isNghi?'deny':'work';
       const gioBD=_fmtGioDisplay(slot.gioBatDau);
       const gioKT=_fmtGioDisplay(slot.gioKetThuc);
-      const gio=(!isNghi&&gioBD&&gioKT)?`${gioBD} – ${gioKT}`:(!isNghi&&gioBD?gioBD:'');
-      const nghiBadge=isNghi?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--red-lt);color:var(--red);border:1px solid var(--red-bd);margin-left:auto;flex-shrink:0">Nghỉ phép</span>`:'';
+      const gio=gioBD&&gioKT?`${gioBD} – ${gioKT}`:gioBD||'';
       return `<div class="lc-d-day-row">
-        <div class="lc-d-day-dot" style="width:36px;height:36px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;${dotBg}">
-          <span style="font-size:9px;font-weight:700;${dotTxtColor}">${dow}</span>
-          <span style="font-size:14px;font-weight:700;${dotTxtColor}">${ngayNum}</span>
-        </div>
-        <div class="lc-d-info" style="display:flex;align-items:center;flex:1;min-width:0;gap:8px">
-          <div style="flex:1;min-width:0">
-            <div class="lc-d-ch">${isNghi?'Nghỉ phép hôm này':slot.tenCH||'--'}</div>
-            ${gio?`<div class="lc-d-gio">${gio}</div>`:''}
-          </div>
-          ${nghiBadge}
+        <div class="lc-d-day-dot lc-day-dot ${dotCls}"><span class="lc-d-dow">${dow}</span><span class="lc-d-date">${ngayNum}</span></div>
+        <div class="lc-d-info">
+          <div class="lc-d-ch">${isNghi?'🏖️ Nghỉ phép':slot.tenCH||'--'}</div>
+          ${gio?`<div class="lc-d-gio">${gio}</div>`:''}
         </div>
       </div>`;
     }).join('');
@@ -3026,12 +2976,10 @@ function taiDonNghi(){
   fetch(SCRIPT_URL+'?type=don_nghi&tuan='+dnTuan+'&q='+encodeURIComponent(q))
   .then(r=>r.json()).then(res=>{
     dnData=res.donNghi;if(!dnData)return;
-    const tongDon=dnData.tongDon||0;
-    const choDuyet=dnData.stats?dnData.stats.choDuyet:(dnData.donList||[]).filter(d=>d.trangThai==='Chờ duyệt').length;
-    const daXuLy=dnData.stats?(dnData.stats.daDuyet||0)+(dnData.stats.tuChoi||0):(dnData.donList||[]).filter(d=>d.trangThai!=='Chờ duyệt').length;
-    document.getElementById('dn-tong').textContent=tongDon;
-    document.getElementById('dn-cho').textContent=choDuyet;
-    document.getElementById('dn-da').textContent=daXuLy;
+    const s=dnData.stats;
+    document.getElementById('dn-tong').textContent=s.tongDon;
+    document.getElementById('dn-cho').textContent=s.choDuyet;
+    document.getElementById('dn-da').textContent=s.daDuyet+s.tuChoi;
     renderDonNghi();
   }).catch(()=>{document.getElementById('dn-list').innerHTML='<div class="ns-empty">❌ Lỗi tải.</div>';});
 }
@@ -3091,10 +3039,11 @@ function duyetDonNghi(rowIdx,maNV,tuan,quyetDinh){
   const ghiChu=(document.getElementById('dn-note-'+rowIdx)||{}).value||'';
   const card=document.getElementById('don-'+rowIdx);
   if(card){card.style.opacity='.5';card.style.pointerEvents='none';}
-  _postGAS({
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetLichCa',maNhanVien:maNV,tuan,quyetDinh,
     rowIdxs:[rowIdx],ghiChu,maNguoiDuyet:SESSION.ma,
-  }).then(res=>{
+  })})
+  .then(r=>r.json()).then(res=>{
     if(res.success){
       showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ':'✗ Đã từ chối đơn nghỉ','ok');
       // Cập nhật local
@@ -3448,10 +3397,11 @@ function duyetDon(rowIdx,maNV,tuan,qd){
   const wrap=document.getElementById('dn-gc-'+rowIdx)?.closest('div[style*="background:white"]');
   const btns=wrap?.querySelectorAll('button');
   if(btns)btns.forEach(b=>{b.disabled=true;if(b.textContent.includes('Duyệt')&&qd==='Đã duyệt'||b.textContent.includes('Từ chối')&&qd==='Từ chối')b.textContent='Đang xử lý...';});
-  _postGAS({
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetLichCa', maNhanVien:maNV, tuan, quyetDinh:qd,
     rowIdxs:[rowIdx], ghiChu, maNguoiDuyet:SESSION.ma,
-  }).then(res=>{
+  })})
+  .then(r=>r.json()).then(res=>{
     if(res.success){showToast(qd==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ':'✗ Đã từ chối đơn nghỉ','ok');taiDonNghi();}
     else{showToast(res.error||'Lỗi.','err');if(btns)btns.forEach(b=>b.disabled=false);}
   }).catch(()=>{showToast('Lỗi kết nối.','err');if(btns)btns.forEach(b=>b.disabled=false);});
