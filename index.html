@@ -393,6 +393,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-d-no        { flex:1; padding:13px; border-radius:12px; font-size:14px; font-weight:700; background:var(--red-lt); color:var(--red); border:1.5px solid var(--red-bd); cursor:pointer; }
 
 
+/* ===== ĐƠN NGHỈ PHÉP =====*/
+.lcql-level-tabs { display:flex; gap:6px; margin:8px 14px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.lcql-lvl-btn { padding:8px 14px; border-radius:20px; border:1.5px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; background:white; color:var(--text-m); white-space:nowrap; transition:all .15s; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
+.lcql-lvl-btn.active { border-color:var(--green); background:var(--green-lt); color:#085041; }
+.suggest-list { background:white; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.15); overflow:hidden; display:none; }
+.suggest-list .ns-sug-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; }
+.suggest-list .ns-sug-item:active { background:var(--gray-lt); }
 /* ===== PHÂN HỆ LỊCH CA ===== */
 /* Page wrapper */
 #page-lichca { padding-bottom:84px; display:none; }
@@ -776,7 +783,13 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
       <div style="font-size:16px;font-weight:700;color:white" id="lc-nv-name">--</div>
       <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:2px" id="lc-nv-ma">--</div>
     </div>
-    <div class="lc-header">
+    <!-- Header: tiêu đề + tên NV + đồng hồ realtime -->
+    <div style="background:var(--green);padding:14px 16px 12px;color:white">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;text-transform:uppercase">Lịch làm việc</div>
+      <div id="lc-nv-info" style="font-size:15px;font-weight:700;margin-top:2px">--</div>
+      <div id="lc-clock-live" style="font-size:12px;opacity:.75;margin-top:2px">--</div>
+    </div>
+    <div class="lc-header" style="border-radius:0;margin:0;box-shadow:none;border-bottom:0.5px solid var(--border)">
       <div class="lc-tuan-nav">
         <button class="thang-btn" onclick="doiTuanLC(-1)">‹</button>
         <div class="lc-tuan-lbl" id="lc-tuan-lbl">--</div>
@@ -922,18 +935,19 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
         <div class="menu-label">Quản lý nhân sự</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-don-nghi" onclick="goToPage('don-nghi')" style="display:none">
-        <div class="menu-icon" style="background:var(--amber-lt)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <div class="menu-label">Đơn nghỉ phép</div>
-        <div class="menu-arrow">›</div>
-      </div>
       <div class="menu-item" id="menu-lichca-ql" onclick="goToPage('lichca-ql')" style="display:none">
         <div class="menu-icon" style="background:#EEF6FF">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h8M8 18h5"/></svg>
         </div>
         <div class="menu-label">Lịch ca hệ thống</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" id="menu-don-nghi" onclick="goToPage('don-nghi')" style="display:none">
+        <div class="menu-icon" style="background:#FFF3F3;position:relative">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span id="dn-menu-badge" style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--red);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;color:white;font-weight:700;border:1.5px solid white"></span>
+        </div>
+        <div class="menu-label">Đơn nghỉ phép</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="doLogout()">
@@ -1004,7 +1018,7 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
       <div class="nav-label">Nhân sự</div>
       <span class="nav-badge" id="ns-nav-badge" style="display:none"></span>
     </button>
-    <button class="nav-item" id="nav-lichca" onclick="moLichCa()" style="display:none">
+    <button class="nav-item" id="nav-lichca" onclick="goToPage('lichca')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -1027,7 +1041,7 @@ img.nghi-preview { width:44px; height:44px; border-radius:10px; object-fit:cover
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyLKLIkikFV1NCNJnQwHkaEnFwPhlWdAnBQxR7mUQ6feMDj1xC6LSSg_TXeQ7lsqIdH/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxNYiq8PpkWG0bvFXuKvM3g-_xny8EiBX3ftf6QjXTtly5iV30UUXEKmMHRbzUCynjb/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -1056,6 +1070,7 @@ const PAGE_TITLES={
   'lichca':    'LỊCH LÀM VIỆC',
   'lichca-ql': 'LỊCH CA HỆ THỐNG',
   'don-nghi':  'ĐƠN NGHỈ PHÉP',
+  'don-nghi':  'ĐƠN NGHỈ PHÉP',
   chamcong:'CHẤM CÔNG', giocong:'GIỜ CÔNG CỦA TÔI',
   'giocong-ql':'GIỜ CÔNG TOÀN HỆ THỐNG',
   taikhoan:'TÀI KHOẢN', bandochidung:'BẢN ĐỒ CỬA HÀNG',
@@ -1076,9 +1091,13 @@ function goToPage(page){
   if(page==='taikhoan')   renderTaiKhoan();
   if(page==='bandochidung')khoiDongBanDo();
   if(page==='nhansu'){taiNhanSu();startNSPolling();}
-  if(page==='lichca')   taiLichCa();
-  if(page==='lichca-ql') taiLichCaQL();
-  if(page==='don-nghi')  taiDonNghi();
+  if(page==='lichca'){
+    if(!lcTuan){const now=new Date();const dow=now.getDay();lcTuan=dow===6?_tuanISO(new Date(now.getTime()+7*86400000)):_tuanISO(now);}
+    taiLichCa();
+    return;
+  }
+  if(page==='lichca-ql') {if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());taiLichCaQL();}
+  if(page==='don-nghi')  {if(!dnTuan)dnTuan=_tuanISO(new Date());taiDonNghi();}
   else{stopNSPolling();}
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
@@ -2254,12 +2273,13 @@ function showToast(msg,type){
 </script>
 </body>
 </html>
+
 <script>
 // ════════════════════════════════════════════════════════════
-// PHÂN HỆ LỊCH CA — JavaScript
+// HELPERS TUẦN ISO + LỊCH CA NV
 // ════════════════════════════════════════════════════════════
 
-// ─── Helpers tuần ISO ───────────────────────────────────────
+// ─── Helpers tuần ISO (dùng chung cho tất cả) ───────────────
 function _tuanISO(d){
   const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
   date.setUTCDate(date.getUTCDate()+4-(date.getUTCDay()||7));
@@ -2277,8 +2297,9 @@ function _thuHai(tuan){
 function _tuanLabel(tuan){
   const [y,w]=tuan.split('-W');
   const th=_thuHai(tuan);
-  const cn=new Date(new Date(th+'T00:00:00').getTime()+6*86400000);
-  return `Tuần ${w} (${pad(new Date(th+'T00:00:00').getDate())}/${pad(new Date(th+'T00:00:00').getMonth()+1)} – ${pad(cn.getDate())}/${pad(cn.getMonth()+1)}/${cn.getFullYear()})`;
+  const d0=new Date(th+'T00:00:00');
+  const cn=new Date(d0.getTime()+6*86400000);
+  return 'Tuần '+w+' ('+pad(d0.getDate())+'/'+pad(d0.getMonth()+1)+' – '+pad(cn.getDate())+'/'+pad(cn.getMonth()+1)+'/'+cn.getFullYear()+')';
 }
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
 function _ngayTuan(tuan){
@@ -2294,72 +2315,37 @@ function _ngayTuan(tuan){
   });
 }
 
-// ─── State NV ───────────────────────────────────────────────
-let lcTuan='', lcData=null, lcEdit={}; // lcEdit: {ngay: {type,maCH,tenCH,gioBD,gioKT}}
-
-function moLichCa(){
-  const now=new Date();
-  // Quyết định tuan hiển thị: nếu thứ 7+ thì mặc định tuần sau
-  const dow=now.getDay(); // 0=CN, 6=T7
-  lcTuan=dow===6?_tuanISO(new Date(now.getTime()+7*86400000)):_tuanISO(now);
-  goToPage('lichca');
-}
+const LC_VANG='Nghỉ phép';
+let lcTuan='', lcData=null, lcEdit={};
 
 function doiTuanLC(delta){
-  const [y,w]=lcTuan.split('-W').map(Number);
   const d=new Date(_thuHai(lcTuan)+'T00:00:00');
   d.setDate(d.getDate()+delta*7);
-  lcTuan=_tuanISO(d);
-  taiLichCa();
+  lcTuan=_tuanISO(d);taiLichCa();
 }
 
 function taiLichCa(){
   if(!SESSION)return;
   document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
+  // Cập nhật header
+  if(SESSION){
+    document.getElementById('lc-nv-info').textContent=SESSION.ten+' · '+SESSION.ma;
+    const now=new Date();
+    document.getElementById('lc-clock-live').textContent=
+      ['CN','T2','T3','T4','T5','T6','T7'][now.getDay()]+' '+pad(now.getDate())+'/'+pad(now.getMonth()+1)
+      +' '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  }
   document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
   fetch(SCRIPT_URL+'?type=lichca&maNV='+encodeURIComponent(SESSION.ma)+'&tuan='+lcTuan)
   .then(r=>r.json()).then(res=>{
     lcData=res.lichCa||{};
-    // Khởi tạo lcEdit từ dữ liệu hiện có
-    lcEdit={};
-    const lichCaArr=lcData.lichCa||[];
-    lichCaArr.forEach(ng=>{
-      if(ng.daDangKy&&ng.slots.length){
-        const s=ng.slots[0];
-        lcEdit[ng.ngay]={
-          type: s.trangThai===LC_VANG?'off':'work',
-          maCH: s.maCH, tenCH: s.tenCH,
-          gioBD: s.gioBatDau, gioKT: s.gioKetThuc,
-          trangThai: s.trangThai,
-        };
-      }
-    });
-    renderLichCa(lcData);
-  })
-  .catch(()=>{document.getElementById('lc-week').innerHTML='<div class="ns-empty">❌ Lỗi tải. Thử lại.</div>';});
-}
-const LC_VANG='Nghỉ phép'; // đồng bộ với Script
-
-// ── State lịch ca NV ─────────────────────────────────────────
-// lcEdit: { ngay: [ {maCH,tenCH,gioBD,gioKT,loai,trangThai} ] }
-// Mỗi ngày là MẢNG slot (multi-CH/ngày)
-
-function taiLichCa(){
-  if(!SESSION)return;
-  document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
-  document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
-  fetch(SCRIPT_URL+'?type=lichca&maNV='+encodeURIComponent(SESSION.ma)+'&tuan='+lcTuan)
-  .then(r=>r.json()).then(res=>{
-    lcData=res.lichCa||{};
-    // Khởi tạo lcEdit từ dữ liệu server — mỗi ngày là array slots
     lcEdit={};
     (lcData.lichCa||[]).forEach(ng=>{
       if(ng.daDangKy&&ng.slots.length){
         lcEdit[ng.ngay]=ng.slots.map(s=>({
-          maCH:s.maCH, tenCH:s.tenCH,
-          gioBD:s.gioBatDau, gioKT:s.gioKetThuc,
-          loai: s.loai||'Làm việc',
-          trangThai:s.trangThai,
+          maCH:s.maCH,tenCH:s.tenCH,
+          gioBD:s.gioBatDau,gioKT:s.gioKetThuc,
+          loai:s.loai||'Làm việc',trangThai:s.trangThai,
         }));
       }
     });
@@ -2374,58 +2360,46 @@ function renderLichCa(data){
   const metaEl=document.getElementById('lc-meta-txt');
   if(conHan){hanEl.textContent='Còn trong hạn';hanEl.className='lc-han-badge lc-han-ok';metaEl.textContent='Hạn thứ 7 tuần này';}
   else{hanEl.textContent='Đã qua hạn';hanEl.className='lc-han-badge lc-han-het';metaEl.textContent='Không thể sửa lịch';}
-
   const ngayTuan=_ngayTuan(lcTuan);
   const today=new Date().toISOString().substring(0,10);
-
-  // Progress bar
   const prog=document.getElementById('lc-progress');
   prog.innerHTML=ngayTuan.map(({ngay})=>{
     const slots=lcEdit[ngay]||[];
     const cls=!slots.length?'':(slots[0].loai===LC_VANG?'vang':'filled');
-    return `<div class="lc-prog-day ${cls}"></div>`;
+    return '<div class="lc-prog-day '+cls+'"></div>';
   }).join('');
-
   const soNgayDienTu=Object.keys(lcEdit).filter(k=>lcEdit[k]&&lcEdit[k].length).length;
-
-  // SVG icons cho type buttons
-  const svgWork=`<svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 4px" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>`;
-  const svgNghi=`<svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 4px" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
-  const svgAdd =`<svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-
+  const svgWork='<svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 4px" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>';
+  const svgNghi='<svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 4px" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  const svgAdd='<svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
   document.getElementById('lc-week').innerHTML=ngayTuan.map(({ngay,dow,ngayNum})=>{
     const slots=lcEdit[ngay]||[];
     const isToday=ngay===today;
     const isNghi=slots.length===1&&slots[0].loai===LC_VANG;
     const isEmpty=slots.length===0;
-
-    // Dot style
     const dotCls=isEmpty?'':isNghi?'off':slots.some(s=>s.trangThai==='Từ chối')?'deny':slots.some(s=>s.trangThai==='Chờ duyệt')?'wait':'work';
-
-    // Summary text
-    let summaryTxt='', summaryBadge='', summaryBadgeCls='lcs-empty';
-    if(isEmpty){summaryTxt='Chưa đăng ký';summaryBadge='';}
+    let summaryTxt='',summaryBadge='',summaryBadgeCls='lcs-empty';
+    if(isEmpty){summaryTxt='Chưa đăng ký';}
     else if(isNghi){
-      summaryTxt='Nghỉ phép';summaryBadge='Nghỉ phép';summaryBadgeCls='lcs-vang';
+      summaryTxt='Nghỉ phép';
       const tt=slots[0].trangThai;
       if(tt==='Chờ duyệt'){summaryBadge='Chờ duyệt';summaryBadgeCls='lcs-wait';}
       else if(tt==='Đã duyệt'){summaryBadge='✓ Đã duyệt';summaryBadgeCls='lcs-ok';}
       else if(tt==='Từ chối'){summaryBadge='⚠ Từ chối';summaryBadgeCls='lcs-deny';}
+      else{summaryBadge='Nghỉ phép';summaryBadgeCls='lcs-vang';}
     } else {
       const chNames=[...new Set(slots.map(s=>s.tenCH).filter(Boolean))];
-      summaryTxt=chNames.length?chNames[0]+(chNames.length>1?` +${chNames.length-1}`:''):`${slots.length} ca`;
+      summaryTxt=chNames.length?chNames[0]+(chNames.length>1?' +'+( chNames.length-1):''):slots.length+' ca';
       const hasDeny=slots.some(s=>s.trangThai==='Từ chối');
       const allOk=slots.every(s=>s.trangThai==='Đã duyệt');
       const hasCho=slots.some(s=>s.trangThai==='Chờ duyệt');
       if(hasDeny){summaryBadge='⚠ Từ chối';summaryBadgeCls='lcs-deny';}
       else if(allOk){summaryBadge='✓ Đã duyệt';summaryBadgeCls='lcs-ok';}
       else if(hasCho){summaryBadge='Chờ duyệt';summaryBadgeCls='lcs-wait';}
-      else{summaryBadge=`${slots.length} ca`;}
+      else{summaryBadge=slots.length+' ca';}
     }
-
-    // Slots chi tiết trong editor (cửa hàng TRÊN, giờ DƯỚI)
     const slotsHTML=slots.filter(s=>s.loai!==LC_VANG).map((s,si)=>`
-      <div style="background:white;border-radius:10px;border:1.5px solid var(--border);padding:10px 12px;margin-bottom:8px;position:relative">
+      <div style="background:white;border-radius:10px;border:1.5px solid var(--border);padding:10px 12px;margin-bottom:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <span style="font-size:11px;font-weight:700;color:var(--text-m)">Ca ${si+1}</span>
           ${conHan?`<button onclick="xoaLCSlot('${ngay}',${si})" style="border:none;background:none;cursor:pointer;color:var(--text-lt);font-size:12px;padding:2px 6px">✕ Xóa</button>`:''}
@@ -2445,16 +2419,10 @@ function renderLichCa(data){
           <input type="time" class="lc-ed-time" value="${s.gioKT||'17:00'}" ${!conHan?'disabled':''} onchange="setLCSlotGio('${ngay}',${si},'kt',this.value)">
         </div>
       </div>`).join('');
-
-    return `<div class="lc-day-card${isToday?' lc-today':''}${isNghi?' lc-vang':''}">
+    return `<div class="lc-day-card${isToday?' lc-today':''}${isNghi?' lc-vang':''}" id="lc-card-${ngay}" data-dow="${dow}" data-num="${ngayNum}">
       <div class="lc-day-head" onclick="toggleLCEditor('${ngay}')">
-        <div class="lc-day-dot ${dotCls}">
-          <span class="lc-day-dow">${dow}</span>
-          <span class="lc-day-num">${ngayNum}</span>
-        </div>
-        <div class="lc-day-info">
-          <div class="lc-day-tt">${summaryTxt}</div>
-        </div>
+        <div class="lc-day-dot ${dotCls}"><span class="lc-day-dow">${dow}</span><span class="lc-day-num">${ngayNum}</span></div>
+        <div class="lc-day-info"><div class="lc-day-tt">${summaryTxt}</div></div>
         ${summaryBadge?`<span class="lc-day-status ${summaryBadgeCls}">${summaryBadge}</span>`:''}
       </div>
       <div class="lc-day-editor" id="lced-${ngay}">
@@ -2462,13 +2430,11 @@ function renderLichCa(data){
           <div class="lc-type-btn${!isNghi&&!isEmpty?' sel-work':''}" onclick="${conHan?`themLCSlot('${ngay}')`:''}">${svgWork}Đi làm</div>
           <div class="lc-type-btn${isNghi?' sel-off':''}" onclick="${conHan?`setLCNghi('${ngay}')`:''}">${svgNghi}Nghỉ phép</div>
         </div>
-        ${isNghi?`<div style="text-align:center;font-size:12px;color:var(--text-m);padding:8px 0">Đã đánh dấu nghỉ phép ngày này</div>`:slotsHTML}
-        ${!isNghi&&conHan&&slots.filter(s=>s.loai!==LC_VANG).length>0?`
-        <button onclick="themLCSlot('${ngay}')" style="width:100%;padding:9px;border-radius:10px;border:1.5px dashed var(--border);background:var(--gray-lt);color:var(--text-m);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">${svgAdd} Thêm ca</button>`:''}
+        ${isNghi?'<div style="text-align:center;font-size:12px;color:var(--text-m);padding:8px 0">Đã đánh dấu nghỉ phép ngày này</div>':slotsHTML}
+        ${!isNghi&&conHan&&slots.filter(s=>s.loai!==LC_VANG).length>0?`<button onclick="themLCSlot('${ngay}')" style="width:100%;padding:9px;border-radius:10px;border:1.5px dashed var(--border);background:var(--gray-lt);color:var(--text-m);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">${svgAdd} Thêm ca</button>`:''}
       </div>
     </div>`;
   }).join('');
-
   _updateLCSendBtn(conHan,soNgayDienTu);
 }
 
@@ -2476,197 +2442,162 @@ function toggleLCEditor(ngay){
   const el=document.getElementById('lced-'+ngay);
   if(!el)return;
   const isOpen=el.classList.contains('open');
-  // Đóng tất cả editor khác trước
   document.querySelectorAll('.lc-day-editor.open').forEach(e=>{if(e!==el)e.classList.remove('open');});
   el.classList.toggle('open',!isOpen);
 }
-
 function themLCSlot(ngay){
   if(!lcEdit[ngay])lcEdit[ngay]=[];
-  // Chỉ thêm slot Làm việc (loại lọc Nghỉ phép trước)
   lcEdit[ngay]=lcEdit[ngay].filter(s=>s.loai!==LC_VANG);
   lcEdit[ngay].push({maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00',loai:'Làm việc',trangThai:'Chờ duyệt'});
-  renderLichCa(lcData);
-  requestAnimationFrame(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');});
+  requestAnimationFrame(()=>{_renderNgayCard(ngay,true);_updateProgBar();_updateLCSendBtnNow();});
 }
-
 function setLCNghi(ngay){
   lcEdit[ngay]=[{maCH:'',tenCH:'',gioBD:'',gioKT:'',loai:LC_VANG,trangThai:'Chờ duyệt'}];
-  renderLichCa(lcData);
-  requestAnimationFrame(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');});
+  requestAnimationFrame(()=>{_renderNgayCard(ngay,true);_updateProgBar();_updateLCSendBtnNow();});
 }
-
 function xoaLCSlot(ngay,si){
   if(!lcEdit[ngay])return;
   lcEdit[ngay].splice(si,1);
   if(!lcEdit[ngay].length)delete lcEdit[ngay];
-  renderLichCa(lcData);
-  requestAnimationFrame(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');});
+  requestAnimationFrame(()=>{_renderNgayCard(ngay,true);_updateProgBar();_updateLCSendBtnNow();});
 }
-
-function setLCSlotCH(ngay,si,sel){
-  if(!lcEdit[ngay]||!lcEdit[ngay][si])return;
-  lcEdit[ngay][si].maCH=sel.value;
-  lcEdit[ngay][si].tenCH=sel.options[sel.selectedIndex]?.dataset?.ten||'';
+// Cập nhật chỉ 1 card ngày (không re-render toàn bộ → không nhấp nháy)
+function _renderNgayCard(ngay,keepOpen){
+  const card=document.getElementById('lc-card-'+ngay);
+  if(!card){renderLichCa(lcData);return;} // fallback
+  const conHan=lcData&&lcData.conHan;
+  const today=new Date().toISOString().substring(0,10);
+  const dow=card.dataset.dow, ngayNum=card.dataset.num;
+  const slots=lcEdit[ngay]||[];
+  const isToday=ngay===today, isNghi=slots.length===1&&slots[0].loai===LC_VANG, isEmpty=slots.length===0;
+  const dotCls=isEmpty?'':isNghi?'off':slots.some(s=>s.trangThai==='Từ chối')?'deny':slots.some(s=>s.trangThai==='Chờ duyệt')?'wait':'work';
+  let summaryTxt='',summaryBadge='',summaryBadgeCls='lcs-empty';
+  if(isEmpty){summaryTxt='Chưa đăng ký';}
+  else if(isNghi){summaryTxt='Nghỉ phép';summaryBadge='Nghỉ phép';summaryBadgeCls='lcs-vang';
+    const tt=slots[0].trangThai;
+    if(tt==='Chờ duyệt'){summaryBadge='Chờ duyệt';summaryBadgeCls='lcs-wait';}
+    else if(tt==='Đã duyệt'){summaryBadge='✓ Đã duyệt';summaryBadgeCls='lcs-ok';}
+    else if(tt==='Từ chối'){summaryBadge='⚠ Từ chối';summaryBadgeCls='lcs-deny';}
+  } else {
+    const chNames=[...new Set(slots.map(s=>s.tenCH).filter(Boolean))];
+    summaryTxt=chNames.length?chNames[0]+(chNames.length>1?' +'+(chNames.length-1):''):slots.length+' ca';
+    const hasDeny=slots.some(s=>s.trangThai==='Từ chối'), allOk=slots.every(s=>s.trangThai==='Đã duyệt'), hasCho=slots.some(s=>s.trangThai==='Chờ duyệt');
+    if(hasDeny){summaryBadge='⚠ Từ chối';summaryBadgeCls='lcs-deny';}
+    else if(allOk){summaryBadge='✓ Đã duyệt';summaryBadgeCls='lcs-ok';}
+    else if(hasCho){summaryBadge='Chờ duyệt';summaryBadgeCls='lcs-wait';}
+    else summaryBadge=slots.length+' ca';
+  }
+  card.className='lc-day-card'+(isToday?' lc-today':'')+(isNghi?' lc-vang':'');
+  const head=card.querySelector('.lc-day-head');
+  if(head){
+    const dot=head.querySelector('.lc-day-dot');if(dot)dot.className='lc-day-dot '+dotCls;
+    const tt=head.querySelector('.lc-day-tt');if(tt)tt.textContent=summaryTxt;
+    let badgeEl=head.querySelector('.lc-day-status');
+    if(summaryBadge){
+      if(!badgeEl){badgeEl=document.createElement('span');badgeEl.className='lc-day-status '+summaryBadgeCls;head.appendChild(badgeEl);}
+      badgeEl.textContent=summaryBadge;badgeEl.className='lc-day-status '+summaryBadgeCls;
+    } else if(badgeEl){badgeEl.remove();}
+  }
+  // Re-render editor phần body (slots) mà không mất scroll position
+  const svgAdd=`<svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  const editor=card.querySelector('.lc-day-editor');
+  if(editor){
+    const slotsHTML=slots.filter(s=>s.loai!==LC_VANG).map((s,si)=>`
+      <div style="background:white;border-radius:10px;border:1.5px solid var(--border);padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--text-m)">Ca ${si+1}</span>
+          ${conHan?`<button onclick="xoaLCSlot('${ngay}',${si})" style="border:none;background:none;cursor:pointer;color:var(--text-lt);font-size:12px;padding:2px 6px">✕ Xóa</button>`:''}
+        </div>
+        <div class="lc-ed-label" style="margin-top:0">Cửa hàng</div>
+        <div style="position:relative">
+          <input type="text" class="lc-ed-sel" placeholder="Nhập tên hoặc mã cửa hàng..."
+            value="${s.tenCH||''}" autocomplete="off"
+            oninput="onLCCHInput(this,'${ngay}',${si})"
+            onblur="hideLCCHSuggest('${ngay}',${si})">
+          <div class="suggest-list" id="lcch-sug-${ngay}-${si}" style="z-index:999"></div>
+        </div>
+        <div class="lc-ed-label">Giờ làm việc</div>
+        <div class="lc-ed-row" style="margin-bottom:0">
+          <input type="time" class="lc-ed-time" value="${s.gioBD||'08:00'}" ${!conHan?'disabled':''} onchange="setLCSlotGio('${ngay}',${si},'bd',this.value)">
+          <span class="lc-ed-sep">đến</span>
+          <input type="time" class="lc-ed-time" value="${s.gioKT||'17:00'}" ${!conHan?'disabled':''} onchange="setLCSlotGio('${ngay}',${si},'kt',this.value)">
+        </div>
+      </div>`).join('');
+    const typeRow=editor.querySelector('.lc-type-row');
+    const nghiMsg=isNghi?'<div style="text-align:center;font-size:12px;color:var(--text-m);padding:8px 0">Đã đánh dấu nghỉ phép ngày này</div>':'';
+    const addBtn=!isNghi&&conHan&&slots.filter(s=>s.loai!==LC_VANG).length>0?`<button onclick="themLCSlot('${ngay}')" style="width:100%;padding:9px;border-radius:10px;border:1.5px dashed var(--border);background:var(--gray-lt);color:var(--text-m);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">${svgAdd} Thêm ca</button>`:'';
+    // Chỉ thay phần slots, giữ lại type-row
+    let slotsWrap=editor.querySelector('.lc-slots-wrap');
+    if(!slotsWrap){slotsWrap=document.createElement('div');slotsWrap.className='lc-slots-wrap';if(typeRow)typeRow.after(slotsWrap);else editor.appendChild(slotsWrap);}
+    slotsWrap.innerHTML=nghiMsg+slotsHTML+addBtn;
+    // Cập nhật class sel trên type buttons
+    if(typeRow){
+      const [btnWork,btnNghi]=typeRow.querySelectorAll('.lc-type-btn');
+      if(btnWork)btnWork.className='lc-type-btn'+(!isNghi&&!isEmpty?' sel-work':'');
+      if(btnNghi)btnNghi.className='lc-type-btn'+(isNghi?' sel-off':'');
+    }
+    if(keepOpen)editor.classList.add('open');
+  }
 }
-
+function _updateProgBar(){
+  const prog=document.getElementById('lc-progress');if(!prog||!lcData)return;
+  const ngayTuan=_ngayTuan(lcTuan);
+  prog.innerHTML=ngayTuan.map(({ngay})=>{
+    const slots=lcEdit[ngay]||[];
+    const cls=!slots.length?'':(slots[0].loai===LC_VANG?'vang':'filled');
+    return '<div class="lc-prog-day '+cls+'"></div>';
+  }).join('');
+}
+function _updateLCSendBtnNow(){
+  const conHan=lcData&&lcData.conHan;
+  const soNgay=Object.keys(lcEdit).filter(k=>lcEdit[k]&&lcEdit[k].length).length;
+  _updateLCSendBtn(conHan,soNgay);
+}
 function setLCSlotGio(ngay,si,type,val){
   if(!lcEdit[ngay]||!lcEdit[ngay][si])return;
   if(type==='bd')lcEdit[ngay][si].gioBD=val;
   else lcEdit[ngay][si].gioKT=val;
 }
-
 function _updateLCSendBtn(conHan,soNgay){
   const btn=document.getElementById('lc-btn-send');if(!btn)return;
   if(!conHan){btn.disabled=true;btn.textContent='Đã qua hạn gửi lịch';return;}
   if(soNgay===0){btn.disabled=true;btn.textContent='Chọn ít nhất 1 ngày để gửi';return;}
-  btn.disabled=false;btn.textContent=`Gửi lịch ${soNgay} ngày · Tuần này`;
+  btn.disabled=false;btn.textContent='Gửi lịch '+soNgay+' ngày · Tuần này';
 }
-
 function guiLichCa(){
   const btn=document.getElementById('lc-btn-send');
   if(!SESSION||!lcTuan||btn.disabled)return;
-  // Flatten tất cả slot thành mảng phẳng
   const slotArr=[];
   Object.entries(lcEdit).forEach(([ngay,slots])=>{
     (slots||[]).forEach(s=>{
-      slotArr.push({ngay, maCH:s.maCH||'', tenCH:s.tenCH||'',
-        gioBatDau:s.gioBD||'', gioKetThuc:s.gioKT||'', loai:s.loai||'Làm việc'});
+      slotArr.push({ngay,maCH:s.maCH||'',tenCH:s.tenCH||'',
+        gioBatDau:s.gioBD||'',gioKetThuc:s.gioKT||'',loai:s.loai||'Làm việc'});
     });
   });
   if(!slotArr.length){showToast('Chưa đăng ký ca nào.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'guiLichCa', maNhanVien:SESSION.ma, tenNhanVien:SESSION.ten,
-    tuan:lcTuan, lichCa:slotArr,
+    action:'guiLichCa',maNhanVien:SESSION.ma,tenNhanVien:SESSION.ten,
+    tuan:lcTuan,lichCa:slotArr,
   })})
   .then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast(`✓ Đã gửi lịch tuần thành công`,'ok');
-      taiLichCa(); // reload từ server
-    } else {
-      showToast(res.error||'Lỗi gửi lịch.','err');
-      btn.disabled=false;btn.textContent='Gửi lịch tuần';
-    }
+    if(res.success){showToast('✓ Đã gửi lịch tuần thành công','ok');taiLichCa();}
+    else{showToast(res.error||'Lỗi gửi lịch.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';}
   }).catch(()=>{showToast('Lỗi kết nối.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';});
 }
-
-// ─── QLNS xem lịch ca toàn hệ thống ───────────────────────
-let lcqlTuan='', lcqlData=null, lcqlFilter='all';
-
-function doiTuanLCQL(delta){
-  const d=new Date(_thuHai(lcqlTuan)+'T00:00:00');
-  d.setDate(d.getDate()+delta*7);
-  lcqlTuan=_tuanISO(d);
-  taiLichCaQL();
-}
-function taiLichCaQL(){
-  if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
-  document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
-  document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
-  fetch(SCRIPT_URL+'?type=lichca_ql&tuan='+lcqlTuan)
-  .then(r=>r.json()).then(res=>{
-    lcqlData=res.lichCaQL;
-    if(!lcqlData)return;
-    const s=lcqlData.stats;
-    document.getElementById('lcql-tong').textContent=s.tongNV;
-    document.getElementById('lcql-da').textContent=s.daDangKy;
-    document.getElementById('lcql-chua').textContent=s.chuaDangKy;
-    const now=new Date();
-    document.getElementById('lcql-updated').textContent=
-      'Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
-    renderLCQL();
-  }).catch(()=>{document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi tải.</div>';});
-}
-function setLCQLFilter(f){lcqlFilter=f;renderLCQL();}
-function renderLCQL(){
-  if(!lcqlData)return;
-  const q=(document.getElementById('lcql-search').value||'').toLowerCase();
-  const ngayTuan=_ngayTuan(lcqlTuan);
-  let list=[...lcqlData.danhSachLich];
-  if(lcqlFilter==='da')  list=list.filter(n=>n.daDangKy);
-  if(lcqlFilter==='chua')list=list.filter(n=>!n.daDangKy);
-  if(q)list=list.filter(n=>n.ma.toLowerCase().includes(q)||n.ten.toLowerCase().includes(q)||n.cuaHang.toLowerCase().includes(q));
-  const el=document.getElementById('lcql-list');
-  if(!list.length){el.innerHTML='<div class="ns-empty">Không có nhân sự phù hợp.</div>';return;}
-  el.innerHTML=list.map(nv=>{
-    const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-    const avCls=nv.coTuChoi?'warn':nv.daDangKy?'':'gray';
-    const badge=nv.coTuChoi?'⚠ Cần xem':nv.daDangKy?`${nv.soNgayLam}/${ngayTuan.length} ngày`:'Chưa gửi';
-    const badgeCls=nv.coTuChoi?'nsb-loi':nv.daDangKy?'nsb-dang':'nsb-chua';
-    // Mini week bar
-    const mini=ngayTuan.map(({ngay,dow})=>{
-      const slot=nv.lich.find(l=>l.ngay===ngay);
-      const cls=!slot?'none':slot.trangThai==='Vắng'?'off':slot.trangThai==='Từ chối'?'deny':slot.trangThai==='Chờ duyệt'?'wait':'work';
-      const txt=dow[1]||dow[0];
-      return `<div class="lc-mini-day ${cls}">${txt}</div>`;
-    }).join('');
-    return `<div class="lc-ql-item" onclick="xemLichCaNV('${nv.ma}','${nv.ten.replace(/'/g,"\\'")}')">
-      <div class="lc-ql-nv-row">
-        <div class="lc-ql-av ${avCls}">${initials}</div>
-        <div style="flex:1;min-width:0">
-          <div class="lc-ql-name">${nv.ten} <span style="font-size:11px;color:var(--text-m)">${nv.ma}</span></div>
-          <div class="lc-ql-sub">${nv.cuaHang} · ${nv.khuVuc}</div>
-        </div>
-        <span class="lc-ql-badge ${badgeCls}">${badge}</span>
-      </div>
-      <div class="lc-mini-week">${mini}</div>
-    </div>`;
-  }).join('');
-}
-
-// Modal chi tiết lịch NV
-let _lcMaNV='', _lcTuanModal='';
-function xemLichCaNV(maNV, tenNV){
-  const nv=lcqlData.danhSachLich.find(n=>n.ma===maNV);
-  if(!nv)return;
-  _lcMaNV=maNV; _lcTuanModal=lcqlTuan;
-  document.getElementById('lc-d-name').textContent=tenNV+' ('+maNV+')';
-  document.getElementById('lc-d-sub').textContent=_tuanLabel(lcqlTuan);
-  const ngayTuan=_ngayTuan(lcqlTuan);
-  const body=document.getElementById('lc-d-body');
-  if(!nv.daDangKy){
-    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhân viên chưa gửi lịch tuần này.</div>';
-    document.getElementById('lc-d-actions').style.display='none';
-    document.getElementById('lc-detail-modal').classList.add('show');
-    return;
+function _updateLCHeader(){
+  if(!SESSION)return;
+  const nameEl=document.getElementById('lc-nv-name');
+  const maEl=document.getElementById('lc-nv-ma');
+  const clockEl=document.getElementById('lc-clock-top');
+  if(nameEl)nameEl.textContent='LỊCH LÀM VIỆC';
+  if(maEl)maEl.textContent=SESSION.ten+' · '+SESSION.ma;
+  if(clockEl){
+    const d=new Date(),days=['CN','T2','T3','T4','T5','T6','T7'];
+    clockEl.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
   }
-  document.getElementById('lc-d-actions').style.display='flex';
-  body.innerHTML=ngayTuan.map(({ngay,dow,ngayNum})=>{
-    const slot=nv.lich.find(l=>l.ngay===ngay);
-    const cls=!slot?'off':slot.loai==='Nghỉ phép'?'deny':slot.trangThai==='Từ chối'?'deny':slot.trangThai==='Chờ duyệt'?'wait':'work';
-    const tt=!slot?'Không đăng ký':slot.loai==='Nghỉ phép'?'🏖️ Nghỉ phép':`${slot.tenCH||'--'}`;
-    const gio=slot&&slot.gioBatDau?`${_fmtGioDisplay(slot.gioBatDau)}${slot.gioKetThuc?' – '+_fmtGioDisplay(slot.gioKetThuc):''}`:slot&&slot.trangThai!=='Vắng'?'Chưa có giờ':'';
-    return `<div class="lc-d-day-row">
-      <div class="lc-d-day-dot lc-day-dot ${cls}">
-        <span class="lc-d-dow">${dow}</span>
-        <span class="lc-d-date">${ngayNum}</span>
-      </div>
-      <div class="lc-d-info">
-        <div class="lc-d-ch">${tt}</div>
-        ${gio?`<div class="lc-d-gio">${gio}</div>`:''}
-      </div>
-      ${slot?`<span class="lc-day-status ${cls==='work'?'lcs-ok':cls==='wait'?'lcs-wait':cls==='deny'?'lcs-deny':'lcs-vang'}">${slot.trangThai}</span>`:''}
-    </div>`;
-  }).join('');
-  document.getElementById('lc-detail-modal').classList.add('show');
 }
-function closeLCDetail(){document.getElementById('lc-detail-modal').classList.remove('show');}
-function duyetLichTuModal(qd){
-  const quyetDinh = qd === 'Da duyet' ? 'Đã duyệt' : (qd === 'Tu choi' ? 'Từ chối' : qd);
-  closeLCDetail();
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetLichCa', maNhanVien:_lcMaNV, tuan:_lcTuanModal,
-    quyetDinh, maNguoiDuyet:SESSION.ma,
-  })})
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt lịch ca':'✗ Đã từ chối lịch ca','ok');
-      taiLichCaQL(); // reload
-    } else showToast(res.error||'Lỗi.','err');
-  }).catch(()=>showToast('Lỗi kết nối.','err'));
-}
-// ─── End lịch ca JS ──────────────────────────────────────────
+setInterval(()=>{if(typeof currentPage!=='undefined'&&currentPage==='lichca')_updateLCHeader();},1000);
 </script>
 <script>
 // ── Modal xin nghỉ phép ──────────────────────────────────────
@@ -3027,19 +2958,7 @@ function hideLCCHSuggest(ngay,si){
 }
 
 // ─── Header lịch ca NV: cập nhật tên + giờ ──────────────────
-function _updateLCHeader(){
-  if(!SESSION)return;
-  const nameEl=document.getElementById('lc-nv-name');
-  const maEl=document.getElementById('lc-nv-ma');
-  const clockEl=document.getElementById('lc-clock-top');
-  if(nameEl)nameEl.textContent='LỊCH LÀM VIỆC';
-  if(maEl)maEl.textContent=SESSION.ten+' · '+SESSION.ma;
-  // Update giờ
-  if(clockEl){
-    const d=new Date(),days=['CN','T2','T3','T4','T5','T6','T7'];
-    clockEl.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
-  }
-}
+
 setInterval(()=>{if(typeof currentPage!=='undefined'&&currentPage==='lichca')_updateLCHeader();},1000);
 
 // ─── ĐƠN NGHỈ PHÉP QLNS ─────────────────────────────────────
@@ -3162,5 +3081,329 @@ function moLichCa(){
   lcTuan=dow===6?_tuanISO(new Date(now.getTime()+7*86400000)):_tuanISO(now);
   goToPage('lichca');
   _updateLCHeader();
+}
+</script>
+<script>
+// ════════════════════════════════════════════════════════════
+// LỊCH CA QLNS — Drill-down 4 tầng
+// Hệ thống → Khu vực → Cửa hàng → Nhân sự
+// ════════════════════════════════════════════════════════════
+
+let lcqlTuan='', lcqlData=null, lcqlLevel='heThong';
+let lcqlDrillKV='', lcqlDrillCH=''; // filter drill-down
+
+function doiTuanLCQL(delta){
+  const d=new Date(_thuHai(lcqlTuan)+'T00:00:00');
+  d.setDate(d.getDate()+delta*7);
+  lcqlTuan=_tuanISO(d);
+  taiLichCaQL();
+}
+
+function taiLichCaQL(){
+  if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
+  document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
+  document.getElementById('lcql-content-area').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
+  fetch(SCRIPT_URL+'?type=lichca_ql&tuan='+lcqlTuan)
+  .then(r=>r.json()).then(res=>{
+    lcqlData=res.lichCaQL;
+    if(!lcqlData)return;
+    const now=new Date();
+    const el=document.getElementById('lcql-updated');
+    if(el)el.textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
+    renderLCQL();
+  }).catch(()=>{document.getElementById('lcql-content-area').innerHTML='<div class="ns-empty">❌ Lỗi tải.</div>';});
+}
+
+function setLCQLLevel(level){
+  lcqlLevel=level;
+  lcqlDrillKV='';lcqlDrillCH='';
+  document.querySelectorAll('.lcql-lvl-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('lcqlt-'+level);if(el)el.classList.add('active');
+  renderLCQL();
+}
+
+function drillKV(kv){
+  lcqlDrillKV=kv;lcqlDrillCH='';
+  lcqlLevel='cuaHang';
+  document.querySelectorAll('.lcql-lvl-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('lcqlt-cuaHang');if(el)el.classList.add('active');
+  renderLCQL();
+}
+function drillCH(ch){
+  lcqlDrillCH=ch;
+  lcqlLevel='nhanSu';
+  document.querySelectorAll('.lcql-lvl-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('lcqlt-nhanSu');if(el)el.classList.add('active');
+  renderLCQL();
+}
+
+function renderLCQL(){
+  if(!lcqlData)return;
+  const q=(document.getElementById('lcql-search')?.value||'').toLowerCase();
+  const area=document.getElementById('lcql-content-area');
+  const statGrid=document.getElementById('lcql-stat-grid');
+  const bc=document.getElementById('lcql-breadcrumb');
+  const ngayTuan=_ngayTuan(lcqlTuan);
+  const DOW_SHORT=['CN','T2','T3','T4','T5','T6','T7'];
+
+  function fmtGio(g){return g?g.substring(0,5):'';}
+  function statCard(val,lbl,cls,click){
+    return `<div class="lc-ql-stat"${click?' style="cursor:pointer" onclick="'+click+'"':''}>
+      <div class="lc-ql-val ${cls||''}">${val}</div>
+      <div class="lc-ql-lbl">${lbl}${click?' ›':''}</div>
+    </div>`;
+  }
+
+  if(lcqlLevel==='heThong'){
+    bc.style.display='none';
+    const s=lcqlData.stats;
+    statGrid.innerHTML=
+      statCard(s.tongNV,'Tổng NV','')+
+      statCard(s.daDangKy,'Đã gửi lịch','ns-v-green')+
+      statCard(s.chuaDangKy,'Chưa gửi','ns-v-red')+
+      statCard(s.tongGio+'h','Tổng giờ','ns-v-blue');
+    // Hiển thị danh sách khu vực
+    let kvList=lcqlData.danhSachKV||[];
+    if(q)kvList=kvList.filter(kv=>kv.khuVuc.toLowerCase().includes(q));
+    area.innerHTML='<div class="lc-ql-list">'+kvList.map(kv=>`
+      <div class="lc-ql-item" onclick="drillKV('${kv.khuVuc.replace(/'/g,"\\'")}')">
+        <div class="lc-ql-nv-row">
+          <div class="lc-ql-av" style="border-radius:8px;background:#EEF6FF;color:#185FA5;font-size:11px;font-weight:700;width:42px;height:42px">${_viTatKV(kv.khuVuc)}</div>
+          <div style="flex:1;min-width:0">
+            <div class="lc-ql-name">${kv.khuVuc}</div>
+            <div class="lc-ql-sub">${kv.tongNV} nhân sự · ${kv.tongGio}h tuần này</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:13px;font-weight:700;color:var(--green-m)">${kv.daDangKy}/${kv.tongNV}</div>
+            <div style="font-size:10px;color:var(--text-m)">đã gửi</div>
+          </div>
+        </div>
+      </div>`).join('')+'</div>';
+
+  } else if(lcqlLevel==='khuVuc'){
+    bc.style.display='none';
+    let kvList=lcqlData.danhSachKV||[];
+    if(q)kvList=kvList.filter(kv=>kv.khuVuc.toLowerCase().includes(q));
+    const tot={nv:kvList.reduce((s,k)=>s+k.tongNV,0),da:kvList.reduce((s,k)=>s+k.daDangKy,0),gio:Math.round(kvList.reduce((s,k)=>s+k.tongGio,0)*10)/10};
+    statGrid.innerHTML=statCard(tot.nv,'Tổng NV','')+statCard(tot.da,'Đã gửi','ns-v-green')+statCard(tot.gio+'h','Tổng giờ','ns-v-blue');
+    area.innerHTML='<div class="lc-ql-list">'+kvList.map(kv=>`
+      <div class="lc-ql-item" onclick="drillKV('${kv.khuVuc.replace(/'/g,"\\'")}')">
+        <div class="lc-ql-nv-row">
+          <div class="lc-ql-av" style="border-radius:8px;background:#EEF6FF;color:#185FA5;font-size:11px;font-weight:700;width:42px;height:42px">${_viTatKV(kv.khuVuc)}</div>
+          <div style="flex:1"><div class="lc-ql-name">${kv.khuVuc}</div><div class="lc-ql-sub">${kv.tongNV} NV · ${kv.tongGio}h</div></div>
+          <span class="lc-ql-badge ${kv.chuaDangKy>0?'nsb-loi':'nsb-dang'}">${kv.daDangKy}/${kv.tongNV} đã gửi</span>
+        </div>
+      </div>`).join('')+'</div>';
+
+  } else if(lcqlLevel==='cuaHang'){
+    let chList=lcqlData.danhSachCH||[];
+    if(lcqlDrillKV)chList=chList.filter(ch=>ch.khuVuc===lcqlDrillKV);
+    if(q)chList=chList.filter(ch=>ch.cuaHang.toLowerCase().includes(q)||ch.khuVuc.toLowerCase().includes(q));
+    bc.style.display=lcqlDrillKV?'block':'none';
+    bc.innerHTML=lcqlDrillKV?`<span style="color:var(--text-m);cursor:pointer" onclick="setLCQLLevel('heThong')">Hệ thống</span> › <strong>${lcqlDrillKV}</strong>`:'';
+    const tot={nv:chList.reduce((s,c)=>s+c.tongNV,0),da:chList.reduce((s,c)=>s+c.daDangKy,0),gio:Math.round(chList.reduce((s,c)=>s+c.tongGio,0)*10)/10};
+    statGrid.innerHTML=statCard(tot.nv,'Tổng NV','')+statCard(tot.da,'Đã gửi','ns-v-green')+statCard(tot.gio+'h','Tổng giờ','ns-v-blue');
+    area.innerHTML='<div class="lc-ql-list">'+chList.map(ch=>`
+      <div class="lc-ql-item" onclick="drillCH('${ch.cuaHang.replace(/'/g,"\\'")}')">
+        <div class="lc-ql-nv-row">
+          <div class="lc-ql-av ${ch.chuaDangKy>0?'warn':''}" style="border-radius:8px;font-size:11px">🏪</div>
+          <div style="flex:1"><div class="lc-ql-name">${ch.cuaHang}</div><div class="lc-ql-sub">${ch.khuVuc} · ${ch.tongNV} NV · ${ch.tongGio}h/tuần</div></div>
+          <span class="lc-ql-badge ${ch.chuaDangKy>0?'nsb-loi':'nsb-dang'}">${ch.daDangKy}/${ch.tongNV}</span>
+        </div>
+      </div>`).join('')+'</div>';
+
+  } else { // nhanSu
+    let nvList=lcqlData.danhSachLich||[];
+    if(lcqlDrillKV)nvList=nvList.filter(n=>n.khuVuc===lcqlDrillKV);
+    if(lcqlDrillCH)nvList=nvList.filter(n=>n.cuaHang===lcqlDrillCH);
+    if(q)nvList=nvList.filter(n=>n.ma.toLowerCase().includes(q)||n.ten.toLowerCase().includes(q)||n.cuaHang.toLowerCase().includes(q));
+    bc.style.display='block';
+    bc.innerHTML=`<span style="color:var(--text-m);cursor:pointer" onclick="setLCQLLevel('heThong')">Hệ thống</span>`
+      +(lcqlDrillKV?` › <span style="color:var(--text-m);cursor:pointer" onclick="drillKV('${lcqlDrillKV}')">${lcqlDrillKV}</span>`:'')
+      +(lcqlDrillCH?` › <strong>${lcqlDrillCH}</strong>`:'');
+    const tot={nv:nvList.length,da:nvList.filter(n=>n.daDangKy).length,gio:Math.round(nvList.reduce((s,n)=>s+n.tongGio,0)*10)/10};
+    statGrid.innerHTML=statCard(tot.nv,'Tổng NV','')+statCard(tot.da,'Đã gửi','ns-v-green')+statCard(tot.gio+'h','Tổng giờ','ns-v-blue');
+    area.innerHTML='<div class="lc-ql-list">'+nvList.map(nv=>{
+      const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
+      const mini=ngayTuan.map(({ngay,dow})=>{
+        const slots=(nv.lich||[]).filter(l=>l.ngay===ngay);
+        const hasLam=slots.some(l=>l.loai!=='Nghỉ phép');
+        const cls=!slots.length?'none':hasLam?'work':'off';
+        const gio=hasLam?slots.filter(l=>l.loai!=='Nghỉ phép').reduce((s,l)=>{
+          if(l.gioBatDau&&l.gioKetThuc){const[bh,bm]=l.gioBatDau.split(':').map(Number),[kh,km]=l.gioKetThuc.split(':').map(Number);return s+(kh*60+km-bh*60-bm)/60;}return s;},0):0;
+        return `<div class="lc-mini-day ${cls}" title="${dow} ${ngay}">${gio>0?gio.toFixed(0)+'h':dow[1]||dow[0]}</div>`;
+      }).join('');
+      return `<div class="lc-ql-item" onclick="xemLichCaNV('${nv.ma}','${nv.ten.replace(/'/g,"\\'")}')">
+        <div class="lc-ql-nv-row">
+          <div class="lc-ql-av ${nv.daDangKy?'':'gray'}">${initials}</div>
+          <div style="flex:1"><div class="lc-ql-name">${nv.ten} <span style="font-size:11px;color:var(--text-m)">${nv.ma}</span></div>
+            <div class="lc-ql-sub">${nv.cuaHang} · ${nv.tongGio}h/tuần</div></div>
+          <span class="lc-ql-badge ${nv.daDangKy?'nsb-dang':'nsb-chua'}">${nv.daDangKy?nv.soNgayLam+' ngày':'Chưa gửi'}</span>
+        </div>
+        <div class="lc-mini-week">${mini}</div>
+      </div>`;
+    }).join('')+'</div>';
+  }
+}
+
+// Modal xem lịch NV — chỉ xem, không cần duyệt (lịch làm việc tự duyệt)
+let _lcMaNV='', _lcTuanModal='';
+function xemLichCaNV(maNV,tenNV){
+  const nv=lcqlData&&lcqlData.danhSachLich.find(n=>n.ma===maNV);
+  if(!nv)return;
+  _lcMaNV=maNV;_lcTuanModal=lcqlTuan;
+  document.getElementById('lc-d-name').textContent=tenNV+' ('+maNV+')';
+  document.getElementById('lc-d-sub').textContent=_tuanLabel(lcqlTuan);
+  const ngayTuan=_ngayTuan(lcqlTuan);
+  const body=document.getElementById('lc-d-body');
+  // Ẩn nút duyệt — QLNS chỉ xem
+  document.getElementById('lc-d-actions').style.display='none';
+  if(!nv.daDangKy){
+    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhân viên chưa gửi lịch tuần này.</div>';
+    document.getElementById('lc-detail-modal').classList.add('show');
+    return;
+  }
+  body.innerHTML=ngayTuan.map(({ngay,dow,ngayNum,thang})=>{
+    const slots=(nv.lich||[]).filter(l=>l.ngay===ngay);
+    const isNghi=slots.length===1&&slots[0].loai==='Nghỉ phép';
+    const dotCls=!slots.length?'off':isNghi?'off':'work';
+    const dotColor=isNghi?'style="background:var(--red-lt)"':'style="background:var(--green-lt)"';
+    if(!slots.length)return `<div class="lc-d-day-row" style="opacity:.5">
+      <div class="lc-d-day-dot lc-day-dot off" style="background:var(--gray-lt)"><span class="lc-d-dow">${dow}</span><span class="lc-d-date">${ngayNum}</span></div>
+      <div class="lc-d-info"><div class="lc-d-ch" style="color:var(--text-m)">Không đăng ký</div></div>
+    </div>`;
+    if(isNghi)return `<div class="lc-d-day-row">
+      <div class="lc-d-day-dot lc-day-dot off" style="background:var(--red-lt)"><span class="lc-d-dow">${dow}</span><span class="lc-d-date">${ngayNum}</span></div>
+      <div class="lc-d-info"><div class="lc-d-ch" style="color:var(--red)">Nghỉ phép</div>
+      ${slots[0].ghiChu?`<div class="lc-d-gio">${slots[0].ghiChu.split(' | 📎')[0]}</div>`:''}</div>
+      <span class="lc-day-status lcs-vang">Nghỉ</span>
+    </div>`;
+    return slots.map((s,i)=>`<div class="lc-d-day-row">
+      <div class="lc-d-day-dot lc-day-dot work" style="background:var(--green-lt)">
+        <span class="lc-d-dow">${i===0?dow:''}</span><span class="lc-d-date">${i===0?ngayNum:''}</span>
+      </div>
+      <div class="lc-d-info">
+        <div class="lc-d-ch">${s.tenCH||'--'}</div>
+        <div class="lc-d-gio">${s.gioBatDau?s.gioBatDau.substring(0,5)+' – '+s.gioKetThuc.substring(0,5):''}</div>
+      </div>
+      ${i===0?`<span class="lc-day-status lcs-ok">Làm việc</span>`:''}
+    </div>`).join('');
+  }).join('');
+  document.getElementById('lc-detail-modal').classList.add('show');
+}
+function closeLCDetail(){document.getElementById('lc-detail-modal').classList.remove('show');}
+
+// Hàm autocomplete cửa hàng trong lịch ca
+function onLCCHInput(inp,ngay,si){
+  const q=inp.value.toLowerCase();
+  const sugEl=document.getElementById('lcch-sug-'+ngay+'-'+si);
+  if(!sugEl)return;
+  if(!q){sugEl.style.display='none';return;}
+  const matches=CH_LIST.filter(ch=>ch.ten.toLowerCase().includes(q)||ch.ma.toLowerCase().includes(q)).slice(0,6);
+  if(!matches.length){sugEl.style.display='none';return;}
+  sugEl.innerHTML=matches.map(ch=>`<div class="ns-sug-item" onmousedown="chonLCCH('${ngay}',${si},'${ch.ma}','${ch.ten.replace(/'/g,"\\'")}','${inp.id||''}');event.preventDefault()">
+    <span class="ns-sug-icon">🏪</span><div><div class="ns-sug-main">${ch.ten}</div><div class="ns-sug-sub">${ch.ma}</div></div>
+  </div>`).join('');
+  sugEl.style.display='block';
+}
+function chonLCCH(ngay,si,maCH,tenCH,inputId){
+  if(!lcEdit[ngay]||!lcEdit[ngay][si])return;
+  lcEdit[ngay][si].maCH=maCH;
+  lcEdit[ngay][si].tenCH=tenCH;
+  const inp=document.getElementById('lcch-sug-'+ngay+'-'+si)?.closest('[style*="relative"]')?.querySelector('input');
+  if(inp)inp.value=tenCH;
+  const sugEl=document.getElementById('lcch-sug-'+ngay+'-'+si);
+  if(sugEl)sugEl.style.display='none';
+  // Cập nhật summary head
+  _renderNgayCard(ngay,true);
+}
+function hideLCCHSuggest(ngay,si){
+  setTimeout(()=>{
+    const el=document.getElementById('lcch-sug-'+ngay+'-'+si);
+    if(el)el.style.display='none';
+  },200);
+}
+
+// ════════════════════════════════════════════════════════════
+// ĐƠN NGHỈ PHÉP QLNS
+// ════════════════════════════════════════════════════════════
+let dnTuan='', dnData=null, dnFilter='all';
+
+function taiDonNghi(){
+  if(!dnTuan)dnTuan=_tuanISO(new Date());
+  document.getElementById('dn-tuan-lbl').textContent=_tuanLabel(dnTuan);
+  document.getElementById('dn-list').innerHTML='<div class="ns-empty">⏳ Đang tải đơn nghỉ...</div>';
+  fetch(SCRIPT_URL+'?type=don_nghi&tuan='+dnTuan)
+  .then(r=>r.json()).then(res=>{
+    dnData=res.donNghi;if(!dnData)return;
+    const all=dnData.nhom.flatMap(n=>n.donList);
+    document.getElementById('dn-tong').textContent=dnData.tongDon;
+    document.getElementById('dn-cho').textContent=all.filter(d=>d.trangThai==='Chờ duyệt').length;
+    document.getElementById('dn-da').textContent=all.filter(d=>d.trangThai==='Đã duyệt'||d.trangThai==='Từ chối').length;
+    renderDonNghi();
+  }).catch(()=>{document.getElementById('dn-list').innerHTML='<div class="ns-empty">❌ Lỗi tải.</div>';});
+}
+function doiTuanDonNghi(delta){
+  const d=new Date(_thuHai(dnTuan)+'T00:00:00');
+  d.setDate(d.getDate()+delta*7);
+  dnTuan=_tuanISO(d);taiDonNghi();
+}
+function setDNFilter(f){dnFilter=f;renderDonNghi();}
+function renderDonNghi(){
+  if(!dnData)return;
+  const q=(document.getElementById('dn-search')?.value||'').toLowerCase();
+  const el=document.getElementById('dn-list');
+  let nhomList=[...dnData.nhom];
+  if(dnFilter==='choDuyet')nhomList=nhomList.map(n=>({...n,donList:n.donList.filter(d=>d.trangThai==='Chờ duyệt')})).filter(n=>n.donList.length);
+  if(q)nhomList=nhomList.map(n=>({...n,donList:n.donList.filter(d=>d.maNV.toLowerCase().includes(q)||d.tenNV.toLowerCase().includes(q))})).filter(n=>n.donList.length);
+  if(!nhomList.length){el.innerHTML='<div class="ns-empty">Không có đơn nào.</div>';return;}
+  el.innerHTML=nhomList.map(nhom=>`
+    <div style="margin:10px 14px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.05em;padding:8px 0 6px;border-bottom:0.5px solid var(--border)">
+        ${fmtNgayVN(nhom.ngay)} · ${nhom.donList.length} đơn
+      </div>
+      ${nhom.donList.map(d=>`
+      <div style="background:white;border-radius:14px;padding:14px;margin-top:8px;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--red-lt);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">
+            ${d.tenNV.split(' ').slice(-1)[0][0]||'?'}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700">${d.tenNV} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
+          </div>
+          <span class="lc-day-status ${d.trangThai==='Đã duyệt'?'lcs-ok':d.trangThai==='Từ chối'?'lcs-deny':'lcs-wait'}">${d.trangThai}</span>
+        </div>
+        ${d.lyDo?`<div style="font-size:13px;color:var(--text);margin-bottom:8px;padding:8px 10px;background:var(--gray-lt);border-radius:8px">📝 ${d.lyDo}</div>`:''}
+        ${d.linkAnh?`<div style="margin-bottom:10px"><a href="${d.linkAnh}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#185FA5;font-weight:600;padding:7px 12px;background:#EEF6FF;border-radius:8px;text-decoration:none">📎 Xem đơn xin nghỉ</a></div>`:''}
+        <textarea id="dn-gc-${d.rowIdx}" rows="2" placeholder="Ghi chú QLNS (hiển thị cho nhân viên)..."
+          style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;resize:none;font-family:inherit;background:var(--gray-lt);box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"
+        >${d.ghiChuQL||''}</textarea>
+        ${d.trangThai==='Chờ duyệt'?`
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="duyetDon(${d.rowIdx},'${d.maNV}','${d.tuan}','Đã duyệt')" style="flex:1;padding:11px;border-radius:10px;background:var(--green);color:white;border:none;font-size:14px;font-weight:700;cursor:pointer">✓ Duyệt</button>
+          <button onclick="duyetDon(${d.rowIdx},'${d.maNV}','${d.tuan}','Từ chối')" style="flex:1;padding:11px;border-radius:10px;background:var(--red-lt);color:var(--red);border:1.5px solid var(--red-bd);font-size:14px;font-weight:700;cursor:pointer">✗ Từ chối</button>
+        </div>`:''}
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+function fmtNgayVN(s){
+  if(!s)return'--';const p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function duyetDon(rowIdx,maNV,tuan,qd){
+  const ghiChu=(document.getElementById('dn-gc-'+rowIdx)?.value||'').trim();
+  const wrap=document.getElementById('dn-gc-'+rowIdx)?.closest('div[style*="background:white"]');
+  const btns=wrap?.querySelectorAll('button');
+  if(btns)btns.forEach(b=>{b.disabled=true;if(b.textContent.includes('Duyệt')&&qd==='Đã duyệt'||b.textContent.includes('Từ chối')&&qd==='Từ chối')b.textContent='Đang xử lý...';});
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetLichCa', maNhanVien:maNV, tuan, quyetDinh:qd,
+    rowIdxs:[rowIdx], ghiChu, maNguoiDuyet:SESSION.ma,
+  })})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){showToast(qd==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ':'✗ Đã từ chối đơn nghỉ','ok');taiDonNghi();}
+    else{showToast(res.error||'Lỗi.','err');if(btns)btns.forEach(b=>b.disabled=false);}
+  }).catch(()=>{showToast('Lỗi kết nối.','err');if(btns)btns.forEach(b=>b.disabled=false);});
 }
 </script>
