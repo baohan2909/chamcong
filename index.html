@@ -524,6 +524,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
 @keyframes spin { to{transform:rotate(360deg);} }
 .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+/* [v10 FIX #7] Busy overlay — chặn thao tác trong lúc xử lý */
+.busy-overlay { position:fixed; inset:0; background:rgba(20,22,25,.35); backdrop-filter:blur(1.5px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .15s; }
+.busy-overlay.on { opacity:1; pointer-events:auto; }
+.busy-box { background:white; padding:18px 24px; border-radius:14px; display:flex; align-items:center; gap:12px; box-shadow:0 10px 40px rgba(0,0,0,.25); font-size:13px; font-weight:600; color:var(--text,#1a1a1a); }
+.busy-box .spinner { width:18px; height:18px; border-color:rgba(29,158,117,.25); border-top-color:#1D9E75; margin:0; }
 
 /* Badge thông báo tab Nhân Sự */
 .nav-badge {
@@ -959,9 +964,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- Bộ lọc thời gian -->
       <div class="ns-time-row">
         <div class="ns-time-tabs">
-          <button class="ns-time-tab active" data-lcnvrange="thangnay"   onclick="setLCNVRange('thangnay')">Tháng này</button>
+          <button class="ns-time-tab"        data-lcnvrange="thangnay"   onclick="setLCNVRange('thangnay')">Tháng này</button>
           <button class="ns-time-tab"        data-lcnvrange="thangtruoc" onclick="setLCNVRange('thangtruoc')">Tháng trước</button>
-          <button class="ns-time-tab"        data-lcnvrange="tatca"      onclick="setLCNVRange('tatca')">Tất cả</button>
+          <button class="ns-time-tab active" data-lcnvrange="tatca"      onclick="setLCNVRange('tatca')">Tất cả</button>
           <button class="ns-time-tab"        data-lcnvrange="tuy"        onclick="setLCNVRange('tuy')">Khoảng ngày</button>
         </div>
         <div class="ns-daterange" id="lcnv-daterange" style="display:none">
@@ -1231,10 +1236,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- Bộ lọc thời gian cho đơn nghỉ -->
       <div class="ns-time-row">
         <div class="ns-time-tabs">
-          <button class="ns-time-tab active" data-dnprange="thangnay" onclick="setDNPRange('thangnay')">Tháng này</button>
-          <button class="ns-time-tab" data-dnprange="thangtruoc" onclick="setDNPRange('thangtruoc')">Tháng trước</button>
-          <button class="ns-time-tab" data-dnprange="30ngay" onclick="setDNPRange('30ngay')">30 ngày</button>
-          <button class="ns-time-tab" data-dnprange="tuy" onclick="setDNPRange('tuy')">Khoảng ngày</button>
+          <button class="ns-time-tab"        data-dnprange="thangnay" onclick="setDNPRange('thangnay')">Tháng này</button>
+          <button class="ns-time-tab"        data-dnprange="thangtruoc" onclick="setDNPRange('thangtruoc')">Tháng trước</button>
+          <button class="ns-time-tab"        data-dnprange="30ngay" onclick="setDNPRange('30ngay')">30 ngày</button>
+          <button class="ns-time-tab active" data-dnprange="tatca"  onclick="setDNPRange('tatca')">Tất cả</button>
+          <button class="ns-time-tab"        data-dnprange="tuy" onclick="setDNPRange('tuy')">Khoảng ngày</button>
         </div>
         <div class="ns-daterange" id="dnp-daterange" style="display:none">
           <input type="date" id="dnp-tu"  class="gcql-date-inp" onchange="taiDonNghiPhep()">
@@ -1410,10 +1416,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="page" id="page-donnghi-acc">
     <div class="ns-time-row" style="margin-top:12px">
       <div class="ns-time-tabs">
-        <button class="ns-time-tab active" data-accdnprange="thangnay"   onclick="setACCDNPRange('thangnay')">Tháng này</button>
+        <button class="ns-time-tab"        data-accdnprange="thangnay"   onclick="setACCDNPRange('thangnay')">Tháng này</button>
         <button class="ns-time-tab"        data-accdnprange="thangtruoc" onclick="setACCDNPRange('thangtruoc')">Tháng trước</button>
         <button class="ns-time-tab"        data-accdnprange="30ngay"     onclick="setACCDNPRange('30ngay')">30 ngày</button>
-        <button class="ns-time-tab"        data-accdnprange="tatca"      onclick="setACCDNPRange('tatca')">Tất cả</button>
+        <button class="ns-time-tab active" data-accdnprange="tatca"      onclick="setACCDNPRange('tatca')">Tất cả</button>
         <button class="ns-time-tab"        data-accdnprange="tuy"        onclick="setACCDNPRange('tuy')">Khoảng ngày</button>
       </div>
       <div class="ns-daterange" id="accdnp-daterange" style="display:none">
@@ -1426,8 +1432,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div id="accdnp-qlns-filter" style="display:none">
       <div class="dnp-filter-row" style="margin-top:8px">
         <select class="dnp-filter-sel" id="accdnp-f-tt" onchange="taiDonNghiACC()">
-          <option value="">Tất cả trạng thái</option>
-          <option value="Chờ duyệt" selected>Chờ duyệt</option>
+          <option value="" selected>Tất cả trạng thái</option>
+          <option value="Chờ duyệt">Chờ duyệt</option>
           <option value="Đã duyệt">Đã duyệt</option>
           <option value="Từ chối">Từ chối</option>
         </select>
@@ -1446,9 +1452,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="page" id="page-duyetyc">
     <div class="ns-time-row" style="margin-top:12px">
       <div class="ns-time-tabs">
-        <button class="ns-time-tab active" data-ycrange="thangnay"   onclick="setYCRange('thangnay')">Tháng này</button>
+        <button class="ns-time-tab"        data-ycrange="thangnay"   onclick="setYCRange('thangnay')">Tháng này</button>
         <button class="ns-time-tab"        data-ycrange="thangtruoc" onclick="setYCRange('thangtruoc')">Tháng trước</button>
         <button class="ns-time-tab"        data-ycrange="30ngay"     onclick="setYCRange('30ngay')">30 ngày</button>
+        <button class="ns-time-tab active" data-ycrange="tatca"      onclick="setYCRange('tatca')">Tất cả</button>
         <button class="ns-time-tab"        data-ycrange="tuy"        onclick="setYCRange('tuy')">Khoảng ngày</button>
       </div>
       <div class="ns-daterange" id="yc-daterange" style="display:none">
@@ -1545,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbz5Lh2XQs9vMGcoQssapHW6uvOjofYEZdIoVbhSFwN2JU1jdtvkF7iCK_ye6L_OfGdo/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxyuOATT4iExD6ate86DF10Fx6LjMySvWaP9fEvWWhFIVIoKGsSjUudtlzsdmRCqGE/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -2448,7 +2455,7 @@ function setNSFilter(filter){
 // [v10 Yc #2/#3] BỘ LỌC THỜI GIAN — Nhân sự & Đơn nghỉ phép
 // ═══════════════════════════════════════════════════════════
 let _nsRange  = 'thangnay';   // 'thangnay' | 'thangtruoc' | 'tuy'
-let _dnpRange = 'thangnay';   // 'thangnay' | 'thangtruoc' | '30ngay' | 'tuy'
+let _dnpRange = 'tatca';      // [v10 FIX #6] mặc định 'Tất cả' để không bỏ sót đơn tương lai
 
 function _ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function _thangNay(){const n=new Date();return [_ymd(new Date(n.getFullYear(),n.getMonth(),1)), _ymd(n)];}
@@ -2489,13 +2496,14 @@ function _getDNPRange(){
   if(_dnpRange==='thangnay')  return _thangNay();
   if(_dnpRange==='thangtruoc')return _thangTruoc();
   if(_dnpRange==='30ngay')    return _30ngay();
+  if(_dnpRange==='tatca')     return ['1970-01-01','2999-12-31'];
   if(_dnpRange==='tuy'){
     const tu=document.getElementById('dnp-tu')?.value;
     const den=document.getElementById('dnp-den')?.value;
     const def=_thangNay();
     return [tu||def[0], den||def[1]];
   }
-  return _thangNay();
+  return ['1970-01-01','2999-12-31'];
 }
 function setDNPRange(r){
   _dnpRange=r;
@@ -2591,18 +2599,33 @@ function renderNhanSu(){
     return nv.ma.toLowerCase().includes(q)||nv.ten.toLowerCase().includes(q)||
            nv.cuaHang.toLowerCase().includes(q)||nv.khuVuc.toLowerCase().includes(q);
   });
-  // Cập nhật thống kê theo kết quả đã lọc (nếu có filter text, stats thay đổi)
-  const statsBase = q ? filtered : nsData;
+  // [v10 FIX #8] Cập nhật thống kê theo KV + search: luôn dùng `filtered` (đã áp cả 2 filter)
+  // thay vì `nsData` để khi click tab KV, các ô KPI cũng lọc theo đúng KV
+  const statsBase = filtered;
   document.getElementById('ns-s-dang').textContent=statsBase.filter(n=>n.trangThai==='ĐANG LÀM VIỆC').length;
   document.getElementById('ns-s-ra').textContent=statsBase.filter(n=>n.trangThai==='RA NGOÀI').length;
   document.getElementById('ns-s-ket').textContent=statsBase.filter(n=>n.trangThai==='KẾT THÚC').length;
-  // [v10 Yc #3] ns-s-chua đã bị đổi thành ns-s-nghi (cập nhật từ server stats.nghiPhep ở taiNhanSu)
-  // Không tính lại ở đây vì cần dữ liệu nghỉ phép đã duyệt từ server, không có trong nsData
-  // Đếm cảnh báo theo từng trường hợp (nsCBList) lọc theo search
-  const cbFiltered = q ? nsCBList.filter(cb =>
-    cb.maNV.toLowerCase().includes(q)||cb.tenNV.toLowerCase().includes(q)||
-    (nsSuggestType==='kv'?false:true) // khu vực không filter cb
-  ) : nsCBList;
+  // [v10 Yc #3] Ô "Nghỉ phép" — đếm NV có đơn nghỉ đã duyệt (đã lọc theo KV nếu chọn tab)
+  const nghiEl=document.getElementById('ns-s-nghi');
+  if(nghiEl){
+    const nghiCount = statsBase.filter(n=>nsNghiMaSet.has(n.ma)).length;
+    nghiEl.textContent=nghiCount;
+  }
+  // Đếm cảnh báo theo KV + search
+  const cbFiltered = nsCBList.filter(cb=>{
+    const nv = nsData.find(n=>n.ma===cb.maNV);
+    if(!nv)return false;
+    // Theo KV
+    if(nsKhuVucFilter && nv.khuVuc!==nsKhuVucFilter) return false;
+    // Theo search (nếu có)
+    if(q){
+      if(nsSuggestType==='kv') return nv.khuVuc.toLowerCase().includes(q);
+      if(nsSuggestType==='ch') return nv.cuaHang.toLowerCase().includes(q);
+      return cb.maNV.toLowerCase().includes(q)||cb.tenNV.toLowerCase().includes(q)||
+             nv.cuaHang.toLowerCase().includes(q)||nv.khuVuc.toLowerCase().includes(q);
+    }
+    return true;
+  });
   const loiCount=cbFiltered.length;
   document.getElementById('ns-s-loi').textContent=loiCount;
   document.getElementById('ns-s-tong').textContent=statsBase.length;
@@ -2712,7 +2735,7 @@ function duyetCB(event,cbRowIdx,maNV,quyetDinh){
   })})
   .then(r=>r.json()).then(res=>{
     if(res.success){
-      showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo`:`✗ Đã từ chối`,'ok');
+      showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo — đã thông báo NV`:`✗ Đã từ chối — đã thông báo NV`,'ok');
       // Xóa khỏi nsCBList và re-render
       const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===cbRowIdx);
       if(idx>=0)nsCBList.splice(idx,1);
@@ -2925,6 +2948,22 @@ function showToast(msg,type){
   t.style.background=type==='ok'?'var(--green)':'var(--red)';
   t.style.color='white';t.style.opacity='1';t.textContent=msg;
   clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';},3500);
+}
+
+// [v10 FIX #7] Busy overlay: chặn UI trong lúc xử lý, hiện spinner + text
+function _showBusy(txt){
+  let ov=document.getElementById('_busy');
+  if(!ov){
+    ov=document.createElement('div');ov.id='_busy';ov.className='busy-overlay';
+    ov.innerHTML='<div class="busy-box"><span class="spinner"></span><span id="_busy-txt">Đang xử lý...</span></div>';
+    document.body.appendChild(ov);
+  }
+  document.getElementById('_busy-txt').textContent=txt||'Đang xử lý...';
+  ov.classList.add('on');
+}
+function _hideBusy(){
+  const ov=document.getElementById('_busy');
+  if(ov)ov.classList.remove('on');
 }
 </script>
 </body>
@@ -3353,10 +3392,16 @@ function setLCGio(ngay,idx,field,value){
 function _updateLCSendBtn(conHan, soNgayDienTu){
   const btn=document.getElementById('lc-btn-send');
   if(!btn)return;
-  if(!conHan){btn.disabled=true;btn.textContent='Đã qua hạn gửi lịch';return;}
+  // [v10 FIX #4] Cho phép gửi khi tất cả các ngày đã điền đều là Nghỉ phép (không giới hạn tuần)
+  const toanNghi = soNgayDienTu>0 && Object.keys(lcEdit).every(k=>{
+    const e=lcEdit[k]; if(!e||!e.type)return true; // ngày trống thì bỏ qua
+    return e.type==='nghi';
+  });
   if(soNgayDienTu===0){btn.disabled=true;btn.textContent='Chọn ít nhất 1 ngày để gửi';return;}
+  if(!conHan && !toanNghi){btn.disabled=true;btn.textContent='Đã qua hạn gửi lịch đi làm';return;}
   btn.disabled=false;
-  btn.textContent=`Gửi lịch ${soNgayDienTu} ngày tuần này`;
+  if(toanNghi)      btn.textContent=`Gửi ${soNgayDienTu} đơn nghỉ phép`;
+  else              btn.textContent=`Gửi lịch ${soNgayDienTu} ngày tuần này`;
 }
 
 // Gửi lịch ca [FIX v9 #4: gửi mảng phẳng, nhiều slot/ngày]
@@ -3849,22 +3894,26 @@ function renderDonNghiPhep(){
 // QLNS duyệt đơn nghỉ phép
 function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   const ghiChuEl=document.getElementById(`dnp-note-inp-${maNV}-${ngay}`);
-  const ghiChuQLNS=ghiChuEl?ghiChuEl.value.trim():'';
-  const itemEl=document.getElementById(`dnp-item-${maNV}-${ngay}`);
-  if(itemEl){itemEl.style.opacity='0.5';itemEl.style.pointerEvents='none';}
+  let ghiChuQLNS=ghiChuEl?ghiChuEl.value.trim():'';
+  // [v10 FIX #7] Nếu Từ chối mà chưa điền lý do → prompt
+  if(quyetDinh==='Từ chối' && !ghiChuQLNS){
+    ghiChuQLNS=prompt('Lý do từ chối đơn này?');
+    if(!ghiChuQLNS)return;
+  }
+  _showBusy(quyetDinh==='Đã duyệt'?'Đang duyệt đơn...':'Đang từ chối đơn...');
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetDonNghiPhep', maNhanVien:maNV, ngay, tuan,
     quyetDinh, ghiChuQLNS, maNguoiDuyet:SESSION.ma,
   })})
   .then(r=>r.json()).then(res=>{
+    _hideBusy();
     if(res.success){
-      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ phép':'✗ Đã từ chối đơn','ok');
+      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ phép — đã thông báo NV':'✗ Đã từ chối đơn — đã thông báo NV','ok');
       taiDonNghiPhep();
     } else {
       showToast(res.error||'Lỗi.','err');
-      if(itemEl){itemEl.style.opacity='1';itemEl.style.pointerEvents='';}
     }
-  }).catch(()=>{showToast('Lỗi kết nối.','err');if(itemEl){itemEl.style.opacity='1';itemEl.style.pointerEvents='';}});
+  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
 }
 
 // Build filter khu vực cho đơn nghỉ phép — không còn dùng dropdown, giữ để tương thích
@@ -3908,7 +3957,7 @@ function taiDonNghiCuaToi(){
 }
 
 // [v10 Yc #2] Bộ lọc thời gian cho đơn nghỉ phép của NV
-let _lcnvRange='thangnay'; // 'thangnay'|'thangtruoc'|'tatca'|'tuy'
+let _lcnvRange='tatca'; // [v10 FIX #6] default 'Tất cả' để không bỏ sót đơn cũ/tương lai
 function _getLCNVRange(){
   if(_lcnvRange==='thangnay')  return _thangNay();
   if(_lcnvRange==='thangtruoc')return _thangTruoc();
@@ -4319,7 +4368,7 @@ function _renderDashAlerts(alerts){
 // Cho NV: xem đơn của mình
 // Cho QLNS: xem/duyệt đơn tất cả (có bộ lọc + search)
 // ═══════════════════════════════════════════════════════════
-let _accDnpRange='thangnay';
+let _accDnpRange='tatca'; // [v10 FIX #6] default 'Tất cả'
 let _accDnpData=null;
 
 function moDonNghiPhep(){
@@ -4467,39 +4516,43 @@ function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
     ghiChuQLNS=prompt('Lý do từ chối đơn này?');
     if(!ghiChuQLNS)return;
   }
+  _showBusy(qd==='Đã duyệt'?'Đang duyệt đơn...':'Đang từ chối đơn...');
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetDonNghiPhep',
     maNhanVien:maNV, ngay, tuan, quyetDinh:qd,
     ghiChuQLNS:ghiChuQLNS||'', maNguoiDuyet:SESSION.ma,
   })}).then(r=>r.json()).then(res=>{
+    _hideBusy();
     if(res.success){
-      showToast('✓ '+(res.message||'Đã cập nhật'),'ok');
+      showToast((qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối')+' — đã thông báo NV','ok');
       // Reload view hiện tại
       if(currentPage==='donnghi-acc')  taiDonNghiACC();
       else if(currentPage==='duyetyc') taiDuyetYC();
       else if(currentPage==='nhansu')  taiDonNghiPhep();
+      _silentUpdateAccBadges(); // cập nhật badge Tài khoản
     } else {
       showToast(res.error||'Lỗi duyệt.','err');
     }
-  }).catch(()=>showToast('Lỗi kết nối.','err'));
+  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
 }
 
 // ═══════════════════════════════════════════════════════════
 // [v10 Yc #5] PAGE DUYỆT YÊU CẦU (QLNS/ADMIN)
 // ═══════════════════════════════════════════════════════════
-let _ycRange='thangnay', _ycTab='donnghi', _ycData=null;
+let _ycRange='tatca', _ycTab='donnghi', _ycData=null;
 
 function _getYCRange(){
   if(_ycRange==='thangnay')  return _thangNay();
   if(_ycRange==='thangtruoc')return _thangTruoc();
   if(_ycRange==='30ngay')    return _30ngay();
+  if(_ycRange==='tatca')     return ['1970-01-01','2999-12-31'];
   if(_ycRange==='tuy'){
     const tu=document.getElementById('yc-tu')?.value;
     const den=document.getElementById('yc-den')?.value;
     const def=_thangNay();
     return [tu||def[0], den||def[1]];
   }
-  return _thangNay();
+  return ['1970-01-01','2999-12-31'];
 }
 function setYCRange(r){
   _ycRange=r;
@@ -4603,15 +4656,18 @@ function _renderYC(){
 }
 
 function duyetGiaiTrinhYC(maNV,ngay,quyetDinh){
+  _showBusy(quyetDinh==='Duyệt'?'Đang duyệt giải trình...':'Đang xử lý...');
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
     maNguoiDuyet:SESSION.ma
   })}).then(r=>r.json()).then(res=>{
+    _hideBusy();
     if(res.success){
-      showToast('✓ Đã cập nhật','ok');
+      showToast('✓ Đã cập nhật — đã thông báo NV','ok');
       taiDuyetYC();
+      _silentUpdateAccBadges();
     } else showToast(res.error||'Lỗi duyệt.','err');
-  }).catch(()=>showToast('Lỗi kết nối.','err'));
+  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
 }
 
 // ═══════════════════════════════════════════════════════════
