@@ -347,6 +347,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-donnghi-title { font-size:13px; font-weight:700; color:#C2185B; }
 .ns-donnghi-title #ns-donnghi-count { font-size:16px; padding:0 3px; }
 .ns-donnghi-sub { font-size:11px; color:#AD1457; margin-top:2px; }
+/* [v10 Yc #2/#3] Bộ lọc thời gian cho Nhân sự & Đơn nghỉ phép */
+.ns-time-row   { margin:10px 14px 0; }
+.ns-time-tabs  { display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+.ns-time-tabs::-webkit-scrollbar { display:none; }
+.ns-time-tab   { flex-shrink:0; padding:6px 12px; border-radius:99px; border:1.5px solid var(--border); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; color:var(--text-m); background:white; -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.ns-time-tab.active { border-color:#C2185B; background:#FCE4EC; color:#C2185B; }
+.ns-daterange  { display:flex; align-items:center; gap:8px; margin-top:8px; }
 .ns-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 14px 0; }
 .ns-stat       { background:white; border-radius:14px; padding:12px 8px; text-align:center; box-shadow:var(--shadow); }
 .ns-stat-val   { font-size:22px; font-weight:700; }
@@ -535,6 +542,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .lc-day-card.lc-nghi { opacity:.75; }
 .lc-day-dot.nghi     { background:var(--pink-lt); }
 .lc-day-dot.nghi .lc-day-dow, .lc-day-dot.nghi .lc-day-num { color:var(--pink,#C2185B); }
+/* [v10 Yc #2] Form nghỉ phép inline trong lịch ca */
+.lc-nghi-form  { background:white; border:1.5px solid #F8BBD0; border-radius:10px; padding:10px 12px; }
+.lc-nghi-lbl   { display:block; font-size:11px; font-weight:700; color:#C2185B; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+.lc-nghi-input { width:100%; box-sizing:border-box; padding:8px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; outline:none; background:white; }
+.lc-nghi-input:focus { border-color:#C2185B; }
+.lc-nghi-anh-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px dashed #F48FB1; border-radius:8px; background:#FFF5F8; color:#C2185B; font-size:12px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.lc-nghi-anh-btn:active { background:#FCE4EC; }
+.lc-nghi-anh-btn.done { border-style:solid; border-color:var(--green-bd); background:var(--green-lt); color:#085041; }
+.lc-nghi-anh-ico { font-size:16px; }
 .lcs-nghi   { background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); }
 .lc-mini-day.nghi { background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); }
 .lc-type-btn.sel-nghi { border-color:#C2185B; background:#FCE4EC; color:#C2185B; }
@@ -934,14 +950,25 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <!-- SUB: ĐƠN NGHỈ PHÉP (của chính NV) [FIX v9 #5] -->
+    <!-- SUB: ĐƠN NGHỈ PHÉP (của chính NV) [v10 Yc #2 — chỉ để xem lịch sử, đã gộp tạo vào lịch tuần] -->
     <div id="lcnv-sub-nghi" style="display:none">
-      <!-- Nút tạo đơn mới -->
-      <div style="margin:12px 14px 0">
-        <button class="lc-btn-send" onclick="moFormTaoDonNghi()" style="background:#C2185B;box-shadow:0 4px 14px rgba(194,24,91,.3)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Tạo đơn nghỉ phép mới
-        </button>
+      <!-- Hướng dẫn -->
+      <div style="margin:10px 14px 0;padding:10px 12px;background:#FCE4EC;border-radius:10px;border-left:3px solid #C2185B;font-size:12px;color:#AD1457;line-height:1.5">
+        <strong style="color:#C2185B">💡 Cách tạo đơn mới:</strong> vào tab <strong>Lịch làm việc</strong>, chọn ngày muốn nghỉ, bấm <strong>Nghỉ phép</strong>, điền lý do + ảnh đơn, rồi bấm <strong>Gửi lịch tuần</strong>.
+      </div>
+      <!-- Bộ lọc thời gian -->
+      <div class="ns-time-row">
+        <div class="ns-time-tabs">
+          <button class="ns-time-tab active" data-lcnvrange="thangnay"   onclick="setLCNVRange('thangnay')">Tháng này</button>
+          <button class="ns-time-tab"        data-lcnvrange="thangtruoc" onclick="setLCNVRange('thangtruoc')">Tháng trước</button>
+          <button class="ns-time-tab"        data-lcnvrange="tatca"      onclick="setLCNVRange('tatca')">Tất cả</button>
+          <button class="ns-time-tab"        data-lcnvrange="tuy"        onclick="setLCNVRange('tuy')">Khoảng ngày</button>
+        </div>
+        <div class="ns-daterange" id="lcnv-daterange" style="display:none">
+          <input type="date" id="lcnv-tu"  class="gcql-date-inp" onchange="renderDonNghiCuaToi()">
+          <span class="gcql-date-sep">→</span>
+          <input type="date" id="lcnv-den" class="gcql-date-inp" onchange="renderDonNghiCuaToi()">
+        </div>
       </div>
       <div id="lcnv-nghi-list" class="dnp-list"><div class="dnp-empty">⏳ Đang tải đơn...</div></div>
     </div>
@@ -1134,44 +1161,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
   <!-- PAGE: NHÂN SỰ (QLNS/ADMIN) -->
   <div class="page" id="page-nhansu">
-    <div class="ns-filter">
-      <input type="text" class="ns-search" id="ns-search"
-             placeholder="🔍  Tìm tên, mã NV, cửa hàng, khu vực..."
-             oninput="onNSSearch()" onblur="hideNSSuggest()" autocomplete="off">
-      <div class="ns-suggest" id="ns-suggest"></div>
-    </div>
-    <!-- Tab khu vực — tự động từ dữ liệu, xây dựng sau khi tải CH_LIST -->
-    <div class="ns-tabs" id="ns-kv-tabs">
-      <button class="ns-tab active" id="nst-all" title="Tất cả khu vực" onclick="setNSKhuVuc('')">Tất cả</button>
-      <!-- Các tab khu vực được inject bởi JS -->
-    </div>
-    <!-- Banner cần duyệt nổi bật -->
-    <div class="ns-loi-banner" id="ns-loi-banner" style="display:none" onclick="setNSFilter('__loi__')">
-      <span class="ns-loi-count" id="ns-loi-count">0</span>
-      <span class="ns-loi-txt">trường hợp cần duyệt công · Bấm để xem</span>
-    </div>
-    <!-- [FIX v9 #10] Banner đơn nghỉ phép cần duyệt — bấm chuyển sang tab Đơn nghỉ phép -->
-    <div class="ns-donnghi-banner" id="ns-donnghi-banner" style="display:none" onclick="setNSSubTab('donnghi')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <div style="flex:1">
-        <div class="ns-donnghi-title">Bạn có <span id="ns-donnghi-count">0</span> đơn nghỉ phép cần duyệt</div>
-        <div class="ns-donnghi-sub">Bấm để xem và xử lý ngay</div>
-      </div>
-      <span style="font-size:18px;color:#C2185B">›</span>
-    </div>
-    <div class="ns-stats-grid">
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('ĐANG LÀM VIỆC')"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm ›</div></div>
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('RA NGOÀI')"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Ra ngoài ›</div></div>
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('KẾT THÚC')"><div class="ns-stat-val ns-v-blue"  id="ns-s-ket">--</div><div class="ns-stat-lbl">Hết ca ›</div></div>
-    </div>
-    <div class="ns-stats-grid" style="margin-top:8px">
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('CHƯA CHẤM')"><div class="ns-stat-val ns-v-gray" id="ns-s-chua">--</div><div class="ns-stat-lbl">Chưa chấm ›</div></div>
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('__loi__')"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Chờ duyệt ›</div></div>
-      <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('all')"><div class="ns-stat-val" id="ns-s-tong">--</div><div class="ns-stat-lbl">Tất cả ›</div></div>
-    </div>
-
-    <!-- TAB CON: Nhân sự / Đơn nghỉ phép [MỚI v8] -->
-    <div class="ns-subtabs" id="ns-subtabs">
+    <!-- [v10 Yc #2] TAB CON ĐƯA LÊN TRÊN CÙNG: Nhân sự / Đơn nghỉ phép -->
+    <div class="ns-subtabs" id="ns-subtabs" style="margin-top:10px">
       <button class="ns-subtab active" id="nssub-nhansu" onclick="setNSSubTab('nhansu')">Nhân sự</button>
       <button class="ns-subtab" id="nssub-donnghi" onclick="setNSSubTab('donnghi')">
         Đơn nghỉ phép
@@ -1181,13 +1172,76 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
     <!-- SUB PANEL: Nhân sự -->
     <div id="ns-sub-nhansu">
+      <div class="ns-filter">
+        <input type="text" class="ns-search" id="ns-search"
+               placeholder="🔍  Tìm tên, mã NV, cửa hàng, khu vực..."
+               oninput="onNSSearch()" onblur="hideNSSuggest()" autocomplete="off">
+        <div class="ns-suggest" id="ns-suggest"></div>
+      </div>
+      <!-- [v10 Yc #3] Bộ lọc thời gian cho "Nghỉ phép" -->
+      <div class="ns-time-row" id="ns-time-row">
+        <div class="ns-time-tabs">
+          <button class="ns-time-tab active" data-nsrange="thangnay" onclick="setNSRange('thangnay')">Tháng này</button>
+          <button class="ns-time-tab" data-nsrange="thangtruoc" onclick="setNSRange('thangtruoc')">Tháng trước</button>
+          <button class="ns-time-tab" data-nsrange="tuy" onclick="setNSRange('tuy')">Khoảng ngày</button>
+        </div>
+        <div class="ns-daterange" id="ns-daterange" style="display:none">
+          <input type="date" id="ns-tu"  class="gcql-date-inp" onchange="taiNhanSu(true)">
+          <span class="gcql-date-sep">→</span>
+          <input type="date" id="ns-den" class="gcql-date-inp" onchange="taiNhanSu(true)">
+        </div>
+      </div>
+      <!-- Tab khu vực — tự động từ dữ liệu, xây dựng sau khi tải CH_LIST -->
+      <div class="ns-tabs" id="ns-kv-tabs">
+        <button class="ns-tab active" id="nst-all" title="Tất cả khu vực" onclick="setNSKhuVuc('')">Tất cả</button>
+      </div>
+      <!-- Banner cần duyệt nổi bật -->
+      <div class="ns-loi-banner" id="ns-loi-banner" style="display:none" onclick="setNSFilter('__loi__')">
+        <span class="ns-loi-count" id="ns-loi-count">0</span>
+        <span class="ns-loi-txt">trường hợp cần duyệt công · Bấm để xem</span>
+      </div>
+      <!-- [FIX v9 #10] Banner đơn nghỉ phép cần duyệt — bấm chuyển sang tab Đơn nghỉ phép -->
+      <div class="ns-donnghi-banner" id="ns-donnghi-banner" style="display:none" onclick="setNSSubTab('donnghi')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <div style="flex:1">
+          <div class="ns-donnghi-title">Bạn có <span id="ns-donnghi-count">0</span> đơn nghỉ phép cần duyệt</div>
+          <div class="ns-donnghi-sub">Bấm để xem và xử lý ngay</div>
+        </div>
+        <span style="font-size:18px;color:#C2185B">›</span>
+      </div>
+      <div class="ns-stats-grid">
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('ĐANG LÀM VIỆC')"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm ›</div></div>
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('RA NGOÀI')"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Ra ngoài ›</div></div>
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('KẾT THÚC')"><div class="ns-stat-val ns-v-blue"  id="ns-s-ket">--</div><div class="ns-stat-lbl">Hết ca ›</div></div>
+      </div>
+      <div class="ns-stats-grid" style="margin-top:8px">
+        <!-- [v10 Yc #3] Đổi "Chưa chấm" → "Nghỉ phép" (đếm theo phạm vi thời gian) -->
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('NGHỈ PHÉP')"><div class="ns-stat-val" style="color:#C2185B" id="ns-s-nghi">--</div><div class="ns-stat-lbl">Nghỉ phép ›</div></div>
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('__loi__')"><div class="ns-stat-val ns-v-red"  id="ns-s-loi">--</div><div class="ns-stat-lbl">Chờ duyệt ›</div></div>
+        <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('all')"><div class="ns-stat-val" id="ns-s-tong">--</div><div class="ns-stat-lbl">Tất cả ›</div></div>
+      </div>
+
       <div class="ns-list" id="ns-list"><div class="ns-empty">⏳ Đang tải nhân sự...</div></div>
       <div class="ns-updated" id="ns-updated"></div>
       <button class="ns-refresh" id="ns-refresh-btn" onclick="taiNhanSu(true)">↻</button>
     </div>
 
-    <!-- SUB PANEL: Đơn nghỉ phép [MỚI v8] -->
+    <!-- SUB PANEL: Đơn nghỉ phép [MỚI v8, v10 Yc #2 thêm bộ lọc thời gian] -->
     <div id="ns-sub-donnghi" style="display:none">
+      <!-- Bộ lọc thời gian cho đơn nghỉ -->
+      <div class="ns-time-row">
+        <div class="ns-time-tabs">
+          <button class="ns-time-tab active" data-dnprange="thangnay" onclick="setDNPRange('thangnay')">Tháng này</button>
+          <button class="ns-time-tab" data-dnprange="thangtruoc" onclick="setDNPRange('thangtruoc')">Tháng trước</button>
+          <button class="ns-time-tab" data-dnprange="30ngay" onclick="setDNPRange('30ngay')">30 ngày</button>
+          <button class="ns-time-tab" data-dnprange="tuy" onclick="setDNPRange('tuy')">Khoảng ngày</button>
+        </div>
+        <div class="ns-daterange" id="dnp-daterange" style="display:none">
+          <input type="date" id="dnp-tu"  class="gcql-date-inp" onchange="taiDonNghiPhep()">
+          <span class="gcql-date-sep">→</span>
+          <input type="date" id="dnp-den" class="gcql-date-inp" onchange="taiDonNghiPhep()">
+        </div>
+      </div>
       <!-- Filter đơn — thay dropdown khu vực bằng search thông minh [FIX v9] -->
       <div class="dnp-filter-row">
         <select class="dnp-filter-sel" id="dnp-f-tt" onchange="taiDonNghiPhep()">
@@ -1236,6 +1290,24 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
         <div class="menu-label">Lịch làm việc</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <!-- [v10 Yc #4] Đơn nghỉ phép — cho cả NV và QLNS -->
+      <div class="menu-item" onclick="moDonNghiPhep()">
+        <div class="menu-icon" style="background:#FCE4EC">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="menu-label">Đơn nghỉ phép</div>
+        <span class="nav-badge" id="acc-dnp-badge" style="display:none;position:static;margin-right:8px"></span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <!-- [v10 Yc #5] Duyệt yêu cầu — chỉ QLNS/ADMIN -->
+      <div class="menu-item" id="menu-duyetyc" onclick="goToPage('duyetyc')" style="display:none">
+        <div class="menu-icon" style="background:#FFF4E6">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="menu-label">Duyệt yêu cầu</div>
+        <span class="nav-badge" id="acc-duyetyc-badge" style="display:none;position:static;margin-right:8px"></span>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" id="menu-dashboard" onclick="goToPage('dashboard')" style="display:none">
@@ -1334,6 +1406,69 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="dash-alert-card" id="dash-alerts"></div>
   </div>
 
+  <!-- PAGE: ĐƠN NGHỈ PHÉP (từ menu Tài khoản) [v10 Yc #4] -->
+  <div class="page" id="page-donnghi-acc">
+    <div class="ns-time-row" style="margin-top:12px">
+      <div class="ns-time-tabs">
+        <button class="ns-time-tab active" data-accdnprange="thangnay"   onclick="setACCDNPRange('thangnay')">Tháng này</button>
+        <button class="ns-time-tab"        data-accdnprange="thangtruoc" onclick="setACCDNPRange('thangtruoc')">Tháng trước</button>
+        <button class="ns-time-tab"        data-accdnprange="30ngay"     onclick="setACCDNPRange('30ngay')">30 ngày</button>
+        <button class="ns-time-tab"        data-accdnprange="tatca"      onclick="setACCDNPRange('tatca')">Tất cả</button>
+        <button class="ns-time-tab"        data-accdnprange="tuy"        onclick="setACCDNPRange('tuy')">Khoảng ngày</button>
+      </div>
+      <div class="ns-daterange" id="accdnp-daterange" style="display:none">
+        <input type="date" id="accdnp-tu"  class="gcql-date-inp" onchange="taiDonNghiACC()">
+        <span class="gcql-date-sep">→</span>
+        <input type="date" id="accdnp-den" class="gcql-date-inp" onchange="taiDonNghiACC()">
+      </div>
+    </div>
+    <!-- Bộ lọc trạng thái + search (chỉ hiện cho QLNS) -->
+    <div id="accdnp-qlns-filter" style="display:none">
+      <div class="dnp-filter-row" style="margin-top:8px">
+        <select class="dnp-filter-sel" id="accdnp-f-tt" onchange="taiDonNghiACC()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="Chờ duyệt" selected>Chờ duyệt</option>
+          <option value="Đã duyệt">Đã duyệt</option>
+          <option value="Từ chối">Từ chối</option>
+        </select>
+      </div>
+      <div style="margin:6px 14px 0;position:relative">
+        <input type="search" id="accdnp-f-search" class="ns-search"
+               placeholder="🔍  Tìm khu vực, cửa hàng, nhân viên..."
+               oninput="taiDonNghiACC()" autocomplete="off"
+               style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);font-size:13px;outline:none;background:white;box-shadow:var(--shadow)">
+      </div>
+    </div>
+    <div id="accdnp-list" class="dnp-list"><div class="dnp-empty">⏳ Đang tải đơn...</div></div>
+  </div>
+
+  <!-- PAGE: DUYỆT YÊU CẦU (QLNS/ADMIN) [v10 Yc #5] -->
+  <div class="page" id="page-duyetyc">
+    <div class="ns-time-row" style="margin-top:12px">
+      <div class="ns-time-tabs">
+        <button class="ns-time-tab active" data-ycrange="thangnay"   onclick="setYCRange('thangnay')">Tháng này</button>
+        <button class="ns-time-tab"        data-ycrange="thangtruoc" onclick="setYCRange('thangtruoc')">Tháng trước</button>
+        <button class="ns-time-tab"        data-ycrange="30ngay"     onclick="setYCRange('30ngay')">30 ngày</button>
+        <button class="ns-time-tab"        data-ycrange="tuy"        onclick="setYCRange('tuy')">Khoảng ngày</button>
+      </div>
+      <div class="ns-daterange" id="yc-daterange" style="display:none">
+        <input type="date" id="yc-tu"  class="gcql-date-inp" onchange="taiDuyetYC()">
+        <span class="gcql-date-sep">→</span>
+        <input type="date" id="yc-den" class="gcql-date-inp" onchange="taiDuyetYC()">
+      </div>
+    </div>
+    <!-- 2 tab loại yêu cầu -->
+    <div class="ns-subtabs" style="margin-top:10px">
+      <button class="ns-subtab active" id="yctab-donnghi" onclick="setYCTab('donnghi')">
+        Đơn nghỉ phép <span class="ns-subtab-badge" id="yc-dn-badge" style="display:none"></span>
+      </button>
+      <button class="ns-subtab" id="yctab-giaitrinh" onclick="setYCTab('giaitrinh')">
+        Giải trình cảnh báo <span class="ns-subtab-badge" id="yc-gt-badge" style="display:none"></span>
+      </button>
+    </div>
+    <div id="yc-content"><div class="dnp-empty">⏳ Đang tải...</div></div>
+  </div>
+
   <!-- PAGE: BẢN ĐỒ CHỈ ĐƯỜNG -->
   <div class="page" id="page-bandochidung">
     <div class="map-search-wrap">
@@ -1410,7 +1545,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxBr2jaFnGkGuUUt82ttoVHXZqi8kbQPGXtmTP-O6uRjTsgt5tQEQgRMOOTiXx5XzM/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbz5Lh2XQs9vMGcoQssapHW6uvOjofYEZdIoVbhSFwN2JU1jdtvkF7iCK_ye6L_OfGdo/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
@@ -1443,6 +1578,9 @@ const PAGE_TITLES={
   taikhoan:'TÀI KHOẢN', bandochidung:'BẢN ĐỒ CỬA HÀNG',
   nhansu:'NHÂN SỰ HÔM NAY',
   dashboard:'DASHBOARD QUẢN LÝ',
+  // [v10]
+  'donnghi-acc':'ĐƠN NGHỈ PHÉP',
+  'duyetyc':   'DUYỆT YÊU CẦU',
 };
 function goToPage(page){
   currentPage=page;
@@ -1461,13 +1599,15 @@ function goToPage(page){
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
   if(page==='giocong')    taiGioCong();
   if(page==='giocong-ql') taiGioCongQL();
-  if(page==='taikhoan')   renderTaiKhoan();
+  if(page==='taikhoan'){renderTaiKhoan();_silentUpdateAccBadges();}
   if(page==='bandochidung')khoiDongBanDo();
   if(page==='nhansu'){taiNhanSu();startNSPolling();}
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
-  else{stopNSPolling();}
+  if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
+  if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
+  if(page!=='nhansu') stopNSPolling();
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
 function navGioCong(){
@@ -1532,6 +1672,7 @@ function khoiDongApp(){
     document.getElementById('menu-nhansu').style.display='';
     document.getElementById('menu-lichca-ql').style.display='';
     document.getElementById('menu-dashboard').style.display=''; // [FIX v9 #12]
+    document.getElementById('menu-duyetyc').style.display='';   // [v10 Yc #5]
   }
 
   fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
@@ -1991,9 +2132,12 @@ function renderGioCongQL(){
     return;
   }
   const nvSet=new Set(filtered.map(r=>r.maNV));
-  const ngayDone=new Set(filtered.filter(r=>r.trangThai==='HOÀN THÀNH').map(r=>r.maNV+'_'+r.ngay));
+  // [FIX v10 #1] Server trả trangThai = 'ĐỦ CA' | 'CHƯA RA CA' | 'CÓ LỖI'.
+  // Trước đây v9 filter 'HOÀN THÀNH' → không bao giờ match → KPI luôn = 0.
+  const _isValid = tt => tt==='ĐỦ CA' || tt==='HOÀN THÀNH';
+  const ngayDone=new Set(filtered.filter(r=>_isValid(r.trangThai)).map(r=>r.maNV+'_'+r.ngay));
   let tongPhut=0;
-  filtered.forEach(r=>{if(r.trangThai==='HOÀN THÀNH')tongPhut+=parseGioCong(r.tongGioCong);});
+  filtered.forEach(r=>{if(_isValid(r.trangThai))tongPhut+=parseGioCong(r.tongGioCong);});
   document.getElementById('gcql-nv').textContent=nvSet.size;
   document.getElementById('gcql-ngay').textContent=ngayDone.size;
   document.getElementById('gcql-gio').textContent=fmtPhut(tongPhut);
@@ -2144,7 +2288,8 @@ function startNSPolling(){
   stopNSPolling();
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
-    fetch(SCRIPT_URL+'?type=nhansu')
+    const [nsTu,nsDen]=_getNSRange();
+    fetch(SCRIPT_URL+'?type=nhansu&tuNgay='+nsTu+'&denNgay='+nsDen)
     .then(r=>r.json()).then(res=>{
       if(!res.nhanSu)return;
       const d=res.nhanSu;
@@ -2156,12 +2301,13 @@ function startNSPolling(){
         nsData=d.danhSach||[];
         nsCBList=newCBList;
         // Cập nhật stats
-        document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec;
+        document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
         document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
-        document.getElementById('ns-s-chua').textContent=d.stats.chuaCham;
+        const nghiEl=document.getElementById('ns-s-nghi');
+        if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
         document.getElementById('ns-s-loi').textContent=newCount;
-        document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu;
+        document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
         const banner=document.getElementById('ns-loi-banner');
         if(newCount>0){document.getElementById('ns-loi-count').textContent=newCount;banner.style.display='flex';}
         else banner.style.display='none';
@@ -2185,6 +2331,7 @@ function _capNhatBadgeNS(soLoi){
 
 // ─── TAB NHÂN SỰ (QLNS) ─────────────────────────────────────
 let nsData=[], nsCBList=[], nsFilter='all', nsSearchQ='', nsSuggestType='';
+let nsNghiMaSet=new Set();  // [v10 Yc #3] Mã NV có đơn nghỉ đã duyệt trong phạm vi
 let nsSuggestAll=[]; // dữ liệu gợi ý tìm kiếm
 
 // ─── MAP KHU VỰC VIẾT TẮT [SỬA v8] ─────────────────────────
@@ -2297,24 +2444,97 @@ function setNSFilter(filter){
   window.scrollTo({top:scrollY,behavior:'instant'});
 }
 
+// ═══════════════════════════════════════════════════════════
+// [v10 Yc #2/#3] BỘ LỌC THỜI GIAN — Nhân sự & Đơn nghỉ phép
+// ═══════════════════════════════════════════════════════════
+let _nsRange  = 'thangnay';   // 'thangnay' | 'thangtruoc' | 'tuy'
+let _dnpRange = 'thangnay';   // 'thangnay' | 'thangtruoc' | '30ngay' | 'tuy'
+
+function _ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function _thangNay(){const n=new Date();return [_ymd(new Date(n.getFullYear(),n.getMonth(),1)), _ymd(n)];}
+function _thangTruoc(){
+  const n=new Date();
+  const tu=new Date(n.getFullYear(),n.getMonth()-1,1);
+  const den=new Date(n.getFullYear(),n.getMonth(),0);
+  return [_ymd(tu),_ymd(den)];
+}
+function _30ngay(){const n=new Date();const tu=new Date(n.getTime()-29*86400000);return [_ymd(tu),_ymd(n)];}
+
+function _getNSRange(){
+  if(_nsRange==='thangnay')  return _thangNay();
+  if(_nsRange==='thangtruoc')return _thangTruoc();
+  if(_nsRange==='tuy'){
+    const tu=document.getElementById('ns-tu')?.value;
+    const den=document.getElementById('ns-den')?.value;
+    const def=_thangNay();
+    return [tu||def[0], den||def[1]];
+  }
+  return _thangNay();
+}
+function setNSRange(r){
+  _nsRange=r;
+  document.querySelectorAll('.ns-time-tab[data-nsrange]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.nsrange===r);
+  });
+  document.getElementById('ns-daterange').style.display=r==='tuy'?'flex':'none';
+  if(r==='tuy'){
+    const def=_thangNay();
+    if(!document.getElementById('ns-tu').value) document.getElementById('ns-tu').value=def[0];
+    if(!document.getElementById('ns-den').value) document.getElementById('ns-den').value=def[1];
+  }
+  taiNhanSu(true);
+}
+
+function _getDNPRange(){
+  if(_dnpRange==='thangnay')  return _thangNay();
+  if(_dnpRange==='thangtruoc')return _thangTruoc();
+  if(_dnpRange==='30ngay')    return _30ngay();
+  if(_dnpRange==='tuy'){
+    const tu=document.getElementById('dnp-tu')?.value;
+    const den=document.getElementById('dnp-den')?.value;
+    const def=_thangNay();
+    return [tu||def[0], den||def[1]];
+  }
+  return _thangNay();
+}
+function setDNPRange(r){
+  _dnpRange=r;
+  document.querySelectorAll('.ns-time-tab[data-dnprange]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.dnprange===r);
+  });
+  document.getElementById('dnp-daterange').style.display=r==='tuy'?'flex':'none';
+  if(r==='tuy'){
+    const def=_thangNay();
+    if(!document.getElementById('dnp-tu').value) document.getElementById('dnp-tu').value=def[0];
+    if(!document.getElementById('dnp-den').value) document.getElementById('dnp-den').value=def[1];
+  }
+  taiDonNghiPhep();
+}
+
 function taiNhanSu(forceRefresh){
   const list=document.getElementById('ns-list');
   if(!nsData.length||forceRefresh)
     list.innerHTML='<div class="ns-empty">⏳ Đang tải nhân sự...</div>';
   const q=nsSearchQ?'&q='+encodeURIComponent(nsSearchQ):'';
-  fetch(SCRIPT_URL+'?type=nhansu'+q)
+  // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
+  const [nsTu,nsDen]=_getNSRange();
+  const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
+  fetch(SCRIPT_URL+'?type=nhansu'+q+timeParam)
   .then(r=>r.json()).then(res=>{
     if(!res.nhanSu)return;
     const d=res.nhanSu;
     nsData=d.danhSach||[];
     nsCBList=d.canhBaoChuaXuLy||[]; // danh sách từng cảnh báo riêng lẻ
-    document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec;
+    nsNghiMaSet=new Set(d.stats.dsNghiMa||[]); // [v10 Yc #3] mã NV có đơn nghỉ đã duyệt trong phạm vi
+    document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
     document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
     document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
-    document.getElementById('ns-s-chua').textContent=d.stats.chuaCham;
+    // [v10 Yc #3] Ô "Nghỉ phép" — tổng NV nghỉ phép đã duyệt trong phạm vi
+    const nghiEl=document.getElementById('ns-s-nghi');
+    if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
     const soCB=nsCBList.length; // đếm theo số cảnh báo, không theo NV
     document.getElementById('ns-s-loi').textContent=soCB;
-    document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu;
+    document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
     // Banner cần duyệt + badge tab
     const banner=document.getElementById('ns-loi-banner');
     if(soCB>0){
@@ -2376,7 +2596,8 @@ function renderNhanSu(){
   document.getElementById('ns-s-dang').textContent=statsBase.filter(n=>n.trangThai==='ĐANG LÀM VIỆC').length;
   document.getElementById('ns-s-ra').textContent=statsBase.filter(n=>n.trangThai==='RA NGOÀI').length;
   document.getElementById('ns-s-ket').textContent=statsBase.filter(n=>n.trangThai==='KẾT THÚC').length;
-  document.getElementById('ns-s-chua').textContent=statsBase.filter(n=>n.trangThai==='CHƯA CHẤM').length;
+  // [v10 Yc #3] ns-s-chua đã bị đổi thành ns-s-nghi (cập nhật từ server stats.nghiPhep ở taiNhanSu)
+  // Không tính lại ở đây vì cần dữ liệu nghỉ phép đã duyệt từ server, không có trong nsData
   // Đếm cảnh báo theo từng trường hợp (nsCBList) lọc theo search
   const cbFiltered = q ? nsCBList.filter(cb =>
     cb.maNV.toLowerCase().includes(q)||cb.tenNV.toLowerCase().includes(q)||
@@ -2428,8 +2649,10 @@ function renderNhanSu(){
 
   // Các tab khác: hiển thị theo NV, sắp xếp Khu vực → Cửa hàng → Tên
   const list=filtered.filter(nv=>{
-    if(nsFilter!=='all'&&nv.trangThai!==nsFilter)return false;
-    return true;
+    if(nsFilter==='all') return true;
+    // [v10 Yc #3] Tab "NGHỈ PHÉP" — chỉ hiện NV có đơn nghỉ đã duyệt trong phạm vi
+    if(nsFilter==='NGHỈ PHÉP') return nsNghiMaSet.has(nv.ma);
+    return nv.trangThai===nsFilter;
   }).sort((a,b)=>{
     const kv=(a.khuVuc||'').localeCompare(b.khuVuc||'');
     if(kv!==0)return kv;
@@ -2442,14 +2665,15 @@ function renderNhanSu(){
   const ttCls={'ĐANG LÀM VIỆC':'nsb-dang','RA NGOÀI':'nsb-ra','KẾT THÚC':'nsb-ket','CHƯA CHẤM':'nsb-chua'};
   const avCls={'ĐANG LÀM VIỆC':'ns-av-dang','RA NGOÀI':'ns-av-ra','KẾT THÚC':'ns-av-ket','CHƯA CHẤM':'ns-av-chua'};
   const ttLbl={'ĐANG LÀM VIỆC':'Đang làm','RA NGOÀI':'Ra ngoài','KẾT THÚC':'Hết ca','CHƯA CHẤM':'Chưa chấm'};
+  const nghiMode=nsFilter==='NGHỈ PHÉP'; // [v10 Yc #3]
 
   let lastKV='';
   el.innerHTML=list.map(nv=>{
     const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
     const isLoi=nv.xacNhan==='KHÔNG HỢP LỆ';
-    const avClass=isLoi?'ns-av-loi':(avCls[nv.trangThai]||'ns-av-chua');
-    const badgeCls=isLoi?'nsb-loi':(ttCls[nv.trangThai]||'nsb-chua');
-    const badgeLbl=isLoi?'⚠ Cần duyệt':(ttLbl[nv.trangThai]||nv.trangThai);
+    const avClass=isLoi?'ns-av-loi':(nghiMode?'ns-av-chua':(avCls[nv.trangThai]||'ns-av-chua'));
+    const badgeCls=isLoi?'nsb-loi':(nghiMode?'nsb-chua':(ttCls[nv.trangThai]||'nsb-chua'));
+    const badgeLbl=isLoi?'⚠ Cần duyệt':(nghiMode?'🌿 Nghỉ phép':(ttLbl[nv.trangThai]||nv.trangThai));
     const gio=nv.gio?' · '+nv.gio:'';
     const nvCB=nsCBList.filter(cb=>cb.maNV===nv.ma);
     const nvCBTxt=nvCB.length>0?`<span style="font-size:10px;color:var(--red);margin-left:4px">(${nvCB.length} CB)</span>`:'';
@@ -2914,14 +3138,39 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
       Thêm ca / cửa hàng khác
     </button>`;
   } else if(type==='nghi'){
-    // [FIX v9 #5] KHÔNG có form lý do/ảnh trong lịch nữa — chỉ hiển thị thông báo
-    const lyDoCurrent=e.ghiChuNV?e.ghiChuNV.split(' | ')[0]:'';
-    editor=`<div class="lc-nghi-note">
-      <div style="font-size:12px;color:#C2185B;line-height:1.5">
-        ${lyDoCurrent?`<strong>Lý do đã gửi:</strong> ${lyDoCurrent}<br>`:''}
-        <span style="color:var(--text-m)">Để gửi hoặc sửa đơn nghỉ phép (kèm lý do + ảnh bắt buộc), vui lòng qua tab <strong>Đơn nghỉ phép</strong>.</span>
+    // [v10 Yc #2] Form inline: Lý do + Ảnh đính kèm (bắt buộc khi gửi mới)
+    const ghiChuCu = e.ghiChuNV||'';
+    const pipeCu   = ghiChuCu.indexOf(' | ');
+    const lyDoCu   = pipeCu>=0 ? ghiChuCu.substring(0,pipeCu).trim() : ghiChuCu.trim();
+    const linkAnhCu= pipeCu>=0 ? ghiChuCu.substring(pipeCu+3).trim() : '';
+    const lyDoHT   = (e.lyDoMoi!==undefined) ? e.lyDoMoi : lyDoCu;
+    const anhMoi   = !!e.anhB64Moi;
+    const ttDuyet  = e.trangThai || 'Chờ duyệt';
+    const isLocked = ttDuyet==='Đã duyệt' && !anhMoi; // đã duyệt, chưa đính kèm ảnh mới → hiển thị read-only nhẹ
+
+    editor=`<div class="lc-nghi-form">
+      <label class="lc-nghi-lbl">Lý do nghỉ phép ${isLocked?'<span style="color:var(--green);font-weight:400">· đã duyệt</span>':'<span style="color:var(--red)">*</span>'}</label>
+      <textarea class="lc-nghi-input" id="lcnghi-lydo-${ngay}" rows="2"
+        placeholder="VD: Khám bệnh, việc gia đình..."
+        oninput="setLCNghiLyDo('${ngay}',this.value)">${lyDoHT.replace(/</g,'&lt;')}</textarea>
+
+      <label class="lc-nghi-lbl" style="margin-top:8px">
+        Ảnh đơn đính kèm ${isLocked?'<span style="color:var(--green);font-weight:400">· đã có</span>':'<span style="color:var(--red)">*</span>'}
+      </label>
+      <label class="lc-nghi-anh-btn ${anhMoi?'done':''}" for="lcnghi-anh-${ngay}">
+        <input type="file" id="lcnghi-anh-${ngay}" accept="image/*" capture="environment"
+               style="display:none" onchange="xuLyAnhNghiLich('${ngay}',this)">
+        <span class="lc-nghi-anh-ico">${anhMoi?'✅':'📎'}</span>
+        <span class="lc-nghi-anh-txt">${anhMoi?'Đã đính kèm ảnh mới':(linkAnhCu?'Đổi ảnh đơn':'Chụp / chọn ảnh đơn')}</span>
+      </label>
+      ${(!anhMoi && linkAnhCu) ? `<div onclick="window.open('${linkAnhCu}','_blank')" style="margin-top:6px;font-size:11px;color:var(--blue);text-decoration:underline;cursor:pointer">📎 Xem ảnh đơn đã gửi trước đây</div>` : ''}
+
+      <div style="margin-top:8px;font-size:11px;color:var(--text-m);line-height:1.4">
+        ${isLocked
+          ? 'Đơn đã được duyệt. Chỉ đính kèm ảnh mới nếu muốn thay đổi đơn.'
+          : 'Cả Lý do và Ảnh đều bắt buộc. Khi bấm "Gửi lịch tuần" đơn sẽ được gửi.'}
       </div>
-      ${e.ghiChuQLNS?`<div style="margin-top:8px;font-size:12px;color:var(--green);font-style:italic">💬 QLNS: ${e.ghiChuQLNS}</div>`:''}
+      ${e.ghiChuQLNS?`<div class="lc-qlns-note" style="margin-top:8px;font-size:12px;color:var(--green);font-style:italic;background:var(--green-lt);padding:6px 10px;border-radius:8px">💬 QLNS: ${e.ghiChuQLNS}</div>`:''}
     </div>`;
   }
 
@@ -2995,6 +3244,9 @@ function setLCDayType(ngay,type){
     if(!lcEdit[ngay].slots||!lcEdit[ngay].slots.length)
       lcEdit[ngay].slots=[{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
     lcEdit[ngay].trangThai='Đã gửi';
+    // [v10] Xóa state nghỉ nếu đổi sang đi làm
+    delete lcEdit[ngay].lyDoMoi;
+    delete lcEdit[ngay].anhB64Moi;
   } else if(type==='nghi'){
     lcEdit[ngay].slots=[];
     if(!lcEdit[ngay].trangThai)lcEdit[ngay].trangThai='Chờ duyệt';
@@ -3002,6 +3254,37 @@ function setLCDayType(ngay,type){
   _rerenderLCDay(ngay);
   // Giữ editor mở
   setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
+}
+
+// [v10 Yc #2] Nghỉ phép inline — lưu lý do vào state khi gõ
+function setLCNghiLyDo(ngay, value){
+  if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
+  lcEdit[ngay].lyDoMoi=value;
+  // Không rerender (tránh mất focus) — chỉ lưu vào state
+}
+
+// [v10 Yc #2] Nghỉ phép inline — xử lý ảnh: resize → base64 → lưu vào state
+function xuLyAnhNghiLich(ngay, input){
+  if(!input||!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=900;
+      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
+      lcEdit[ngay].anhB64Moi=canvas.toDataURL('image/jpeg',0.78);
+      _rerenderLCDay(ngay);
+      setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 // Thêm ca / cửa hàng khác trong cùng 1 ngày [FIX v9 #4]
@@ -3083,17 +3366,34 @@ function guiLichCa(){
 
   // Flatten: mỗi slot = 1 entry
   const lichCaArr=[];
+  const loiValidate=[];
   Object.entries(lcEdit).forEach(([ngay,e])=>{
     if(!e||!e.type)return;
     if(e.type==='nghi'){
-      // Nghỉ phép — chỉ giữ dòng nếu trạng thái hợp lệ, và không gửi lý do mới ở đây
-      // (vì lý do/ảnh đã tách sang tab Đơn nghỉ phép)
+      // [v10 Yc #2] Nghỉ phép — gửi kèm lyDo + anhBase64 để server upload ảnh
+      const ghiChuCu = e.ghiChuNV||'';
+      const pipeCu   = ghiChuCu.indexOf(' | ');
+      const lyDoCu   = pipeCu>=0 ? ghiChuCu.substring(0,pipeCu).trim() : ghiChuCu.trim();
+      const lyDoGui  = (e.lyDoMoi!==undefined) ? e.lyDoMoi.trim() : lyDoCu;
+      const anhB64   = e.anhB64Moi || '';
+      const ttCu     = e.trangThai || '';
+      const daCoDonCu = !!ghiChuCu;
+
+      // Validate:
+      // - Nếu chưa có đơn cũ → bắt buộc cả lý do + ảnh
+      // - Nếu đã có đơn cũ (đã duyệt hoặc chờ duyệt) và không đổi gì → cho phép giữ nguyên (server sẽ lấy snapshot)
+      if(!daCoDonCu){
+        if(!lyDoGui){ loiValidate.push(`${ngay}: thiếu lý do nghỉ phép.`); return; }
+        if(!anhB64){ loiValidate.push(`${ngay}: đơn nghỉ phép bắt buộc có ảnh đính kèm.`); return; }
+      }
+
       lichCaArr.push({
         ngay,
         loai:LC_NGHI_PHEP,
         maCH:'', tenCH:'',
         gioBatDau:'', gioKetThuc:'',
-        ghiChuNV:e.ghiChuNV||'', // giữ ghi chú cũ nếu có
+        lyDo:     lyDoGui,
+        anhBase64:anhB64,  // base64 hoặc chuỗi rỗng (server sẽ giữ snapshot)
       });
     } else {
       // Đi làm — duyệt từng slot
@@ -3111,6 +3411,10 @@ function guiLichCa(){
     }
   });
 
+  if(loiValidate.length){
+    showToast(loiValidate.join('\n'),'err');
+    return;
+  }
   if(!lichCaArr.length){showToast('Chưa đăng ký ngày nào.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
@@ -3455,7 +3759,13 @@ function taiDonNghiPhep(){
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
   const tt=document.getElementById('dnp-f-tt')?.value||'';
   const q=document.getElementById('dnp-f-search')?.value?.trim()||'';
-  fetch(SCRIPT_URL+'?type=don_nghi_phep&trangThai='+encodeURIComponent(tt)+'&q='+encodeURIComponent(q))
+  // [v10 Yc #2] Phạm vi thời gian
+  const [dnpTu,dnpDen]=_getDNPRange();
+  const url=SCRIPT_URL+'?type=don_nghi_phep'
+    +'&trangThai='+encodeURIComponent(tt)
+    +'&q='+encodeURIComponent(q)
+    +'&tuNgay='+dnpTu+'&denNgay='+dnpDen;
+  fetch(url)
   .then(r=>r.json()).then(res=>{
     _dnpData=res.donNghiPhep;
     if(!_dnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
@@ -3597,6 +3907,34 @@ function taiDonNghiCuaToi(){
   }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
 }
 
+// [v10 Yc #2] Bộ lọc thời gian cho đơn nghỉ phép của NV
+let _lcnvRange='thangnay'; // 'thangnay'|'thangtruoc'|'tatca'|'tuy'
+function _getLCNVRange(){
+  if(_lcnvRange==='thangnay')  return _thangNay();
+  if(_lcnvRange==='thangtruoc')return _thangTruoc();
+  if(_lcnvRange==='tatca')     return ['1970-01-01','2999-12-31'];
+  if(_lcnvRange==='tuy'){
+    const tu=document.getElementById('lcnv-tu')?.value;
+    const den=document.getElementById('lcnv-den')?.value;
+    const def=_thangNay();
+    return [tu||def[0], den||def[1]];
+  }
+  return _thangNay();
+}
+function setLCNVRange(r){
+  _lcnvRange=r;
+  document.querySelectorAll('.ns-time-tab[data-lcnvrange]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.lcnvrange===r);
+  });
+  document.getElementById('lcnv-daterange').style.display=r==='tuy'?'flex':'none';
+  if(r==='tuy'){
+    const def=_thangNay();
+    if(!document.getElementById('lcnv-tu').value) document.getElementById('lcnv-tu').value=def[0];
+    if(!document.getElementById('lcnv-den').value) document.getElementById('lcnv-den').value=def[1];
+  }
+  renderDonNghiCuaToi();
+}
+
 function renderDonNghiCuaToi(){
   const listEl=document.getElementById('lcnv-nghi-list');
   if(!_donCuaToi||!listEl)return;
@@ -3604,9 +3942,12 @@ function renderDonNghiCuaToi(){
   const cho=_donCuaToi.tongChoDuyet||0;
   const badge=document.getElementById('lcnv-donnghi-badge');
   if(badge){badge.textContent=cho>0?String(cho):'';badge.style.display=cho>0?'flex':'none';}
-  const theoDon=_donCuaToi.theoDon||[];
+  // [v10] Lọc theo phạm vi thời gian
+  const [tu,den]=_getLCNVRange();
+  const theoDonAll=_donCuaToi.theoDon||[];
+  const theoDon=theoDonAll.filter(g=>g.ngay>=tu&&g.ngay<=den);
   if(!theoDon.length){
-    listEl.innerHTML='<div class="dnp-empty" style="margin-top:16px">📭 Bạn chưa có đơn nghỉ phép nào.<br><span style="font-size:11px;margin-top:4px;display:inline-block">Bấm "Tạo đơn nghỉ phép mới" phía trên để gửi đơn.</span></div>';
+    listEl.innerHTML='<div class="dnp-empty" style="margin-top:16px">📭 Không có đơn nào trong phạm vi.<br><span style="font-size:11px;margin-top:4px;display:inline-block;color:var(--text-m)">Chọn "Tất cả" để xem mọi đơn đã gửi.</span></div>';
     return;
   }
   const dow2=['CN','T2','T3','T4','T5','T6','T7'];
@@ -3718,16 +4059,30 @@ function guiDonNghiMoi(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// DASHBOARD QLNS [FIX v9 #12]
+// DASHBOARD QLNS [FIX v9 #12, v10 Yc #6: feedback rõ ràng]
 // ═══════════════════════════════════════════════════════════
 let _dashRange='homnay';
 let _dashDebounce=null;
+let _dashLoading=false;
 
 function setDashRange(range){
   _dashRange=range;
   document.querySelectorAll('.dash-time-tab').forEach(b=>b.classList.toggle('active',b.dataset.range===range));
-  document.getElementById('dash-date-range').style.display=range==='tuy'?'':'none';
-  if(range!=='tuy')taiDashboard();
+  document.getElementById('dash-date-range').style.display=range==='tuy'?'flex':'none';
+  // [v10 Yc #6] Khi chọn "Tuỳ chọn" → set default cho input và load luôn
+  if(range==='tuy'){
+    const now=new Date();
+    const y=now.getFullYear(),m=pad(now.getMonth()+1),d=pad(now.getDate());
+    const homNay=`${y}-${m}-${d}`;
+    const dauThang=`${y}-${m}-01`;
+    const tuEl=document.getElementById('dash-tu');
+    const denEl=document.getElementById('dash-den');
+    if(!tuEl.value)  tuEl.value=dauThang;
+    if(!denEl.value) denEl.value=homNay;
+    taiDashboard();
+  } else {
+    taiDashboard();
+  }
 }
 function taiDashboardDebounce(){
   clearTimeout(_dashDebounce);
@@ -3762,13 +4117,39 @@ function _getDashDateRange(){
 }
 
 function taiDashboard(){
+  if(_dashLoading)return; // tránh trùng request
+  _dashLoading=true;
   const [tu,den]=_getDashDateRange();
   const q=document.getElementById('dash-search')?.value?.trim()||'';
+  // [v10 Yc #6] Visual feedback ngay lập tức — không để người dùng tưởng "bấm không phản ứng"
+  ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong',
+   'dash-k-giodk','dash-k-giott','dash-k-chenh'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent='…';
+  });
+  document.getElementById('dash-donut').innerHTML='<text x="80" y="80" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
+  document.getElementById('dash-bar').innerHTML='<text x="170" y="70" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
+  document.getElementById('dash-trend').innerHTML='<text x="170" y="80" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
+  document.getElementById('dash-rank-kv').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
+  document.getElementById('dash-rank-ch').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
+  document.getElementById('dash-alerts').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
+
   fetch(SCRIPT_URL+`?type=dashboard&tuNgay=${tu}&denNgay=${den}&q=${encodeURIComponent(q)}`)
   .then(r=>r.json()).then(res=>{
-    if(!res.dashboard)return;
+    _dashLoading=false;
+    if(!res||!res.dashboard){
+      showToast('Dashboard: dữ liệu rỗng.','err');
+      ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong',
+       'dash-k-giodk','dash-k-giott','dash-k-chenh'].forEach(id=>{
+        const el=document.getElementById(id);if(el)el.textContent='0';
+      });
+      return;
+    }
     renderDashboard(res.dashboard);
-  }).catch(()=>{showToast('Lỗi tải dashboard.','err');});
+  }).catch(err=>{
+    _dashLoading=false;
+    showToast('Lỗi tải dashboard: '+(err&&err.message?err.message:'network'),'err');
+  });
 }
 
 function renderDashboard(d){
@@ -3931,6 +4312,337 @@ function _renderDashAlerts(alerts){
       <div class="dash-alert-txt">${a.noiDung}</div>
     </div>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// [v10 Yc #4] PAGE ĐƠN NGHỈ PHÉP từ menu Tài khoản
+// Cho NV: xem đơn của mình
+// Cho QLNS: xem/duyệt đơn tất cả (có bộ lọc + search)
+// ═══════════════════════════════════════════════════════════
+let _accDnpRange='thangnay';
+let _accDnpData=null;
+
+function moDonNghiPhep(){
+  if(!SESSION)return;
+  goToPage('donnghi-acc');
+}
+
+function _getACCDNPRange(){
+  if(_accDnpRange==='thangnay')  return _thangNay();
+  if(_accDnpRange==='thangtruoc')return _thangTruoc();
+  if(_accDnpRange==='30ngay')    return _30ngay();
+  if(_accDnpRange==='tatca')     return ['1970-01-01','2999-12-31'];
+  if(_accDnpRange==='tuy'){
+    const tu=document.getElementById('accdnp-tu')?.value;
+    const den=document.getElementById('accdnp-den')?.value;
+    const def=_thangNay();
+    return [tu||def[0], den||def[1]];
+  }
+  return _thangNay();
+}
+function setACCDNPRange(r){
+  _accDnpRange=r;
+  document.querySelectorAll('.ns-time-tab[data-accdnprange]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.accdnprange===r);
+  });
+  document.getElementById('accdnp-daterange').style.display=r==='tuy'?'flex':'none';
+  if(r==='tuy'){
+    const def=_thangNay();
+    if(!document.getElementById('accdnp-tu').value) document.getElementById('accdnp-tu').value=def[0];
+    if(!document.getElementById('accdnp-den').value) document.getElementById('accdnp-den').value=def[1];
+  }
+  taiDonNghiACC();
+}
+
+function taiDonNghiACC(){
+  const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
+  document.getElementById('accdnp-qlns-filter').style.display=isQL?'':'none';
+  const listEl=document.getElementById('accdnp-list');
+  listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
+  const [tu,den]=_getACCDNPRange();
+  if(isQL){
+    // QLNS: dùng API getDonNghiPhep có filter đầy đủ
+    const tt=document.getElementById('accdnp-f-tt')?.value||'';
+    const q=document.getElementById('accdnp-f-search')?.value?.trim()||'';
+    const url=SCRIPT_URL+'?type=don_nghi_phep'
+      +'&trangThai='+encodeURIComponent(tt)
+      +'&q='+encodeURIComponent(q)
+      +'&tuNgay='+tu+'&denNgay='+den;
+    fetch(url).then(r=>r.json()).then(res=>{
+      _accDnpData=res.donNghiPhep;
+      if(!_accDnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+      _renderACCDnpQL();
+    }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+  } else {
+    // NV: dùng API getDonNghiPhepCuaToi rồi filter client
+    fetch(SCRIPT_URL+'?type=don_nghi_phep_cua_toi&maNV='+encodeURIComponent(SESSION.ma))
+    .then(r=>r.json()).then(res=>{
+      _accDnpData=res.donCuaToi;
+      if(!_accDnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+      _renderACCDnpNV(tu,den);
+    }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+  }
+}
+
+function _renderACCDnpNV(tu,den){
+  const listEl=document.getElementById('accdnp-list');
+  const theoDonAll=_accDnpData.theoDon||[];
+  const theoDon=theoDonAll.filter(g=>g.ngay>=tu&&g.ngay<=den);
+  if(!theoDon.length){
+    listEl.innerHTML='<div class="dnp-empty" style="margin-top:16px">📭 Không có đơn nào trong phạm vi.<br><span style="font-size:11px;margin-top:4px;display:inline-block;color:var(--text-m)">Chọn "Tất cả" để xem mọi đơn.</span></div>';
+    return;
+  }
+  const dow2=['CN','T2','T3','T4','T5','T6','T7'];
+  listEl.innerHTML=theoDon.map(group=>{
+    const d=new Date(group.ngay+'T00:00:00');
+    const ngayFmt=dow2[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+    const items=group.danhSach.map(don=>{
+      const badgeCls=don.trangThai==='Đã duyệt'?'dnpb-da':don.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
+      const ghiChu=don.ghiChuNV||'';
+      const pipeIdx=ghiChu.indexOf(' | ');
+      let lyDoTxt=ghiChu, linkAnh='';
+      if(pipeIdx>=0){lyDoTxt=ghiChu.substring(0,pipeIdx).trim();linkAnh=ghiChu.substring(pipeIdx+3).trim();}
+      const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
+      return `<div class="dnp-item">
+        <div class="dnp-item-top">
+          <div class="dnp-info">
+            <div class="dnp-name">${don.tenCH||don.maCH||'Đơn xin nghỉ'}</div>
+            <div class="dnp-sub">${don.ngay}</div>
+          </div>
+          <span class="dnp-badge ${badgeCls}">${don.trangThai}</span>
+        </div>
+        ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đã gửi</div>`:''}
+        ${qlnsNote}
+      </div>`;
+    }).join('');
+    return `<div class="dnp-day-group"><div class="dnp-day-head"><span>${ngayFmt}</span><span class="dnp-day-cnt">${group.soDon} đơn</span></div><div class="dnp-card">${items}</div></div>`;
+  }).join('');
+}
+
+function _renderACCDnpQL(){
+  // Dùng lại logic renderDonNghiPhep nhưng đổi container
+  const listEl=document.getElementById('accdnp-list');
+  const theoDon=_accDnpData.theoDon||[];
+  if(!theoDon.length){listEl.innerHTML='<div class="dnp-empty">📭 Không có đơn nào.</div>';return;}
+  const dow2=['CN','T2','T3','T4','T5','T6','T7'];
+  listEl.innerHTML=theoDon.map(group=>{
+    const d=new Date(group.ngay+'T00:00:00');
+    const ngayFmt=dow2[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+    const items=group.danhSach.map(don=>{
+      const init=don.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
+      const badgeCls=don.trangThai==='Đã duyệt'?'dnpb-da':don.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
+      const lyDo=don.ghiChuNV||'';
+      let lyDoTxt=lyDo, linkAnh='';
+      const pipeIdx=lyDo.indexOf(' | ');
+      if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
+      const btns=don.trangThai==='Chờ duyệt'
+        ? `<div class="ns-duyet-wrap" style="margin-top:8px">
+             <button class="ns-btn-ok" onclick="duyetDonNghi('${don.maNV}','${don.ngay}','${don.tuan}','Đã duyệt','',true)">✓ Duyệt</button>
+             <button class="ns-btn-no" onclick="duyetDonNghi('${don.maNV}','${don.ngay}','${don.tuan}','Từ chối','',true)">✗ Từ chối</button>
+           </div>`
+        : '';
+      const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
+      return `<div class="dnp-item">
+        <div class="dnp-item-top">
+          <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
+          <div class="dnp-info" style="flex:1;margin-left:10px">
+            <div class="dnp-name">${don.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${don.maNV}</span></div>
+            <div class="dnp-sub">${don.tenCH||don.maCH||'—'}${don.khuVuc?' · '+don.khuVuc:''}</div>
+          </div>
+          <span class="dnp-badge ${badgeCls}">${don.trangThai}</span>
+        </div>
+        ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
+        ${qlnsNote}${btns}
+      </div>`;
+    }).join('');
+    return `<div class="dnp-day-group"><div class="dnp-day-head"><span>${ngayFmt}</span><span class="dnp-day-cnt">${group.soDon} đơn</span></div><div class="dnp-card">${items}</div></div>`;
+  }).join('');
+}
+
+// Hàm duyệt đơn — dùng chung cho cả QLNS page Nhân sự và page Duyệt YC
+function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
+  if(qd==='Từ chối' && !ghiChuQLNS){
+    ghiChuQLNS=prompt('Lý do từ chối đơn này?');
+    if(!ghiChuQLNS)return;
+  }
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetDonNghiPhep',
+    maNhanVien:maNV, ngay, tuan, quyetDinh:qd,
+    ghiChuQLNS:ghiChuQLNS||'', maNguoiDuyet:SESSION.ma,
+  })}).then(r=>r.json()).then(res=>{
+    if(res.success){
+      showToast('✓ '+(res.message||'Đã cập nhật'),'ok');
+      // Reload view hiện tại
+      if(currentPage==='donnghi-acc')  taiDonNghiACC();
+      else if(currentPage==='duyetyc') taiDuyetYC();
+      else if(currentPage==='nhansu')  taiDonNghiPhep();
+    } else {
+      showToast(res.error||'Lỗi duyệt.','err');
+    }
+  }).catch(()=>showToast('Lỗi kết nối.','err'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// [v10 Yc #5] PAGE DUYỆT YÊU CẦU (QLNS/ADMIN)
+// ═══════════════════════════════════════════════════════════
+let _ycRange='thangnay', _ycTab='donnghi', _ycData=null;
+
+function _getYCRange(){
+  if(_ycRange==='thangnay')  return _thangNay();
+  if(_ycRange==='thangtruoc')return _thangTruoc();
+  if(_ycRange==='30ngay')    return _30ngay();
+  if(_ycRange==='tuy'){
+    const tu=document.getElementById('yc-tu')?.value;
+    const den=document.getElementById('yc-den')?.value;
+    const def=_thangNay();
+    return [tu||def[0], den||def[1]];
+  }
+  return _thangNay();
+}
+function setYCRange(r){
+  _ycRange=r;
+  document.querySelectorAll('.ns-time-tab[data-ycrange]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.ycrange===r);
+  });
+  document.getElementById('yc-daterange').style.display=r==='tuy'?'flex':'none';
+  if(r==='tuy'){
+    const def=_thangNay();
+    if(!document.getElementById('yc-tu').value) document.getElementById('yc-tu').value=def[0];
+    if(!document.getElementById('yc-den').value) document.getElementById('yc-den').value=def[1];
+  }
+  taiDuyetYC();
+}
+function setYCTab(tab){
+  _ycTab=tab;
+  document.getElementById('yctab-donnghi').classList.toggle('active',tab==='donnghi');
+  document.getElementById('yctab-giaitrinh').classList.toggle('active',tab==='giaitrinh');
+  _renderYC();
+}
+
+function taiDuyetYC(){
+  const content=document.getElementById('yc-content');
+  content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
+  const [tu,den]=_getYCRange();
+  fetch(SCRIPT_URL+'?type=duyet_yeu_cau&tuNgay='+tu+'&denNgay='+den)
+  .then(r=>r.json()).then(res=>{
+    _ycData=res.duyetYC;
+    if(!_ycData){content.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+    // Cập nhật badge tổng
+    const sDN=_ycData.soDonNghi||0;
+    const sGT=_ycData.soGiaiTrinh||0;
+    const dnBadge=document.getElementById('yc-dn-badge');
+    const gtBadge=document.getElementById('yc-gt-badge');
+    if(dnBadge){dnBadge.textContent=sDN>0?String(sDN):'';dnBadge.style.display=sDN>0?'flex':'none';}
+    if(gtBadge){gtBadge.textContent=sGT>0?String(sGT):'';gtBadge.style.display=sGT>0?'flex':'none';}
+    // Cập nhật badge menu Tài khoản
+    const accBadge=document.getElementById('acc-duyetyc-badge');
+    if(accBadge){
+      const tot=sDN+sGT;
+      accBadge.textContent=tot>0?String(tot):'';
+      accBadge.style.display=tot>0?'flex':'none';
+    }
+    _renderYC();
+  }).catch(()=>{content.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+}
+
+function _renderYC(){
+  const content=document.getElementById('yc-content');
+  if(!_ycData){return;}
+  if(_ycTab==='donnghi'){
+    const ds=_ycData.donNghi||[];
+    if(!ds.length){content.innerHTML='<div class="dnp-empty">✅ Không có đơn nghỉ chờ duyệt.</div>';return;}
+    content.innerHTML='<div class="dnp-list">'+ds.map(d=>{
+      const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
+      const lyDo=d.ghiChuNV||'';
+      let lyDoTxt=lyDo, linkAnh='';
+      const pipeIdx=lyDo.indexOf(' | ');
+      if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
+      return `<div class="dnp-item">
+        <div class="dnp-item-top">
+          <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
+          <div class="dnp-info" style="flex:1;margin-left:10px">
+            <div class="dnp-name">${d.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
+            <div class="dnp-sub">${d.ngay} · ${d.tenCH||d.maCH||'—'}${d.khuVuc?' · '+d.khuVuc:''}</div>
+          </div>
+          <span class="dnp-badge dnpb-cho">Chờ duyệt</span>
+        </div>
+        ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
+        <div class="ns-duyet-wrap" style="margin-top:8px">
+          <button class="ns-btn-ok" onclick="duyetDonNghi('${d.maNV}','${d.ngay}','${d.tuan}','Đã duyệt','',true)">✓ Duyệt</button>
+          <button class="ns-btn-no" onclick="duyetDonNghi('${d.maNV}','${d.ngay}','${d.tuan}','Từ chối','',true)">✗ Từ chối</button>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  } else {
+    // Giải trình cảnh báo
+    const ds=_ycData.giaiTrinh||[];
+    if(!ds.length){content.innerHTML='<div class="dnp-empty">✅ Không có giải trình chờ duyệt.</div>';return;}
+    content.innerHTML='<div class="dnp-list">'+ds.map(d=>{
+      const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
+      return `<div class="dnp-item">
+        <div class="dnp-item-top">
+          <div class="ns-avatar ns-av-loi" style="width:32px;height:32px;font-size:11px">${init}</div>
+          <div class="dnp-info" style="flex:1;margin-left:10px">
+            <div class="dnp-name">${d.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
+            <div class="dnp-sub">${d.ngay} · ${d.gio} · ${d.loaiCB}${d.khuVuc?' · '+d.khuVuc:''}</div>
+          </div>
+          <span class="dnp-badge dnpb-cho">Đã giải trình</span>
+        </div>
+        <div class="dnp-lydo"><div class="dnp-lydo-lbl">Nội dung CB</div>${d.noiDung.replace(/\n/g,'<br>')}</div>
+        ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:''}
+        <div class="ns-duyet-wrap" style="margin-top:8px">
+          <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt')">✓ Duyệt</button>
+          <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt')">✗ Không duyệt</button>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  }
+}
+
+function duyetGiaiTrinhYC(maNV,ngay,quyetDinh){
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
+    maNguoiDuyet:SESSION.ma
+  })}).then(r=>r.json()).then(res=>{
+    if(res.success){
+      showToast('✓ Đã cập nhật','ok');
+      taiDuyetYC();
+    } else showToast(res.error||'Lỗi duyệt.','err');
+  }).catch(()=>showToast('Lỗi kết nối.','err'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// [v10] SILENT BADGE UPDATE cho menu Tài khoản
+// ═══════════════════════════════════════════════════════════
+function _silentUpdateAccBadges(){
+  if(!SESSION)return;
+  const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
+  if(isQL){
+    // Badge "Duyệt yêu cầu"
+    const [tu,den]=_thangNay();
+    fetch(SCRIPT_URL+'?type=duyet_yeu_cau&tuNgay='+tu+'&denNgay='+den)
+    .then(r=>r.json()).then(res=>{
+      if(!res.duyetYC)return;
+      const tot=(res.duyetYC.soDonNghi||0)+(res.duyetYC.soGiaiTrinh||0);
+      const b=document.getElementById('acc-duyetyc-badge');
+      if(b){b.textContent=tot>0?String(tot):'';b.style.display=tot>0?'flex':'none';}
+      // Badge "Đơn nghỉ phép" (QLNS) = số chờ duyệt
+      const b2=document.getElementById('acc-dnp-badge');
+      if(b2){const sDN=res.duyetYC.soDonNghi||0;b2.textContent=sDN>0?String(sDN):'';b2.style.display=sDN>0?'flex':'none';}
+    }).catch(()=>{});
+  } else {
+    // NV: badge "Đơn nghỉ phép" = số chờ duyệt của mình
+    fetch(SCRIPT_URL+'?type=don_nghi_phep_cua_toi&maNV='+encodeURIComponent(SESSION.ma))
+    .then(r=>r.json()).then(res=>{
+      if(!res.donCuaToi)return;
+      const cho=res.donCuaToi.tongChoDuyet||0;
+      const b=document.getElementById('acc-dnp-badge');
+      if(b){b.textContent=cho>0?String(cho):'';b.style.display=cho>0?'flex':'none';}
+    }).catch(()=>{});
+  }
 }
 
 // ─── End lịch ca JS v8 ──────────────────────────────────────
