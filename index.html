@@ -529,6 +529,307 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .busy-overlay.on { opacity:1; pointer-events:auto; }
 .busy-box { background:white; padding:18px 24px; border-radius:14px; display:flex; align-items:center; gap:12px; box-shadow:0 10px 40px rgba(0,0,0,.25); font-size:13px; font-weight:600; color:var(--text,#1a1a1a); }
 .busy-box .spinner { width:18px; height:18px; border-color:rgba(29,158,117,.25); border-top-color:#1D9E75; margin:0; }
+/* ═══════════════════════════════════════════════════════════
+   [v10.1] GIAO DIỆN (theme picker) CSS
+   ═══════════════════════════════════════════════════════════ */
+.gd-title    { font-size:18px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:4px; }
+.gd-subtitle { font-size:12px; color:var(--text-m,#666); margin-bottom:20px; }
+.gd-grid     { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.gd-card     { position:relative; border-radius:16px; padding:14px; background:white; box-shadow:var(--shadow,0 2px 8px rgba(0,0,0,.08)); cursor:pointer; border:2px solid transparent; transition:all .25s cubic-bezier(.4,0,.2,1); -webkit-tap-highlight-color:transparent; }
+.gd-card:active   { transform:scale(.97); }
+.gd-card.selected { border-color:var(--green,#1D9E75); transform:translateY(-2px); box-shadow:0 8px 24px rgba(29,158,117,.25); }
+.gd-preview       { height:100px; border-radius:10px; overflow:hidden; position:relative; margin-bottom:10px; }
+.gd-preview-default { background:linear-gradient(135deg,#f5f7fb,#e5ebf4); padding:8px; display:flex; flex-direction:column; gap:6px; }
+.gd-pv-bar   { height:14px; background:var(--green,#1D9E75); border-radius:4px; width:60%; }
+.gd-pv-card  { height:22px; background:white; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.gd-preview-neon    { background:radial-gradient(ellipse at top left,#1a0a3e 0%,#05051a 100%); padding:8px; display:flex; flex-direction:column; gap:6px; position:relative; }
+.gd-pv-bar-neon     { height:14px; background:linear-gradient(90deg,#a855f7,#06b6d4); border-radius:4px; width:60%; box-shadow:0 0 10px rgba(168,85,247,.8),0 0 20px rgba(6,182,212,.5); }
+.gd-pv-card-neon    { height:22px; background:rgba(30,30,60,.6); border:1px solid rgba(168,85,247,.4); border-radius:6px; backdrop-filter:blur(4px); }
+.gd-pv-glow         { position:absolute; top:-30px; right:-30px; width:80px; height:80px; background:radial-gradient(circle,rgba(6,182,212,.6),transparent 70%); filter:blur(15px); animation:gdGlow 3s ease-in-out infinite alternate; }
+@keyframes gdGlow { from{transform:translate(0,0) scale(1);} to{transform:translate(-10px,15px) scale(1.2);} }
+.gd-card-name { font-size:14px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:4px; }
+.gd-card-desc { font-size:11px; color:var(--text-m,#666); line-height:1.4; }
+.gd-card-check { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--green,#1D9E75); color:white; display:none; align-items:center; justify-content:center; font-weight:900; box-shadow:0 2px 6px rgba(29,158,117,.4); }
+
+/* ═══════════════════════════════════════════════════════════
+   [v10.1] DARK NEON THEME — Công nghệ, hiện đại, viền ánh sáng loang
+   Kích hoạt bằng: <html data-theme="neon">
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="neon"] {
+  --bg-page:      #05051a;
+  --bg-card:      rgba(22, 22, 50, 0.55);
+  --bg-card-hi:   rgba(30, 30, 60, 0.75);
+  --border:       rgba(168, 85, 247, 0.25);
+  --border-hi:    rgba(6, 182, 212, 0.6);
+  --text:         #e8e8f5;
+  --text-m:       #a0a0c0;
+  --text-lt:      #707090;
+  --green:        #22d3a8;
+  --green-lt:     rgba(34, 211, 168, 0.12);
+  --green-bd:     rgba(34, 211, 168, 0.5);
+  --green-m:      #5eead4;
+  --red:          #f472b6;
+  --red-lt:       rgba(244, 114, 182, 0.12);
+  --red-bd:       rgba(244, 114, 182, 0.5);
+  --amber:        #fbbf24;
+  --amber-lt:     rgba(251, 191, 36, 0.12);
+  --blue:         #60a5fa;
+  --blue-lt:      rgba(96, 165, 250, 0.12);
+  --pink:         #e879f9;
+  --pink-lt:      rgba(232, 121, 249, 0.12);
+  --shadow:       0 4px 18px rgba(0,0,0,.5);
+  --accent-1:     #a855f7;  /* purple */
+  --accent-2:     #06b6d4;  /* cyan */
+}
+[data-theme="neon"] body {
+  background:
+    radial-gradient(ellipse at top left, rgba(168,85,247,.15) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(6,182,212,.15) 0%, transparent 50%),
+    linear-gradient(180deg, #05051a 0%, #0a0a24 100%);
+  background-attachment: fixed;
+  color: #e8e8f5;
+}
+/* Aurora animation layer */
+[data-theme="neon"]::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(168,85,247,.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(6,182,212,.08) 0%, transparent 40%);
+  animation: neonAurora 18s ease-in-out infinite alternate;
+}
+@keyframes neonAurora {
+  0% { opacity:.5; transform:translate(0,0); }
+  100% { opacity:1; transform:translate(-5%, 3%); }
+}
+[data-theme="neon"] #main-app, [data-theme="neon"] .main { position:relative; z-index:1; }
+
+/* Glassmorphism cho tất cả card */
+[data-theme="neon"] .card,
+[data-theme="neon"] .acc-menu,
+[data-theme="neon"] .ns-stat,
+[data-theme="neon"] .ns-filter,
+[data-theme="neon"] .lc-day-card,
+[data-theme="neon"] .lc-ql-item,
+[data-theme="neon"] .acc-kv,
+[data-theme="neon"] .acc-ch-item,
+[data-theme="neon"] .dnp-item,
+[data-theme="neon"] .dnp-card,
+[data-theme="neon"] .dash-filter-card,
+[data-theme="neon"] .dash-kpi,
+[data-theme="neon"] .dash-chart-card,
+[data-theme="neon"] .dash-rank-card,
+[data-theme="neon"] .dash-alert-card,
+[data-theme="neon"] .gc-card,
+[data-theme="neon"] .gc-stats,
+[data-theme="neon"] .gcql-range-card,
+[data-theme="neon"] .lcql-meta-row,
+[data-theme="neon"] .gd-card {
+  background: rgba(22, 22, 50, 0.55) !important;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  box-shadow: 0 4px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  color: #e8e8f5;
+}
+/* Header glow */
+[data-theme="neon"] #main-header {
+  background: linear-gradient(135deg, rgba(168,85,247,.15), rgba(6,182,212,.15)) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
+}
+[data-theme="neon"] #main-header * { color: #e8e8f5 !important; }
+[data-theme="neon"] .main-header-title {
+  background: linear-gradient(90deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+/* Bottom nav */
+[data-theme="neon"] .bot-nav, [data-theme="neon"] #bot-nav {
+  background: rgba(10, 10, 35, 0.85) !important;
+  backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 -4px 24px rgba(168, 85, 247, 0.15);
+}
+[data-theme="neon"] .nav-item { color: #a0a0c0 !important; }
+[data-theme="neon"] .nav-item.active {
+  color: #06b6d4 !important;
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+}
+[data-theme="neon"] .nav-item.active svg {
+  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8));
+}
+
+/* Primary buttons — neon glow */
+[data-theme="neon"] .btn-primary,
+[data-theme="neon"] .lc-btn-send,
+[data-theme="neon"] .ns-btn-ok,
+[data-theme="neon"] .yc-bulk-ok,
+[data-theme="neon"] .btn-ra, [data-theme="neon"] .btn-ra-giua, [data-theme="neon"] .btn-v-giua, [data-theme="neon"] .btn-v-ca {
+  background: linear-gradient(135deg, #a855f7, #06b6d4) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.5),
+    0 0 40px rgba(6, 182, 212, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 4px rgba(255,255,255,.3);
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="neon"] .btn-primary:hover,
+[data-theme="neon"] .lc-btn-send:hover,
+[data-theme="neon"] .ns-btn-ok:hover,
+[data-theme="neon"] .yc-bulk-ok:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 28px rgba(168, 85, 247, 0.7),
+    0 0 56px rgba(6, 182, 212, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+/* Secondary/outline buttons */
+[data-theme="neon"] .ns-btn-no,
+[data-theme="neon"] .yc-bulk-no {
+  background: rgba(244, 114, 182, 0.1) !important;
+  color: #f472b6 !important;
+  border: 1.5px solid rgba(244, 114, 182, 0.5) !important;
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.2);
+}
+
+/* Inputs */
+[data-theme="neon"] input, [data-theme="neon"] select, [data-theme="neon"] textarea {
+  background: rgba(10, 10, 30, 0.6) !important;
+  color: #e8e8f5 !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+}
+[data-theme="neon"] input:focus, [data-theme="neon"] select:focus, [data-theme="neon"] textarea:focus {
+  border-color: rgba(6, 182, 212, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), 0 0 16px rgba(6, 182, 212, 0.3) !important;
+  outline: none !important;
+}
+[data-theme="neon"] input::placeholder, [data-theme="neon"] textarea::placeholder { color: #707090 !important; }
+
+/* Badges */
+[data-theme="neon"] .ns-stat-val, [data-theme="neon"] .dash-kpi-val {
+  text-shadow: 0 0 12px currentColor;
+}
+[data-theme="neon"] .ns-v-green, [data-theme="neon"] [class*="v-green"] { color: #22d3a8 !important; }
+[data-theme="neon"] .ns-v-amber, [data-theme="neon"] [class*="v-amber"] { color: #fbbf24 !important; }
+[data-theme="neon"] .ns-v-blue,  [data-theme="neon"] [class*="v-blue"]  { color: #60a5fa !important; }
+[data-theme="neon"] .ns-v-red,   [data-theme="neon"] [class*="v-red"]   { color: #f472b6 !important; }
+[data-theme="neon"] .ns-v-gray,  [data-theme="neon"] [class*="v-gray"]  { color: #a0a0c0 !important; }
+
+/* Tabs và navigation */
+[data-theme="neon"] .ns-tab, [data-theme="neon"] .ns-time-tab, [data-theme="neon"] .ns-subtab, [data-theme="neon"] .dash-time-tab {
+  background: rgba(30, 30, 60, 0.5) !important;
+  color: #a0a0c0 !important;
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+[data-theme="neon"] .ns-tab.active, [data-theme="neon"] .ns-time-tab.active, [data-theme="neon"] .ns-subtab.active, [data-theme="neon"] .dash-time-tab.active {
+  background: linear-gradient(135deg, rgba(168,85,247,.25), rgba(6,182,212,.25)) !important;
+  color: #06b6d4 !important;
+  border-color: rgba(6, 182, 212, 0.7) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4), inset 0 0 0 1px rgba(255,255,255,.1);
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+}
+
+/* Menu items */
+[data-theme="neon"] .menu-item {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+}
+[data-theme="neon"] .menu-item:last-child { border-bottom: none; }
+[data-theme="neon"] .menu-item:hover {
+  background: rgba(168, 85, 247, 0.08) !important;
+}
+[data-theme="neon"] .menu-label { color: #e8e8f5 !important; }
+[data-theme="neon"] .menu-arrow { color: #707090 !important; }
+
+/* Dot patterns, separators */
+[data-theme="neon"] .ns-group-sep { color: #06b6d4 !important; text-shadow: 0 0 8px rgba(6,182,212,.5); }
+
+/* Login screen */
+[data-theme="neon"] #login-screen {
+  background: radial-gradient(ellipse at center, #1a0a3e 0%, #05051a 100%) !important;
+}
+[data-theme="neon"] .login-card {
+  background: rgba(22, 22, 50, 0.6) !important;
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 40px rgba(168,85,247,.3), 0 0 80px rgba(6,182,212,.2) !important;
+}
+[data-theme="neon"] .login-title {
+  background: linear-gradient(90deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Toast */
+[data-theme="neon"] #_toast, [data-theme="neon"] #_toast_undo {
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 4px 32px rgba(168,85,247,.4) !important;
+}
+
+/* Animated border for priority buttons — viền ánh sáng loang */
+@keyframes neonBorderFlow {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+[data-theme="neon"] .lc-btn-send:not(:disabled),
+[data-theme="neon"] .yc-bulk-ok {
+  position: relative;
+}
+[data-theme="neon"] .lc-btn-send:not(:disabled)::before,
+[data-theme="neon"] .yc-bulk-ok::before {
+  content:''; position:absolute; inset:-2px; border-radius:inherit;
+  background: linear-gradient(90deg, #a855f7, #06b6d4, #ec4899, #a855f7);
+  background-size: 200% 100%;
+  animation: neonBorderFlow 4s linear infinite;
+  z-index:-1; filter: blur(6px); opacity:.7;
+}
+
+/* Dashboard KPI & biểu đồ */
+[data-theme="neon"] .dash-kpi-lbl { color: #a0a0c0 !important; }
+[data-theme="neon"] .dash-bar rect { fill: url(#neonGrad) !important; }
+[data-theme="neon"] svg text { fill: #a0a0c0 !important; }
+
+/* Lịch ca mini week */
+[data-theme="neon"] .lc-mini-day { background: rgba(30,30,60,.6) !important; color: #a0a0c0 !important; }
+[data-theme="neon"] .lc-mini-day.work { background: rgba(34, 211, 168, .3) !important; color: #22d3a8 !important; box-shadow: 0 0 8px rgba(34,211,168,.4); }
+[data-theme="neon"] .lc-mini-day.wait { background: rgba(251, 191, 36, .3) !important; color: #fbbf24 !important; }
+[data-theme="neon"] .lc-mini-day.nghi { background: rgba(232, 121, 249, .25) !important; color: #e879f9 !important; }
+[data-theme="neon"] .lc-mini-day.deny { background: rgba(244, 114, 182, .25) !important; color: #f472b6 !important; }
+
+/* Select options trong neon */
+[data-theme="neon"] select option { background: #1a0a3e; color: #e8e8f5; }
+
+/* Version banner */
+[data-theme="neon"] #_ver-banner { background: linear-gradient(90deg, #a855f7, #06b6d4) !important; box-shadow: 0 4px 20px rgba(168,85,247,.5) !important; }
+
+/* Slide down anim */
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
+/* end dark neon */
+
+/* [v10.1 Yc #2] Optimistic UI: row đang duyệt mờ đi nhưng không chặn UI */
+.duyet-processing { opacity:.5; pointer-events:none; position:relative; transition:opacity .2s; }
+.duyet-processing::after { content:''; position:absolute; top:6px; right:6px; width:14px; height:14px; border:2px solid rgba(29,158,117,.3); border-top-color:#1D9E75; border-radius:50%; animation:spin .7s linear infinite; }
+/* [v10.1 Yc #1] Thanh duyệt hàng loạt */
+.yc-bulk-bar { margin:10px 14px 0; display:flex; gap:10px; transition:opacity .2s; }
+.yc-bulk-btn { flex:1; padding:10px 14px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .15s; }
+.yc-bulk-btn:active { transform:scale(.97); }
+.yc-bulk-ok { background:var(--green,#1D9E75); color:white; box-shadow:0 3px 10px rgba(29,158,117,.3); }
+.yc-bulk-no { background:white; color:var(--red,#E11D48); border:1.5px solid var(--red,#E11D48); }
+.duyet-processing { opacity:.5; pointer-events:none; position:relative; transition:opacity .2s; }
+.duyet-processing::after { content:''; position:absolute; top:6px; right:6px; width:14px; height:14px; border:2px solid rgba(29,158,117,.3); border-top-color:#1D9E75; border-radius:50%; animation:spin .7s linear infinite; }
+/* [v10.1 Yc #1] Thanh duyệt hàng loạt */
+.yc-bulk-bar { margin:10px 14px 0; display:flex; gap:10px; transition:opacity .2s; }
+.yc-bulk-btn { flex:1; padding:10px 14px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .15s; }
+.yc-bulk-btn:active { transform:scale(.97); }
+.yc-bulk-ok { background:var(--green,#1D9E75); color:white; box-shadow:0 3px 10px rgba(29,158,117,.3); }
+.yc-bulk-no { background:white; color:var(--red,#E11D48); border:1.5px solid var(--red,#E11D48); }
 
 /* Badge thông báo tab Nhân Sự */
 .nav-badge {
@@ -1200,20 +1501,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="ns-tabs" id="ns-kv-tabs">
         <button class="ns-tab active" id="nst-all" title="Tất cả khu vực" onclick="setNSKhuVuc('')">Tất cả</button>
       </div>
-      <!-- Banner cần duyệt nổi bật -->
-      <div class="ns-loi-banner" id="ns-loi-banner" style="display:none" onclick="setNSFilter('__loi__')">
-        <span class="ns-loi-count" id="ns-loi-count">0</span>
-        <span class="ns-loi-txt">trường hợp cần duyệt công · Bấm để xem</span>
-      </div>
-      <!-- [FIX v9 #10] Banner đơn nghỉ phép cần duyệt — bấm chuyển sang tab Đơn nghỉ phép -->
-      <div class="ns-donnghi-banner" id="ns-donnghi-banner" style="display:none" onclick="setNSSubTab('donnghi')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        <div style="flex:1">
-          <div class="ns-donnghi-title">Bạn có <span id="ns-donnghi-count">0</span> đơn nghỉ phép cần duyệt</div>
-          <div class="ns-donnghi-sub">Bấm để xem và xử lý ngay</div>
-        </div>
-        <span style="font-size:18px;color:#C2185B">›</span>
-      </div>
+      <!-- [v10.1 Yc #6] Bỏ 2 banner (ns-loi-banner, ns-donnghi-banner) — số liệu đã có ở ô KPI "Chờ duyệt" phía dưới và badge ở bottom nav -->
       <div class="ns-stats-grid">
         <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('ĐANG LÀM VIỆC')"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm ›</div></div>
         <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('RA NGOÀI')"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Ra ngoài ›</div></div>
@@ -1335,10 +1623,57 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-label">Lịch ca hệ thống</div>
         <div class="menu-arrow">›</div>
       </div>
+      <!-- [v10.1] Giao diện (theme) -->
+      <div class="menu-item" onclick="goToPage('giaodien')">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#a855f7,#06b6d4)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        </div>
+        <div class="menu-label">Giao diện</div>
+        <div class="menu-arrow">›</div>
+      </div>
       <div class="menu-item" onclick="doLogout()">
         <div class="menu-icon mi-red">🚪</div>
         <div class="menu-label" style="color:var(--red)">Đăng xuất</div>
         <div class="menu-arrow" style="color:var(--red)">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: GIAO DIỆN (theme) [v10.1] -->
+  <div class="page" id="page-giaodien">
+    <div style="padding:20px 14px">
+      <div class="gd-title">Chọn giao diện</div>
+      <div class="gd-subtitle">Lựa chọn phong cách hiển thị cho ứng dụng</div>
+
+      <div class="gd-grid">
+        <!-- Default classic -->
+        <div class="gd-card gd-card-default" onclick="chonTheme('default')">
+          <div class="gd-preview gd-preview-default">
+            <div class="gd-pv-bar"></div>
+            <div class="gd-pv-card"></div>
+            <div class="gd-pv-card"></div>
+          </div>
+          <div class="gd-card-name">Cổ điển</div>
+          <div class="gd-card-desc">Sáng sạch, dễ nhìn, phù hợp công việc</div>
+          <div class="gd-card-check" id="gd-check-default">✓</div>
+        </div>
+
+        <!-- Dark Neon -->
+        <div class="gd-card gd-card-neon" onclick="chonTheme('neon')">
+          <div class="gd-preview gd-preview-neon">
+            <div class="gd-pv-bar-neon"></div>
+            <div class="gd-pv-card-neon"></div>
+            <div class="gd-pv-card-neon"></div>
+            <div class="gd-pv-glow"></div>
+          </div>
+          <div class="gd-card-name">Dark Neon</div>
+          <div class="gd-card-desc">Công nghệ, viền ánh sáng loang, hiện đại</div>
+          <div class="gd-card-check" id="gd-check-neon">✓</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;padding:14px;background:var(--green-lt,#e7f6f0);border-radius:12px;font-size:12px;line-height:1.6;color:var(--green,#1D9E75)">
+        💡 <strong>Gợi ý:</strong> Dark Neon phù hợp dùng buổi tối hoặc khi bạn muốn trải nghiệm cảm giác công nghệ, futuristic. Giao diện này giảm mỏi mắt ở điều kiện ánh sáng yếu.
       </div>
     </div>
   </div>
@@ -1473,6 +1808,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         Giải trình cảnh báo <span class="ns-subtab-badge" id="yc-gt-badge" style="display:none"></span>
       </button>
     </div>
+    <!-- [v10.1 Yc #1] Thanh hành động hàng loạt -->
+    <div class="yc-bulk-bar" id="yc-bulk-bar" style="display:none">
+      <button class="yc-bulk-btn yc-bulk-ok"  onclick="duyetTatCa('ok')">✓ Duyệt tất cả (<span id="yc-bulk-count">0</span>)</button>
+      <button class="yc-bulk-btn yc-bulk-no"  onclick="duyetTatCa('no')">✗ Từ chối tất cả</button>
+    </div>
     <div id="yc-content"><div class="dnp-empty">⏳ Đang tải...</div></div>
   </div>
 
@@ -1552,8 +1892,18 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxyuOATT4iExD6ate86DF10Fx6LjMySvWaP9fEvWWhFIVIoKGsSjUudtlzsdmRCqGE/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyDnkr-hRrJj-WYC6gf83Ld0xs7kxFlIDKYmXWUpExg69P9mx0_cW1MptNnEtIG1aTo/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
+
+// [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
+// Wrap fetch gốc để tự thêm `_t=<ts>` vào mọi GET tới SCRIPT_URL
+const _fetchGoc = window.fetch.bind(window);
+window.fetch = function(url, opts){
+  if(typeof url === 'string' && url.indexOf(SCRIPT_URL) === 0 && (!opts || (opts.method||'GET').toUpperCase()==='GET')){
+    url += (url.indexOf('?')>=0 ? '&' : '?') + '_t=' + Date.now();
+  }
+  return _fetchGoc(url, opts);
+};
 
 let SESSION=null, CH_LIST=[], currentPage='chamcong';
 let state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
@@ -1576,6 +1926,95 @@ function tick(){
 }
 setInterval(tick,1000);tick();
 
+// ═══════════════════════════════════════════════════════════
+// [v10.1 Yc #5] VERSION CHECK — phát hiện deploy mới → banner 5s → reload
+// ═══════════════════════════════════════════════════════════
+let _appVersion = null;
+function _kiemTraVersion(){
+  fetch(SCRIPT_URL+'?type=version')
+  .then(r=>r.json()).then(res=>{
+    if(!res.version)return;
+    if(_appVersion===null){
+      _appVersion=res.version;
+      return;
+    }
+    if(_appVersion !== res.version){
+      _hienBannerReload(res.version);
+    }
+  }).catch(()=>{});
+}
+function _hienBannerReload(newVer){
+  if(document.getElementById('_ver-banner'))return;
+  const el=document.createElement('div');
+  el.id='_ver-banner';
+  el.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:white;padding:12px 16px;z-index:10000;text-align:center;font-weight:700;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:slideDown .3s';
+  el.innerHTML=`🎉 Có phiên bản mới (${newVer}) — tự động tải lại sau <span id="_ver-sec">5</span>s. <button onclick="location.reload()" style="margin-left:8px;background:white;color:#7c3aed;border:none;padding:4px 12px;border-radius:6px;font-weight:700;cursor:pointer">Tải ngay</button>`;
+  document.body.appendChild(el);
+  let s=5;
+  const iv=setInterval(()=>{
+    s--;
+    const se=document.getElementById('_ver-sec');
+    if(se)se.textContent=s;
+    if(s<=0){clearInterval(iv);location.reload();}
+  },1000);
+}
+// Poll version mỗi 90 giây
+setInterval(_kiemTraVersion, 90000);
+setTimeout(_kiemTraVersion, 2000); // gọi lần đầu sau 2s để set baseline
+
+// ═══════════════════════════════════════════════════════════
+// [v10.1 Yc #4] NOTIFICATION — Browser Notification API + poll thông báo
+// ═══════════════════════════════════════════════════════════
+let _tbLastTs = 0;
+let _tbPermRequested = false;
+
+function _xinQuyenThongBao(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default' && !_tbPermRequested){
+    _tbPermRequested=true;
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+function _hienThongBaoNative(tb){
+  if(!('Notification' in window) || Notification.permission!=='granted')return;
+  try{
+    const n=new Notification(tb.tieuDe,{
+      body: tb.noiDung,
+      icon: '',
+      tag:  tb.id, // tránh trùng lặp
+      badge:'',
+      silent:false,
+    });
+    n.onclick=()=>{
+      window.focus();
+      if(tb.loai==='DON_DUYET'||tb.loai==='DON_TUCHOI') goToPage('donnghi-acc');
+      n.close();
+    };
+    setTimeout(()=>n.close(), 8000);
+  } catch(e){}
+}
+function _pollThongBao(){
+  if(!SESSION)return;
+  fetch(SCRIPT_URL+'?type=thong_bao&maNV='+encodeURIComponent(SESSION.ma)+'&since='+_tbLastTs)
+  .then(r=>r.json()).then(res=>{
+    const list=(res.thongBao||[]).filter(tb=>!tb.daXem);
+    if(!list.length)return;
+    // Cập nhật _tbLastTs
+    list.forEach(tb=>{ if(tb.ngayTao > _tbLastTs) _tbLastTs = tb.ngayTao; });
+    // Hiện native notification + toast trong app
+    list.forEach(tb=>{
+      _hienThongBaoNative(tb);
+      showToast(tb.tieuDe+'\n'+tb.noiDung, tb.loai && tb.loai.indexOf('TUCHOI')>=0 ? 'err' : 'ok');
+    });
+    // Đánh dấu đã xem
+    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+      action:'danhDauDaXemTB', ids:list.map(tb=>tb.id)
+    })}).catch(()=>{});
+  }).catch(()=>{});
+}
+// Poll thông báo mỗi 45 giây (chỉ khi đã đăng nhập)
+setInterval(()=>{ if(SESSION) _pollThongBao(); }, 45000);
+
 // ─── NAVIGATION ─────────────────────────────────────────────
 const PAGE_TITLES={
   'lichca':    'LỊCH LÀM VIỆC',
@@ -1588,6 +2027,8 @@ const PAGE_TITLES={
   // [v10]
   'donnghi-acc':'ĐƠN NGHỈ PHÉP',
   'duyetyc':   'DUYỆT YÊU CẦU',
+  // [v10.1]
+  'giaodien':  'GIAO DIỆN',
 };
 function goToPage(page){
   currentPage=page;
@@ -1614,6 +2055,7 @@ function goToPage(page){
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
+  if(page==='giaodien')    _capNhatThemeChecks(); // [v10.1]
   if(page!=='nhansu') stopNSPolling();
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
@@ -1663,6 +2105,12 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
+  // [v10.1 Yc #4] Xin quyền notification + set baseline timestamp
+  _tbLastTs = Date.now(); // chỉ thông báo mới từ thời điểm đăng nhập
+  setTimeout(_xinQuyenThongBao, 2000);
+  setTimeout(_pollThongBao, 5000);
+  // [v10.1] Áp theme từ localStorage (nếu đã chọn trước)
+  _apDungTheme(localStorage.getItem('_theme')||'default');
   const now=new Date();
   gcThang=now.getFullYear()+'-'+pad(now.getMonth()+1);
   gcThangQL=gcThang;
@@ -1971,6 +2419,7 @@ function doiThang(delta){
 }
 function taiGioCong(){
   if(!SESSION)return;
+  gcData=[]; // [v10.1 Yc #3] reset state cũ
   const [y,m]=gcThang.split('-').map(Number);
   document.getElementById('thang-label').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
@@ -2118,6 +2567,7 @@ function doiThangQL(delta){
   gcThangQL=d.getFullYear()+'-'+pad(d.getMonth()+1);taiGioCongQL();
 }
 function taiGioCongQL(){
+  gcDataQL=[]; // [v10.1 Yc #3] reset state
   const [y,m]=gcThangQL.split('-').map(Number);
   document.getElementById('thang-label-ql').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
@@ -2315,8 +2765,8 @@ function startNSPolling(){
         if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
         document.getElementById('ns-s-loi').textContent=newCount;
         document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
-        const banner=document.getElementById('ns-loi-banner');
-        if(newCount>0){document.getElementById('ns-loi-count').textContent=newCount;banner.style.display='flex';}
+        const banner=document.getElementById('ns-loi-banner'); /* v10.1: banner removed */
+        if(banner){if(newCount>0){const el=document.getElementById('ns-loi-count');if(el)el.textContent=newCount;banner.style.display='flex';}else banner.style.display='none';}
         else banner.style.display='none';
         _capNhatBadgeNS(newCount);
         renderNhanSu();
@@ -2329,11 +2779,19 @@ function startNSPolling(){
 function stopNSPolling(){clearInterval(_pollTimer);_pollTimer=null;}
 
 // ─── BADGE THÔNG BÁO TAB NHÂN SỰ ───────────────────────────
+// [v10.1 Yc #6] Badge bottom nav "Nhân sự" = tổng cảnh báo chờ duyệt + đơn nghỉ chờ duyệt
+let _nsBadgeCB=0, _nsBadgeDN=0;
 function _capNhatBadgeNS(soLoi){
+  if(typeof soLoi === 'number') _nsBadgeCB = soLoi;
   const badge=document.getElementById('ns-nav-badge');
   if(!badge)return;
-  if(soLoi>0){badge.textContent=soLoi>99?'99+':String(soLoi);badge.style.display='flex';}
+  const tong = _nsBadgeCB + _nsBadgeDN;
+  if(tong>0){badge.textContent=tong>99?'99+':String(tong);badge.style.display='flex';}
   else{badge.style.display='none';}
+}
+function _capNhatBadgeNSDonNghi(soDN){
+  _nsBadgeDN = soDN || 0;
+  _capNhatBadgeNS(); // recompute
 }
 
 // ─── TAB NHÂN SỰ (QLNS) ─────────────────────────────────────
@@ -2543,14 +3001,7 @@ function taiNhanSu(forceRefresh){
     const soCB=nsCBList.length; // đếm theo số cảnh báo, không theo NV
     document.getElementById('ns-s-loi').textContent=soCB;
     document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
-    // Banner cần duyệt + badge tab
-    const banner=document.getElementById('ns-loi-banner');
-    if(soCB>0){
-      document.getElementById('ns-loi-count').textContent=soCB;
-      banner.style.display='flex';
-    } else {
-      banner.style.display='none';
-    }
+    // [v10.1 Yc #6] banner đã xóa — chỉ cần cập nhật badge bottom nav
     _capNhatBadgeNS(soCB);
     _addNVToSuggest(); // thêm NV vào gợi ý
     const now=new Date();
@@ -2564,23 +3015,16 @@ function taiNhanSu(forceRefresh){
   .catch(()=>{list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';});
 }
 
-// [FIX v9 #10] Tải số đơn chờ duyệt ngầm (không render danh sách)
+// [v10.1 Yc #6] Chỉ cập nhật badge (banner ns-donnghi-banner đã bị xóa)
 function _silentCheckDonNghi(){
-  fetch(SCRIPT_URL+'?type=don_nghi_phep&trangThai=Chờ duyệt')
+  fetch(SCRIPT_URL+'?type=don_nghi_phep&trangThai=Chờ duyệt&_t='+Date.now())
   .then(r=>r.json()).then(res=>{
     if(!res.donNghiPhep)return;
     const cho=res.donNghiPhep.tongChoDuyet||0;
-    const bnr=document.getElementById('ns-donnghi-banner');
-    const bnrCnt=document.getElementById('ns-donnghi-count');
-    if(bnr&&bnrCnt){
-      if(cho>0){bnrCnt.textContent=cho;bnr.style.display='flex';}
-      else bnr.style.display='none';
-    }
     const badge=document.getElementById('dnp-badge');
     if(badge){badge.textContent=cho>0?String(cho):'';badge.style.display=cho>0?'flex':'none';}
-    // Gộp badge nav Nhân sự
-    const tongCanXuLy=(nsCBList?nsCBList.length:0)+cho;
-    _capNhatBadgeNS(tongCanXuLy);
+    // Gộp badge nav Nhân sự = CB + Đơn nghỉ
+    _capNhatBadgeNSDonNghi(cho);
   }).catch(()=>{});
 }
 
@@ -2630,9 +3074,8 @@ function renderNhanSu(){
   document.getElementById('ns-s-loi').textContent=loiCount;
   document.getElementById('ns-s-tong').textContent=statsBase.length;
   // Banner cần duyệt
-  const banner=document.getElementById('ns-loi-banner');
-  if(loiCount>0){document.getElementById('ns-loi-count').textContent=loiCount;banner.style.display='flex';}
-  else{banner.style.display='none';}
+  const banner=document.getElementById('ns-loi-banner'); /* v10.1: banner removed */
+  if(banner){if(loiCount>0){const el=document.getElementById('ns-loi-count');if(el)el.textContent=loiCount;banner.style.display='flex';}else banner.style.display='none';}
   // Badge tab — luôn dùng tổng toàn hệ thống
   _capNhatBadgeNS(nsCBList.length);
 
@@ -3041,6 +3484,7 @@ function doiTuanLC(delta){
 
 function taiLichCa(){
   if(!SESSION)return;
+  _taiGoiYCH(); // [v10.1] Preload gợi ý CH
   document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
   document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
   fetch(SCRIPT_URL+'?type=lichca&maNV='+encodeURIComponent(SESSION.ma)+'&tuan='+lcTuan)
@@ -3163,6 +3607,7 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
             placeholder="🔍 Nhập tên cửa hàng..." autocomplete="off"
             value="${(s.tenCH||'').replace(/"/g,'&quot;')}"
             oninput="onLCCHInput('${ngay}',${idx})"
+            onfocus="showLCCHSuggest('${ngay}',${idx})"
             onblur="hideLCCHSuggest('${ngay}',${idx})">
           <div class="suggest-list lc-ch-sug" id="lc-ch-sug-${ngay}-${idx}"></div>
         </div>
@@ -3349,23 +3794,44 @@ function xoaCa(ngay,idx){
 }
 
 // Autocomplete cửa hàng [FIX v9 #4] — tràn ra ngoài khung, ~3 gợi ý
+// [v10.1 Đề xuất] Khi input trống: hiển thị top 5 CH từ getGoiYCuaHang (CH hay làm tuần trước)
+let _goiYCH_cache = null;
+function _taiGoiYCH(){
+  if(_goiYCH_cache || !SESSION)return;
+  fetch(SCRIPT_URL+'?type=goi_y_cua_hang&maNV='+encodeURIComponent(SESSION.ma))
+    .then(r=>r.json()).then(res=>{ _goiYCH_cache = res.goiYCH || []; }).catch(()=>{ _goiYCH_cache = []; });
+}
 function onLCCHInput(ngay,idx){
   const inp=document.getElementById(`lc-ch-inp-${ngay}-${idx}`);
   const sug=document.getElementById(`lc-ch-sug-${ngay}-${idx}`);
   if(!inp||!sug)return;
   const q=inp.value.trim().toLowerCase();
-  // Cập nhật state tenCH ngay khi gõ (để giữ giá trị, không mất khi re-render)
+  // Cập nhật state tenCH ngay khi gõ
   if(lcEdit[ngay]&&lcEdit[ngay].slots&&lcEdit[ngay].slots[idx]){
     lcEdit[ngay].slots[idx].tenCH=inp.value;
-    // Nếu gõ không khớp mã cũ thì xoá mã
     if(!CH_LIST.find(ch=>ch.ma===lcEdit[ngay].slots[idx].maCH&&ch.ten===inp.value))
       lcEdit[ngay].slots[idx].maCH='';
   }
-  if(!q){sug.style.display='none';return;}
-  const matched=CH_LIST.filter(ch=>ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)).slice(0,3); // ~3 gợi ý
+  let matched;
+  if(!q){
+    // [v10.1] Input trống → hiện gợi ý thông minh từ CH hay làm
+    if(!_goiYCH_cache){_taiGoiYCH();}
+    const goiY = _goiYCH_cache || [];
+    if(!goiY.length){sug.style.display='none';return;}
+    matched = goiY.slice(0, 5).map(g => ({ ma:g.maCH, ten:g.tenCH, _goiY:true, soLan:g.soLan }));
+  } else {
+    matched = CH_LIST.filter(ch=>ch.ma.toLowerCase().includes(q)||ch.ten.toLowerCase().includes(q)).slice(0,3);
+  }
   if(!matched.length){sug.style.display='none';return;}
-  sug.innerHTML=matched.map(ch=>`<div class="suggest-item" onmousedown="event.preventDefault();selectLCCH('${ngay}',${idx},'${esc(ch.ma)}','${esc(ch.ten)}')"><span class="s-ma">${ch.ma}</span><span class="s-ten">${ch.ten}</span></div>`).join('');
+  sug.innerHTML=matched.map(ch=>{
+    const badge = ch._goiY ? `<span style="font-size:10px;color:var(--green,#1D9E75);margin-left:auto;font-weight:600">⭐ ${ch.soLan}× tuần qua</span>` : '';
+    return `<div class="suggest-item" onmousedown="event.preventDefault();selectLCCH('${ngay}',${idx},'${esc(ch.ma)}','${esc(ch.ten)}')"><span class="s-ma">${ch.ma}</span><span class="s-ten">${ch.ten}</span>${badge}</div>`;
+  }).join('');
   sug.style.display='block';
+}
+function showLCCHSuggest(ngay,idx){
+  // Gọi khi focus vào input — show gợi ý ngay cả khi trống
+  onLCCHInput(ngay, idx);
 }
 function hideLCCHSuggest(ngay,idx){
   setTimeout(()=>{const s=document.getElementById(`lc-ch-sug-${ngay}-${idx}`);if(s)s.style.display='none';},180);
@@ -3895,25 +4361,32 @@ function renderDonNghiPhep(){
 function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   const ghiChuEl=document.getElementById(`dnp-note-inp-${maNV}-${ngay}`);
   let ghiChuQLNS=ghiChuEl?ghiChuEl.value.trim():'';
-  // [v10 FIX #7] Nếu Từ chối mà chưa điền lý do → prompt
   if(quyetDinh==='Từ chối' && !ghiChuQLNS){
     ghiChuQLNS=prompt('Lý do từ chối đơn này?');
     if(!ghiChuQLNS)return;
   }
-  _showBusy(quyetDinh==='Đã duyệt'?'Đang duyệt đơn...':'Đang từ chối đơn...');
+  const itemEl=document.getElementById(`dnp-item-${maNV}-${ngay}`);
+  if(itemEl){
+    itemEl.classList.add('duyet-processing');
+    const badge=itemEl.querySelector('.dnp-badge');
+    if(badge){badge.textContent='⏳ '+quyetDinh+'...';}
+  }
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetDonNghiPhep', maNhanVien:maNV, ngay, tuan,
     quyetDinh, ghiChuQLNS, maNguoiDuyet:SESSION.ma,
   })})
   .then(r=>r.json()).then(res=>{
-    _hideBusy();
     if(res.success){
-      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt đơn nghỉ phép — đã thông báo NV':'✗ Đã từ chối đơn — đã thông báo NV','ok');
+      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt — đã thông báo NV':'✗ Đã từ chối — đã thông báo NV','ok');
       taiDonNghiPhep();
     } else {
+      if(itemEl) itemEl.classList.remove('duyet-processing');
       showToast(res.error||'Lỗi.','err');
     }
-  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
+  }).catch(()=>{
+    if(itemEl) itemEl.classList.remove('duyet-processing');
+    showToast('Lỗi kết nối.','err');
+  });
 }
 
 // Build filter khu vực cho đơn nghỉ phép — không còn dùng dropdown, giữ để tương thích
@@ -4511,29 +4984,38 @@ function _renderACCDnpQL(){
 }
 
 // Hàm duyệt đơn — dùng chung cho cả QLNS page Nhân sự và page Duyệt YC
+// [v10.1 Yc #2] Optimistic UI: mờ row + cho user thao tác tiếp; xong mới toast
 function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
   if(qd==='Từ chối' && !ghiChuQLNS){
     ghiChuQLNS=prompt('Lý do từ chối đơn này?');
     if(!ghiChuQLNS)return;
   }
-  _showBusy(qd==='Đã duyệt'?'Đang duyệt đơn...':'Đang từ chối đơn...');
+  // Mờ row ngay lập tức
+  const itemEl=document.querySelector(`[data-dnitem="${maNV}_${ngay}"]`);
+  if(itemEl){
+    itemEl.classList.add('duyet-processing');
+    const badge=itemEl.querySelector('.dnp-badge');
+    if(badge){badge.textContent='⏳ '+qd+'...';badge.className='dnp-badge dnpb-cho';}
+  }
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetDonNghiPhep',
     maNhanVien:maNV, ngay, tuan, quyetDinh:qd,
     ghiChuQLNS:ghiChuQLNS||'', maNguoiDuyet:SESSION.ma,
   })}).then(r=>r.json()).then(res=>{
-    _hideBusy();
     if(res.success){
       showToast((qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối')+' — đã thông báo NV','ok');
-      // Reload view hiện tại
       if(currentPage==='donnghi-acc')  taiDonNghiACC();
       else if(currentPage==='duyetyc') taiDuyetYC();
       else if(currentPage==='nhansu')  taiDonNghiPhep();
-      _silentUpdateAccBadges(); // cập nhật badge Tài khoản
+      _silentUpdateAccBadges();
     } else {
+      if(itemEl) itemEl.classList.remove('duyet-processing');
       showToast(res.error||'Lỗi duyệt.','err');
     }
-  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
+  }).catch(()=>{
+    if(itemEl) itemEl.classList.remove('duyet-processing');
+    showToast('Lỗi kết nối.','err');
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4603,8 +5085,17 @@ function taiDuyetYC(){
 function _renderYC(){
   const content=document.getElementById('yc-content');
   if(!_ycData){return;}
+  // [v10.1 Yc #1] Hiển thị / ẩn thanh "Duyệt tất cả"
+  const bulkBar=document.getElementById('yc-bulk-bar');
+  const bulkCnt=document.getElementById('yc-bulk-count');
+  const ds = _ycTab==='donnghi' ? (_ycData.donNghi||[]) : (_ycData.giaiTrinh||[]);
+  if(bulkBar){
+    if(ds.length>0){
+      bulkBar.style.display='flex';
+      if(bulkCnt)bulkCnt.textContent=ds.length;
+    } else bulkBar.style.display='none';
+  }
   if(_ycTab==='donnghi'){
-    const ds=_ycData.donNghi||[];
     if(!ds.length){content.innerHTML='<div class="dnp-empty">✅ Không có đơn nghỉ chờ duyệt.</div>';return;}
     content.innerHTML='<div class="dnp-list">'+ds.map(d=>{
       const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
@@ -4612,7 +5103,7 @@ function _renderYC(){
       let lyDoTxt=lyDo, linkAnh='';
       const pipeIdx=lyDo.indexOf(' | ');
       if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
-      return `<div class="dnp-item">
+      return `<div class="dnp-item" data-dnitem="${d.maNV}_${d.ngay}">
         <div class="dnp-item-top">
           <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
           <div class="dnp-info" style="flex:1;margin-left:10px">
@@ -4631,11 +5122,10 @@ function _renderYC(){
     }).join('')+'</div>';
   } else {
     // Giải trình cảnh báo
-    const ds=_ycData.giaiTrinh||[];
     if(!ds.length){content.innerHTML='<div class="dnp-empty">✅ Không có giải trình chờ duyệt.</div>';return;}
     content.innerHTML='<div class="dnp-list">'+ds.map(d=>{
       const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-      return `<div class="dnp-item">
+      return `<div class="dnp-item" data-gtitem="${d.maNV}_${d.ngay}">
         <div class="dnp-item-top">
           <div class="ns-avatar ns-av-loi" style="width:32px;height:32px;font-size:11px">${init}</div>
           <div class="dnp-info" style="flex:1;margin-left:10px">
@@ -4655,19 +5145,124 @@ function _renderYC(){
   }
 }
 
+// [v10.1 Yc #1] Duyệt hàng loạt — confirm → batch API → toast kèm nút Hoàn tác 24h
+function duyetTatCa(action){
+  if(!_ycData)return;
+  const items = _ycTab==='donnghi' ? (_ycData.donNghi||[]) : (_ycData.giaiTrinh||[]);
+  if(!items.length){showToast('Không có mục để duyệt.','err');return;}
+  const loai = _ycTab==='donnghi' ? 'DON_NGHI' : 'GIAI_TRINH';
+  let qd, verb;
+  if(_ycTab==='donnghi'){
+    qd = action==='ok' ? 'Đã duyệt' : 'Từ chối';
+    verb = action==='ok' ? 'duyệt' : 'từ chối';
+  } else {
+    qd = action==='ok' ? 'Duyệt' : 'Không duyệt';
+    verb = action==='ok' ? 'duyệt' : 'không duyệt';
+  }
+  // Confirm
+  if(!confirm(`Xác nhận ${verb} tất cả ${items.length} yêu cầu?\n\nBạn có thể Hoàn tác trong 24h.`))return;
+  let ghiChuQLNS='';
+  if(action==='no' && _ycTab==='donnghi'){
+    ghiChuQLNS=prompt('Lý do từ chối chung (áp dụng cho tất cả):');
+    if(!ghiChuQLNS)return;
+  }
+  // Mờ toàn bộ list + bulk bar
+  document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
+  const bulkBar=document.getElementById('yc-bulk-bar');
+  if(bulkBar)bulkBar.style.opacity='.5';
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetBatch', loai, quyetDinh:qd, ghiChuQLNS,
+    maNguoiDuyet:SESSION.ma,
+    items: items.map(d=>({maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||''})),
+  })}).then(r=>r.json()).then(res=>{
+    if(bulkBar)bulkBar.style.opacity='1';
+    if(res.success){
+      const successMsg = `✓ Đã ${verb} ${res.soThanhCong}/${items.length} yêu cầu.`;
+      showToastVoiHoanTac(successMsg, res.undoToken, res.expiresAt);
+      taiDuyetYC();
+      _silentUpdateAccBadges();
+    } else {
+      document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+      showToast(res.error||'Lỗi batch.','err');
+    }
+  }).catch(()=>{
+    if(bulkBar)bulkBar.style.opacity='1';
+    document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+    showToast('Lỗi kết nối.','err');
+  });
+}
+
+// [v10.1 Yc #1 UNDO] Toast kèm nút Hoàn tác — lưu token vào localStorage 24h
+const UNDO_LS_KEY='_undoTokens';
+function _layUndoTokens(){
+  try{
+    const arr=JSON.parse(localStorage.getItem(UNDO_LS_KEY)||'[]');
+    const now=Date.now();
+    return arr.filter(t=>t.expiresAt>now);
+  } catch(e){return [];}
+}
+function _luuUndoToken(token, expiresAt, label){
+  const arr=_layUndoTokens();
+  arr.push({token, expiresAt, label, createdAt:Date.now()});
+  localStorage.setItem(UNDO_LS_KEY, JSON.stringify(arr));
+}
+function _xoaUndoToken(token){
+  const arr=_layUndoTokens().filter(t=>t.token!==token);
+  localStorage.setItem(UNDO_LS_KEY, JSON.stringify(arr));
+}
+function showToastVoiHoanTac(msg, token, expiresAt){
+  if(!token){showToast(msg,'ok');return;}
+  // Lưu token để có thể gọi lại từ menu
+  _luuUndoToken(token, expiresAt, msg);
+  let t=document.getElementById('_toast_undo');
+  if(!t){
+    t=document.createElement('div');t.id='_toast_undo';
+    t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:12px 18px;border-radius:12px;background:var(--green,#1D9E75);color:white;font-size:13px;font-weight:600;z-index:3001;max-width:340px;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:12px';
+    document.body.appendChild(t);
+  }
+  t.innerHTML=`<span style="flex:1">${msg}</span><button style="background:rgba(255,255,255,.25);color:white;border:none;padding:6px 12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px" onclick="hoanTacDuyet('${token}')">↩ Hoàn tác</button>`;
+  t.style.display='flex';
+  clearTimeout(t._h);t._h=setTimeout(()=>{t.style.display='none';},15000); // hiện 15s
+}
+function hoanTacDuyet(token){
+  if(!confirm('Bạn chắc muốn hoàn tác? Các yêu cầu đã duyệt sẽ trở lại trạng thái chờ duyệt.'))return;
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'hoanTacDuyet', token})})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      showToast(`↩ Đã khôi phục ${res.rollback} mục.`,'ok');
+      _xoaUndoToken(token);
+      const t=document.getElementById('_toast_undo');if(t)t.style.display='none';
+      if(currentPage==='duyetyc') taiDuyetYC();
+      else if(currentPage==='donnghi-acc') taiDonNghiACC();
+      else if(currentPage==='nhansu') taiDonNghiPhep();
+      _silentUpdateAccBadges();
+    } else showToast(res.error||'Không thể hoàn tác.','err');
+  }).catch(()=>showToast('Lỗi kết nối.','err'));
+}
+
 function duyetGiaiTrinhYC(maNV,ngay,quyetDinh){
-  _showBusy(quyetDinh==='Duyệt'?'Đang duyệt giải trình...':'Đang xử lý...');
+  const itemEl=document.querySelector(`[data-gtitem="${maNV}_${ngay}"]`);
+  if(itemEl){
+    itemEl.classList.add('duyet-processing');
+    const badge=itemEl.querySelector('.dnp-badge');
+    if(badge){badge.textContent='⏳ '+quyetDinh+'...';}
+  }
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
     maNguoiDuyet:SESSION.ma
   })}).then(r=>r.json()).then(res=>{
-    _hideBusy();
     if(res.success){
       showToast('✓ Đã cập nhật — đã thông báo NV','ok');
       taiDuyetYC();
       _silentUpdateAccBadges();
-    } else showToast(res.error||'Lỗi duyệt.','err');
-  }).catch(()=>{_hideBusy();showToast('Lỗi kết nối.','err');});
+    } else {
+      if(itemEl) itemEl.classList.remove('duyet-processing');
+      showToast(res.error||'Lỗi duyệt.','err');
+    }
+  }).catch(()=>{
+    if(itemEl) itemEl.classList.remove('duyet-processing');
+    showToast('Lỗi kết nối.','err');
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4701,5 +5296,31 @@ function _silentUpdateAccBadges(){
   }
 }
 
-// ─── End lịch ca JS v8 ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// [v10.1] THEME — Default / Dark Neon
+// ═══════════════════════════════════════════════════════════
+function _apDungTheme(theme){
+  const t = theme==='neon' ? 'neon' : 'default';
+  document.documentElement.setAttribute('data-theme', t);
+  document.body.setAttribute('data-theme', t);
+  localStorage.setItem('_theme', t);
+}
+function _capNhatThemeChecks(){
+  const cur = localStorage.getItem('_theme') || 'default';
+  document.querySelectorAll('.gd-card-check').forEach(el=>el.style.display='none');
+  const c = document.getElementById('gd-check-'+cur);
+  if(c) c.style.display='flex';
+  document.querySelectorAll('.gd-card').forEach(el=>el.classList.remove('selected'));
+  const card = document.querySelector('.gd-card-'+cur);
+  if(card) card.classList.add('selected');
+}
+function chonTheme(theme){
+  _apDungTheme(theme);
+  _capNhatThemeChecks();
+  showToast(theme==='neon'?'✨ Đã bật Dark Neon':'✓ Đã chuyển giao diện cổ điển','ok');
+}
+// Áp theme từ localStorage ngay khi parse HTML (trước khi login)
+try{ const th=localStorage.getItem('_theme')||'default'; document.documentElement.setAttribute('data-theme', th); }catch(e){}
+
+// ─── End theme ───────────────────────────────────────────────
 </script>
