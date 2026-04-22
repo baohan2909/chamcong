@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0F6E56" id="meta-theme-color">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>CHẤM CÔNG</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -542,78 +545,129 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gd-preview-default { background:linear-gradient(135deg,#f5f7fb,#e5ebf4); padding:8px; display:flex; flex-direction:column; gap:6px; }
 .gd-pv-bar   { height:14px; background:var(--green,#1D9E75); border-radius:4px; width:60%; }
 .gd-pv-card  { height:22px; background:white; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
-.gd-preview-neon    { background:radial-gradient(ellipse at top left,#1a0a3e 0%,#05051a 100%); padding:8px; display:flex; flex-direction:column; gap:6px; position:relative; }
-.gd-pv-bar-neon     { height:14px; background:linear-gradient(90deg,#a855f7,#06b6d4); border-radius:4px; width:60%; box-shadow:0 0 10px rgba(168,85,247,.8),0 0 20px rgba(6,182,212,.5); }
-.gd-pv-card-neon    { height:22px; background:rgba(30,30,60,.6); border:1px solid rgba(168,85,247,.4); border-radius:6px; backdrop-filter:blur(4px); }
-.gd-pv-glow         { position:absolute; top:-30px; right:-30px; width:80px; height:80px; background:radial-gradient(circle,rgba(6,182,212,.6),transparent 70%); filter:blur(15px); animation:gdGlow 3s ease-in-out infinite alternate; }
+.gd-preview-neon    { background:radial-gradient(ellipse at top left,rgba(14,165,233,.35) 0%,#030a1f 70%,#05122e 100%); padding:8px; display:flex; flex-direction:column; gap:6px; position:relative; }
+.gd-pv-bar-neon     { height:14px; background:linear-gradient(90deg,#0ea5e9,#06b6d4); border-radius:4px; width:60%; box-shadow:0 0 10px rgba(14,165,233,.8),0 0 20px rgba(6,182,212,.5); }
+.gd-pv-card-neon    { height:22px; background:rgba(12, 24, 54, 0.7); border:1px solid rgba(6, 182, 212, 0.4); border-radius:6px; backdrop-filter:blur(4px); }
+.gd-pv-glow         { position:absolute; top:-30px; right:-30px; width:80px; height:80px; background:radial-gradient(circle,rgba(6,182,212,.7),transparent 70%); filter:blur(15px); animation:gdGlow 3s ease-in-out infinite alternate; }
 @keyframes gdGlow { from{transform:translate(0,0) scale(1);} to{transform:translate(-10px,15px) scale(1.2);} }
 .gd-card-name { font-size:14px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:4px; }
 .gd-card-desc { font-size:11px; color:var(--text-m,#666); line-height:1.4; }
 .gd-card-check { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--green,#1D9E75); color:white; display:none; align-items:center; justify-content:center; font-weight:900; box-shadow:0 2px 6px rgba(29,158,117,.4); }
 
 /* ═══════════════════════════════════════════════════════════
-   [v10.1] DARK NEON THEME — Công nghệ, hiện đại, viền ánh sáng loang
-   Kích hoạt bằng: <html data-theme="neon">
+   [v10.2] DARK NEON — Navy Deep + Cyan — Công nghệ, không tím
+   Không còn bề mặt trắng — mọi thứ glass + navy đậm
    ═══════════════════════════════════════════════════════════ */
 [data-theme="neon"] {
-  --bg-page:      #05051a;
-  --bg-card:      rgba(22, 22, 50, 0.55);
-  --bg-card-hi:   rgba(30, 30, 60, 0.75);
-  --border:       rgba(168, 85, 247, 0.25);
+  --bg-page:      #030a1f;
+  --bg-card:      rgba(12, 24, 54, 0.55);
+  --bg-card-hi:   rgba(18, 36, 72, 0.78);
+  --bg-elev:      rgba(22, 42, 82, 0.85);
+  --border:       rgba(6, 182, 212, 0.22);
   --border-hi:    rgba(6, 182, 212, 0.6);
-  --text:         #e8e8f5;
-  --text-m:       #a0a0c0;
-  --text-lt:      #707090;
-  --green:        #22d3a8;
-  --green-lt:     rgba(34, 211, 168, 0.12);
-  --green-bd:     rgba(34, 211, 168, 0.5);
+  --text:         #e6eeff;
+  --text-m:       #8ba3c7;
+  --text-lt:      #5a7090;
+  --green:        #10e0b0;
+  --green-lt:     rgba(16, 224, 176, 0.12);
+  --green-bd:     rgba(16, 224, 176, 0.5);
   --green-m:      #5eead4;
-  --red:          #f472b6;
-  --red-lt:       rgba(244, 114, 182, 0.12);
-  --red-bd:       rgba(244, 114, 182, 0.5);
-  --amber:        #fbbf24;
-  --amber-lt:     rgba(251, 191, 36, 0.12);
-  --blue:         #60a5fa;
-  --blue-lt:      rgba(96, 165, 250, 0.12);
-  --pink:         #e879f9;
-  --pink-lt:      rgba(232, 121, 249, 0.12);
-  --shadow:       0 4px 18px rgba(0,0,0,.5);
-  --accent-1:     #a855f7;  /* purple */
+  --red:          #ff5b8a;
+  --red-lt:       rgba(255, 91, 138, 0.12);
+  --red-bd:       rgba(255, 91, 138, 0.5);
+  --amber:        #ffb84d;
+  --amber-lt:     rgba(255, 184, 77, 0.12);
+  --blue:         #4da9ff;
+  --blue-lt:      rgba(77, 169, 255, 0.12);
+  --pink:         #ff5b8a;
+  --pink-lt:      rgba(255, 91, 138, 0.12);
+  --shadow:       0 6px 22px rgba(0,0,0,.55);
+  --accent-1:     #0ea5e9;  /* sky */
   --accent-2:     #06b6d4;  /* cyan */
+  --bg:           #030a1f;
 }
 [data-theme="neon"] body {
   background:
-    radial-gradient(ellipse at top left, rgba(168,85,247,.15) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(6,182,212,.15) 0%, transparent 50%),
-    linear-gradient(180deg, #05051a 0%, #0a0a24 100%);
+    radial-gradient(ellipse 80% 60% at top, rgba(14, 165, 233, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at bottom right, rgba(6, 182, 212, 0.08) 0%, transparent 55%),
+    linear-gradient(180deg, #030a1f 0%, #05122e 60%, #061530 100%);
   background-attachment: fixed;
-  color: #e8e8f5;
+  color: #e6eeff;
 }
-/* Aurora animation layer */
+/* Aurora animation layer — navy cyan only, no purple */
 [data-theme="neon"]::before {
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(circle at 20% 30%, rgba(168,85,247,.08) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(6,182,212,.08) 0%, transparent 40%);
-  animation: neonAurora 18s ease-in-out infinite alternate;
+    radial-gradient(circle at 15% 25%, rgba(14, 165, 233, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(6, 182, 212, 0.07) 0%, transparent 45%);
+  animation: neonAurora 20s ease-in-out infinite alternate;
 }
 @keyframes neonAurora {
-  0% { opacity:.5; transform:translate(0,0); }
-  100% { opacity:1; transform:translate(-5%, 3%); }
+  0%   { opacity:.55; transform:translate(0,0); }
+  100% { opacity:1;   transform:translate(-4%, 2%); }
 }
 [data-theme="neon"] #main-app, [data-theme="neon"] .main { position:relative; z-index:1; }
 
-/* Glassmorphism cho tất cả card */
+/* Header — navy gradient, glow cyan, XÓA MÀU XANH LÁ */
+[data-theme="neon"] #main-header,
+[data-theme="neon"] .main-header,
+[data-theme="neon"] header {
+  background: linear-gradient(135deg, rgba(10, 26, 63, 0.92), rgba(22, 42, 82, 0.85)) !important;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 2px 20px rgba(6, 182, 212, 0.18);
+  color: #e6eeff !important;
+}
+[data-theme="neon"] #main-header *, [data-theme="neon"] .main-header * { color: #e6eeff !important; }
+[data-theme="neon"] .main-header-title,
+[data-theme="neon"] #header-page-title {
+  background: linear-gradient(90deg, #4da9ff, #06b6d4, #10e0b0);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent !important;
+  animation: neonTitleFlow 6s linear infinite;
+}
+@keyframes neonTitleFlow { 0%{background-position:0%;} 100%{background-position:200%;} }
+
+/* Bottom nav — KHÔNG TRẮNG NỮA */
+[data-theme="neon"] .bot-nav, [data-theme="neon"] #bot-nav, [data-theme="neon"] nav.bot-nav {
+  background: linear-gradient(180deg, rgba(10, 26, 63, 0.85), rgba(5, 18, 46, 0.95)) !important;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-top: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 -4px 22px rgba(6, 182, 212, 0.12);
+}
+[data-theme="neon"] .nav-item { color: #8ba3c7 !important; background:transparent !important; }
+[data-theme="neon"] .nav-item svg { stroke: #8ba3c7 !important; }
+[data-theme="neon"] .nav-item.active {
+  color: #06b6d4 !important;
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.9);
+}
+[data-theme="neon"] .nav-item.active svg {
+  stroke: #06b6d4 !important;
+  filter: drop-shadow(0 0 7px rgba(6, 182, 212, 0.9));
+}
+
+/* Cards + containers — tất cả đều glass, không trắng */
 [data-theme="neon"] .card,
 [data-theme="neon"] .acc-menu,
 [data-theme="neon"] .ns-stat,
 [data-theme="neon"] .ns-filter,
+[data-theme="neon"] .ns-list,
+[data-theme="neon"] .ns-item,
+[data-theme="neon"] .ns-nv-item,
 [data-theme="neon"] .lc-day-card,
 [data-theme="neon"] .lc-ql-item,
 [data-theme="neon"] .acc-kv,
 [data-theme="neon"] .acc-ch-item,
+[data-theme="neon"] .acc-nv-item,
+[data-theme="neon"] .acc-nv-list,
 [data-theme="neon"] .dnp-item,
 [data-theme="neon"] .dnp-card,
+[data-theme="neon"] .dnp-list,
 [data-theme="neon"] .dash-filter-card,
 [data-theme="neon"] .dash-kpi,
 [data-theme="neon"] .dash-chart-card,
@@ -623,59 +677,94 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 [data-theme="neon"] .gc-stats,
 [data-theme="neon"] .gcql-range-card,
 [data-theme="neon"] .lcql-meta-row,
-[data-theme="neon"] .gd-card {
-  background: rgba(22, 22, 50, 0.55) !important;
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(168, 85, 247, 0.22);
-  box-shadow: 0 4px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
-  color: #e8e8f5;
-}
-/* Header glow */
-[data-theme="neon"] #main-header {
-  background: linear-gradient(135deg, rgba(168,85,247,.15), rgba(6,182,212,.15)) !important;
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
-}
-[data-theme="neon"] #main-header * { color: #e8e8f5 !important; }
-[data-theme="neon"] .main-header-title {
-  background: linear-gradient(90deg, #a855f7, #06b6d4);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-/* Bottom nav */
-[data-theme="neon"] .bot-nav, [data-theme="neon"] #bot-nav {
-  background: rgba(10, 10, 35, 0.85) !important;
-  backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow: 0 -4px 24px rgba(168, 85, 247, 0.15);
-}
-[data-theme="neon"] .nav-item { color: #a0a0c0 !important; }
-[data-theme="neon"] .nav-item.active {
-  color: #06b6d4 !important;
-  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
-}
-[data-theme="neon"] .nav-item.active svg {
-  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8));
+[data-theme="neon"] .gd-card,
+[data-theme="neon"] .lc-nghi-form {
+  background: rgba(12, 24, 54, 0.55) !important;
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(6, 182, 212, 0.18);
+  box-shadow: 0 6px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.04);
+  color: #e6eeff;
 }
 
-/* Primary buttons — neon glow */
+/* Rows & list items trước đây trắng — force transparent/glass */
+[data-theme="neon"] .ns-list > *,
+[data-theme="neon"] .ns-item,
+[data-theme="neon"] .ns-nv-item,
+[data-theme="neon"] .ns-row,
+[data-theme="neon"] [class*="ns-nv-"],
+[data-theme="neon"] [class*="-row"]:not(.dash-filter-card):not(.lc-ed-row),
+[data-theme="neon"] .dnp-item,
+[data-theme="neon"] .lcql-item {
+  background: rgba(12, 24, 54, 0.42) !important;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.12) !important;
+  color: #e6eeff;
+}
+[data-theme="neon"] .ns-list > *:last-child,
+[data-theme="neon"] .dnp-card > *:last-child { border-bottom:none !important; }
+
+/* Group separators */
+[data-theme="neon"] .ns-group-sep,
+[data-theme="neon"] .dnp-day-head {
+  background: linear-gradient(90deg, rgba(6,182,212,.15), rgba(14,165,233,.1), transparent) !important;
+  color: #06b6d4 !important;
+  border-left: 3px solid #06b6d4 !important;
+  text-shadow: 0 0 6px rgba(6,182,212,.5);
+  padding-left: 12px;
+}
+[data-theme="neon"] .ns-group-dot {
+  background: #06b6d4 !important;
+  box-shadow: 0 0 8px rgba(6,182,212,.8);
+}
+
+/* Badges trên list NV (Chưa chấm, Đang làm, ...) — nền glass thay vì trắng */
+[data-theme="neon"] .nsb-dang, [data-theme="neon"] .nsb-ra, [data-theme="neon"] .nsb-ket,
+[data-theme="neon"] .nsb-chua, [data-theme="neon"] .nsb-loi, [data-theme="neon"] [class*="nsb-"] {
+  background: rgba(22, 42, 82, 0.8) !important;
+  border: 1px solid rgba(6, 182, 212, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter: blur(4px);
+}
+[data-theme="neon"] .nsb-dang { color:#10e0b0 !important; border-color:rgba(16,224,176,.45) !important; }
+[data-theme="neon"] .nsb-ra   { color:#ffb84d !important; border-color:rgba(255,184,77,.45) !important; }
+[data-theme="neon"] .nsb-ket  { color:#4da9ff !important; border-color:rgba(77,169,255,.45) !important; }
+[data-theme="neon"] .nsb-chua { color:#8ba3c7 !important; border-color:rgba(139,163,199,.35) !important; }
+[data-theme="neon"] .nsb-loi  { color:#ff5b8a !important; border-color:rgba(255,91,138,.45) !important; }
+
+/* Avatar initial circles — navy instead of light gray */
+[data-theme="neon"] .ns-avatar, [data-theme="neon"] .acc-nv-av, [data-theme="neon"] .lc-ql-av {
+  background: rgba(22, 42, 82, 0.8) !important;
+  color: #e6eeff !important;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+[data-theme="neon"] .ns-av-dang, [data-theme="neon"] .acc-nv-av.work { background: rgba(16,224,176,.18) !important; color:#10e0b0 !important; border-color:rgba(16,224,176,.5); }
+[data-theme="neon"] .ns-av-ra   { background: rgba(255,184,77,.18) !important; color:#ffb84d !important; border-color:rgba(255,184,77,.5); }
+[data-theme="neon"] .ns-av-ket  { background: rgba(77,169,255,.18) !important; color:#4da9ff !important; border-color:rgba(77,169,255,.5); }
+[data-theme="neon"] .ns-av-chua, [data-theme="neon"] .acc-nv-av.gray { background: rgba(139,163,199,.15) !important; color:#8ba3c7 !important; }
+[data-theme="neon"] .ns-av-loi,  [data-theme="neon"] .acc-nv-av.warn { background: rgba(255,91,138,.18) !important; color:#ff5b8a !important; border-color:rgba(255,91,138,.5); }
+
+/* Page backgrounds */
+[data-theme="neon"] .page { background: transparent !important; color: #e6eeff; }
+
+/* Primary buttons — navy glow, KHÔNG TÍM */
 [data-theme="neon"] .btn-primary,
 [data-theme="neon"] .lc-btn-send,
 [data-theme="neon"] .ns-btn-ok,
 [data-theme="neon"] .yc-bulk-ok,
-[data-theme="neon"] .btn-ra, [data-theme="neon"] .btn-ra-giua, [data-theme="neon"] .btn-v-giua, [data-theme="neon"] .btn-v-ca {
-  background: linear-gradient(135deg, #a855f7, #06b6d4) !important;
-  color: white !important;
+[data-theme="neon"] .btn-ra, [data-theme="neon"] .btn-ra-giua,
+[data-theme="neon"] .btn-v-giua, [data-theme="neon"] .btn-v-ca,
+[data-theme="neon"] .btn-login {
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4) !important;
+  color: #02121f !important;
+  font-weight: 700 !important;
   border: none !important;
   box-shadow:
-    0 0 20px rgba(168, 85, 247, 0.5),
-    0 0 40px rgba(6, 182, 212, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  text-shadow: 0 0 4px rgba(255,255,255,.3);
-  transition: all .2s cubic-bezier(.4,0,.2,1);
+    0 0 22px rgba(14, 165, 233, 0.55),
+    0 0 44px rgba(6, 182, 212, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-shadow: none;
+  transition: all .22s cubic-bezier(.4,0,.2,1);
 }
 [data-theme="neon"] .btn-primary:hover,
 [data-theme="neon"] .lc-btn-send:hover,
@@ -683,100 +772,110 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 [data-theme="neon"] .yc-bulk-ok:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 0 28px rgba(168, 85, 247, 0.7),
-    0 0 56px rgba(6, 182, 212, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 0 30px rgba(14, 165, 233, 0.75),
+    0 0 60px rgba(6, 182, 212, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
-/* Secondary/outline buttons */
 [data-theme="neon"] .ns-btn-no,
 [data-theme="neon"] .yc-bulk-no {
-  background: rgba(244, 114, 182, 0.1) !important;
-  color: #f472b6 !important;
-  border: 1.5px solid rgba(244, 114, 182, 0.5) !important;
-  box-shadow: 0 0 12px rgba(244, 114, 182, 0.2);
+  background: rgba(255, 91, 138, 0.12) !important;
+  color: #ff5b8a !important;
+  border: 1.5px solid rgba(255, 91, 138, 0.5) !important;
+  box-shadow: 0 0 14px rgba(255, 91, 138, 0.2);
 }
 
 /* Inputs */
 [data-theme="neon"] input, [data-theme="neon"] select, [data-theme="neon"] textarea {
-  background: rgba(10, 10, 30, 0.6) !important;
-  color: #e8e8f5 !important;
-  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+  background: rgba(5, 18, 46, 0.7) !important;
+  color: #e6eeff !important;
+  border: 1px solid rgba(6, 182, 212, 0.3) !important;
+  caret-color: #06b6d4;
 }
 [data-theme="neon"] input:focus, [data-theme="neon"] select:focus, [data-theme="neon"] textarea:focus {
-  border-color: rgba(6, 182, 212, 0.8) !important;
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), 0 0 16px rgba(6, 182, 212, 0.3) !important;
+  border-color: rgba(6, 182, 212, 0.85) !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18), 0 0 18px rgba(6, 182, 212, 0.35) !important;
   outline: none !important;
 }
-[data-theme="neon"] input::placeholder, [data-theme="neon"] textarea::placeholder { color: #707090 !important; }
+[data-theme="neon"] input::placeholder, [data-theme="neon"] textarea::placeholder { color: #5a7090 !important; }
 
-/* Badges */
+/* Search inputs */
+[data-theme="neon"] .ns-search, [data-theme="neon"] .ns-search-inp, [data-theme="neon"] .map-search-input {
+  background: rgba(5, 18, 46, 0.7) !important;
+  color: #e6eeff !important;
+  border: 1px solid rgba(6, 182, 212, 0.3) !important;
+}
+
+/* Badge highlights với glow */
 [data-theme="neon"] .ns-stat-val, [data-theme="neon"] .dash-kpi-val {
-  text-shadow: 0 0 12px currentColor;
+  text-shadow: 0 0 14px currentColor;
 }
-[data-theme="neon"] .ns-v-green, [data-theme="neon"] [class*="v-green"] { color: #22d3a8 !important; }
-[data-theme="neon"] .ns-v-amber, [data-theme="neon"] [class*="v-amber"] { color: #fbbf24 !important; }
-[data-theme="neon"] .ns-v-blue,  [data-theme="neon"] [class*="v-blue"]  { color: #60a5fa !important; }
-[data-theme="neon"] .ns-v-red,   [data-theme="neon"] [class*="v-red"]   { color: #f472b6 !important; }
-[data-theme="neon"] .ns-v-gray,  [data-theme="neon"] [class*="v-gray"]  { color: #a0a0c0 !important; }
+[data-theme="neon"] .ns-v-green, [data-theme="neon"] [class*="v-green"] { color: #10e0b0 !important; }
+[data-theme="neon"] .ns-v-amber, [data-theme="neon"] [class*="v-amber"] { color: #ffb84d !important; }
+[data-theme="neon"] .ns-v-blue,  [data-theme="neon"] [class*="v-blue"]  { color: #4da9ff !important; }
+[data-theme="neon"] .ns-v-red,   [data-theme="neon"] [class*="v-red"]   { color: #ff5b8a !important; }
+[data-theme="neon"] .ns-v-gray,  [data-theme="neon"] [class*="v-gray"]  { color: #8ba3c7 !important; }
 
-/* Tabs và navigation */
-[data-theme="neon"] .ns-tab, [data-theme="neon"] .ns-time-tab, [data-theme="neon"] .ns-subtab, [data-theme="neon"] .dash-time-tab {
-  background: rgba(30, 30, 60, 0.5) !important;
-  color: #a0a0c0 !important;
-  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+/* Tabs — filter chips */
+[data-theme="neon"] .ns-tab, [data-theme="neon"] .ns-time-tab, [data-theme="neon"] .ns-subtab,
+[data-theme="neon"] .dash-time-tab, [data-theme="neon"] .tab, [data-theme="neon"] .lcql-tab {
+  background: rgba(12, 24, 54, 0.5) !important;
+  color: #8ba3c7 !important;
+  border: 1px solid rgba(6, 182, 212, 0.18) !important;
 }
-[data-theme="neon"] .ns-tab.active, [data-theme="neon"] .ns-time-tab.active, [data-theme="neon"] .ns-subtab.active, [data-theme="neon"] .dash-time-tab.active {
-  background: linear-gradient(135deg, rgba(168,85,247,.25), rgba(6,182,212,.25)) !important;
+[data-theme="neon"] .ns-tab.active, [data-theme="neon"] .ns-time-tab.active,
+[data-theme="neon"] .ns-subtab.active, [data-theme="neon"] .dash-time-tab.active,
+[data-theme="neon"] .tab.active, [data-theme="neon"] .lcql-tab.active {
+  background: linear-gradient(135deg, rgba(14,165,233,.22), rgba(6,182,212,.22)) !important;
   color: #06b6d4 !important;
   border-color: rgba(6, 182, 212, 0.7) !important;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4), inset 0 0 0 1px rgba(255,255,255,.1);
-  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.4), inset 0 0 0 1px rgba(255,255,255,.06);
+  text-shadow: 0 0 9px rgba(6, 182, 212, 0.85);
 }
 
 /* Menu items */
 [data-theme="neon"] .menu-item {
   background: transparent !important;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.12);
+  color: #e6eeff;
 }
 [data-theme="neon"] .menu-item:last-child { border-bottom: none; }
-[data-theme="neon"] .menu-item:hover {
-  background: rgba(168, 85, 247, 0.08) !important;
-}
-[data-theme="neon"] .menu-label { color: #e8e8f5 !important; }
-[data-theme="neon"] .menu-arrow { color: #707090 !important; }
-
-/* Dot patterns, separators */
-[data-theme="neon"] .ns-group-sep { color: #06b6d4 !important; text-shadow: 0 0 8px rgba(6,182,212,.5); }
+[data-theme="neon"] .menu-item:active { background: rgba(6, 182, 212, 0.08) !important; }
+[data-theme="neon"] .menu-label { color: #e6eeff !important; }
+[data-theme="neon"] .menu-arrow { color: #5a7090 !important; }
 
 /* Login screen */
-[data-theme="neon"] #login-screen {
-  background: radial-gradient(ellipse at center, #1a0a3e 0%, #05051a 100%) !important;
+[data-theme="neon"] #login-screen, [data-theme="neon"] .login-bg {
+  background:
+    radial-gradient(ellipse at center, rgba(14,165,233,.15) 0%, transparent 55%),
+    linear-gradient(135deg, #030a1f, #05122e) !important;
 }
-[data-theme="neon"] .login-card {
-  background: rgba(22, 22, 50, 0.6) !important;
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: 0 0 40px rgba(168,85,247,.3), 0 0 80px rgba(6,182,212,.2) !important;
+[data-theme="neon"] .login-card, [data-theme="neon"] .login-container {
+  background: rgba(12, 24, 54, 0.65) !important;
+  backdrop-filter: blur(26px);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow:
+    0 0 44px rgba(14, 165, 233, 0.28),
+    0 0 80px rgba(6, 182, 212, 0.18) !important;
 }
 [data-theme="neon"] .login-title {
-  background: linear-gradient(90deg, #a855f7, #06b6d4);
+  background: linear-gradient(90deg, #4da9ff, #06b6d4);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Toast */
+/* Toasts */
 [data-theme="neon"] #_toast, [data-theme="neon"] #_toast_undo {
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: 0 4px 32px rgba(168,85,247,.4) !important;
+  backdrop-filter: blur(18px);
+  background: linear-gradient(135deg, rgba(14,165,233,.9), rgba(6,182,212,.9)) !important;
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  box-shadow: 0 6px 36px rgba(6,182,212,.5) !important;
+  color: #02121f !important;
+  font-weight:700;
 }
 
-/* Animated border for priority buttons — viền ánh sáng loang */
-@keyframes neonBorderFlow {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
+/* Animated border for priority buttons */
+@keyframes neonBorderFlow { 0%{background-position:0% 50%;} 100%{background-position:200% 50%;} }
 [data-theme="neon"] .lc-btn-send:not(:disabled),
 [data-theme="neon"] .yc-bulk-ok {
   position: relative;
@@ -784,32 +883,104 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 [data-theme="neon"] .lc-btn-send:not(:disabled)::before,
 [data-theme="neon"] .yc-bulk-ok::before {
   content:''; position:absolute; inset:-2px; border-radius:inherit;
-  background: linear-gradient(90deg, #a855f7, #06b6d4, #ec4899, #a855f7);
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4, #10e0b0, #0ea5e9);
   background-size: 200% 100%;
-  animation: neonBorderFlow 4s linear infinite;
-  z-index:-1; filter: blur(6px); opacity:.7;
+  animation: neonBorderFlow 5s linear infinite;
+  z-index:-1; filter: blur(7px); opacity:.75;
 }
 
-/* Dashboard KPI & biểu đồ */
-[data-theme="neon"] .dash-kpi-lbl { color: #a0a0c0 !important; }
-[data-theme="neon"] .dash-bar rect { fill: url(#neonGrad) !important; }
-[data-theme="neon"] svg text { fill: #a0a0c0 !important; }
+/* Dashboard */
+[data-theme="neon"] .dash-kpi-lbl, [data-theme="neon"] .ns-stat-lbl { color: #8ba3c7 !important; }
+[data-theme="neon"] .dash-kpi { background: rgba(12, 24, 54, 0.55) !important; }
+[data-theme="neon"] svg text { fill: #8ba3c7 !important; }
+[data-theme="neon"] .dash-rank-item { background: rgba(12, 24, 54, 0.4) !important; border-bottom:1px solid rgba(6,182,212,.12); }
+[data-theme="neon"] .dash-alert-item { background: rgba(12, 24, 54, 0.4) !important; border-bottom:1px solid rgba(6,182,212,.12); }
 
 /* Lịch ca mini week */
-[data-theme="neon"] .lc-mini-day { background: rgba(30,30,60,.6) !important; color: #a0a0c0 !important; }
-[data-theme="neon"] .lc-mini-day.work { background: rgba(34, 211, 168, .3) !important; color: #22d3a8 !important; box-shadow: 0 0 8px rgba(34,211,168,.4); }
-[data-theme="neon"] .lc-mini-day.wait { background: rgba(251, 191, 36, .3) !important; color: #fbbf24 !important; }
-[data-theme="neon"] .lc-mini-day.nghi { background: rgba(232, 121, 249, .25) !important; color: #e879f9 !important; }
-[data-theme="neon"] .lc-mini-day.deny { background: rgba(244, 114, 182, .25) !important; color: #f472b6 !important; }
+[data-theme="neon"] .lc-mini-day { background: rgba(22, 42, 82, 0.7) !important; color: #8ba3c7 !important; }
+[data-theme="neon"] .lc-mini-day.work { background: rgba(16, 224, 176, .22) !important; color: #10e0b0 !important; box-shadow: 0 0 9px rgba(16,224,176,.4); }
+[data-theme="neon"] .lc-mini-day.wait { background: rgba(255, 184, 77, .22) !important; color: #ffb84d !important; }
+[data-theme="neon"] .lc-mini-day.nghi { background: rgba(255, 91, 138, .2) !important; color: #ff5b8a !important; }
+[data-theme="neon"] .lc-mini-day.deny { background: rgba(255, 91, 138, .22) !important; color: #ff5b8a !important; }
 
 /* Select options trong neon */
-[data-theme="neon"] select option { background: #1a0a3e; color: #e8e8f5; }
+[data-theme="neon"] select option { background: #05122e; color: #e6eeff; }
 
 /* Version banner */
-[data-theme="neon"] #_ver-banner { background: linear-gradient(90deg, #a855f7, #06b6d4) !important; box-shadow: 0 4px 20px rgba(168,85,247,.5) !important; }
+[data-theme="neon"] #_ver-banner {
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4, #10e0b0) !important;
+  color: #02121f !important;
+  box-shadow: 0 4px 22px rgba(6,182,212,.5) !important;
+}
 
-/* Slide down anim */
+/* Scrollbar subtle */
+[data-theme="neon"] ::-webkit-scrollbar { width:6px; height:6px; }
+[data-theme="neon"] ::-webkit-scrollbar-track { background:transparent; }
+[data-theme="neon"] ::-webkit-scrollbar-thumb { background:rgba(6,182,212,.3); border-radius:3px; }
+[data-theme="neon"] ::-webkit-scrollbar-thumb:hover { background:rgba(6,182,212,.55); }
+
+/* Refresh floating button navy */
+[data-theme="neon"] .ns-refresh, [data-theme="neon"] #ns-refresh-btn {
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4) !important;
+  color: #02121f !important;
+  box-shadow: 0 0 20px rgba(6,182,212,.55), 0 0 40px rgba(14,165,233,.3);
+}
+
+/* Modals */
+[data-theme="neon"] .modal-content, [data-theme="neon"] .ns-modal-content, [data-theme="neon"] .lc-modal {
+  background: rgba(12, 24, 54, 0.9) !important;
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #e6eeff;
+}
+[data-theme="neon"] .modal-overlay, [data-theme="neon"] .ns-modal {
+  background: rgba(3, 10, 31, 0.75) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Slide down anim (banner version) */
 @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
+/* Suggest list */
+[data-theme="neon"] .suggest-list, [data-theme="neon"] .lc-ch-sug, [data-theme="neon"] .ns-suggest {
+  background: rgba(12, 24, 54, 0.95) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.55) !important;
+}
+[data-theme="neon"] .suggest-item { color: #e6eeff !important; border-bottom: 1px solid rgba(6,182,212,.12); }
+[data-theme="neon"] .suggest-item:hover, [data-theme="neon"] .suggest-item:active { background: rgba(6, 182, 212, 0.15) !important; }
+[data-theme="neon"] .s-ma { color: #06b6d4 !important; }
+[data-theme="neon"] .s-ten { color: #e6eeff !important; }
+
+/* Giao dien preview neon — match palette mới */
+[data-theme="neon"] .gd-preview-neon {
+  background: radial-gradient(ellipse at top left, rgba(14,165,233,.35) 0%, #05122e 100%) !important;
+}
+.gd-pv-bar-neon {
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4) !important;
+  box-shadow: 0 0 12px rgba(14,165,233,.8), 0 0 22px rgba(6,182,212,.5) !important;
+}
+.gd-pv-glow {
+  background: radial-gradient(circle, rgba(6,182,212,.6), transparent 70%) !important;
+}
+
+/* Text đen/tối trên button cyan — ngược lại với Text light trên card */
+[data-theme="neon"] button, [data-theme="neon"] .lc-btn, [data-theme="neon"] .gc-btn {
+  color: #e6eeff;
+}
+
+/* KHẮC PHỤC các element inline trắng còn sót */
+[data-theme="neon"] [style*="background:white"],
+[data-theme="neon"] [style*="background: white"],
+[data-theme="neon"] [style*="background:#fff"],
+[data-theme="neon"] [style*="background: #fff"],
+[data-theme="neon"] [style*="background:#FFF"],
+[data-theme="neon"] [style*="background:#ffffff"] {
+  background: rgba(12, 24, 54, 0.55) !important;
+  color: #e6eeff !important;
+  border-color: rgba(6, 182, 212, 0.18) !important;
+}
 
 /* end dark neon */
 
@@ -1625,7 +1796,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
       <!-- [v10.1] Giao diện (theme) -->
       <div class="menu-item" onclick="goToPage('giaodien')">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#a855f7,#06b6d4)">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#0ea5e9,#06b6d4)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
         </div>
         <div class="menu-label">Giao diện</div>
@@ -5304,6 +5475,9 @@ function _apDungTheme(theme){
   document.documentElement.setAttribute('data-theme', t);
   document.body.setAttribute('data-theme', t);
   localStorage.setItem('_theme', t);
+  // [v10.2] Đổi theme-color của browser chrome (status bar mobile)
+  const meta=document.getElementById('meta-theme-color');
+  if(meta) meta.setAttribute('content', t==='neon' ? '#030a1f' : '#0F6E56');
 }
 function _capNhatThemeChecks(){
   const cur = localStorage.getItem('_theme') || 'default';
@@ -5320,7 +5494,15 @@ function chonTheme(theme){
   showToast(theme==='neon'?'✨ Đã bật Dark Neon':'✓ Đã chuyển giao diện cổ điển','ok');
 }
 // Áp theme từ localStorage ngay khi parse HTML (trước khi login)
-try{ const th=localStorage.getItem('_theme')||'default'; document.documentElement.setAttribute('data-theme', th); }catch(e){}
+try{
+  const th=localStorage.getItem('_theme')||'default';
+  document.documentElement.setAttribute('data-theme', th);
+  // Đổi status bar color ngay
+  setTimeout(()=>{
+    const m=document.getElementById('meta-theme-color');
+    if(m) m.setAttribute('content', th==='neon' ? '#030a1f' : '#0F6E56');
+  },0);
+}catch(e){}
 
 // ─── End theme ───────────────────────────────────────────────
 </script>
