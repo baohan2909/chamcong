@@ -132,7 +132,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* RESULT & SUBMIT */
 .result-box { margin:0 12px 8px; padding:11px 14px; border-radius:12px; font-size:12px; line-height:1.6; display:none; }
 .r-ok  { background:var(--green-lt); color:#085041; border-left:3px solid var(--green-m); }
-.r-info{ background:#e6f2fb; color:#174C82; border-left:3px solid #3498db; }
 .r-warn{ background:var(--amber-lt); color:#412402; border-left:3px solid var(--amber); }
 .r-err { background:var(--red-lt);   color:var(--red); border-left:3px solid var(--red); }
 .countdown-bar { margin:0 12px 8px; background:var(--green-lt); border-radius:10px; padding:10px 14px; font-size:12px; color:#085041; display:none; text-align:center; }
@@ -141,13 +140,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .submit-btn:active { transform:scale(.98); }
 .s-disabled { background:#e5e3db; color:#b0ada6; cursor:default; }
 .s-ready    { background:var(--green); color:white; box-shadow:0 4px 14px var(--green-shadow); }
-.s-loading  {
-  background:linear-gradient(90deg, var(--green-m), var(--green), var(--green-m));
-  background-size:200% 100%;
-  animation:sLoadingBar 1.2s linear infinite;
-  color:white; opacity:.95; cursor:default;
-}
-@keyframes sLoadingBar { from { background-position:200% 0; } to { background-position:-200% 0; } }
+.s-loading  { background:var(--green-m); color:white; opacity:.9; cursor:default; }
 .s-done     { background:var(--green-lt); color:var(--green); border:1.5px solid var(--green-bd); }
 
 /* LOG — lịch sử hôm nay */
@@ -1321,6 +1314,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
                oninput="taiDonNghiPhep()" autocomplete="off"
                style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);font-size:13px;outline:none;background:white;box-shadow:var(--shadow)">
       </div>
+      <!-- [v10.8] Nút Duyệt tất cả — chỉ hiện khi có đơn "Chờ duyệt" trong list -->
+      <div class="yc-bulk-bar" id="dnp-bulk-bar" style="display:none;margin-top:10px">
+        <button class="yc-bulk-btn yc-bulk-ok" onclick="duyetTatCaDonNghiNS('ok')">✓ Duyệt tất cả (<span id="dnp-bulk-count">0</span>)</button>
+        <button class="yc-bulk-btn yc-bulk-no" onclick="duyetTatCaDonNghiNS('no')">✗ Từ chối tất cả</button>
+      </div>
       <div id="dnp-list" class="dnp-list"><div class="dnp-empty">⏳ Đang tải đơn...</div></div>
     </div>
   </div>
@@ -1674,7 +1672,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxfS-lCfjO1WZdIyvyupjjnaad_9RUfHPVsn9_SFclG2aUBeUIyUqMpzNU_tRLDzgRU/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyXfUV4GbTnfkSACi2DfBonQZ3yyQWkqMMbz7BvHM5jtSSjW0GU17O84mOgi5V2NfCM/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -2028,12 +2026,10 @@ function doSubmit(){
   if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
   if(!SESSION)return;
   state.submitting=true;
-  // [v10.7] Bỏ spinner inline (iOS Safari render lạ, hiện thành chữ "g" cắt xén)
-  // Dùng CSS animation trên chính button qua class s-loading
   document.getElementById('submit-btn').className='submit-btn s-loading';
-  document.getElementById('submit-btn').textContent='Đang xử lý...';
+  document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
   const maCH=document.getElementById('sel-cuahang').value;
-  const payload={
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'chamcong',
     maCuaHang:maCH,
     tenCuaHang:document.getElementById('input-ch-display').value,
@@ -2041,56 +2037,50 @@ function doSubmit(){
     loaiChamCong:state.loai,
     lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,
     selfieBase64:state.selfieB64||null,
-  };
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)})
+  })})
   .then(r=>r.json()).then(res=>{
-    _xuLyKetQuaChamCong(res);
+    state.submitting=false;state.submitted=true;
+    setBtn('s-done','✓ Đã chấm công thành công');
+    const rb=document.getElementById('result-box');rb.style.display='block';
+    if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
+    else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo QLNS';}
+    else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
+
+    const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+    const isLoi=res.canhBao&&res.canhBao.length>0;
+    // Xác định loại lỗi để hiển thị đúng trong lịch sử
+    const loiType=res.coLoiGPS?'gps':(res.coLoiThuTu?'ca':'');
+    const ngayCham=res.ngayChamCong||new Date().toISOString().substring(0,10);
+    logs.unshift({
+      loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
+      time:res.timestamp.substring(11,19),
+      dist:res.khoangCach?res.khoangCach+'m':'--',
+      ok:!isLoi, xacNhan:isLoi?'KHÔNG HỢP LỆ':'OK',
+      ghiChu:'', loiType, tenCH:'', ngay:ngayCham,
+    });
+    renderLog();
+
+    if(res.canhBao&&res.canhBao.length>0){
+      // Có lỗi → mở modal giải trình, đếm ngược 5 phút
+      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
+      const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ Chấm công cần xác nhận'
+                 :res.coLoiGPS?'⚠️ Xác nhận cửa hàng':'⚠️ Xác nhận ca làm việc';
+      const sub=res.coLoiGPS
+        ?'Thông tin chấm công tại cửa hàng này cần được xác nhận. Vui lòng giải trình để quản lý duyệt.'
+        :'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
+      openGiaiTrinh(title,sub,ngayCham);
+      startGtTimer(300); // 5 phút
+    } else {
+      // Chấm đúng → 15 giây reload
+      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
+      startCountdown(15);
+    }
   }).catch(()=>{
     state.submitting=false;
     setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
     const rb=document.getElementById('result-box');rb.style.display='block';
     rb.className='result-box r-err';rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';
   });
-}
-
-function _xuLyKetQuaChamCong(res){
-  state.submitting=false;state.submitted=true;
-  setBtn('s-done','✓ Đã chấm công thành công');
-  const rb=document.getElementById('result-box');rb.style.display='block';
-  if(res.gpsStatus==='HỢP LỆ'){
-    const anhNote = res.anhDangUpload ? ' · ảnh đang đồng bộ ngầm' : '';
-    rb.className='result-box r-ok';
-    rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19)+anhNote;
-  }
-  else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo QLNS';}
-  else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
-
-  const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-  const isLoi=res.canhBao&&res.canhBao.length>0;
-  const loiType=res.coLoiGPS?'gps':(res.coLoiThuTu?'ca':'');
-  const ngayCham=res.ngayChamCong||new Date().toISOString().substring(0,10);
-  logs.unshift({
-    loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
-    time:res.timestamp.substring(11,19),
-    dist:res.khoangCach?res.khoangCach+'m':'--',
-    ok:!isLoi, xacNhan:isLoi?'KHÔNG HỢP LỆ':'OK',
-    ghiChu:'', loiType, tenCH:'', ngay:ngayCham,
-  });
-  renderLog();
-
-  if(res.canhBao&&res.canhBao.length>0){
-    if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-    const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ Chấm công cần xác nhận'
-               :res.coLoiGPS?'⚠️ Xác nhận cửa hàng':'⚠️ Xác nhận ca làm việc';
-    const sub=res.coLoiGPS
-      ?'Thông tin chấm công tại cửa hàng này cần được xác nhận. Vui lòng giải trình để quản lý duyệt.'
-      :'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-    openGiaiTrinh(title,sub,ngayCham);
-    startGtTimer(300);
-  } else {
-    if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-    startCountdown(15);
-  }
 }
 
 // ─── COUNTDOWN (reload trang) ────────────────────────────────
@@ -2880,7 +2870,14 @@ function renderNhanSu(){
   if(nsFilter==='__loi__'){
     const cbShow=cbFiltered;
     if(!cbShow.length){el.innerHTML='<div class="ns-empty">Không có trường hợp cần duyệt.</div>';return;}
-    el.innerHTML=cbShow.map(cb=>{
+    // [v10.8] Bulk bar "Duyệt tất cả" — chỉ đếm các CB đã giải trình (eligible)
+    const daGT = cbShow.filter(cb=>!!cb.giaiTrinh);
+    const bulkHtml = (isQL && daGT.length > 0) ? `
+      <div class="yc-bulk-bar" style="margin:0 14px 10px">
+        <button class="yc-bulk-btn yc-bulk-ok" onclick="duyetTatCaCBNS('ok')">✓ Duyệt tất cả (${daGT.length})</button>
+        <button class="yc-bulk-btn yc-bulk-no" onclick="duyetTatCaCBNS('no')">✗ Từ chối tất cả</button>
+      </div>` : '';
+    el.innerHTML = bulkHtml + cbShow.map(cb=>{
       const initials=cb.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const daDaGT=!!cb.giaiTrinh;
       const gtPreview=daDaGT
@@ -3053,6 +3050,9 @@ function duyetTuModal(quyetDinh){
     _duyetNVThuc(_nsdMaNV,_nsdNgay,quyetDinh);
   }
 }
+// [v10.8 DEPRECATED] Hàm legacy, không còn dùng. Với backend mới, gọi duyetCanhBao
+// không truyền cbRowIdx và có nhiều CB cùng NV+ngày sẽ bị từ chối để tránh duyệt nhầm.
+// Giữ lại để không phá nếu có nơi khác gọi.
 function duyetNhanSu(event,maNV,quyetDinh){
   event.stopPropagation();
   const ngay=new Date().toISOString().substring(0,10);
@@ -4149,6 +4149,114 @@ function renderDonNghiPhep(){
       <div class="dnp-card">${items}</div>
     </div>`;
   }).join('');
+  // [v10.8] Toggle bulk bar theo số đơn Chờ duyệt
+  const soCho = (_dnpData.dsDon||[]).filter(d=>d.trangThai==='Chờ duyệt').length;
+  const bulkBar  = document.getElementById('dnp-bulk-bar');
+  const bulkCnt  = document.getElementById('dnp-bulk-count');
+  if(bulkBar) bulkBar.style.display = soCho>0 ? 'flex' : 'none';
+  if(bulkCnt) bulkCnt.textContent = soCho;
+}
+
+// [v10.8] Duyệt tất cả cảnh báo giải trình đang hiển thị trong page Nhân sự
+// Chỉ duyệt các CB ĐÃ GIẢI TRÌNH (eligible) — backend chấp nhận dạng CB_DUYET/CB_KHONG_DUYET
+function duyetTatCaCBNS(action){
+  // Lọc CB đã giải trình trong danh sách đang hiển thị (áp filter NS hiện tại)
+  const q = (nsSearchQ||'').toLowerCase().trim();
+  const kv = nsKhuVucFilter;
+  const daGT = nsCBList.filter(cb=>{
+    if(!cb.giaiTrinh) return false;
+    if(kv){
+      const nv = nsData.find(n=>n.ma===cb.maNV);
+      if(!nv || nv.khuVuc!==kv) return false;
+    }
+    if(q){
+      const nv = nsData.find(n=>n.ma===cb.maNV) || {cuaHang:'',khuVuc:''};
+      if(nsSuggestType==='kv') { if(!nv.khuVuc.toLowerCase().includes(q)) return false; }
+      else if(nsSuggestType==='ch') { if(!nv.cuaHang.toLowerCase().includes(q)) return false; }
+      else {
+        if(!cb.maNV.toLowerCase().includes(q) && !cb.tenNV.toLowerCase().includes(q) &&
+           !nv.cuaHang.toLowerCase().includes(q) && !nv.khuVuc.toLowerCase().includes(q)) return false;
+      }
+    }
+    return true;
+  });
+  if(!daGT.length){showToast('Không có cảnh báo đã giải trình để duyệt.','err');return;}
+  const qd = action==='ok' ? 'Duyệt' : 'Không duyệt';
+  const verb = action==='ok' ? 'duyệt' : 'từ chối';
+  if(!confirm(`Xác nhận ${verb} tất cả ${daGT.length} cảnh báo đã giải trình?\n\nBạn có thể Hoàn tác trong 24h.`))return;
+  // Mờ các row đang xử lý
+  daGT.forEach(cb=>{
+    const row=document.getElementById('cb-row-'+cb.cbRowIdx);
+    if(row) row.classList.add('duyet-processing');
+  });
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetBatch', loai:'GIAI_TRINH', quyetDinh:qd,
+    maNguoiDuyet:SESSION.ma,
+    // [v10.8] Truyền cbRowIdx + loaiCB + gio để match CHẶT từng dòng cụ thể
+    items: daGT.map(cb=>({
+      maNV:cb.maNV, ngay:cb.ngay,
+      cbRowIdx:cb.cbRowIdx||0,
+      loaiCB:cb.loaiCB||'', gio:cb.gio||''
+    })),
+  })}).then(r=>r.json()).then(res=>{
+    if(res.success){
+      const msg = `✓ Đã ${verb} ${res.soThanhCong}/${daGT.length} cảnh báo.`;
+      showToastVoiHoanTac(msg, res.undoToken, res.expiresAt);
+      // Reload data
+      if(typeof taiNhanSu==='function') taiNhanSu();
+      _silentUpdateAccBadges();
+    } else {
+      daGT.forEach(cb=>{
+        const row=document.getElementById('cb-row-'+cb.cbRowIdx);
+        if(row) row.classList.remove('duyet-processing');
+      });
+      showToast(res.error||'Lỗi batch.','err');
+    }
+  }).catch(()=>{
+    daGT.forEach(cb=>{
+      const row=document.getElementById('cb-row-'+cb.cbRowIdx);
+      if(row) row.classList.remove('duyet-processing');
+    });
+    showToast('Lỗi kết nối.','err');
+  });
+}
+
+// [v10.8] Duyệt tất cả đơn nghỉ phép trong sub-tab Nhân sự
+function duyetTatCaDonNghiNS(action){
+  if(!_dnpData)return;
+  const items = (_dnpData.dsDon||[]).filter(d=>d.trangThai==='Chờ duyệt');
+  if(!items.length){showToast('Không có đơn chờ duyệt.','err');return;}
+  const qd = action==='ok' ? 'Đã duyệt' : 'Từ chối';
+  const verb = action==='ok' ? 'duyệt' : 'từ chối';
+  if(!confirm(`Xác nhận ${verb} tất cả ${items.length} đơn nghỉ phép đang chờ?\n\nBạn có thể Hoàn tác trong 24h.`))return;
+  let ghiChuQLNS='';
+  if(action==='no'){
+    ghiChuQLNS=prompt('Lý do từ chối chung (áp dụng cho tất cả):');
+    if(!ghiChuQLNS)return;
+  }
+  document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
+  const bulkBar=document.getElementById('dnp-bulk-bar');
+  if(bulkBar) bulkBar.style.opacity='.5';
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetBatch', loai:'DON_NGHI', quyetDinh:qd, ghiChuQLNS,
+    maNguoiDuyet:SESSION.ma,
+    items: items.map(d=>({maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||''})),
+  })}).then(r=>r.json()).then(res=>{
+    if(bulkBar) bulkBar.style.opacity='1';
+    if(res.success){
+      const msg = `✓ Đã ${verb} ${res.soThanhCong}/${items.length} đơn.`;
+      showToastVoiHoanTac(msg, res.undoToken, res.expiresAt);
+      taiDonNghiPhep();
+      _silentUpdateAccBadges();
+    } else {
+      document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+      showToast(res.error||'Lỗi batch.','err');
+    }
+  }).catch(()=>{
+    if(bulkBar) bulkBar.style.opacity='1';
+    document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+    showToast('Lỗi kết nối.','err');
+  });
 }
 
 // QLNS duyệt đơn nghỉ phép
@@ -4931,8 +5039,8 @@ function _renderYC(){
         <div class="dnp-lydo"><div class="dnp-lydo-lbl">Nội dung CB</div>${d.noiDung.replace(/\n/g,'<br>')}</div>
         ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:''}
         <div class="ns-duyet-wrap" style="margin-top:8px">
-          <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt')">✓ Duyệt</button>
-          <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt')">✗ Không duyệt</button>
+          <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt',${d.cbRowIdx||0})">✓ Duyệt</button>
+          <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt',${d.cbRowIdx||0})">✗ Không duyệt</button>
         </div>
       </div>`;
     }).join('')+'</div>';
@@ -4967,7 +5075,11 @@ function duyetTatCa(action){
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetBatch', loai, quyetDinh:qd, ghiChuQLNS,
     maNguoiDuyet:SESSION.ma,
-    items: items.map(d=>({maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||''})),
+    // [v10.8] Với GIAI_TRINH: truyền cbRowIdx + loaiCB + gio để match chặt đúng từng dòng
+    // (tránh duyệt nhầm các CB khác cùng NV+ngày)
+    items: items.map(d=> loai==='GIAI_TRINH'
+      ? { maNV:d.maNV, ngay:d.ngay, cbRowIdx:d.cbRowIdx||0, loaiCB:d.loaiCB||'', gio:d.gio||'' }
+      : { maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||'' }),
   })}).then(r=>r.json()).then(res=>{
     if(bulkBar)bulkBar.style.opacity='1';
     if(res.success){
@@ -5034,7 +5146,7 @@ function hoanTacDuyet(token){
   }).catch(()=>showToast('Lỗi kết nối.','err'));
 }
 
-function duyetGiaiTrinhYC(maNV,ngay,quyetDinh){
+function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
   const itemEl=document.querySelector(`[data-gtitem="${maNV}_${ngay}"]`);
   if(itemEl){
     itemEl.classList.add('duyet-processing');
@@ -5043,6 +5155,7 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh){
   }
   fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
+    cbRowIdx: cbRowIdx||0,  // [v10.8] match đúng 1 CB
     maNguoiDuyet:SESSION.ma
   })}).then(r=>r.json()).then(res=>{
     if(res.success){
