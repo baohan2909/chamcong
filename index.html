@@ -132,6 +132,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* RESULT & SUBMIT */
 .result-box { margin:0 12px 8px; padding:11px 14px; border-radius:12px; font-size:12px; line-height:1.6; display:none; }
 .r-ok  { background:var(--green-lt); color:#085041; border-left:3px solid var(--green-m); }
+.r-info{ background:#e6f2fb; color:#174C82; border-left:3px solid #3498db; }
 .r-warn{ background:var(--amber-lt); color:#412402; border-left:3px solid var(--amber); }
 .r-err { background:var(--red-lt);   color:var(--red); border-left:3px solid var(--red); }
 .countdown-bar { margin:0 12px 8px; background:var(--green-lt); border-radius:10px; padding:10px 14px; font-size:12px; color:#085041; display:none; text-align:center; }
@@ -1667,7 +1668,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyDnkr-hRrJj-WYC6gf83Ld0xs7kxFlIDKYmXWUpExg69P9mx0_cW1MptNnEtIG1aTo/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzjsa--dTK_gZk-W7E1_cCggdeJzvPHfT58zfhzULffr4ueKpSbDcthPsn0Ow5RYIo/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -2024,7 +2025,7 @@ function doSubmit(){
   document.getElementById('submit-btn').className='submit-btn s-loading';
   document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
   const maCH=document.getElementById('sel-cuahang').value;
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  const payload={
     action:'chamcong',
     maCuaHang:maCH,
     tenCuaHang:document.getElementById('input-ch-display').value,
@@ -2032,50 +2033,103 @@ function doSubmit(){
     loaiChamCong:state.loai,
     lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,
     selfieBase64:state.selfieB64||null,
-  })})
+  };
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)})
   .then(r=>r.json()).then(res=>{
-    state.submitting=false;state.submitted=true;
-    setBtn('s-done','✓ Đã chấm công thành công');
-    const rb=document.getElementById('result-box');rb.style.display='block';
-    if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
-    else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo QLNS';}
-    else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
-
-    const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-    const isLoi=res.canhBao&&res.canhBao.length>0;
-    // Xác định loại lỗi để hiển thị đúng trong lịch sử
-    const loiType=res.coLoiGPS?'gps':(res.coLoiThuTu?'ca':'');
-    const ngayCham=res.ngayChamCong||new Date().toISOString().substring(0,10);
-    logs.unshift({
-      loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
-      time:res.timestamp.substring(11,19),
-      dist:res.khoangCach?res.khoangCach+'m':'--',
-      ok:!isLoi, xacNhan:isLoi?'KHÔNG HỢP LỆ':'OK',
-      ghiChu:'', loiType, tenCH:'', ngay:ngayCham,
-    });
-    renderLog();
-
-    if(res.canhBao&&res.canhBao.length>0){
-      // Có lỗi → mở modal giải trình, đếm ngược 5 phút
-      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-      const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ Chấm công cần xác nhận'
-                 :res.coLoiGPS?'⚠️ Xác nhận cửa hàng':'⚠️ Xác nhận ca làm việc';
-      const sub=res.coLoiGPS
-        ?'Thông tin chấm công tại cửa hàng này cần được xác nhận. Vui lòng giải trình để quản lý duyệt.'
-        :'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      openGiaiTrinh(title,sub,ngayCham);
-      startGtTimer(300); // 5 phút
-    } else {
-      // Chấm đúng → 15 giây reload
-      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-      startCountdown(15);
+    // [v10.6 LỚP 1] Nếu server chuyển sang queue mode → poll kết quả
+    if(res && res.mode==='queued' && res.queueId){
+      _pollKetQuaChamCong(res.queueId);
+      return;
     }
+    // Không queue → xử lý kết quả sync như cũ
+    _xuLyKetQuaChamCong(res);
   }).catch(()=>{
     state.submitting=false;
     setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
     const rb=document.getElementById('result-box');rb.style.display='block';
     rb.className='result-box r-err';rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';
   });
+}
+
+// [v10.6 LỚP 1] Poll kết quả chấm công (queue mode)
+// - Hiện toast "Đã ghi nhận, đang xử lý..." ngay lập tức → UI free
+// - Poll mỗi 2s, tối đa 60s (30 lần)
+// - DONE → xử lý kết quả
+// - ERROR → báo lỗi
+// - TIMEOUT → báo "đang xử lý, vui lòng kiểm tra lại sau"
+function _pollKetQuaChamCong(queueId){
+  // Hiển thị trạng thái "đã ghi nhận" để user thấy app đã nhận yêu cầu
+  setBtn('s-loading','✓ Đã ghi nhận · đang xử lý...');
+  document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>✓ Đã ghi nhận · đang xử lý...';
+  const rb=document.getElementById('result-box');rb.style.display='block';
+  rb.className='result-box r-info';
+  rb.innerHTML='<strong>'+state.loai+'</strong> đã ghi nhận lúc '+new Date().toTimeString().substring(0,8)+' · đang cập nhật GPS và log...';
+
+  let lanPoll=0;
+  const MAX_POLL=30; // 30 × 2s = 60s
+  const iv=setInterval(()=>{
+    lanPoll++;
+    fetch(SCRIPT_URL+'?type=queue_status&id='+encodeURIComponent(queueId))
+    .then(r=>r.json()).then(st=>{
+      if(!st)return;
+      if(st.status==='DONE' && st.ketQua){
+        clearInterval(iv);
+        _xuLyKetQuaChamCong(st.ketQua);
+      } else if(st.status==='ERROR'){
+        clearInterval(iv);
+        state.submitting=false;
+        setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
+        rb.className='result-box r-err';
+        rb.textContent='✕ Lỗi xử lý: '+(st.loi||'Không rõ');
+      } else if(lanPoll>=MAX_POLL){
+        clearInterval(iv);
+        // Timeout nhưng không phải lỗi — server vẫn đang xử lý. Coi như thành công tạm.
+        state.submitting=false;state.submitted=true;
+        setBtn('s-done','✓ Đã ghi nhận · đang đồng bộ');
+        rb.className='result-box r-warn';
+        rb.innerHTML='<strong>'+state.loai+'</strong> đã được ghi nhận. Hệ thống đang xử lý ngầm — bạn có thể tắt app, kết quả sẽ cập nhật trong vài phút.';
+        // Không mở giải trình (không biết có lỗi GPS/ca không) — user tự kiểm tra trong tab Giờ công
+        startCountdown(20);
+      }
+      // status PENDING/PROCESSING → tiếp tục poll
+    }).catch(()=>{});
+  },2000);
+}
+
+function _xuLyKetQuaChamCong(res){
+  state.submitting=false;state.submitted=true;
+  setBtn('s-done','✓ Đã chấm công thành công');
+  const rb=document.getElementById('result-box');rb.style.display='block';
+  if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
+  else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo QLNS';}
+  else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
+
+  const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+  const isLoi=res.canhBao&&res.canhBao.length>0;
+  const loiType=res.coLoiGPS?'gps':(res.coLoiThuTu?'ca':'');
+  const ngayCham=res.ngayChamCong||new Date().toISOString().substring(0,10);
+  logs.unshift({
+    loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
+    time:res.timestamp.substring(11,19),
+    dist:res.khoangCach?res.khoangCach+'m':'--',
+    ok:!isLoi, xacNhan:isLoi?'KHÔNG HỢP LỆ':'OK',
+    ghiChu:'', loiType, tenCH:'', ngay:ngayCham,
+  });
+  renderLog();
+
+  if(res.canhBao&&res.canhBao.length>0){
+    if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
+    const title=res.coLoiGPS&&res.coLoiThuTu?'⚠️ Chấm công cần xác nhận'
+               :res.coLoiGPS?'⚠️ Xác nhận cửa hàng':'⚠️ Xác nhận ca làm việc';
+    const sub=res.coLoiGPS
+      ?'Thông tin chấm công tại cửa hàng này cần được xác nhận. Vui lòng giải trình để quản lý duyệt.'
+      :'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
+    openGiaiTrinh(title,sub,ngayCham);
+    startGtTimer(300);
+  } else {
+    if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
+    startCountdown(15);
+  }
 }
 
 // ─── COUNTDOWN (reload trang) ────────────────────────────────
