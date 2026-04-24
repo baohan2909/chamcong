@@ -807,6 +807,215 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 @keyframes slideOutUp  { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
 .lc-day-editor.open  { animation:slideInDown .18s ease; }
 
+/* ═══════════════════════════════════════════════════════════════════ */
+/* [v11] MODULE BÁN HÀNG — CSS isolated với prefix bh-                  */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+#page-banhang { padding-bottom: 80px; }
+
+/* ── Header cửa hàng (view CH) ─────────────────────────── */
+.bh-ch-header { background:#fff; padding:14px 16px 12px; border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:10; }
+.bh-ch-header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:10px; }
+.bh-ch-name { font-size:16px; font-weight:600; color:var(--text); line-height:1.2; }
+.bh-ch-sub { font-size:11px; color:var(--text-m); margin-top:2px; }
+.bh-ch-time { font-size:14px; font-weight:500; color:var(--text); font-variant-numeric:tabular-nums; }
+.bh-ch-sound { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px; background:var(--gray-lt); font-size:11px; color:var(--text-m); cursor:pointer; border:none; margin-top:4px; }
+.bh-ch-sound svg { width:12px; height:12px; }
+
+/* Stats */
+.bh-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.bh-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; }
+.bh-stat.red { background:var(--red-lt); }
+.bh-stat.green { background:var(--green-lt); }
+.bh-stat.blue { background:var(--blue-lt); }
+.bh-stat.gray { background:var(--gray-lt); }
+.bh-stat-num { font-size:18px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; color:var(--text); }
+.bh-stat.red .bh-stat-num { color:var(--red); }
+.bh-stat.green .bh-stat-num { color:var(--green); }
+.bh-stat.blue .bh-stat-num { color:var(--blue); }
+.bh-stat-label { font-size:10px; margin-top:3px; color:var(--text-m); font-weight:500; }
+
+/* Warn banner */
+.bh-warn { margin:10px 12px 0; background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:10px; font-size:12px; display:flex; align-items:center; gap:6px; border:0.5px solid #FCD34D; }
+.bh-warn svg { flex-shrink:0; }
+
+/* Sessions list */
+.bh-sessions { padding:12px; }
+
+/* Empty state */
+.bh-empty { text-align:center; padding:50px 20px; color:var(--text-m); }
+.bh-empty-title { font-size:15px; font-weight:500; color:var(--text); margin-bottom:4px; }
+.bh-empty-sub { font-size:13px; color:var(--text-m); }
+
+/* Session card */
+.bh-card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:14px; margin-bottom:10px; border-left:3px solid var(--red); position:relative; overflow:hidden; animation:bhSlideIn 0.3s ease-out; }
+.bh-card.finished { opacity:0.5; animation:bhSlideOut 0.5s ease-in forwards; pointer-events:none; }
+@keyframes bhSlideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes bhSlideOut { to { opacity:0; transform:scale(0.95); max-height:0; margin:0; padding:0; } }
+
+.bh-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.bh-card-title { display:flex; align-items:center; gap:8px; }
+.bh-dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation:bhBlink 1.2s ease-in-out infinite; flex-shrink:0; }
+@keyframes bhBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.bh-session-num { font-size:15px; font-weight:600; color:var(--text); }
+.bh-session-meta { font-size:11px; color:var(--text-m); margin-top:1px; }
+.bh-timer { font-family:'SF Mono','JetBrains Mono',Menlo,Consolas,monospace; font-size:16px; font-weight:600; color:var(--red); font-variant-numeric:tabular-nums; padding:3px 8px; background:var(--red-lt); border-radius:6px; }
+.bh-timer.warn { color:#CA8A04; background:#FEF3C7; animation:bhPulse 1.5s infinite; }
+.bh-timer.danger { color:var(--red); background:var(--red-lt); animation:bhPulse 1s infinite; }
+@keyframes bhPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.bh-chips-label { font-size:11px; color:var(--text-m); margin-bottom:6px; display:flex; align-items:center; gap:4px; font-weight:500; }
+.bh-chips-label svg { width:12px; height:12px; }
+.bh-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.bh-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:999px; background:var(--blue-lt); color:var(--blue); font-weight:500; }
+.bh-chip .rm { cursor:pointer; opacity:0.7; font-weight:700; padding:0 2px; }
+.bh-chip.cust { background:var(--purple-lt); color:var(--purple); }
+.bh-chip.add { background:var(--gray-lt); color:var(--text-m); cursor:pointer; border:1px dashed rgba(0,0,0,0.15); }
+.bh-chip.add:active { background:#E5E7EB; }
+
+.bh-actions { display:flex; gap:8px; margin-top:10px; }
+.bh-btn { padding:11px; border-radius:10px; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; transition:transform 0.1s ease, background 0.15s ease; border:none; cursor:pointer; }
+.bh-btn svg { width:16px; height:16px; }
+.bh-btn:active { transform:scale(0.97); }
+.bh-btn-success { background:var(--green); color:#fff; flex:1; }
+.bh-btn-success:active { background:var(--green-m); }
+.bh-btn-secondary { background:#fff; color:var(--text-m); border:1px solid rgba(0,0,0,0.15); flex:1; }
+.bh-btn-secondary:active { background:var(--gray-lt); }
+.bh-btn-danger-solid { background:#6B7280; color:#fff; flex:1; }
+.bh-btn-danger-solid:active { background:#4B5563; }
+
+/* Footer CH */
+.bh-footer { background:#fff; border-top:0.5px solid var(--border); padding:12px 16px; position:sticky; bottom:0; z-index:5; }
+.bh-btn-primary { width:100%; background:#F97316; color:#fff; padding:15px; border-radius:14px; font-size:15px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(249,115,22,0.25); transition:transform 0.1s, background 0.15s; border:none; cursor:pointer; }
+.bh-btn-primary:active { transform:scale(0.98); background:#EA580C; }
+.bh-btn-primary:disabled { opacity:0.5; }
+.bh-footer-link { text-align:center; margin-top:8px; font-size:12px; color:var(--text-m); cursor:pointer; padding:4px; }
+.bh-footer-link:active { color:var(--text); }
+
+/* ── VIEW QLBH ─────────────────────────────────────────── */
+.bh-ql-header { background:#fff; padding:14px 16px 0; border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:10; }
+.bh-ql-title { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:600; color:var(--text); margin-bottom:12px; }
+.bh-ql-title svg { color:var(--green); }
+.bh-ql-tabs { display:flex; gap:4px; }
+.bh-ql-tab { flex:1; padding:10px 8px; border:none; background:transparent; border-bottom:2px solid transparent; font-size:13px; font-weight:500; color:var(--text-m); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; }
+.bh-ql-tab.active { color:var(--green); border-bottom-color:var(--green); font-weight:600; }
+.bh-ql-tab-count { font-size:10px; background:var(--gray-lt); color:var(--text-m); padding:1px 6px; border-radius:8px; font-weight:600; }
+.bh-ql-tab.active .bh-ql-tab-count { background:var(--green-lt); color:var(--green); }
+.bh-live-dot { width:6px; height:6px; background:var(--red); border-radius:50%; display:inline-block; animation:bhBlink 1s infinite; }
+
+.bh-ql-filter { display:flex; gap:8px; padding:10px 12px; background:var(--gray-lt); }
+.bh-ql-filter select, .bh-ql-filter input { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#fff; min-width:0; }
+.bh-ql-daterange { padding:8px 12px; background:var(--gray-lt); border-top:0.5px solid var(--border); }
+.bh-ql-daterange input[type=date] { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:#fff; }
+.bh-ql-refresh { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+.bh-ql-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:10px 12px; }
+.bh-ql-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; }
+.bh-ql-stat .n { font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; }
+.bh-ql-stat .l { font-size:10px; color:var(--text-m); margin-top:3px; font-weight:500; }
+.bh-ql-stat.red { background:var(--red-lt); } .bh-ql-stat.red .n { color:var(--red); }
+.bh-ql-stat.green { background:var(--green-lt); } .bh-ql-stat.green .n { color:var(--green); }
+.bh-ql-stat.blue { background:var(--blue-lt); } .bh-ql-stat.blue .n { color:var(--blue); }
+.bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
+
+.bh-ql-content { padding:12px; }
+
+/* Card live (QLBH xem) */
+.bh-live-card { background:#fff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:12px 14px; margin-bottom:8px; border-left:3px solid var(--red); cursor:pointer; }
+.bh-live-card:active { background:var(--gray-lt); }
+.bh-live-card.hot { border-left-color:#F97316; background:#FFF7ED; }
+.bh-live-card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.bh-live-ch { font-size:14px; font-weight:600; color:var(--text); }
+.bh-live-ch-meta { font-size:11px; color:var(--text-m); margin-top:1px; }
+.bh-live-timer { font-family:monospace; font-size:14px; font-weight:600; color:var(--red); padding:2px 6px; background:var(--red-lt); border-radius:5px; }
+.bh-live-sp { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.bh-live-sp .bh-chip { font-size:11px; padding:2px 8px; }
+
+/* Card history/finished */
+.bh-hist-card { background:#fff; border-radius:10px; box-shadow:0 1px 2px rgba(0,0,0,0.04); padding:10px 12px; margin-bottom:6px; display:flex; gap:10px; align-items:center; cursor:pointer; }
+.bh-hist-card:active { background:var(--gray-lt); }
+.bh-hist-status { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.bh-hist-status.bought { background:var(--green); }
+.bh-hist-status.notbought { background:var(--gray); }
+.bh-hist-status.auto { background:var(--amber); }
+.bh-hist-info { flex:1; min-width:0; }
+.bh-hist-ch { font-size:13px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bh-hist-meta { font-size:11px; color:var(--text-m); margin-top:2px; }
+.bh-hist-time { font-size:11px; color:var(--text-m); text-align:right; flex-shrink:0; }
+
+/* Dashboard items */
+.bh-dash-section { background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+.bh-dash-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.bh-dash-bar-item { display:flex; align-items:center; gap:8px; padding:6px 0; font-size:12px; }
+.bh-dash-bar-label { flex:1; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bh-dash-bar-count { color:var(--text-m); font-weight:500; min-width:30px; text-align:right; }
+.bh-dash-bar-fill { height:4px; background:var(--green-lt); border-radius:2px; margin-top:3px; overflow:hidden; }
+.bh-dash-bar-fill > div { height:100%; background:var(--green); border-radius:2px; }
+
+/* ── MODAL SHARED ────────────────────────────────────── */
+.bh-modal-bd { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:900; opacity:0; pointer-events:none; transition:opacity 0.25s ease; }
+.bh-modal-bd.show { opacity:1; pointer-events:auto; }
+.bh-modal { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top-left-radius:24px; border-top-right-radius:24px; max-height:88vh; z-index:901; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1); display:flex; flex-direction:column; max-width:430px; margin:0 auto; }
+.bh-modal.show { transform:translateY(0); }
+.bh-md-handle { width:36px; height:4px; background:rgba(0,0,0,0.15); border-radius:2px; margin:10px auto 6px; flex-shrink:0; }
+.bh-md-header { padding:8px 20px 16px; border-bottom:0.5px solid var(--border); flex-shrink:0; }
+.bh-md-title { font-size:17px; font-weight:600; color:var(--text); }
+.bh-md-sub { font-size:12px; color:var(--text-m); margin-top:2px; }
+.bh-md-body { flex:1; overflow-y:auto; padding:16px 20px; -webkit-overflow-scrolling:touch; }
+.bh-md-footer { padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:0.5px solid var(--border); display:flex; gap:8px; flex-shrink:0; background:#fff; }
+
+/* Search in modal */
+.bh-search-box { position:relative; margin-bottom:12px; }
+.bh-search-input { width:100%; padding:12px 14px 12px 40px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; font-size:15px; background:var(--gray-lt); }
+.bh-search-input:focus { outline:none; border-color:#F97316; background:#fff; }
+.bh-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-lt); pointer-events:none; }
+
+/* SP list in modal */
+.bh-sp-list { max-height:280px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:#fff; }
+.bh-sp-item { padding:10px 12px; border-bottom:0.5px solid rgba(0,0,0,0.06); cursor:pointer; }
+.bh-sp-item:last-child { border-bottom:none; }
+.bh-sp-item:active { background:var(--gray-lt); }
+.bh-sp-item.selected { background:var(--blue-lt); }
+.bh-sp-name { font-size:14px; font-weight:500; color:var(--text); }
+.bh-sp-meta { font-size:11px; color:var(--text-m); margin-top:2px; display:flex; gap:8px; }
+.bh-sp-meta .sku { font-family:monospace; }
+.bh-sp-meta .price { color:var(--green); font-weight:500; }
+
+/* Customer count */
+.bh-cust-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.bh-cust-btn { padding:14px; border-radius:10px; background:var(--gray-lt); border:2px solid transparent; font-size:16px; font-weight:600; color:var(--text); cursor:pointer; }
+.bh-cust-btn.active { background:var(--purple-lt); border-color:var(--purple); color:var(--purple); }
+.bh-cust-btn:active { transform:scale(0.96); }
+
+/* Reason */
+.bh-reason-list { display:flex; flex-direction:column; gap:6px; }
+.bh-reason-item { padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; display:flex; align-items:center; gap:10px; cursor:pointer; transition:all 0.15s; font-size:14px; color:var(--text); }
+.bh-reason-item:active { transform:scale(0.99); }
+.bh-reason-item.selected { border-color:#F97316; background:#FFF7ED; }
+.bh-reason-radio { width:18px; height:18px; border:2px solid rgba(0,0,0,0.2); border-radius:50%; flex-shrink:0; position:relative; }
+.bh-reason-item.selected .bh-reason-radio { border-color:#F97316; }
+.bh-reason-item.selected .bh-reason-radio::after { content:''; position:absolute; inset:3px; background:#F97316; border-radius:50%; }
+
+/* Textarea */
+.bh-textarea { width:100%; padding:12px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; font-size:14px; resize:none; background:#fff; min-height:70px; font-family:inherit; }
+.bh-textarea:focus { outline:none; border-color:#F97316; }
+
+.bh-field-label { font-size:13px; color:var(--text); margin-bottom:6px; margin-top:14px; font-weight:500; }
+.bh-field-label:first-child { margin-top:0; }
+.bh-optional { font-size:11px; color:var(--text-lt); font-weight:400; }
+
+.bh-input-money { width:100%; padding:12px 14px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; font-size:15px; font-weight:500; text-align:right; font-variant-numeric:tabular-nums; }
+.bh-input-money:focus { outline:none; border-color:#F97316; }
+
+/* Toast */
+.bh-toast { background:var(--text); color:#fff; padding:10px 16px; border-radius:22px; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow); animation:bhToastIn 0.3s ease-out; max-width:90%; pointer-events:auto; }
+.bh-toast svg { width:14px; height:14px; flex-shrink:0; }
+.bh-toast.success { background:var(--green); }
+@keyframes bhToastIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.bh-toast.out { animation:bhToastOut 0.25s ease-in forwards; }
+@keyframes bhToastOut { to { opacity:0; transform:translateY(10px); } }
+.bh-toast .undo { color:#FDBA74; font-weight:600; cursor:pointer; margin-left:4px; }
+
 </style>
 </head>
 <body>
@@ -815,13 +1024,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 <div id="login-screen">
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
-    <div class="login-title">CHẤM CÔNG</div>
-    <div class="login-sub">Hệ thống quản lý thời gian làm việc</div>
+    <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng</div>
   </div>
   <div class="login-box">
     <div class="login-field">
-      <label>Mã nhân viên</label>
-      <input class="login-input" id="ln-ma" type="text" placeholder="VD: NS01242" autocomplete="username"
+      <label>Mã đăng nhập</label>
+      <input class="login-input" id="ln-ma" type="text" placeholder="Mã NV (VD: NS01242) hoặc Mã CH (VD: CH015)" autocomplete="username"
              oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')document.getElementById('ln-pw').focus()">
     </div>
     <div class="login-field" style="margin-bottom:20px">
@@ -1596,6 +1805,249 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div id="yc-content"><div class="dnp-empty">⏳ Đang tải...</div></div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- [v11] PAGE: BÁN HÀNG (2 views: CH thao tác, QLBH giám sát)    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-banhang">
+
+    <!-- ═══ VIEW CH: THAO TÁC ĐA PHIÊN ═══ -->
+    <div id="bh-view-ch" style="display:none">
+      <div class="bh-ch-header">
+        <div class="bh-ch-header-top">
+          <div>
+            <div class="bh-ch-name" id="bh-ch-name">--</div>
+            <div class="bh-ch-sub" id="bh-ch-sub">--</div>
+          </div>
+          <div style="text-align:right">
+            <div class="bh-ch-time" id="bh-ch-time">--:--</div>
+            <button class="bh-ch-sound" id="bh-sound-toggle" onclick="bhToggleSound()">
+              <svg id="bh-sound-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              <span id="bh-sound-label">Bật</span>
+            </button>
+          </div>
+        </div>
+        <div class="bh-stats">
+          <div class="bh-stat red"><div class="bh-stat-num" id="bh-stat-selling">0</div><div class="bh-stat-label">đang bán</div></div>
+          <div class="bh-stat green"><div class="bh-stat-num" id="bh-stat-bought">0</div><div class="bh-stat-label">đã mua</div></div>
+          <div class="bh-stat gray"><div class="bh-stat-num" id="bh-stat-notbought">0</div><div class="bh-stat-label">chưa mua</div></div>
+          <div class="bh-stat blue"><div class="bh-stat-num" id="bh-stat-rate">–</div><div class="bh-stat-label">tỷ lệ</div></div>
+        </div>
+      </div>
+
+      <div class="bh-warn" id="bh-warn" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span id="bh-warn-text">Đang có nhiều phiên cùng lúc</span>
+      </div>
+
+      <div class="bh-sessions" id="bh-sessions">
+        <div class="bh-empty" id="bh-empty">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4;margin-bottom:12px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <div class="bh-empty-title">Chưa có phiên nào</div>
+          <div class="bh-empty-sub">Bấm nút bên dưới khi có khách vào</div>
+        </div>
+      </div>
+
+      <div class="bh-footer">
+        <button class="bh-btn-primary" onclick="bhBatDauPhien()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Bắt đầu phiên mới</span>
+        </button>
+        <div class="bh-footer-link" onclick="bhXemLichSu()">Xem lịch sử hôm nay →</div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW QLBH: GIÁM SÁT ═══ -->
+    <div id="bh-view-qlbh" style="display:none">
+      <div class="bh-ql-header">
+        <div class="bh-ql-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Giám sát bán hàng</span>
+        </div>
+        <div class="bh-ql-tabs">
+          <button class="bh-ql-tab active" id="bh-ql-tab-live" onclick="bhQlSwitchTab('live')">
+            <span class="bh-live-dot"></span>
+            <span>LIVE</span>
+            <span class="bh-ql-tab-count" id="bh-ql-count-live">0</span>
+          </button>
+          <button class="bh-ql-tab" id="bh-ql-tab-history" onclick="bhQlSwitchTab('history')">
+            <span>Lịch sử</span>
+            <span class="bh-ql-tab-count" id="bh-ql-count-history">0</span>
+          </button>
+          <button class="bh-ql-tab" id="bh-ql-tab-dashboard" onclick="bhQlSwitchTab('dashboard')">
+            <span>Dashboard</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="bh-ql-filter">
+        <select id="bh-ql-kv" onchange="bhQlReload()">
+          <option value="">Tất cả khu vực</option>
+        </select>
+        <input type="text" id="bh-ql-q" placeholder="Tìm mã CH, tên CH, SP..." oninput="bhQlDebouncedReload()">
+      </div>
+      <div class="bh-ql-daterange" id="bh-ql-daterange" style="display:none">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="date" id="bh-ql-tu" onchange="bhQlReload()">
+          <span style="color:var(--text-m);font-size:12px">đến</span>
+          <input type="date" id="bh-ql-den" onchange="bhQlReload()">
+          <button class="bh-ql-refresh" onclick="bhQlReload()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats tổng quan -->
+      <div class="bh-ql-stats" id="bh-ql-stats">
+        <div class="bh-ql-stat red"><div class="n" id="bh-ql-stat-live">0</div><div class="l">đang bán</div></div>
+        <div class="bh-ql-stat green"><div class="n" id="bh-ql-stat-bought">0</div><div class="l">đã mua</div></div>
+        <div class="bh-ql-stat gray"><div class="n" id="bh-ql-stat-notbought">0</div><div class="l">chưa mua</div></div>
+        <div class="bh-ql-stat blue"><div class="n" id="bh-ql-stat-rate">–</div><div class="l">tỷ lệ</div></div>
+      </div>
+
+      <!-- Content area -->
+      <div class="bh-ql-content" id="bh-ql-content-live"></div>
+      <div class="bh-ql-content" id="bh-ql-content-history" style="display:none"></div>
+      <div class="bh-ql-content" id="bh-ql-content-dashboard" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <!-- ═══ MODAL: SP QUAN TÂM (cho CH) ═══ -->
+  <div class="bh-modal-bd" id="bh-md-sp-bd"></div>
+  <div class="bh-modal" id="bh-md-sp">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title">Sản phẩm đang tư vấn</div>
+      <div class="bh-md-sub" id="bh-md-sp-sub">Phiên #–</div>
+    </div>
+    <div class="bh-md-body">
+      <div class="bh-search-box">
+        <svg class="bh-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="bh-search-input" id="bh-sp-search" placeholder="Tên, SKU, hoặc mã vạch..." type="text">
+      </div>
+      <div class="bh-chips" id="bh-sp-selected" style="margin-bottom:12px"></div>
+      <div class="bh-sp-list" id="bh-sp-list"><div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhập từ khóa để tìm SP</div></div>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('sp')">Hủy</button>
+      <button class="bh-btn bh-btn-success" onclick="bhSpConfirm()">Lưu</button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: SỐ LƯỢNG KHÁCH ═══ -->
+  <div class="bh-modal-bd" id="bh-md-cust-bd"></div>
+  <div class="bh-modal" id="bh-md-cust">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title">Số lượng khách</div>
+      <div class="bh-md-sub" id="bh-md-cust-sub">Phiên #–</div>
+    </div>
+    <div class="bh-md-body">
+      <div class="bh-cust-buttons">
+        <button class="bh-cust-btn" data-n="1" onclick="bhPickCust(1)">1</button>
+        <button class="bh-cust-btn" data-n="2" onclick="bhPickCust(2)">2</button>
+        <button class="bh-cust-btn" data-n="3" onclick="bhPickCust(3)">3</button>
+        <button class="bh-cust-btn" data-n="4" onclick="bhPickCust(4)">4+</button>
+      </div>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('cust')">Hủy</button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: KẾT THÚC - ĐÃ MUA ═══ -->
+  <div class="bh-modal-bd" id="bh-md-bought-bd"></div>
+  <div class="bh-modal" id="bh-md-bought">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title" style="color:var(--ok)">Khách đã mua</div>
+      <div class="bh-md-sub" id="bh-md-bought-sub">Phiên #–</div>
+    </div>
+    <div class="bh-md-body">
+      <div class="bh-field-label">Sản phẩm khách đã mua</div>
+      <div class="bh-search-box">
+        <svg class="bh-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="bh-search-input" id="bh-bought-search" placeholder="Tên, SKU, mã vạch..." type="text">
+      </div>
+      <div class="bh-chips" id="bh-bought-selected" style="margin-bottom:8px"></div>
+      <div class="bh-sp-list" id="bh-bought-list" style="max-height:160px"><div style="padding:14px;text-align:center;color:var(--text-m);font-size:12px">Nhập từ khóa để tìm SP</div></div>
+
+      <div class="bh-field-label">Giá trị đơn <span class="bh-optional">(tùy chọn)</span></div>
+      <input class="bh-input-money" id="bh-bought-money" placeholder="0" type="text" inputmode="numeric">
+
+      <div class="bh-field-label">Ghi chú <span class="bh-optional">(tùy chọn)</span></div>
+      <textarea class="bh-textarea" id="bh-bought-note" placeholder="Khách có phản hồi gì đặc biệt..."></textarea>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('bought')">Hủy</button>
+      <button class="bh-btn bh-btn-success" onclick="bhBoughtConfirm()">Xác nhận</button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: KẾT THÚC - CHƯA MUA ═══ -->
+  <div class="bh-modal-bd" id="bh-md-notbought-bd"></div>
+  <div class="bh-modal" id="bh-md-notbought">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title" style="color:var(--text-d)">Khách chưa mua</div>
+      <div class="bh-md-sub" id="bh-md-notbought-sub">Phiên #–</div>
+    </div>
+    <div class="bh-md-body">
+      <div class="bh-field-label">Lý do chính <span class="bh-optional">(chọn 1)</span></div>
+      <div class="bh-reason-list">
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Giá cao hơn dự kiến')"><div class="bh-reason-radio"></div><div>Giá cao hơn dự kiến</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Không có mẫu/màu/size phù hợp')"><div class="bh-reason-radio"></div><div>Không có mẫu/màu/size phù hợp</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'So sánh nơi khác, cần cân nhắc')"><div class="bh-reason-radio"></div><div>So sánh nơi khác, cần cân nhắc</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Chỉ xem tham khảo')"><div class="bh-reason-radio"></div><div>Chỉ xem tham khảo, chưa có nhu cầu</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Chất lượng/chức năng không đáp ứng')"><div class="bh-reason-radio"></div><div>Chất lượng/chức năng không đáp ứng</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Tư vấn chưa phù hợp')"><div class="bh-reason-radio"></div><div>Tư vấn chưa phù hợp</div></div>
+        <div class="bh-reason-item" onclick="bhPickReason(this,'Khác')"><div class="bh-reason-radio"></div><div>Lý do khác</div></div>
+      </div>
+      <div class="bh-field-label">Ghi chú thêm <span class="bh-optional">(tùy chọn)</span></div>
+      <textarea class="bh-textarea" id="bh-notbought-note" placeholder="Khách quan tâm SP nào, có hẹn quay lại không..."></textarea>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('notbought')">Hủy</button>
+      <button class="bh-btn bh-btn-danger-solid" id="bh-notbought-btn" onclick="bhNotboughtConfirm()">Xác nhận</button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: LỊCH SỬ HÔM NAY ═══ -->
+  <div class="bh-modal-bd" id="bh-md-history-bd"></div>
+  <div class="bh-modal" id="bh-md-history">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title">Lịch sử hôm nay</div>
+      <div class="bh-md-sub" id="bh-md-history-sub">--</div>
+    </div>
+    <div class="bh-md-body" id="bh-history-body">
+      <div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" style="flex:1" onclick="bhCloseModal('history')">Đóng</button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: CHI TIẾT PHIÊN (cho QLBH) ═══ -->
+  <div class="bh-modal-bd" id="bh-md-detail-bd"></div>
+  <div class="bh-modal" id="bh-md-detail">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title" id="bh-md-detail-title">Chi tiết phiên</div>
+      <div class="bh-md-sub" id="bh-md-detail-sub">--</div>
+    </div>
+    <div class="bh-md-body" id="bh-md-detail-body">
+      <div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">--</div>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" style="flex:1" onclick="bhCloseModal('detail')">Đóng</button>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST CHO BÁN HÀNG ═══ -->
+  <div id="bh-toast-wrap" style="position:fixed;bottom:100px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:200;pointer-events:none"></div>
+
   <!-- PAGE: BẢN ĐỒ CHỈ ĐƯỜNG -->
   <div class="page" id="page-bandochidung">
     <div class="map-search-wrap">
@@ -1664,6 +2116,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="nav-label">Lịch</div>
       <span class="nav-badge" id="lc-nav-badge" style="display:none"></span>
     </button>
+    <!-- [v11] Tab Bán hàng — hiện khi vaiTro=CUA_HANG hoặc QLBH -->
+    <button class="nav-item" id="nav-banhang" onclick="goToPage('banhang')" style="display:none">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <div class="nav-label">Bán hàng</div>
+      <span class="nav-badge" id="bh-nav-badge" style="display:none"></span>
+    </button>
     <button class="nav-item" id="nav-taikhoan" onclick="goToPage('taikhoan')">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <div class="nav-label">Tài khoản</div>
@@ -1672,15 +2130,27 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbz0l75w8eDAfQtpYuMkz68_hid8HX4GTw2yS28LMWS4eixbg7YDaSq2EzXJ2vF_ZsvH/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw7IuJdWv0KsrmAjCzavfWtxZSAVCDJ_wfFaA2mVfxON0UrxodO3RnTc_NsJwPZSddc/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
 // Wrap fetch gốc để tự thêm `_t=<ts>` vào mọi GET tới SCRIPT_URL
+// [v11] Ngoài ra: nếu role=CUA_HANG → tự inject cuaHang=<maCH> để lọc phạm vi
 const _fetchGoc = window.fetch.bind(window);
 window.fetch = function(url, opts){
   if(typeof url === 'string' && url.indexOf(SCRIPT_URL) === 0 && (!opts || (opts.method||'GET').toUpperCase()==='GET')){
     url += (url.indexOf('?')>=0 ? '&' : '?') + '_t' + '=' + Date.now();
+
+    // [v11] Inject cuaHang filter cho role CUA_HANG (chỉ cho các endpoint liên quan)
+    try {
+      if (window.SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
+        // Danh sách endpoint cần lọc theo CH
+        const needFilterCH = /type=(nhansu|lichca_ql|don_nghi_phep|dashboard|duyet_yeu_cau)(&|$)/.test(url);
+        if (needFilterCH && !/[&?]cuaHang=/.test(url) && !/[&?]maCH=/.test(url)) {
+          url += '&cuaHang=' + encodeURIComponent(SESSION.cuaHangMa);
+        }
+      }
+    } catch(e){}
   }
   return _fetchGoc(url, opts);
 };
@@ -1844,6 +2314,8 @@ const PAGE_TITLES={
   'duyetyc':   'DUYỆT YÊU CẦU',
   // [v10.1]
   'giaodien':  'GIAO DIỆN',
+  // [v11]
+  'banhang':   'BÁN HÀNG',
 };
 function goToPage(page){
   currentPage=page;
@@ -1871,6 +2343,7 @@ function goToPage(page){
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
   if(page==='giaodien')    _capNhatGDUI(); // [v10.5]
+  if(page==='banhang')     bhInitPage();    // [v11] Init module bán hàng
   if(page!=='nhansu') stopNSPolling();
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
@@ -1941,12 +2414,50 @@ function khoiDongApp(){
 
   // Phân quyền QLNS/ADMIN
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
+  // [v11] Thêm: CUA_HANG và QLBH
+  const isCH  = SESSION.vaiTro==='CUA_HANG';
+  const isQLBH= SESSION.vaiTro==='QLBH';
+
   if(isQL){
     document.getElementById('nav-nhansu').style.display='';
     document.getElementById('menu-nhansu').style.display='';
     document.getElementById('menu-lichca-ql').style.display='';
     document.getElementById('menu-dashboard').style.display=''; // [FIX v9 #12]
     document.getElementById('menu-duyetyc').style.display='';   // [v10 Yc #5]
+  }
+
+  // [v11] Phân quyền CỬA HÀNG
+  if(isCH){
+    // Ẩn tab Chấm công và Bản đồ (CH không cần)
+    document.getElementById('nav-chamcong').style.display='none';
+    document.getElementById('nav-bandochidung').style.display='none';
+    // Hiện tab Bán hàng
+    document.getElementById('nav-banhang').style.display='';
+    // Hiện các tab quản lý trong phạm vi CH (Nhân sự, Dashboard nội bộ CH)
+    document.getElementById('nav-nhansu').style.display='';
+    document.getElementById('menu-nhansu').style.display='';
+    document.getElementById('menu-lichca-ql').style.display='';
+    document.getElementById('menu-dashboard').style.display='';
+    // CH KHÔNG có quyền duyệt yêu cầu → ẩn menu-duyetyc (giữ default hidden)
+    // Chuyển trang mặc định sang Bán hàng
+    setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
+  }
+
+  // [v11] Phân quyền QLBH (Quản lý bán hàng)
+  if(isQLBH){
+    // Ẩn tab Chấm công và Bản đồ (QLBH không làm nhân sự)
+    document.getElementById('nav-chamcong').style.display='none';
+    document.getElementById('nav-bandochidung').style.display='none';
+    document.getElementById('nav-lichca').style.display='none';
+    // Hiện tab Bán hàng và Nhân sự (chỉ xem)
+    document.getElementById('nav-banhang').style.display='';
+    document.getElementById('nav-nhansu').style.display='';
+    document.getElementById('menu-nhansu').style.display='';
+    // QLBH không duyệt, không quản lý lịch ca → KHÔNG hiện menu-duyetyc, menu-lichca-ql
+    // Dashboard vẫn hiện để xem tổng quan
+    document.getElementById('menu-dashboard').style.display='';
+    // Mặc định mở tab Bán hàng (giám sát)
+    setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
   }
 
   fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
@@ -2468,7 +2979,7 @@ function doDoiMatKhau(){
   if(moi.length<6){showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err');return;}
   if(moi!==xn){showPwMsg('Mật khẩu mới và xác nhận không khớp.','err');return;}
   btn.disabled=true;btn.textContent='Đang xử lý...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi})})
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi,vaiTro:SESSION.vaiTro})})
   .then(r=>r.json()).then(res=>{
     btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
     if(!res.success){showPwMsg(res.error,'err');return;}
@@ -5357,4 +5868,1058 @@ try{
 }catch(e){}
 
 // ─── End giao diện ───────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════
+// [v11] MODULE BÁN HÀNG
+// ═══════════════════════════════════════════════════════════════════
+</script>
+
+<script>
+
+// ═══════════════════════════════════════════════════════════════════
+// [v11] MODULE BÁN HÀNG — JavaScript client-side
+// Tất cả biến/hàm đều có prefix bh* để tránh xung đột với code cũ
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── STATE ─────────────────────────────────────────────────────
+const BH = {
+  sessions: [],           // [{idPhien, num, startMs, products, customers, status}]
+  counterToday: 0,        // STT hôm nay (reset đầu ngày)
+  statsToday: { bought: 0, notBought: 0 },
+  soundOn: true,
+  currentModal: null,
+  currentSessionId: null,
+  tempProducts: [],
+  tempReason: null,
+  tempSku: [],
+  clockInterval: null,
+  timerInterval: null,
+  // QLBH state
+  qlTab: 'live',         // live | history | dashboard
+  qlFilterKV: '',
+  qlFilterQ: '',
+  qlFilterMaCH: '',
+  qlFilterTuNgay: '',
+  qlFilterDenNgay: '',
+  qlReloadTimer: null,
+  qlAutoRefresh: null,
+};
+
+// ─── HELPERS ───────────────────────────────────────────────────
+function bhPad(n) { return n < 10 ? '0' + n : '' + n; }
+function bhFormatTime(sec) {
+  if (sec < 0) sec = 0;
+  const m = Math.floor(sec / 60), s = sec % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    return h + ':' + bhPad(m%60) + ':' + bhPad(s);
+  }
+  return bhPad(m) + ':' + bhPad(s);
+}
+function bhFormatMoney(n) {
+  return String(n || '').replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function bhEscHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function bhVibrate(ms) { if (navigator.vibrate) try{ navigator.vibrate(ms); }catch(e){} }
+function bhPlayBeep(freq, dur) {
+  if (!BH.soundOn) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.value = 0.08;
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur / 1000);
+    osc.start(); osc.stop(ctx.currentTime + dur / 1000);
+    setTimeout(() => ctx.close(), dur + 50);
+  } catch(e){}
+}
+
+function bhShowToast(text, type, undoFn) {
+  const wrap = document.getElementById('bh-toast-wrap');
+  if (!wrap) return;
+  const t = document.createElement('div');
+  t.className = 'bh-toast' + (type ? ' ' + type : '');
+  const icon = type === 'success'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  t.innerHTML = icon + '<span>' + bhEscHtml(text) + '</span>';
+  if (undoFn) {
+    const u = document.createElement('span');
+    u.className = 'undo'; u.textContent = 'Hoàn tác';
+    u.onclick = () => { undoFn(); t.classList.add('out'); setTimeout(() => t.remove(), 250); };
+    t.appendChild(u);
+  }
+  wrap.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 250); }, undoFn ? 8000 : 2500);
+}
+
+// ─── INIT PAGE khi vào tab Bán hàng ────────────────────────────
+function bhInitPage() {
+  if (!SESSION) return;
+  const viewCH = document.getElementById('bh-view-ch');
+  const viewQL = document.getElementById('bh-view-qlbh');
+  const isCH = SESSION.vaiTro === 'CUA_HANG';
+  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN';
+
+  if (isCH) {
+    viewCH.style.display = '';
+    viewQL.style.display = 'none';
+    bhInitViewCH();
+  } else if (isQLBH) {
+    viewCH.style.display = 'none';
+    viewQL.style.display = '';
+    bhInitViewQLBH();
+  } else {
+    // Các role khác không được vào đây
+    viewCH.style.display = 'none';
+    viewQL.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEW CH: BẮT ĐẦU, KẾT THÚC PHIÊN
+// ═══════════════════════════════════════════════════════════════════
+
+function bhInitViewCH() {
+  // Header info
+  document.getElementById('bh-ch-name').textContent = SESSION.cuaHangTen || SESSION.ten;
+  document.getElementById('bh-ch-sub').textContent = (SESSION.ma || '') + (SESSION.khuVuc ? ' · ' + SESSION.khuVuc : '');
+
+  // Clock
+  bhUpdateClock();
+  if (!BH.clockInterval) BH.clockInterval = setInterval(bhUpdateClock, 1000);
+
+  // Timer cho các phiên
+  if (!BH.timerInterval) BH.timerInterval = setInterval(bhTickTimers, 1000);
+
+  // Restore sound preference
+  try {
+    const s = localStorage.getItem('bh_sound');
+    if (s !== null) BH.soundOn = s === '1';
+  } catch(e){}
+  bhUpdateSoundUI();
+
+  // Load phiên đang bán từ server
+  bhLoadPhienDangBan();
+}
+
+function bhUpdateClock() {
+  const d = new Date();
+  const tEl = document.getElementById('bh-ch-time');
+  if (tEl) tEl.textContent = bhPad(d.getHours()) + ':' + bhPad(d.getMinutes());
+}
+
+function bhToggleSound() {
+  BH.soundOn = !BH.soundOn;
+  try { localStorage.setItem('bh_sound', BH.soundOn ? '1' : '0'); } catch(e){}
+  bhUpdateSoundUI();
+  if (BH.soundOn) bhPlayBeep(600, 80);
+}
+function bhUpdateSoundUI() {
+  const lbl = document.getElementById('bh-sound-label');
+  const icon = document.getElementById('bh-sound-icon');
+  if (lbl) lbl.textContent = BH.soundOn ? 'Bật' : 'Tắt';
+  if (icon) {
+    icon.innerHTML = BH.soundOn
+      ? '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>'
+      : '<path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+  }
+}
+
+// ─── LOAD phiên đang bán từ server (khi vào tab hoặc reload) ──
+async function bhLoadPhienDangBan() {
+  if (!SESSION.cuaHangMa) return;
+  try {
+    const r = await fetch(SCRIPT_URL + '?type=phien_dang_ban&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
+    const d = await r.json();
+    const list = d.phienList || [];
+    // Mapping sang local state
+    BH.sessions = list.map((p, idx) => {
+      // Parse startMs từ ngày + giờ bắt đầu
+      let startMs = Date.now();
+      try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){}
+      return {
+        idPhien: p.idPhien,
+        num: p.stt,
+        startMs,
+        products: p.spQuanTam || [],
+        customers: p.soKhach ? parseInt(p.soKhach) : null,
+        status: 'selling'
+      };
+    });
+    // Update counter
+    if (BH.sessions.length > 0) {
+      BH.counterToday = Math.max(...BH.sessions.map(s => s.num || 0));
+    }
+    bhLoadStatsToday();
+    bhRenderSessions();
+    bhUpdateStats();
+  } catch(e) {
+    console.error('[BH] Load phien dang ban lỗi:', e);
+  }
+}
+
+// Load stats hôm nay (đã mua / chưa mua)
+async function bhLoadStatsToday() {
+  try {
+    const r = await fetch(SCRIPT_URL + '?type=phien_lich_su&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
+    const d = await r.json();
+    const list = d.phienLS || [];
+    BH.statsToday = {
+      bought:    list.filter(p => p.trangThai === 'Đã mua').length,
+      notBought: list.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length,
+    };
+    bhUpdateStats();
+  } catch(e){}
+}
+
+// ─── Stats ──────────────────────────────────────────────────
+function bhUpdateStats() {
+  const selling = BH.sessions.filter(s => s.status === 'selling').length;
+  document.getElementById('bh-stat-selling').textContent = selling;
+  document.getElementById('bh-stat-bought').textContent = BH.statsToday.bought;
+  document.getElementById('bh-stat-notbought').textContent = BH.statsToday.notBought;
+  const total = BH.statsToday.bought + BH.statsToday.notBought;
+  document.getElementById('bh-stat-rate').textContent = total > 0 ? Math.round(BH.statsToday.bought / total * 100) + '%' : '–';
+  // Warn
+  const warn = document.getElementById('bh-warn');
+  if (selling >= 5) {
+    warn.style.display = 'flex';
+    document.getElementById('bh-warn-text').textContent = 'Đang có ' + selling + ' phiên cùng lúc - kiểm tra phiên cũ nếu quên đóng';
+  } else {
+    warn.style.display = 'none';
+  }
+  // Badge nav
+  const badge = document.getElementById('bh-nav-badge');
+  if (badge) {
+    if (selling > 0) {
+      badge.textContent = selling;
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+// ─── Render danh sách phiên ─────────────────────────────────
+function bhRenderSessions() {
+  const wrap = document.getElementById('bh-sessions');
+  const empty = document.getElementById('bh-empty');
+  const active = BH.sessions.filter(s => s.status !== 'finished');
+  if (active.length === 0) {
+    if (empty) empty.style.display = 'block';
+    [...wrap.querySelectorAll('.bh-card')].forEach(c => c.remove());
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Remove cards không còn trong state
+  [...wrap.querySelectorAll('.bh-card')].forEach(c => {
+    const id = c.dataset.sid;
+    if (!BH.sessions.find(s => s.idPhien === id && s.status !== 'finished')) {
+      c.classList.add('finished');
+      setTimeout(() => c.remove(), 500);
+    }
+  });
+
+  active.forEach(s => {
+    let card = wrap.querySelector('[data-sid="' + s.idPhien + '"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'bh-card';
+      card.dataset.sid = s.idPhien;
+      wrap.appendChild(card);
+    }
+    bhRenderCardContent(card, s);
+  });
+}
+
+function bhRenderCardContent(card, s) {
+  const elapsed = Math.floor((Date.now() - s.startMs) / 1000);
+  const tc = elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : '');
+  const timeLabel = new Date(s.startMs).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+  let chipsHtml = '';
+  chipsHtml += s.products.map(sku => {
+    const p = BH_SP_CACHE[sku];
+    const name = p ? (p.ten.length > 22 ? p.ten.slice(0, 22) + '…' : p.ten) : sku;
+    return '<span class="bh-chip">' + bhEscHtml(name) + '</span>';
+  }).join('');
+  chipsHtml += '<span class="bh-chip add" onclick="bhOpenSpModal(\'' + s.idPhien + '\')"><svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>SP</span>';
+
+  const custChip = s.customers
+    ? '<span class="bh-chip cust">' + (s.customers >= 4 ? '4+' : s.customers) + ' khách</span>'
+    : '<span class="bh-chip add" onclick="bhOpenCustModal(\'' + s.idPhien + '\')"><svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Số khách</span>';
+
+  card.innerHTML = `
+    <div class="bh-card-header">
+      <div class="bh-card-title">
+        <span class="bh-dot"></span>
+        <div>
+          <div class="bh-session-num">Phiên #${s.num}</div>
+          <div class="bh-session-meta">bắt đầu ${timeLabel}</div>
+        </div>
+      </div>
+      <div class="bh-timer${tc}" data-timer="${s.idPhien}">${bhFormatTime(elapsed)}</div>
+    </div>
+    <div class="bh-chips-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Sản phẩm & khách
+    </div>
+    <div class="bh-chips">${chipsHtml} ${custChip}</div>
+    <div class="bh-actions">
+      <button class="bh-btn bh-btn-secondary" onclick="bhOpenNotBoughtModal('${s.idPhien}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Chưa mua
+      </button>
+      <button class="bh-btn bh-btn-success" onclick="bhOpenBoughtModal('${s.idPhien}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Đã mua
+      </button>
+    </div>`;
+}
+
+// Tick timers
+function bhTickTimers() {
+  BH.sessions.forEach(s => {
+    if (s.status !== 'selling') return;
+    const el = document.querySelector('[data-timer="' + s.idPhien + '"]');
+    if (!el) return;
+    const elapsed = Math.floor((Date.now() - s.startMs) / 1000);
+    el.textContent = bhFormatTime(elapsed);
+    el.className = 'bh-timer' + (elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : ''));
+  });
+}
+
+// ─── BẮT ĐẦU PHIÊN ──────────────────────────────────────────
+async function bhBatDauPhien() {
+  if (!SESSION || !SESSION.cuaHangMa) {
+    bhShowToast('Thiếu thông tin cửa hàng', null);
+    return;
+  }
+  bhVibrate(20);
+  bhPlayBeep(800, 100);
+
+  // Optimistic UI: tạo phiên local trước, gửi server song song
+  BH.counterToday++;
+  const tempId = 'temp_' + Date.now();
+  const tempSession = {
+    idPhien: tempId,
+    num: BH.counterToday,
+    startMs: Date.now(),
+    products: [],
+    customers: null,
+    status: 'selling',
+    syncing: true
+  };
+  BH.sessions.push(tempSession);
+  bhRenderSessions();
+  bhUpdateStats();
+
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'bd_phien',
+        maCH: SESSION.cuaHangMa,
+        maNV: SESSION.vaiTro === 'CUA_HANG' ? '' : SESSION.ma,
+        tenNV: SESSION.vaiTro === 'CUA_HANG' ? '' : SESSION.ten
+      })
+    });
+    const d = await r.json();
+    if (d.success && d.phien) {
+      // Cập nhật local session với ID thực từ server
+      tempSession.idPhien = d.phien.idPhien;
+      tempSession.num = d.phien.stt;
+      tempSession.syncing = false;
+      // Update DOM element's data-sid
+      const card = document.querySelector('[data-sid="' + tempId + '"]');
+      if (card) card.dataset.sid = d.phien.idPhien;
+      bhRenderSessions();
+    } else {
+      // Lỗi → xóa phiên tạm
+      BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
+      bhRenderSessions();
+      bhShowToast('Lỗi: ' + (d.error || 'Không tạo được phiên'), null);
+    }
+  } catch(e) {
+    BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
+    bhRenderSessions();
+    bhShowToast('Mất kết nối. Vui lòng thử lại.', null);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL: SP QUAN TÂM
+// ═══════════════════════════════════════════════════════════════════
+const BH_SP_CACHE = {}; // {sku: {ten, giaSale...}}
+let _bhSpSearchTimer = null;
+
+function bhOpenModal(name) {
+  document.getElementById('bh-md-' + name).classList.add('show');
+  document.getElementById('bh-md-' + name + '-bd').classList.add('show');
+  BH.currentModal = name;
+  // Close on backdrop
+  document.getElementById('bh-md-' + name + '-bd').onclick = () => bhCloseModal(name);
+}
+function bhCloseModal(name) {
+  document.getElementById('bh-md-' + name).classList.remove('show');
+  document.getElementById('bh-md-' + name + '-bd').classList.remove('show');
+  BH.currentModal = null;
+}
+
+function bhOpenSpModal(sid) {
+  BH.currentSessionId = sid;
+  const s = BH.sessions.find(x => x.idPhien === sid);
+  if (!s) return;
+  BH.tempSku = [...s.products];
+  document.getElementById('bh-md-sp-sub').textContent = 'Phiên #' + s.num;
+  document.getElementById('bh-sp-search').value = '';
+  document.getElementById('bh-sp-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhập từ khóa để tìm SP</div>';
+  bhRenderSpSelected('bh-sp-selected', BH.tempSku, 'bhToggleSku');
+  bhOpenModal('sp');
+  setTimeout(() => document.getElementById('bh-sp-search').focus(), 300);
+  // Bind search
+  document.getElementById('bh-sp-search').oninput = function(e) {
+    clearTimeout(_bhSpSearchTimer);
+    _bhSpSearchTimer = setTimeout(() => bhSearchSP('bh-sp-list', e.target.value, 'bhToggleSku'), 250);
+  };
+}
+
+function bhOpenCustModal(sid) {
+  BH.currentSessionId = sid;
+  const s = BH.sessions.find(x => x.idPhien === sid);
+  if (!s) return;
+  document.getElementById('bh-md-cust-sub').textContent = 'Phiên #' + s.num;
+  [...document.querySelectorAll('.bh-cust-btn')].forEach(b => b.classList.remove('active'));
+  if (s.customers) {
+    const btn = document.querySelector('.bh-cust-btn[data-n="' + (s.customers >= 4 ? 4 : s.customers) + '"]');
+    if (btn) btn.classList.add('active');
+  }
+  bhOpenModal('cust');
+}
+
+async function bhPickCust(n) {
+  const s = BH.sessions.find(x => x.idPhien === BH.currentSessionId);
+  if (s) {
+    s.customers = n;
+    bhRenderSessions();
+    // Push lên server
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'update_sp_khach', idPhien: s.idPhien, soKhach: n })
+      });
+    } catch(e){}
+  }
+  bhCloseModal('cust');
+  bhVibrate(10);
+}
+
+// ─── Search SP từ server ─────────────────────────────────
+async function bhSearchSP(containerId, query, toggleFn) {
+  const list = document.getElementById(containerId);
+  query = String(query || '').trim();
+  if (query.length < 1) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhập từ khóa để tìm SP</div>';
+    return;
+  }
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tìm...</div>';
+  try {
+    const r = await fetch(SCRIPT_URL + '?type=san_pham_list&q=' + encodeURIComponent(query));
+    const d = await r.json();
+    const items = d.sanPhamList || [];
+    // Cache
+    items.forEach(p => { BH_SP_CACHE[p.sku] = p; });
+    if (!items.length) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Không tìm thấy sản phẩm</div>';
+      return;
+    }
+    const selSet = new Set(BH.tempSku);
+    list.innerHTML = items.map(p => `
+      <div class="bh-sp-item ${selSet.has(p.sku) ? 'selected' : ''}" onclick="${toggleFn}('${p.sku}')">
+        <div class="bh-sp-name">${bhEscHtml(p.ten)}</div>
+        <div class="bh-sp-meta">
+          <span class="sku">${bhEscHtml(p.sku)}</span>
+          ${p.giaSale > 0 ? '<span class="price">' + bhFormatMoney(p.giaSale) + 'đ</span>' : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Lỗi mạng</div>';
+  }
+}
+
+function bhToggleSku(sku) {
+  const i = BH.tempSku.indexOf(sku);
+  if (i >= 0) BH.tempSku.splice(i, 1);
+  else BH.tempSku.push(sku);
+  bhRenderSpSelected('bh-sp-selected', BH.tempSku, 'bhToggleSku');
+  // Re-render list với selected state
+  const el = document.getElementById('bh-sp-list');
+  if (el) {
+    el.querySelectorAll('.bh-sp-item').forEach(it => {
+      const itemSku = it.getAttribute('onclick').match(/'([^']+)'/);
+      if (itemSku && itemSku[1]) {
+        it.classList.toggle('selected', BH.tempSku.includes(itemSku[1]));
+      }
+    });
+  }
+}
+
+function bhRenderSpSelected(wrapId, skuList, toggleFn) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (!skuList.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--text-lt)">Chưa chọn</span>';
+    return;
+  }
+  wrap.innerHTML = skuList.map(sku => {
+    const p = BH_SP_CACHE[sku];
+    const name = p ? (p.ten.length > 25 ? p.ten.slice(0, 25) + '…' : p.ten) : sku;
+    return '<span class="bh-chip">' + bhEscHtml(name) + ' <span class="rm" onclick="' + toggleFn + '(\'' + sku + '\')">×</span></span>';
+  }).join('');
+}
+
+async function bhSpConfirm() {
+  const s = BH.sessions.find(x => x.idPhien === BH.currentSessionId);
+  if (s) {
+    s.products = [...BH.tempSku];
+    bhRenderSessions();
+    // Push lên server
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'update_sp_khach', idPhien: s.idPhien, spQuanTam: s.products })
+      });
+    } catch(e){}
+  }
+  bhCloseModal('sp');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL: KẾT THÚC - ĐÃ MUA
+// ═══════════════════════════════════════════════════════════════════
+function bhOpenBoughtModal(sid) {
+  BH.currentSessionId = sid;
+  const s = BH.sessions.find(x => x.idPhien === sid);
+  if (!s) return;
+  BH.tempSku = [...s.products];
+  document.getElementById('bh-md-bought-sub').textContent = 'Phiên #' + s.num;
+  document.getElementById('bh-bought-search').value = '';
+  document.getElementById('bh-bought-money').value = '';
+  document.getElementById('bh-bought-note').value = '';
+  document.getElementById('bh-bought-list').innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-m);font-size:12px">Nhập từ khóa để tìm SP</div>';
+  bhRenderSpSelected('bh-bought-selected', BH.tempSku, 'bhToggleBoughtSku');
+  bhOpenModal('bought');
+  // Search binding
+  document.getElementById('bh-bought-search').oninput = function(e) {
+    clearTimeout(_bhSpSearchTimer);
+    _bhSpSearchTimer = setTimeout(() => bhSearchSP('bh-bought-list', e.target.value, 'bhToggleBoughtSku'), 250);
+  };
+  // Money format
+  document.getElementById('bh-bought-money').oninput = function(e) {
+    e.target.value = bhFormatMoney(e.target.value);
+  };
+}
+function bhToggleBoughtSku(sku) {
+  const i = BH.tempSku.indexOf(sku);
+  if (i >= 0) BH.tempSku.splice(i, 1);
+  else BH.tempSku.push(sku);
+  bhRenderSpSelected('bh-bought-selected', BH.tempSku, 'bhToggleBoughtSku');
+  const el = document.getElementById('bh-bought-list');
+  if (el) {
+    el.querySelectorAll('.bh-sp-item').forEach(it => {
+      const m = it.getAttribute('onclick').match(/'([^']+)'/);
+      if (m && m[1]) it.classList.toggle('selected', BH.tempSku.includes(m[1]));
+    });
+  }
+}
+
+async function bhBoughtConfirm() {
+  const s = BH.sessions.find(x => x.idPhien === BH.currentSessionId);
+  if (!s) return;
+  const money = document.getElementById('bh-bought-money').value.replace(/\D/g, '');
+  const note = document.getElementById('bh-bought-note').value.trim();
+  const sid = s.idPhien;
+
+  // Optimistic UI
+  s.status = 'finished';
+  BH.statsToday.bought++;
+  bhRenderSessions();
+  bhUpdateStats();
+  bhCloseModal('bought');
+  bhPlayBeep(1200, 180);
+  bhVibrate(50);
+
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'kt_phien_mua',
+        idPhien: sid,
+        spDaMua: BH.tempSku,
+        spQuanTam: s.products,
+        soKhach: s.customers,
+        giaTriDon: money,
+        ghiChu: note
+      })
+    });
+    const d = await r.json();
+    if (!d.success) {
+      bhShowToast('Lỗi lưu: ' + (d.error || ''), null);
+      // Rollback
+      s.status = 'selling';
+      BH.statsToday.bought--;
+      bhRenderSessions();
+      bhUpdateStats();
+      return;
+    }
+    bhShowToast('✓ Phiên #' + s.num + ' - Khách đã mua' + (money ? ' · ' + bhFormatMoney(money) + 'đ' : ''), 'success', async () => {
+      // Undo
+      try {
+        const r2 = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
+        });
+        const d2 = await r2.json();
+        if (d2.success) {
+          s.status = 'selling';
+          BH.statsToday.bought--;
+          bhRenderSessions();
+          bhUpdateStats();
+          bhShowToast('Đã hoàn tác', null);
+        } else {
+          bhShowToast('Không thể hoàn tác: ' + (d2.error || ''), null);
+        }
+      } catch(e){}
+    });
+  } catch(e) {
+    bhShowToast('Mất kết nối', null);
+    s.status = 'selling';
+    BH.statsToday.bought--;
+    bhRenderSessions();
+    bhUpdateStats();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL: KẾT THÚC - CHƯA MUA
+// ═══════════════════════════════════════════════════════════════════
+function bhOpenNotBoughtModal(sid) {
+  BH.currentSessionId = sid;
+  const s = BH.sessions.find(x => x.idPhien === sid);
+  if (!s) return;
+  BH.tempReason = null;
+  document.getElementById('bh-md-notbought-sub').textContent = 'Phiên #' + s.num;
+  document.getElementById('bh-notbought-note').value = '';
+  [...document.querySelectorAll('.bh-reason-item')].forEach(r => r.classList.remove('selected'));
+  document.getElementById('bh-notbought-btn').style.opacity = '0.5';
+  bhOpenModal('notbought');
+}
+function bhPickReason(el, reason) {
+  [...document.querySelectorAll('.bh-reason-item')].forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  BH.tempReason = reason;
+  document.getElementById('bh-notbought-btn').style.opacity = '1';
+}
+
+async function bhNotboughtConfirm() {
+  if (!BH.tempReason) {
+    bhShowToast('Vui lòng chọn lý do', null);
+    return;
+  }
+  const s = BH.sessions.find(x => x.idPhien === BH.currentSessionId);
+  if (!s) return;
+  const note = document.getElementById('bh-notbought-note').value.trim();
+  const sid = s.idPhien;
+  const reason = BH.tempReason;
+
+  // Optimistic UI
+  s.status = 'finished';
+  BH.statsToday.notBought++;
+  bhRenderSessions();
+  bhUpdateStats();
+  bhCloseModal('notbought');
+  bhPlayBeep(500, 150);
+  bhVibrate(30);
+
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'kt_phien_khong_mua',
+        idPhien: sid,
+        lyDo: reason,
+        spQuanTam: s.products,
+        soKhach: s.customers,
+        ghiChu: note
+      })
+    });
+    const d = await r.json();
+    if (!d.success) {
+      bhShowToast('Lỗi lưu: ' + (d.error || ''), null);
+      s.status = 'selling';
+      BH.statsToday.notBought--;
+      bhRenderSessions();
+      bhUpdateStats();
+      return;
+    }
+    bhShowToast('Phiên #' + s.num + ' - ' + reason.slice(0, 30), null, async () => {
+      try {
+        const r2 = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
+        });
+        const d2 = await r2.json();
+        if (d2.success) {
+          s.status = 'selling';
+          BH.statsToday.notBought--;
+          bhRenderSessions();
+          bhUpdateStats();
+          bhShowToast('Đã hoàn tác', null);
+        } else {
+          bhShowToast('Không thể hoàn tác: ' + (d2.error || ''), null);
+        }
+      } catch(e){}
+    });
+  } catch(e) {
+    bhShowToast('Mất kết nối', null);
+    s.status = 'selling';
+    BH.statsToday.notBought--;
+    bhRenderSessions();
+    bhUpdateStats();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL: LỊCH SỬ HÔM NAY
+// ═══════════════════════════════════════════════════════════════════
+async function bhXemLichSu() {
+  document.getElementById('bh-md-history-sub').textContent = SESSION.cuaHangTen || '';
+  document.getElementById('bh-history-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
+  bhOpenModal('history');
+  try {
+    const r = await fetch(SCRIPT_URL + '?type=phien_lich_su&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
+    const d = await r.json();
+    const list = d.phienLS || [];
+    if (!list.length) {
+      document.getElementById('bh-history-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">Chưa có phiên nào hôm nay</div>';
+      return;
+    }
+    document.getElementById('bh-history-body').innerHTML = list.map(p => {
+      const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
+      const spMua = (p.spDaMua && p.spDaMua.length) ? p.spDaMua.map(sku => {
+        const cache = BH_SP_CACHE[sku];
+        return cache ? cache.ten : sku;
+      }).join(', ') : '';
+      return `
+        <div class="bh-hist-card">
+          <div class="bh-hist-status ${cls}"></div>
+          <div class="bh-hist-info">
+            <div class="bh-hist-ch">Phiên #${p.stt} · ${bhEscHtml(p.trangThai)}</div>
+            <div class="bh-hist-meta">
+              ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
+              ${p.giaTri ? ' · <strong>' + bhFormatMoney(p.giaTri) + 'đ</strong>' : ''}
+              ${p.lyDo ? ' · ' + bhEscHtml(p.lyDo) : ''}
+              ${spMua ? '<br>Đã mua: ' + bhEscHtml(spMua.slice(0, 50)) + (spMua.length > 50 ? '...' : '') : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    document.getElementById('bh-history-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--red);font-size:13px">Lỗi tải dữ liệu</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEW QLBH: GIÁM SÁT TOÀN HỆ THỐNG
+// ═══════════════════════════════════════════════════════════════════
+
+function bhInitViewQLBH() {
+  // Build KV filter
+  if (typeof CH_LIST !== 'undefined' && CH_LIST && CH_LIST.length) {
+    const sel = document.getElementById('bh-ql-kv');
+    const kvSet = new Set();
+    CH_LIST.forEach(c => { if (c.khuVuc) kvSet.add(c.khuVuc); });
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Tất cả khu vực</option>' + [...kvSet].sort().map(kv => `<option value="${bhEscHtml(kv)}">${bhEscHtml(kv)}</option>`).join('');
+    if (current) sel.value = current;
+  }
+
+  // Set default date range = hôm nay
+  const hn = new Date();
+  const hnStr = hn.getFullYear() + '-' + bhPad(hn.getMonth()+1) + '-' + bhPad(hn.getDate());
+  document.getElementById('bh-ql-tu').value = hnStr;
+  document.getElementById('bh-ql-den').value = hnStr;
+  BH.qlFilterTuNgay = hnStr;
+  BH.qlFilterDenNgay = hnStr;
+
+  // Set tab mặc định = live
+  BH.qlTab = 'live';
+  bhQlSwitchTab('live', true);
+
+  // Auto refresh mỗi 20s khi ở tab live
+  if (BH.qlAutoRefresh) clearInterval(BH.qlAutoRefresh);
+  BH.qlAutoRefresh = setInterval(() => {
+    if (BH.qlTab === 'live' && currentPage === 'banhang') bhQlReload();
+  }, 20000);
+
+  bhQlReload();
+}
+
+function bhQlSwitchTab(tab, noReload) {
+  BH.qlTab = tab;
+  ['live','history','dashboard'].forEach(t => {
+    const btn = document.getElementById('bh-ql-tab-' + t);
+    const content = document.getElementById('bh-ql-content-' + t);
+    if (btn) btn.classList.toggle('active', t === tab);
+    if (content) content.style.display = (t === tab) ? '' : 'none';
+  });
+  // Date range chỉ hiện cho history và dashboard
+  const dr = document.getElementById('bh-ql-daterange');
+  if (dr) dr.style.display = (tab === 'live') ? 'none' : 'block';
+  if (!noReload) bhQlReload();
+}
+
+function bhQlDebouncedReload() {
+  clearTimeout(BH.qlReloadTimer);
+  BH.qlReloadTimer = setTimeout(bhQlReload, 400);
+}
+
+async function bhQlReload() {
+  BH.qlFilterKV = document.getElementById('bh-ql-kv').value;
+  BH.qlFilterQ  = document.getElementById('bh-ql-q').value.trim();
+  if (BH.qlTab !== 'live') {
+    BH.qlFilterTuNgay = document.getElementById('bh-ql-tu').value;
+    BH.qlFilterDenNgay = document.getElementById('bh-ql-den').value;
+  } else {
+    // Tab LIVE luôn là hôm nay
+    const hn = new Date();
+    const hnStr = hn.getFullYear() + '-' + bhPad(hn.getMonth()+1) + '-' + bhPad(hn.getDate());
+    BH.qlFilterTuNgay = hnStr;
+    BH.qlFilterDenNgay = hnStr;
+  }
+
+  if (BH.qlTab === 'dashboard') {
+    await bhQlLoadDashboard();
+  } else {
+    await bhQlLoadPhien();
+  }
+}
+
+async function bhQlLoadPhien() {
+  try {
+    const url = SCRIPT_URL + '?type=phien_giam_sat'
+      + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '')
+      + '&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay || '')
+      + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay || '')
+      + '&q=' + encodeURIComponent(BH.qlFilterQ || '');
+    const r = await fetch(url);
+    const d = await r.json();
+    const gs = d.giamSat || { live: [], finished: [] };
+
+    // Stats header
+    const live = gs.live || [];
+    const fin = gs.finished || [];
+    const bought = fin.filter(p => p.trangThai === 'Đã mua').length;
+    const nbought = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length;
+    document.getElementById('bh-ql-stat-live').textContent = live.length;
+    document.getElementById('bh-ql-stat-bought').textContent = bought;
+    document.getElementById('bh-ql-stat-notbought').textContent = nbought;
+    const total = bought + nbought;
+    document.getElementById('bh-ql-stat-rate').textContent = total > 0 ? Math.round(bought / total * 100) + '%' : '–';
+    document.getElementById('bh-ql-count-live').textContent = live.length;
+    document.getElementById('bh-ql-count-history').textContent = fin.length;
+
+    // Render live tab
+    const liveEl = document.getElementById('bh-ql-content-live');
+    if (!live.length) {
+      liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Hiện không có phiên nào đang diễn ra</div>';
+    } else {
+      liveEl.innerHTML = live.map(p => {
+        let startMs;
+        try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
+        const elapsed = Math.floor((Date.now() - startMs) / 1000);
+        const hot = elapsed >= 900 ? ' hot' : '';  // ≥ 15 phút = hot
+        return `
+          <div class="bh-live-card${hot}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
+            <div class="bh-live-card-head">
+              <div>
+                <div class="bh-live-ch">${bhEscHtml(p.tenCH)}</div>
+                <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}</div>
+              </div>
+              <div class="bh-live-timer" data-qltimer="${p.idPhien}">${bhFormatTime(elapsed)}</div>
+            </div>
+            ${p.spQuanTam && p.spQuanTam.length ? '<div class="bh-live-sp">' + p.spQuanTam.map(sku => '<span class="bh-chip">' + bhEscHtml((BH_SP_CACHE[sku] && BH_SP_CACHE[sku].ten) ? BH_SP_CACHE[sku].ten.slice(0, 20) : sku) + '</span>').join('') + '</div>' : ''}
+            ${p.soKhach ? '<div style="margin-top:4px;font-size:11px;color:var(--purple)">👥 ' + bhEscHtml(p.soKhach) + ' khách</div>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render history tab
+    const histEl = document.getElementById('bh-ql-content-history');
+    if (!fin.length) {
+      histEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Không có phiên nào trong khoảng thời gian</div>';
+    } else {
+      histEl.innerHTML = fin.map(p => {
+        const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
+        return `
+          <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
+            <div class="bh-hist-status ${cls}"></div>
+            <div class="bh-hist-info">
+              <div class="bh-hist-ch">${bhEscHtml(p.tenCH)} · ${bhEscHtml(p.trangThai)}</div>
+              <div class="bh-hist-meta">
+                ${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
+                ${p.giaTri ? ' · <strong>' + bhFormatMoney(p.giaTri) + 'đ</strong>' : ''}
+              </div>
+            </div>
+            <div class="bh-hist-time">${p.ngay && p.ngay !== BH.qlFilterTuNgay ? p.ngay.slice(5) : ''}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch(e) {
+    console.error('[BH QL] Load lỗi:', e);
+    document.getElementById('bh-ql-content-live').innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Lỗi tải dữ liệu</div>';
+  }
+}
+
+// Tick timer cho QL live cards
+setInterval(() => {
+  if (currentPage !== 'banhang' || BH.qlTab !== 'live') return;
+  document.querySelectorAll('[data-qltimer]').forEach(el => {
+    const card = el.closest('.bh-live-card');
+    if (!card) return;
+    const startMs = parseInt(card.dataset.start || '0');
+    if (!startMs) return;
+    const elapsed = Math.floor((Date.now() - startMs) / 1000);
+    el.textContent = bhFormatTime(elapsed);
+  });
+}, 1000);
+
+function bhQlOpenDetail(idPhien) {
+  // Tìm trong data đã cache của live/finished
+  document.getElementById('bh-md-detail-title').textContent = 'Chi tiết phiên';
+  document.getElementById('bh-md-detail-sub').textContent = idPhien.slice(0, 20);
+  document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
+  bhOpenModal('detail');
+  // Tìm trong cả live và finished data hiện có
+  fetch(SCRIPT_URL + '?type=phien_giam_sat&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay) + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay))
+    .then(r => r.json())
+    .then(d => {
+      const all = [...(d.giamSat?.live || []), ...(d.giamSat?.finished || [])];
+      const p = all.find(x => x.idPhien === idPhien);
+      if (!p) {
+        document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m)">Không tìm thấy phiên</div>';
+        return;
+      }
+      document.getElementById('bh-md-detail-title').textContent = 'Phiên #' + p.stt + ' · ' + p.trangThai;
+      document.getElementById('bh-md-detail-sub').textContent = p.tenCH + ' (' + p.maCH + ')';
+      const spQTHtml = (p.spQuanTam && p.spQuanTam.length)
+        ? '<div class="bh-chips">' + p.spQuanTam.map(s => '<span class="bh-chip">' + bhEscHtml(BH_SP_CACHE[s]?.ten || s) + '</span>').join('') + '</div>'
+        : '<div style="color:var(--text-lt);font-size:12px">Không có</div>';
+      const spMuaHtml = (p.spDaMua && p.spDaMua.length)
+        ? '<div class="bh-chips">' + p.spDaMua.map(s => '<span class="bh-chip">' + bhEscHtml(BH_SP_CACHE[s]?.ten || s) + '</span>').join('') + '</div>'
+        : '<div style="color:var(--text-lt);font-size:12px">—</div>';
+
+      document.getElementById('bh-md-detail-body').innerHTML = `
+        <div class="bh-field-label">Thời gian</div>
+        <div style="font-size:13px;color:var(--text-m)">${p.ngay} · ${p.gioBD} → ${p.gioKT || 'đang bán'} · ${p.thoiLuong || '--'}</div>
+        <div class="bh-field-label">Khu vực</div>
+        <div style="font-size:13px">${bhEscHtml(p.khuVuc || '—')}</div>
+        <div class="bh-field-label">Số khách</div>
+        <div style="font-size:13px">${p.soKhach || '—'}</div>
+        <div class="bh-field-label">Sản phẩm quan tâm</div>
+        ${spQTHtml}
+        <div class="bh-field-label">Sản phẩm đã mua</div>
+        ${spMuaHtml}
+        ${p.giaTri ? '<div class="bh-field-label">Giá trị đơn</div><div style="font-size:14px;font-weight:600;color:var(--green)">' + bhFormatMoney(p.giaTri) + 'đ</div>' : ''}
+        ${p.lyDo ? '<div class="bh-field-label">Lý do không mua</div><div style="font-size:13px;color:var(--text-m)">' + bhEscHtml(p.lyDo) + '</div>' : ''}
+        ${p.ghiChu ? '<div class="bh-field-label">Ghi chú</div><div style="font-size:13px;color:var(--text-m);white-space:pre-wrap">' + bhEscHtml(p.ghiChu) + '</div>' : ''}
+      `;
+    })
+    .catch(() => {
+      document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--red)">Lỗi mạng</div>';
+    });
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────
+async function bhQlLoadDashboard() {
+  const el = document.getElementById('bh-ql-content-dashboard');
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-m)">⏳ Đang tải dashboard...</div>';
+  try {
+    const url = SCRIPT_URL + '?type=dashboard_bh'
+      + '&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay)
+      + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay)
+      + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '');
+    const r = await fetch(url);
+    const d = await r.json();
+    const db = d.dashboardBH || {};
+    const t = db.tongHop || {};
+
+    document.getElementById('bh-ql-stat-live').textContent = t.dangBan || 0;
+    document.getElementById('bh-ql-stat-bought').textContent = t.daMua || 0;
+    document.getElementById('bh-ql-stat-notbought').textContent = t.chuaMua || 0;
+    document.getElementById('bh-ql-stat-rate').textContent = (t.tyLeChuyenDoi || 0) + '%';
+
+    const renderBar = (items, title) => {
+      if (!items || !items.length) return '<div class="bh-dash-section"><div class="bh-dash-title">' + title + '</div><div style="color:var(--text-lt);font-size:12px">Chưa có dữ liệu</div></div>';
+      const max = Math.max(...items.map(i => i.count));
+      return '<div class="bh-dash-section"><div class="bh-dash-title">' + title + '</div>' +
+        items.slice(0, 10).map(i => {
+          const pct = Math.round(i.count / max * 100);
+          const label = BH_SP_CACHE[i.key]?.ten || i.key;
+          return `<div><div class="bh-dash-bar-item"><span class="bh-dash-bar-label">${bhEscHtml(label)}</span><span class="bh-dash-bar-count">${i.count}</span></div><div class="bh-dash-bar-fill"><div style="width:${pct}%"></div></div></div>`;
+        }).join('') + '</div>';
+    };
+
+    const renderCH = (dsCH) => {
+      if (!dsCH || !dsCH.length) return '';
+      return '<div class="bh-dash-section"><div class="bh-dash-title">Top cửa hàng theo số phiên</div>' +
+        dsCH.slice(0, 15).map(c => {
+          return `<div class="bh-dash-bar-item">
+            <span class="bh-dash-bar-label">${bhEscHtml(c.tenCH)}</span>
+            <span style="font-size:11px;color:var(--text-m);margin-right:6px">${c.tong} phiên · <strong style="color:var(--green)">${c.tyLe}%</strong></span>
+          </div>`;
+        }).join('') + '</div>';
+    };
+
+    el.innerHTML = `
+      <div class="bh-dash-section">
+        <div class="bh-dash-title">Tổng quan</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div><div style="color:var(--text-m);font-size:11px">Tổng phiên</div><div style="font-size:18px;font-weight:600">${t.tongPhien || 0}</div></div>
+          <div><div style="color:var(--text-m);font-size:11px">Tổng giá trị</div><div style="font-size:16px;font-weight:600;color:var(--green)">${bhFormatMoney(t.tongGiaTri || 0)}đ</div></div>
+          <div><div style="color:var(--text-m);font-size:11px">Tỷ lệ chuyển đổi</div><div style="font-size:18px;font-weight:600;color:var(--blue)">${t.tyLeChuyenDoi || 0}%</div></div>
+          <div><div style="color:var(--text-m);font-size:11px">Thời lượng TB</div><div style="font-size:16px;font-weight:600">${t.thoiLuongTB || '0'} phút</div></div>
+        </div>
+      </div>
+      ${renderBar(db.topSPQuanTam, 'Top sản phẩm quan tâm')}
+      ${renderBar(db.topSPDaMua, 'Top sản phẩm đã bán')}
+      ${renderBar(db.topLyDo, 'Top lý do khách không mua')}
+      ${renderCH(db.theoCuaHang)}
+    `;
+  } catch(e) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--red)">Lỗi tải dashboard</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Cleanup khi rời tab
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('beforeunload', () => {
+  if (BH.clockInterval) clearInterval(BH.clockInterval);
+  if (BH.timerInterval) clearInterval(BH.timerInterval);
+  if (BH.qlAutoRefresh) clearInterval(BH.qlAutoRefresh);
+});
+
+// ─── End module bán hàng v11 ──────────────────────────────────
+
 </script>
