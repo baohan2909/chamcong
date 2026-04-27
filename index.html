@@ -224,9 +224,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gps-option-pill.green { background:#DCFCE7; color:#166534; }
 .gps-option-pill.gray { background:#F3F4F6; color:#6B7280; }
 /* [v11.4 NS-03b/LC-03c] App-style confirm modal — thay thế confirm() native iOS đen */
-.app-confirm-bd { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:300; display:none; }
+.app-confirm-bd { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9990; display:none; }
 .app-confirm-bd.show { display:block; }
-.app-confirm { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:calc(100% - 32px); max-width:380px; background:#fff; border-radius:18px; z-index:301; display:none; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden; }
+.app-confirm { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:calc(100% - 32px); max-width:380px; background:#fff; border-radius:18px; z-index:9991; display:none; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden; }
 .app-confirm.show { display:block; }
 .app-confirm-head { padding:20px 22px 4px; }
 .app-confirm-icon { width:44px; height:44px; border-radius:50%; background:#FEF3C7; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
@@ -958,14 +958,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-nv-sug-item:hover, .bh-nv-sug-item:active { background:#F9FAFB; }
 .bh-nv-sug-item:last-child { border-bottom:none; }
 .bh-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; }
-.bh-stat.red { background:var(--red-lt); }
+/* [v11.7+ fix màu] Đang bán: xanh nhẹ thay đỏ. Tỉ lệ: vàng nhạt thay xanh */
+.bh-stat.red { background:#DBEAFE; }
 .bh-stat.green { background:var(--green-lt); }
-.bh-stat.blue { background:var(--blue-lt); }
+.bh-stat.blue { background:#FEF3C7; }
 .bh-stat.gray { background:var(--gray-lt); }
 .bh-stat-num { font-size:18px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; color:var(--text); }
-.bh-stat.red .bh-stat-num { color:var(--red); }
+.bh-stat.red .bh-stat-num { color:#1E40AF; }
 .bh-stat.green .bh-stat-num { color:var(--green); }
-.bh-stat.blue .bh-stat-num { color:var(--blue); }
+.bh-stat.blue .bh-stat-num { color:#92400E; }
 .bh-stat-label { font-size:10px; margin-top:3px; color:var(--text-m); font-weight:500; }
 
 /* Warn banner */
@@ -1064,13 +1065,14 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-stat.active { border-color:currentColor; box-shadow:0 0 0 3px rgba(0,0,0,0.04); }
 .bh-ql-stat .n { font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
 .bh-ql-stat .l { font-size:10px; color:var(--text-m); margin-top:3px; font-weight:500; }
-.bh-ql-stat.red { background:var(--red-lt); } .bh-ql-stat.red .n { color:var(--red); }
+/* [v11.7+ fix màu] red→xanh nhẹ (Đang bán), blue→vàng nhạt (Tỉ lệ) */
+.bh-ql-stat.red { background:#DBEAFE; } .bh-ql-stat.red .n { color:#1E40AF; }
 .bh-ql-stat.green { background:var(--green-lt); } .bh-ql-stat.green .n { color:var(--green); }
-.bh-ql-stat.blue { background:var(--blue-lt); } .bh-ql-stat.blue .n { color:var(--blue); }
+.bh-ql-stat.blue { background:#FEF3C7; } .bh-ql-stat.blue .n { color:#92400E; }
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
 .bh-ql-stat.purple { background:#F3E8FF; } .bh-ql-stat.purple .n { color:#7C3AED; }
-/* [v11.7 BH-7b] STT toàn cục badge */
-.bh-stt-tc { display:inline-block; padding:2px 6px; background:#E91E63; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
+/* [v11.7+ fix màu] STT toàn cục badge - đổi từ hồng sang navy đậm */
+.bh-stt-tc { display:inline-block; padding:2px 6px; background:#1E3A8A; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
 
 .bh-ql-content { padding:12px; }
 
@@ -2848,10 +2850,18 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
-  // [v11.7+ fix] Force scroll về đầu trang ngay sau khi show app (browser hay giữ scroll position cũ)
+  // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
+  // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
+  // Tắt browser auto-restore scroll
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  // Force lại sau 50ms + 200ms để chắc chắn không bị async overrride
+  requestAnimationFrame(() => { window.scrollTo(0, 0); });
+  setTimeout(() => { window.scrollTo(0, 0); }, 200);
   // [v10.1 Yc #4] Xin quyền notification + set baseline timestamp
   _tbLastTs = Date.now(); // chỉ thông báo mới từ thời điểm đăng nhập
   setTimeout(_xinQuyenThongBao, 2000);
@@ -8485,13 +8495,58 @@ function bhQlSwitchTab(tab, noReload) {
 }
 
 function bhQlDebouncedReload() {
+  // [v11.7+ fix] Search CH instant client-side (không gọi server mỗi keystroke)
+  // Chỉ debounce nhẹ 80ms để khỏi giật
   clearTimeout(BH.qlReloadTimer);
-  BH.qlReloadTimer = setTimeout(bhQlReload, 400);
+  BH.qlReloadTimer = setTimeout(() => {
+    BH.qlFilterQ = document.getElementById('bh-ql-q').value.trim().toLowerCase();
+    bhQlRenderHistory();
+    bhQlRenderLive();
+  }, 80);
+}
+
+// [v11.7+ fix] Render Live với filter q client-side
+function bhQlRenderLive() {
+  const liveEl = document.getElementById('bh-ql-content-live');
+  if (!liveEl) return;
+  let live = (BH.qlLastLive || []).slice();
+  const q = (BH.qlFilterQ || '').toLowerCase();
+  if (q) {
+    live = live.filter(p => {
+      const hay = ((p.tenCH || '') + ' ' + (p.maCH || '') + ' ' + (p.tenNV || '') + ' ' + (p.spQuanTam || []).map(bhTenSP).join(' ')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    });
+  }
+  document.getElementById('bh-ql-count-live').textContent = live.length;
+  if (!live.length) {
+    liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">' + (q ? 'Không tìm thấy CH/SP/NV nào khớp' : 'Hiện không có phiên nào đang diễn ra') + '</div>';
+    return;
+  }
+  liveEl.innerHTML = live.map(p => {
+    let startMs;
+    try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
+    const elapsed = Math.floor((Date.now() - startMs) / 1000);
+    const hot = elapsed >= 900 ? ' hot' : '';
+    const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
+    return `
+      <div class="bh-live-card${hot}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
+        <div class="bh-live-card-head">
+          <div>
+            <div class="bh-live-ch">${sttTC}${bhEscHtml(p.tenCH)}</div>
+            <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}</div>
+          </div>
+          <div class="bh-live-timer" data-qltimer="${p.idPhien}">${bhFormatTimeShort(elapsed)}</div>
+        </div>
+        ${p.spQuanTam && p.spQuanTam.length ? '<div class="bh-live-sp">' + p.spQuanTam.map(maCu => '<span class="bh-chip">' + bhEscHtml(bhTenSP(maCu).slice(0, 22)) + '</span>').join('') + '</div>' : ''}
+      </div>
+    `;
+  }).join('');
 }
 
 async function bhQlReload() {
   BH.qlFilterKV = document.getElementById('bh-ql-kv').value;
-  BH.qlFilterQ  = document.getElementById('bh-ql-q').value.trim();
+  // [v11.7+ fix] q lưu lowercase để filter client-side instant
+  BH.qlFilterQ  = document.getElementById('bh-ql-q').value.trim().toLowerCase();
   if (BH.qlTab !== 'live') {
     BH.qlFilterTuNgay = document.getElementById('bh-ql-tu').value;
     BH.qlFilterDenNgay = document.getElementById('bh-ql-den').value;
@@ -8539,8 +8594,8 @@ async function bhQlLoadPhien() {
       + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '')
       + '&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay || '')
       + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay || '')
-      + '&q=' + encodeURIComponent(BH.qlFilterQ || '')
       + _bhQlKVAllowedParam();
+    // [v11.7+ fix] Filter q được lọc client-side để search instant, không gửi server
     const r = await fetch(url);
     const d = await r.json();
     const gs = d.giamSat || { live: [], finished: [] };
@@ -8558,38 +8613,11 @@ async function bhQlLoadPhien() {
     document.getElementById('bh-ql-stat-notbought').textContent = nbought;
     const total = bought + nbought;
     document.getElementById('bh-ql-stat-rate').textContent = total > 0 ? Math.round(bought / total * 100) + '%' : '–';
-    document.getElementById('bh-ql-count-live').textContent = live.length;
-    document.getElementById('bh-ql-count-history').textContent = fin.length;
     const totalCard = document.getElementById('bh-ql-stat-all');
     if (totalCard) totalCard.textContent = live.length + bought + nbought;
 
-    // Render Live (luôn hiện hết, không filter status ở Live)
-    const liveEl = document.getElementById('bh-ql-content-live');
-    if (!live.length) {
-      liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Hiện không có phiên nào đang diễn ra</div>';
-    } else {
-      liveEl.innerHTML = live.map(p => {
-        let startMs;
-        try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
-        const elapsed = Math.floor((Date.now() - startMs) / 1000);
-        const hot = elapsed >= 900 ? ' hot' : '';
-        const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
-        return `
-          <div class="bh-live-card${hot}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
-            <div class="bh-live-card-head">
-              <div>
-                <div class="bh-live-ch">${sttTC}${bhEscHtml(p.tenCH)}</div>
-                <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}</div>
-              </div>
-              <div class="bh-live-timer" data-qltimer="${p.idPhien}">${bhFormatTimeShort(elapsed)}</div>
-            </div>
-            ${p.spQuanTam && p.spQuanTam.length ? '<div class="bh-live-sp">' + p.spQuanTam.map(maCu => '<span class="bh-chip">' + bhEscHtml(bhTenSP(maCu).slice(0, 22)) + '</span>').join('') + '</div>' : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Render History (apply filter status + sort)
+    // [v11.7+ fix] Dùng renderer chung - sẽ tự apply filter q, status, sort client-side
+    bhQlRenderLive();
     bhQlRenderHistory();
   } catch(e) {
     console.error('[BH QL] Load lỗi:', e);
@@ -8606,6 +8634,14 @@ function bhQlRenderHistory() {
   const sf = BH.qlStatusFilter || 'all';
   if (sf === 'bought') fin = fin.filter(p => p.trangThai === 'Đã mua');
   else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng');
+  // [v11.7+ fix] Filter q client-side - tìm theo CH/SP/NV
+  const q = (BH.qlFilterQ || '').toLowerCase();
+  if (q) {
+    fin = fin.filter(p => {
+      const hay = ((p.tenCH || '') + ' ' + (p.maCH || '') + ' ' + (p.tenNV || '') + ' ' + (p.spQuanTam || []).map(bhTenSP).join(' ') + ' ' + (p.spDaMua || []).join(' ')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    });
+  }
   // Apply sort
   const sb = BH.qlSort || 'time_desc';
   fin.sort((a, b) => {
@@ -8624,8 +8660,9 @@ function bhQlRenderHistory() {
       default: return tB.localeCompare(tA);
     }
   });
+  document.getElementById('bh-ql-count-history').textContent = fin.length;
   if (!fin.length) {
-    histEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Không có phiên nào</div>';
+    histEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">' + (q ? 'Không tìm thấy phiên nào khớp' : 'Không có phiên nào') + '</div>';
     return;
   }
   histEl.innerHTML = fin.map(p => {
