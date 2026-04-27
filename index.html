@@ -88,24 +88,24 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .notif-item-body { font-size:12px; color:var(--text-m); line-height:1.4; }
 .notif-item-time { font-size:11px; color:var(--text-lt); margin-top:4px; }
 .notif-item-unread-dot { width:8px; height:8px; border-radius:50%; background:#10B981; flex-shrink:0; align-self:center; }
-/* [v11.6 Item 6] Preset chip ca thông dụng */
-.lc-preset-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; align-items:center; }
-.lc-preset-label { font-size:10px; color:var(--text-m); font-weight:500; margin-right:2px; }
+/* [v11.6 Item 6] Preset chip ca thông dụng - [v11.7 L1] label tách dòng riêng */
+.lc-preset-label { font-size:10px; color:var(--text-m); font-weight:600; margin-top:10px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+.lc-preset-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
 .lc-preset-chip { padding:5px 9px; border-radius:14px; font-size:11px; font-weight:500; background:#EBF5FF; color:#1D4ED8; border:1px solid #BFDBFE; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; white-space:nowrap; }
 .lc-preset-chip:hover, .lc-preset-chip:active { background:#1D4ED8; color:white; border-color:#1D4ED8; }
 .lc-preset-chip.lc-preset-full { background:#FEF3C7; color:#92400E; border-color:#FDE68A; }
 .lc-preset-chip.lc-preset-full:hover { background:#92400E; color:white; border-color:#92400E; }
-/* [v11.6 Item 7] Copy + Range picker nghỉ phép */
-.lc-copy-btn { margin-top:6px; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:500; background:#EBF5FF; color:#1D4ED8; border:1px solid #BFDBFE; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; }
-.lc-copy-btn:hover, .lc-copy-btn:active { background:#1D4ED8; color:white; border-color:#1D4ED8; }
-.lc-multi-row { margin-top:10px; padding:8px 10px; background:#FAFAFA; border:1px solid #E5E7EB; border-radius:10px; }
+/* [v11.6 Item 7] / [v11.7 L2] Range picker nghỉ phép - 2 dòng đẹp */
+.lc-multi-row { margin-top:10px; padding:10px 12px; background:#FAFAFA; border:1px solid #E5E7EB; border-radius:10px; }
 .lc-multi-cb { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; font-size:12px; color:var(--text-d); font-weight:500; }
 .lc-multi-cb input { margin:0; }
 .lc-multi-range { margin-top:10px; padding-top:10px; border-top:1px dashed #E5E7EB; }
-.lc-multi-input-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:12px; color:var(--text-m); }
-.lc-multi-input-row input[type="date"] { padding:5px 8px; border:1px solid #D1D5DB; border-radius:6px; font-size:12px; }
-.lc-multi-apply-btn { width:100%; margin-top:8px; padding:8px; border-radius:8px; font-size:12px; font-weight:600; background:var(--green); color:white; border:none; cursor:pointer; }
-.lc-multi-apply-btn:hover { opacity:0.9; }
+.lc-multi-line { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; }
+.lc-multi-prefix { width:32px; font-weight:600; color:var(--text-d); flex-shrink:0; }
+.lc-multi-line input[type="date"] { padding:6px 10px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; flex:1; min-width:0; }
+.lc-multi-display { display:none; }
+.lc-multi-apply-btn { width:100%; margin-top:6px; padding:10px; border-radius:10px; font-size:13px; font-weight:600; background:var(--green); color:white; border:none; cursor:pointer; }
+.lc-multi-apply-btn:hover, .lc-multi-apply-btn:active { opacity:0.9; }
 
 /* BOTTOM NAV */
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:white; border-top:0.5px solid var(--border); display:flex; z-index:20; box-shadow:0 -2px 12px rgba(0,0,0,.08); }
@@ -936,13 +936,22 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* Modal Đã mua mới */
 .bh-bought-item { padding:10px 12px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:6px; }
 .bh-bought-item-name { font-size:13px; color:var(--text-d); font-weight:500; margin-bottom:6px; }
-.bh-bought-item-row { display:flex; align-items:center; gap:8px; }
-.bh-qty-btn { width:28px; height:28px; border-radius:6px; border:1px solid #D1D5DB; background:#fff; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.bh-qty-btn:hover { background:#F3F4F6; }
-.bh-qty-num { min-width:28px; text-align:center; font-weight:600; font-size:14px; }
-.bh-bought-item-price { margin-left:auto; font-size:13px; font-weight:600; color:var(--green); }
+.bh-bought-item-row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+.bh-qty-btn { width:30px; height:30px; border-radius:8px; border:1px solid #D1D5DB; background:#fff; font-size:18px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }
+.bh-qty-btn:hover, .bh-qty-btn:active { background:#F3F4F6; }
+.bh-qty-num { min-width:32px; text-align:center; font-weight:700; font-size:15px; }
+.bh-bought-item-price { margin-left:auto; font-size:13px; font-weight:700; color:var(--green); }
 .bh-bought-rm { width:24px; height:24px; border:none; background:transparent; color:var(--red); font-size:18px; cursor:pointer; }
 .bh-bought-total-row { display:flex; justify-content:space-between; align-items:center; padding:10px 4px; margin:8px 0; border-top:1px solid #E5E7EB; }
+/* [v11.7 BH-6] List SP đã chọn dạng dọc - mỗi SP 1 hàng đầy đủ */
+.bh-selected-empty { font-size:12px; color:var(--text-lt); padding:10px 0; text-align:center; }
+.bh-selected-item { display:flex; gap:8px; padding:10px 12px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:6px; align-items:flex-start; }
+.bh-selected-item-bought { background:#F0FDF4; border-color:#BBF7D0; }
+.bh-selected-item-main { flex:1; min-width:0; }
+.bh-selected-item-name { font-size:13px; color:var(--text-d); font-weight:600; line-height:1.35; margin-bottom:3px; word-wrap:break-word; }
+.bh-selected-item-meta { font-size:11px; color:var(--text-m); line-height:1.3; }
+.bh-selected-rm { width:26px; height:26px; border:1px solid #FCA5A5; background:#FEE2E2; color:var(--red); border-radius:6px; font-size:16px; font-weight:700; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }
+.bh-selected-rm:hover, .bh-selected-rm:active { background:var(--red); color:white; }
 /* NV autocomplete */
 .bh-nv-sug { position:absolute; top:42px; left:0; right:0; background:#fff; border:1px solid #E5E7EB; border-radius:8px; max-height:180px; overflow:auto; z-index:20; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
 .bh-nv-sug-item { padding:8px 12px; cursor:pointer; border-bottom:1px solid #F3F4F6; }
@@ -979,11 +988,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
 .bh-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .bh-card-title { display:flex; align-items:center; gap:8px; }
-.bh-dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation:bhBlink 1.2s ease-in-out infinite; flex-shrink:0; }
+.bh-dot { width:10px; height:10px; border-radius:50%; background:var(--red); animation:bhBlink 1.2s ease-in-out infinite; flex-shrink:0; }
 @keyframes bhBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.bh-session-num { font-size:15px; font-weight:600; color:var(--text); }
-.bh-session-meta { font-size:11px; color:var(--text-m); margin-top:1px; }
-.bh-timer { font-family:'SF Mono','JetBrains Mono',Menlo,Consolas,monospace; font-size:16px; font-weight:600; color:var(--red); font-variant-numeric:tabular-nums; padding:3px 8px; background:var(--red-lt); border-radius:6px; }
+/* [v11.7 BH-2] Tên phiên & timer to hơn cho dễ thấy */
+.bh-session-num { font-size:18px; font-weight:700; color:var(--text); letter-spacing:.2px; }
+.bh-session-meta { font-size:11px; color:var(--text-m); margin-top:2px; }
+.bh-timer { font-family:'SF Mono','JetBrains Mono',Menlo,Consolas,monospace; font-size:24px; font-weight:700; color:var(--red); font-variant-numeric:tabular-nums; padding:5px 12px; background:var(--red-lt); border-radius:8px; letter-spacing:.5px; }
 .bh-timer.warn { color:#CA8A04; background:#FEF3C7; animation:bhPulse 1.5s infinite; }
 .bh-timer.danger { color:var(--red); background:var(--red-lt); animation:bhPulse 1s infinite; }
 @keyframes bhPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
@@ -991,6 +1001,20 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
 .bh-chips-label { font-size:11px; color:var(--text-m); margin-bottom:6px; display:flex; align-items:center; gap:4px; font-weight:500; }
 .bh-chips-label svg { width:12px; height:12px; }
+/* [v11.7 BH-6] List SP trên card phiên - dạng dọc */
+.bh-card-sp-list { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.bh-card-sp-item { padding:7px 10px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; }
+.bh-card-sp-name { font-size:12.5px; color:var(--text-d); font-weight:600; line-height:1.3; }
+.bh-card-sp-meta { font-size:10px; color:var(--text-m); margin-top:1px; }
+.bh-card-add-sp { padding:8px 12px; border:1.5px dashed #D1D5DB; border-radius:8px; font-size:12px; color:var(--green); font-weight:600; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all .12s; }
+.bh-card-add-sp:hover, .bh-card-add-sp:active { background:#F0FDF4; border-color:var(--green); }
+/* [v11.7 BH-3] Chip NV trên card phiên */
+.bh-card-nv-row { display:flex; align-items:center; gap:6px; padding:8px 12px; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; margin-bottom:10px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .12s; }
+.bh-card-nv-row:hover, .bh-card-nv-row:active { background:#FEF3C7; }
+.bh-card-nv-row svg { color:#92400E; flex-shrink:0; }
+.bh-card-nv-name { font-size:12px; color:var(--text-d); flex:1; }
+.bh-card-nv-empty { font-size:12px; color:#92400E; flex:1; font-style:italic; }
+.bh-card-nv-edit { font-size:10px; color:var(--text-m); padding:2px 6px; background:#fff; border-radius:4px; border:1px solid #E5E7EB; }
 .bh-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
 .bh-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:999px; background:var(--blue-lt); color:var(--blue); font-weight:500; }
 .bh-chip .rm { cursor:pointer; opacity:0.7; font-weight:700; padding:0 2px; }
@@ -1034,14 +1058,19 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-daterange input[type=date] { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:#fff; }
 .bh-ql-refresh { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-.bh-ql-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:10px 12px; }
-.bh-ql-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; }
-.bh-ql-stat .n { font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; }
+.bh-ql-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px 12px; }
+.bh-ql-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; cursor:pointer; transition:all .12s; -webkit-tap-highlight-color:transparent; border:2px solid transparent; }
+.bh-ql-stat:hover, .bh-ql-stat:active { transform:scale(0.97); }
+.bh-ql-stat.active { border-color:currentColor; box-shadow:0 0 0 3px rgba(0,0,0,0.04); }
+.bh-ql-stat .n { font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
 .bh-ql-stat .l { font-size:10px; color:var(--text-m); margin-top:3px; font-weight:500; }
 .bh-ql-stat.red { background:var(--red-lt); } .bh-ql-stat.red .n { color:var(--red); }
 .bh-ql-stat.green { background:var(--green-lt); } .bh-ql-stat.green .n { color:var(--green); }
 .bh-ql-stat.blue { background:var(--blue-lt); } .bh-ql-stat.blue .n { color:var(--blue); }
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
+.bh-ql-stat.purple { background:#F3E8FF; } .bh-ql-stat.purple .n { color:#7C3AED; }
+/* [v11.7 BH-7b] STT toàn cục badge */
+.bh-stt-tc { display:inline-block; padding:2px 6px; background:#7C3AED; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
 
 .bh-ql-content { padding:12px; }
 
@@ -2088,21 +2117,30 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <input type="text" id="bh-ql-q" placeholder="Tìm mã CH, tên CH, SP..." oninput="bhQlDebouncedReload()">
       </div>
       <div class="bh-ql-daterange" id="bh-ql-daterange" style="display:none">
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="date" id="bh-ql-tu" onchange="bhQlReload()">
           <span style="color:var(--text-m);font-size:12px">đến</span>
           <input type="date" id="bh-ql-den" onchange="bhQlReload()">
+          <!-- [v11.7 BH-7d] Sort dropdown -->
+          <select id="bh-ql-sort" onchange="bhQlSetSort(this.value)" style="margin-left:auto;padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+            <option value="time_desc">Mới → Cũ</option>
+            <option value="time_asc">Cũ → Mới</option>
+            <option value="dur_desc">Thời lượng dài → ngắn</option>
+            <option value="dur_asc">Thời lượng ngắn → dài</option>
+            <option value="value_desc">Giá trị cao → thấp</option>
+          </select>
           <button class="bh-ql-refresh" onclick="bhQlReload()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Stats tổng quan -->
+      <!-- [v11.7 BH-7c] Stats tổng quan + clickable filter -->
       <div class="bh-ql-stats" id="bh-ql-stats">
-        <div class="bh-ql-stat red"><div class="n" id="bh-ql-stat-live">0</div><div class="l">đang bán</div></div>
-        <div class="bh-ql-stat green"><div class="n" id="bh-ql-stat-bought">0</div><div class="l">đã mua</div></div>
-        <div class="bh-ql-stat gray"><div class="n" id="bh-ql-stat-notbought">0</div><div class="l">chưa mua</div></div>
+        <div class="bh-ql-stat red active" id="bh-ql-stat-card-live" onclick="bhQlSetStatusFilter('live')"><div class="n" id="bh-ql-stat-live">0</div><div class="l">đang bán</div></div>
+        <div class="bh-ql-stat green" id="bh-ql-stat-card-bought" onclick="bhQlSetStatusFilter('bought')"><div class="n" id="bh-ql-stat-bought">0</div><div class="l">đã mua</div></div>
+        <div class="bh-ql-stat gray" id="bh-ql-stat-card-notbought" onclick="bhQlSetStatusFilter('notbought')"><div class="n" id="bh-ql-stat-notbought">0</div><div class="l">chưa mua</div></div>
+        <div class="bh-ql-stat purple" id="bh-ql-stat-card-all" onclick="bhQlSetStatusFilter('all')"><div class="n" id="bh-ql-stat-all">0</div><div class="l">tất cả</div></div>
         <div class="bh-ql-stat blue"><div class="n" id="bh-ql-stat-rate">–</div><div class="l">tỷ lệ</div></div>
       </div>
 
@@ -2128,7 +2166,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <input class="bh-search-input" id="bh-sp-search" placeholder="Tên, SKU, hoặc mã vạch..." type="text">
       </div>
       <div class="bh-chips" id="bh-sp-selected" style="margin-bottom:12px"></div>
-      <div class="bh-sp-list" id="bh-sp-list"><div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">Nhập từ khóa để tìm SP</div></div>
+      <div class="bh-sp-list" id="bh-sp-list"></div>
     </div>
     <div class="bh-md-footer">
       <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('sp')">Hủy</button>
@@ -2181,7 +2219,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <input class="bh-search-input" id="bh-bought-search" placeholder="Tên SP, mã, mã vạch..." type="text">
       </div>
       <div id="bh-bought-selected" style="margin-bottom:8px"></div>
-      <div class="bh-sp-list" id="bh-bought-list" style="max-height:160px"><div style="padding:14px;text-align:center;color:var(--text-m);font-size:12px">Nhập từ khóa để thêm SP</div></div>
+      <div class="bh-sp-list" id="bh-bought-list" style="max-height:160px"></div>
 
       <!-- Tổng giá trị tự tính -->
       <div class="bh-bought-total-row">
@@ -2199,15 +2237,48 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
+  <!-- ═══ MODAL: CHỌN NV CHO PHIÊN (đầu phiên, từ chip trên card) [v11.7 BH-3] ═══ -->
+  <div class="bh-modal-bd" id="bh-md-sessnv-bd"></div>
+  <div class="bh-modal" id="bh-md-sessnv">
+    <div class="bh-md-handle"></div>
+    <div class="bh-md-header">
+      <div class="bh-md-title">Nhân viên tư vấn</div>
+      <div class="bh-md-sub" id="bh-md-sessnv-sub">Phiên #–</div>
+    </div>
+    <div class="bh-md-body">
+      <div class="bh-field-label">Nhập mã hoặc tên nhân viên</div>
+      <div style="position:relative">
+        <input class="bh-search-input" id="bh-sessnv-input" placeholder="VD: NS01234 hoặc Nguyễn Văn A..." type="text" autocomplete="off">
+        <div class="bh-nv-sug" id="bh-sessnv-sug" style="display:none"></div>
+      </div>
+      <div id="bh-sessnv-info" style="margin-top:8px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-m);line-height:1.4">
+        Có thể bỏ qua bước này. Khi kết thúc phiên (Đã mua / Chưa mua) hệ thống sẽ yêu cầu nhập NV.
+      </div>
+    </div>
+    <div class="bh-md-footer">
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('sessnv')">Để sau</button>
+      <button class="bh-btn bh-btn-success" id="bh-sessnv-confirm-btn" onclick="bhSessionNVConfirm()" disabled style="opacity:0.5">Xác nhận</button>
+    </div>
+  </div>
+
   <!-- ═══ MODAL: KẾT THÚC - CHƯA MUA ═══ -->
   <div class="bh-modal-bd" id="bh-md-notbought-bd"></div>
-  <div class="bh-modal" id="bh-md-notbought">
+  <div class="bh-modal" id="bh-md-notbought"></div>
     <div class="bh-md-handle"></div>
     <div class="bh-md-header">
       <div class="bh-md-title" style="color:var(--text-d)">Khách chưa mua</div>
       <div class="bh-md-sub" id="bh-md-notbought-sub">Phiên #–</div>
     </div>
     <div class="bh-md-body">
+      <!-- [v11.7 BH-3] Trường Nhân viên (bắt buộc) trong modal Chưa mua -->
+      <div class="bh-field-label">Nhân viên trực phiên <span style="color:var(--red)">*</span></div>
+      <div style="position:relative">
+        <input class="bh-search-input" id="bh-notbought-nv-input" placeholder="Nhập tên hoặc mã NV..." type="text" autocomplete="off" style="margin-bottom:4px">
+        <div class="bh-nv-sug" id="bh-notbought-nv-sug" style="display:none"></div>
+      </div>
+      <div id="bh-notbought-nv-info" style="margin-bottom:12px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
+
       <div class="bh-field-label">Lý do chính <span style="color:var(--red)">*</span></div>
       <div class="bh-reason-list">
         <div class="bh-reason-item" onclick="bhPickReason(this,'Giá cao hơn dự kiến')"><div class="bh-reason-radio"></div><div>Giá cao hơn dự kiến</div></div>
@@ -2343,7 +2414,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzvadh-jVmKOML3M3RuU_5tle8WTH2jKNkX8NYXI8lOB68JI9iie0yz6t627S8x8xd1/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzzPLBeq_faS5sHTzz2PcxdLPPy5ugjmKdOdCyBdO9c4jSmuC7EFOhc1R-b9Yw0tHK3/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -4366,9 +4437,9 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
           <span class="lc-ed-sep">đến</span>
           <input type="time" class="lc-ed-time" id="lc-time-kt-${ngay}-${idx}" value="${s.gioKT||'17:00'}" onchange="setLCGio('${ngay}',${idx},'kt',this.value)">
         </div>
-        <!-- [v11.6 Item 6] Chip preset ca thông dụng -->
+        <!-- [v11.7 L1] Chip preset ca thông dụng - label riêng dòng trên -->
+        <div class="lc-preset-label">Chọn nhanh:</div>
         <div class="lc-preset-row">
-          <span class="lc-preset-label">Chọn nhanh:</span>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'07:30','15:30')">Sáng 7:30-15:30</button>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'08:00','14:00')">Sáng 8:00-14:00</button>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'13:30','21:30')">Chiều 13:30-21:30</button>
@@ -4399,8 +4470,6 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
         placeholder="VD: Khám bệnh, việc gia đình..."
         oninput="setLCNghiLyDo('${ngay}',this.value)">${lyDoHT.replace(/</g,'&lt;')}</textarea>
 
-      ${!isLocked ? `<button type="button" class="lc-copy-btn" onclick="copyDonNgayTruoc('${ngay}')">📋 Copy đơn ngày trước</button>` : ''}
-
       <label class="lc-nghi-lbl" style="margin-top:8px">
         Ảnh đơn đính kèm ${isLocked?'<span style="color:var(--green);font-weight:400">· đã có</span>':'<span style="color:var(--red)">*</span>'}
       </label>
@@ -4419,11 +4488,16 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
           <span>📅 Áp dụng đơn này cho nhiều ngày liên tiếp</span>
         </label>
         <div class="lc-multi-range" id="lc-multi-range-${ngay}" style="display:none">
-          <div class="lc-multi-input-row">
-            <span>Từ ngày</span>
-            <input type="date" id="lc-multi-from-${ngay}" value="${ngay}" min="${ngay}">
-            <span>đến</span>
-            <input type="date" id="lc-multi-to-${ngay}" value="${ngay}" min="${ngay}">
+          <!-- [v11.7 L2] 2 dòng: Từ ngày | Đến ngày, format DD/MM/YYYY -->
+          <div class="lc-multi-line">
+            <span class="lc-multi-prefix">Từ</span>
+            <input type="date" id="lc-multi-from-${ngay}" value="${ngay}" min="${ngay}" onchange="renderMultiPreview('${ngay}')">
+            <span class="lc-multi-display" id="lc-multi-from-disp-${ngay}">${_lcVNDate(ngay)}</span>
+          </div>
+          <div class="lc-multi-line">
+            <span class="lc-multi-prefix">Đến</span>
+            <input type="date" id="lc-multi-to-${ngay}" value="${ngay}" min="${ngay}" onchange="renderMultiPreview('${ngay}')">
+            <span class="lc-multi-display" id="lc-multi-to-disp-${ngay}">${_lcVNDate(ngay)}</span>
           </div>
           <button type="button" class="lc-multi-apply-btn" onclick="applyMultiDays('${ngay}')">✓ Áp dụng cho dải ngày</button>
         </div>
@@ -4650,45 +4724,12 @@ function applyPresetCa(ngay, idx, gioBD, gioKT){
   if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
 }
 
-// [v11.6 Item 7] Copy đơn nghỉ ngày trước (lý do + ảnh) sang ngày hiện tại
-function copyDonNgayTruoc(ngay){
-  // Tìm ngày liền trước trong lcEdit có type='nghi' và có lý do
-  const ngayTuan = _ngayTuan(lcTuan);
-  const idxNow = ngayTuan.findIndex(n => n.ngay === ngay);
-  if(idxNow <= 0){
-    showToast('⚠ Không có ngày trước trong tuần này để copy', 'warn');
-    return;
-  }
-  let nguon = null;
-  for(let i = idxNow - 1; i >= 0; i--){
-    const k = ngayTuan[i].ngay;
-    const e = lcEdit[k];
-    if(e && e.type === 'nghi' && (e.lyDoMoi || (e.ghiChuNV && e.ghiChuNV.trim()))){
-      nguon = { ngay: k, edit: e };
-      break;
-    }
-  }
-  if(!nguon){
-    showToast('⚠ Không tìm thấy đơn nghỉ ngày trước để copy', 'warn');
-    return;
-  }
-  // Copy lý do
-  const ghiChuCu = nguon.edit.ghiChuNV || '';
-  const pipeCu = ghiChuCu.indexOf(' | ');
-  const lyDoCu = pipeCu >= 0 ? ghiChuCu.substring(0, pipeCu).trim() : ghiChuCu.trim();
-  const lyDo = nguon.edit.lyDoMoi !== undefined ? nguon.edit.lyDoMoi : lyDoCu;
-  if(!lcEdit[ngay]) lcEdit[ngay] = { type: 'nghi', slots: [], trangThai: 'Chờ duyệt' };
-  lcEdit[ngay].lyDoMoi = lyDo;
-  // Copy ảnh nếu có (anhB64Moi)
-  if(nguon.edit.anhB64Moi){
-    lcEdit[ngay].anhB64Moi = nguon.edit.anhB64Moi;
-  }
-  _rerenderLCDay(ngay);
-  setTimeout(() => {
-    const el = document.getElementById('lced-' + ngay);
-    if(el) el.classList.add('open');
-  }, 10);
-  showToast('✓ Đã copy đơn từ ngày ' + nguon.ngay.substring(8,10) + '/' + nguon.ngay.substring(5,7), 'ok');
+// [v11.7 L2] Helper format ngày VN
+function _lcVNDate(s){
+  if(!s) return '';
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return s;
+  return `${m[3]}/${m[2]}/${m[1]}`;
 }
 
 // [v11.6 Item 7] Toggle range picker
@@ -4696,6 +4737,12 @@ function toggleApplyMultiDays(ngay){
   const cb = document.getElementById('lc-multi-' + ngay);
   const rangeEl = document.getElementById('lc-multi-range-' + ngay);
   if(rangeEl) rangeEl.style.display = cb.checked ? 'block' : 'none';
+}
+
+// [v11.7 L2] Update preview khi đổi ngày (input date tự hiển thị DD/MM/YYYY trên mobile)
+function renderMultiPreview(ngay){
+  // No-op cho desktop, mobile input date hiển thị format mặc định của hệ điều hành
+  // Function này chỉ giữ để onchange không lỗi
 }
 
 // [v11.6 Item 7] Apply đơn nghỉ cho dải ngày liên tiếp
@@ -6823,7 +6870,10 @@ const BH = {
   tempProducts: [],        // SP quan tâm: array of maCu (chuỗi)
   tempItems: [],           // SP đã mua: array of {maCu, qty}
   tempReason: null,
-  tempBoughtNV: null,      // [v11.2 BH-10a] {ma, ten} NV trực phiên
+  tempBoughtNV: null,      // [v11.2 BH-10a] {ma, ten} NV trực phiên (Đã mua)
+  tempNotBoughtNV: null,   // [v11.7 BH-3] {ma, ten} NV trực phiên (Chưa mua)
+  tempSessionNV: null,     // [v11.7 BH-3] {ma, ten} NV chọn từ đầu phiên (modal NV)
+  currentSessionNVId: null,// [v11.7 BH-3] idPhien đang mở modal chọn NV
   // [v11.2 BH-01] Filter
   filterStatus: 'all',     // 'all' | 'selling' | 'bought' | 'notbought'
   // Timers
@@ -6837,6 +6887,11 @@ const BH = {
   qlFilterTuNgay: '',
   qlFilterDenNgay: '',
   qlReloadTimer: null,
+  // [v11.7 BH-7c/d] Filter status + sort
+  qlStatusFilter: 'all',
+  qlSort: 'time_desc',
+  qlLastLive: [],
+  qlLastFinished: [],
   qlAutoRefresh: null,
 };
 
@@ -6873,18 +6928,44 @@ function bhEscHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 function bhVibrate(ms) { if (navigator.vibrate) try{ navigator.vibrate(ms); }catch(e){} }
+// [v11.7 BH-1] Tiếng ting trong, dài, giống iPhone tin nhắn
+// Dùng 2 oscillator (frequency + harmonic) với envelope ADSR mượt
 function bhPlayBeep(freq, dur) {
   if (!BH.soundOn) return;
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.value = 0.08;
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur / 1000);
-    osc.start(); osc.stop(ctx.currentTime + dur / 1000);
-    setTimeout(() => ctx.close(), dur + 50);
+    const now = ctx.currentTime;
+    // Oscillator 1: tone chính (sine)
+    const osc1 = ctx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(freq, now);
+    // Oscillator 2: harmonic 4th cao hơn (cho âm thanh trong, sắc)
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(freq * 1.498, now); // perfect 5th = 1.5x
+    // Gain với envelope mượt
+    const gain = ctx.createGain();
+    const peakVol = 0.18;
+    const decay = Math.max(dur, 600) / 1000; // tối thiểu 600ms decay
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(peakVol, now + 0.012); // attack 12ms
+    gain.gain.exponentialRampToValueAtTime(peakVol * 0.4, now + 0.08); // initial decay
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + decay); // long tail
+    // Lowpass filter để bớt chói
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(6000, now);
+    filter.Q.setValueAtTime(1.2, now);
+    // Connect
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + decay + 0.05);
+    osc2.stop(now + decay + 0.05);
+    setTimeout(() => ctx.close(), (decay + 0.1) * 1000);
   } catch(e){}
 }
 
@@ -7124,7 +7205,8 @@ function bhToggleSound() {
   BH.soundOn = !BH.soundOn;
   try { localStorage.setItem('bh_sound', BH.soundOn ? '1' : '0'); } catch(e){}
   bhUpdateSoundUI();
-  if (BH.soundOn) bhPlayBeep(600, 80);
+  // [v11.7 BH-1] Tone preview khi bật âm thanh
+  if (BH.soundOn) bhPlayBeep(523, 800);  // C5
 }
 function bhUpdateSoundUI() {
   const lbl = document.getElementById('bh-sound-label');
@@ -7149,8 +7231,11 @@ async function bhLoadPhienDangBan() {
       return {
         idPhien: p.idPhien,
         num: p.stt,
+        sttToanCuc: p.sttToanCuc || 0,  // [v11.7 BH-7b]
         startMs,
         products: p.spQuanTam || [],
+        // [v11.7 BH-3] Map NV từ server response
+        nv: p.maNV ? { ma: p.maNV, ten: p.tenNV || p.maNV } : null,
         status: 'selling'
       };
     });
@@ -7300,14 +7385,23 @@ function bhRenderCardContent(card, s) {
     return;
   }
 
-  // [v11.2 BH-08] SP chips: dùng "Sản phẩm" thay "SP", bỏ chip "Số khách"
-  let chipsHtml = '';
-  chipsHtml += s.products.map(maCu => {
-    const ten = bhTenSP(maCu);
-    const display = ten.length > 22 ? ten.slice(0, 22) + '…' : ten;
-    return '<span class="bh-chip">' + bhEscHtml(display) + '</span>';
-  }).join('');
-  chipsHtml += '<span class="bh-chip add" onclick="bhOpenSpModal(\'' + s.idPhien + '\')"><svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Sản phẩm</span>';
+  // [v11.7 BH-6] SP trên card phiên hiển thị dạng list dọc, mỗi SP 1 dòng
+  let spListHtml = '';
+  if (s.products.length > 0) {
+    spListHtml = s.products.map(maCu => {
+      const sp = (BH.spCache && BH.spCache[maCu]) || BH_SP_CACHE[maCu];
+      const ten = sp ? sp.ten : maCu;
+      const ma  = sp ? sp.maCu : maCu;
+      return `<div class="bh-card-sp-item">
+        <div class="bh-card-sp-name">${bhEscHtml(ten)}</div>
+        <div class="bh-card-sp-meta">Mã: ${bhEscHtml(ma)}</div>
+      </div>`;
+    }).join('');
+  }
+  const addBtnHtml = `<div class="bh-card-add-sp" onclick="bhOpenSpModal('${s.idPhien}')">
+    <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    ${s.products.length > 0 ? 'Thêm sản phẩm' : 'Thêm sản phẩm khách quan tâm'}
+  </div>`;
 
   card.innerHTML = `
     <div class="bh-card-header">
@@ -7320,11 +7414,16 @@ function bhRenderCardContent(card, s) {
       </div>
       <div class="bh-timer${tc}" data-timer="${s.idPhien}">${bhFormatTimeCs(elapsedMs)}</div>
     </div>
+    <!-- [v11.7 BH-3] Chip Nhân viên trực phiên (nằm trên SP) -->
+    <div class="bh-card-nv-row" onclick="bhOpenSessionNVModal('${s.idPhien}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      ${s.nv ? `<span class="bh-card-nv-name"><strong>${bhEscHtml(s.nv.ma)}</strong> · ${bhEscHtml(s.nv.ten)}</span><span class="bh-card-nv-edit">đổi</span>` : '<span class="bh-card-nv-empty">Chọn nhân viên tư vấn (tùy chọn)</span>'}
+    </div>
     <div class="bh-chips-label">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
       Sản phẩm khách quan tâm
     </div>
-    <div class="bh-chips">${chipsHtml}</div>
+    <div class="bh-card-sp-list">${spListHtml}${addBtnHtml}</div>
     <div class="bh-actions">
       <button class="bh-btn bh-btn-secondary" onclick="bhOpenNotBoughtModal('${s.idPhien}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7357,15 +7456,18 @@ async function bhBatDauPhien() {
     return;
   }
   bhVibrate(20);
-  bhPlayBeep(800, 100);
+  // [v11.7 BH-1] Tone E5 hài hòa
+  bhPlayBeep(659, 800);
 
   BH.counterToday++;
   const tempId = 'temp_' + Date.now();
   const tempSession = {
     idPhien: tempId,
     num: BH.counterToday,
+    sttToanCuc: 0,
     startMs: Date.now(),
     products: [],
+    nv: null,           // [v11.7 BH-3] NV chưa chọn lúc đầu
     status: 'selling',
     syncing: true
   };
@@ -7387,7 +7489,12 @@ async function bhBatDauPhien() {
     if (d.success && d.phien) {
       tempSession.idPhien = d.phien.idPhien;
       tempSession.num = d.phien.stt;
+      tempSession.sttToanCuc = d.phien.sttToanCuc || 0;
       tempSession.syncing = false;
+      // Nếu server trả về maNV (ví dụ NV login → server tự gán) → map vào session
+      if (d.phien.maNV) {
+        tempSession.nv = { ma: d.phien.maNV, ten: d.phien.tenNV || d.phien.maNV };
+      }
       const card = document.querySelector('[data-sid="' + tempId + '"]');
       if (card) card.dataset.sid = d.phien.idPhien;
       bhRenderSessions();
@@ -7456,10 +7563,13 @@ async function bhRenderSpListLocal(containerId, query, toggleFn, selectedList) {
     }
   }
 
+  // [v11.7 BH-4] Khi query rỗng - ẩn list (không hiện dòng hint thừa)
   if (query.length < 1) {
-    list.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-m);font-size:13px">Nhập từ khóa, mã SP, hoặc mã vạch...</div>';
+    list.innerHTML = '';
+    list.style.display = 'none';
     return;
   }
+  list.style.display = '';
 
   const items = bhSearchSpLocal(query, 20);
   if (!items.length) {
@@ -7482,17 +7592,27 @@ async function bhRenderSpListLocal(containerId, query, toggleFn, selectedList) {
   }).join('');
 }
 
+// [v11.7 BH-6] Render SP quan tâm dạng list dọc - mỗi SP 1 dòng đầy đủ thông tin
 function bhRenderSpSelectedQT() {
   const wrap = document.getElementById('bh-sp-selected');
   if (!wrap) return;
   if (!BH.tempProducts.length) {
-    wrap.innerHTML = '<span style="font-size:12px;color:var(--text-lt)">Chưa chọn sản phẩm</span>';
+    wrap.innerHTML = '<div class="bh-selected-empty">Chưa chọn sản phẩm</div>';
     return;
   }
   wrap.innerHTML = BH.tempProducts.map(maCu => {
-    const ten = bhTenSP(maCu);
-    const display = ten.length > 25 ? ten.slice(0, 25) + '…' : ten;
-    return '<span class="bh-chip">' + bhEscHtml(display) + ' <span class="rm" onclick="bhToggleSpQuanTam(\'' + bhEscHtml(maCu) + '\')">×</span></span>';
+    const sp = (BH.spCache && BH.spCache[maCu]) || BH_SP_CACHE[maCu];
+    const ten = sp ? sp.ten : maCu;
+    const ma  = sp ? sp.maCu : maCu;
+    const gia = sp ? ((sp.giaSale > 0) ? sp.giaSale : (sp.giaNY || 0)) : 0;
+    return `
+      <div class="bh-selected-item">
+        <div class="bh-selected-item-main">
+          <div class="bh-selected-item-name">${bhEscHtml(ten)}</div>
+          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong>${gia > 0 ? ' · Giá: <strong>' + bhFormatMoney(gia) + 'đ</strong>' : ''}</div>
+        </div>
+        <button class="bh-selected-rm" onclick="bhToggleSpQuanTam('${bhEscHtml(maCu)}')" title="Bỏ chọn">×</button>
+      </div>`;
   }).join('');
 }
 
@@ -7501,9 +7621,17 @@ function bhToggleSpQuanTam(maCu) {
   if (i >= 0) BH.tempProducts.splice(i, 1);
   else BH.tempProducts.push(maCu);
   bhRenderSpSelectedQT();
-  // Re-render list
-  const q = document.getElementById('bh-sp-search').value;
-  bhRenderSpListLocal('bh-sp-list', q, 'bhToggleSpQuanTam', BH.tempProducts);
+  // [v11.7 BH-5] Sau khi thêm 1 SP - clear ô search + ẩn list để user gõ tìm SP tiếp
+  const searchInp = document.getElementById('bh-sp-search');
+  if (searchInp) {
+    searchInp.value = '';
+    searchInp.focus();
+  }
+  const list = document.getElementById('bh-sp-list');
+  if (list) {
+    list.innerHTML = '';
+    list.style.display = 'none';
+  }
 }
 
 async function bhSpConfirm() {
@@ -7526,8 +7654,22 @@ async function bhSpConfirm() {
 // Form 4 trường: Nhân viên / Sản phẩm với qty / Ghi chú bắt buộc / (auto: tổng giá trị)
 // ═══════════════════════════════════════════════════════════════════
 
-let _bhNvCacheCH = null; // [{ma, ten}] của CH hiện tại
+// [v11.7 BH-3] Cache NV toàn hệ thống (load 1 lần trong session, search theo tên/mã)
+let _bhNvCacheAll = null; // [{ma, ten, cuaHang, khuVuc}]
 let _bhBoughtSpSearchTimer = null;
+
+// Helper: load NV toàn hệ thống (1 lần)
+async function bhLoadAllNV() {
+  if (_bhNvCacheAll) return _bhNvCacheAll;
+  try {
+    const r = await fetch(SCRIPT_URL + '?type=nv_search_all');
+    const d = await r.json();
+    _bhNvCacheAll = d.nvList || [];
+  } catch(e) {
+    _bhNvCacheAll = [];
+  }
+  return _bhNvCacheAll;
+}
 
 async function bhOpenBoughtModal(sid) {
   BH.currentSessionId = sid;
@@ -7536,31 +7678,35 @@ async function bhOpenBoughtModal(sid) {
 
   // [v11.2 BH-10c] Pre-fill SP từ SP quan tâm với qty=1
   BH.tempItems = s.products.map(maCu => ({ maCu, qty: 1 }));
-  BH.tempBoughtNV = null;
+  // [v11.7 BH-3] Pre-fill NV nếu phiên đã có NV nhập sẵn từ đầu phiên
+  BH.tempBoughtNV = s.nv ? { ma: s.nv.ma, ten: s.nv.ten } : null;
 
   document.getElementById('bh-md-bought-sub').textContent = 'Phiên #' + s.num;
-  document.getElementById('bh-bought-nv-input').value = '';
-  document.getElementById('bh-bought-nv-info').innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
+  const nvInp = document.getElementById('bh-bought-nv-input');
+  const nvInfo = document.getElementById('bh-bought-nv-info');
+  if (BH.tempBoughtNV) {
+    nvInp.value = BH.tempBoughtNV.ma;
+    nvInfo.innerHTML = '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(BH.tempBoughtNV.ten) + '</span>';
+  } else {
+    nvInp.value = '';
+    nvInfo.innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
+  }
   document.getElementById('bh-bought-search').value = '';
   document.getElementById('bh-bought-note').value = '';
-  document.getElementById('bh-bought-list').innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-m);font-size:12px">Nhập từ khóa để thêm SP</div>';
+  // [v11.7 BH-4] Không hiện dòng hint thừa
+  const boughtList = document.getElementById('bh-bought-list');
+  boughtList.innerHTML = '';
+  boughtList.style.display = 'none';
   bhRenderBoughtSelected();
   bhRenderBoughtTotal();
   bhUpdateBoughtConfirmBtn();
 
-  // Load NV của CH (cache 1 lần)
-  if (!_bhNvCacheCH || _bhNvCacheCH.maCH !== SESSION.cuaHangMa) {
-    try {
-      const r = await fetch(SCRIPT_URL + '?type=nv_by_ch&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
-      const d = await r.json();
-      _bhNvCacheCH = { maCH: SESSION.cuaHangMa, list: d.nvList || [] };
-    } catch(e) { _bhNvCacheCH = { maCH: SESSION.cuaHangMa, list: [] }; }
-  }
+  // [v11.7 BH-3] Load NV toàn hệ thống (cache lifetime của session)
+  await bhLoadAllNV();
 
   bhOpenModal('bought');
 
-  // NV input handler
-  const nvInp = document.getElementById('bh-bought-nv-input');
+  // NV input handler (dùng lại biến nvInp đã khai báo phía trên)
   nvInp.oninput = bhRenderNvSuggest;
   nvInp.onfocus = bhRenderNvSuggest;
   nvInp.onblur = function() { setTimeout(() => {
@@ -7576,32 +7722,106 @@ async function bhOpenBoughtModal(sid) {
   };
 }
 
-function bhRenderNvSuggest() {
-  const inp = document.getElementById('bh-bought-nv-input');
-  const sug = document.getElementById('bh-bought-nv-sug');
-  if (!inp || !sug || !_bhNvCacheCH) return;
+// [v11.7 BH-3] Modal chọn NV cho phiên (đầu phiên, từ chip trên card)
+async function bhOpenSessionNVModal(sid) {
+  BH.currentSessionNVId = sid;
+  const s = BH.sessions.find(x => x.idPhien === sid);
+  if (!s) return;
+  BH.tempSessionNV = s.nv ? { ma: s.nv.ma, ten: s.nv.ten } : null;
+  document.getElementById('bh-md-sessnv-sub').textContent = 'Phiên #' + s.num;
+  const inp = document.getElementById('bh-sessnv-input');
+  if (BH.tempSessionNV) {
+    inp.value = BH.tempSessionNV.ma;
+    document.getElementById('bh-sessnv-info').innerHTML =
+      '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(BH.tempSessionNV.ten) + '</span>';
+  } else {
+    inp.value = '';
+    document.getElementById('bh-sessnv-info').innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
+  }
+  bhUpdateSessNVConfirmBtn();
+  await bhLoadAllNV();
+  bhOpenModal('sessnv');
+  inp.oninput = bhRenderSessNvSuggest;
+  inp.onfocus = bhRenderSessNvSuggest;
+  inp.onblur = function() { setTimeout(() => {
+    const sg = document.getElementById('bh-sessnv-sug');
+    if (sg) sg.style.display = 'none';
+  }, 200); };
+  setTimeout(() => inp.focus(), 300);
+}
+function bhRenderSessNvSuggest() {
+  _bhRenderNvSuggestGeneric('sessnv', 'bhSelectSessNV');
+}
+function bhSelectSessNV(ma, ten) {
+  BH.tempSessionNV = { ma, ten };
+  document.getElementById('bh-sessnv-input').value = ma;
+  document.getElementById('bh-sessnv-info').innerHTML =
+    '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(ten) + '</span>';
+  document.getElementById('bh-sessnv-sug').style.display = 'none';
+  bhUpdateSessNVConfirmBtn();
+}
+function bhUpdateSessNVConfirmBtn() {
+  const btn = document.getElementById('bh-sessnv-confirm-btn');
+  if (!btn) return;
+  const ok = !!BH.tempSessionNV;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.5';
+}
+async function bhSessionNVConfirm() {
+  const s = BH.sessions.find(x => x.idPhien === BH.currentSessionNVId);
+  if (!s || !BH.tempSessionNV) return;
+  s.nv = { ma: BH.tempSessionNV.ma, ten: BH.tempSessionNV.ten };
+  bhRenderSessions();
+  bhCloseModal('sessnv');
+  // Gửi server ngầm
+  try {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'update_nv_phien',
+        idPhien: s.idPhien,
+        maNV: BH.tempSessionNV.ma,
+        tenNV: BH.tempSessionNV.ten,
+      })
+    });
+  } catch(e){}
+  bhShowToast('✓ Đã chọn ' + BH.tempSessionNV.ten, 'success');
+}
+
+// [v11.7 BH-3] Helper search NV chung - dùng cho đầu phiên, Đã mua, Chưa mua
+// suffix = 'bought' | 'notbought' | 'session' (cho mỗi ô input riêng)
+function _bhRenderNvSuggestGeneric(suffix, onSelectFn) {
+  const inp = document.getElementById('bh-' + suffix + '-nv-input');
+  const sug = document.getElementById('bh-' + suffix + '-nv-sug');
+  if (!inp || !sug || !_bhNvCacheAll) return;
   const q = inp.value.trim().toUpperCase();
   let matched;
   if (!q) {
-    matched = _bhNvCacheCH.list.slice(0, 10);
+    matched = _bhNvCacheAll.slice(0, 10);
   } else {
-    matched = _bhNvCacheCH.list.filter(nv =>
+    matched = _bhNvCacheAll.filter(nv =>
       nv.ma.toUpperCase().indexOf(q) >= 0 || nv.ten.toUpperCase().indexOf(q) >= 0
-    ).slice(0, 8);
+    ).slice(0, 12);
   }
   if (!matched.length) {
-    sug.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-m)">Không có NV nào</div>';
+    sug.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-m)">Không có NV nào khớp</div>';
     sug.style.display = 'block';
     return;
   }
   sug.innerHTML = matched.map(nv =>
-    `<div class="bh-nv-sug-item" onmousedown="event.preventDefault();bhSelectNV('${bhEscHtml(nv.ma)}','${bhEscHtml(nv.ten)}')">
+    `<div class="bh-nv-sug-item" onmousedown="event.preventDefault();${onSelectFn}('${bhEscHtml(nv.ma)}','${bhEscHtml(nv.ten)}')">
       <span style="font-weight:600;color:var(--text)">${bhEscHtml(nv.ma)}</span>
       <span style="font-size:13px;color:var(--text-m);margin-left:6px">${bhEscHtml(nv.ten)}</span>
+      ${nv.cuaHang ? '<span style="font-size:10px;color:var(--text-lt);margin-left:6px">· ' + bhEscHtml(nv.cuaHang) + '</span>' : ''}
     </div>`
   ).join('');
   sug.style.display = 'block';
 }
+
+function bhRenderNvSuggest() {
+  _bhRenderNvSuggestGeneric('bought', 'bhSelectNV');
+}
+
 function bhSelectNV(ma, ten) {
   BH.tempBoughtNV = { ma, ten };
   document.getElementById('bh-bought-nv-input').value = ma;
@@ -7622,9 +7842,17 @@ function bhAddBoughtSp(maCu) {
   bhRenderBoughtSelected();
   bhRenderBoughtTotal();
   bhUpdateBoughtConfirmBtn();
-  // Re-render list
-  const q = document.getElementById('bh-bought-search').value;
-  bhRenderSpListLocal('bh-bought-list', q, 'bhAddBoughtSp', BH.tempItems.map(it => it.maCu));
+  // [v11.7 BH-5] Sau khi thêm SP - clear ô search + ẩn list
+  const searchInp = document.getElementById('bh-bought-search');
+  if (searchInp) {
+    searchInp.value = '';
+    searchInp.focus();
+  }
+  const list = document.getElementById('bh-bought-list');
+  if (list) {
+    list.innerHTML = '';
+    list.style.display = 'none';
+  }
 }
 
 function bhChangeQty(maCu, delta) {
@@ -7653,24 +7881,29 @@ function bhRenderBoughtSelected() {
   const wrap = document.getElementById('bh-bought-selected');
   if (!wrap) return;
   if (!BH.tempItems.length) {
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--text-lt);padding:8px 0">Chưa chọn SP đã mua</div>';
+    wrap.innerHTML = '<div class="bh-selected-empty">Chưa chọn SP đã mua</div>';
     return;
   }
+  // [v11.7 BH-6] List dọc, mỗi SP 1 dòng đầy đủ thông tin (tên không bị cắt)
   wrap.innerHTML = BH.tempItems.map(it => {
-    const ten = bhTenSP(it.maCu);
-    const display = ten.length > 28 ? ten.slice(0, 28) + '…' : ten;
+    const sp = (BH.spCache && BH.spCache[it.maCu]) || BH_SP_CACHE[it.maCu];
+    const ten = sp ? sp.ten : it.maCu;
+    const ma  = sp ? sp.maCu : it.maCu;
     const gia = bhGiaSP(it.maCu);
     const subtotal = gia * it.qty;
     return `
-      <div class="bh-bought-item">
-        <div class="bh-bought-item-name">${bhEscHtml(display)}</div>
-        <div class="bh-bought-item-row">
-          <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',-1)">−</button>
-          <span class="bh-qty-num">${it.qty}</span>
-          <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',1)">+</button>
-          <span class="bh-bought-item-price">${bhFormatMoney(subtotal)}đ</span>
-          <button class="bh-bought-rm" onclick="bhRemoveBoughtSp('${bhEscHtml(it.maCu)}')">×</button>
+      <div class="bh-selected-item bh-selected-item-bought">
+        <div class="bh-selected-item-main">
+          <div class="bh-selected-item-name">${bhEscHtml(ten)}</div>
+          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong>${gia > 0 ? ' · Đơn giá: ' + bhFormatMoney(gia) + 'đ' : ''}</div>
+          <div class="bh-bought-item-row">
+            <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',-1)">−</button>
+            <span class="bh-qty-num">${it.qty}</span>
+            <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',1)">+</button>
+            <span class="bh-bought-item-price">${bhFormatMoney(subtotal)}đ</span>
+          </div>
         </div>
+        <button class="bh-selected-rm" onclick="bhRemoveBoughtSp('${bhEscHtml(it.maCu)}')">×</button>
       </div>
     `;
   }).join('');
@@ -7728,7 +7961,8 @@ async function bhBoughtConfirm() {
 
   bhRenderSessions();
   bhCloseModal('bought');
-  bhPlayBeep(1200, 180);
+  // [v11.7 BH-1] Tone G5 vui khi đã mua
+  bhPlayBeep(784, 900);
   bhVibrate(50);
 
   try {
@@ -7789,17 +8023,50 @@ async function bhBoughtConfirm() {
 // ═══════════════════════════════════════════════════════════════════
 // [v11.2 BH-09] MODAL: CHƯA MUA — Bỏ "Chỉ xem tham khảo", đổi text, ghi chú bắt buộc
 // ═══════════════════════════════════════════════════════════════════
-function bhOpenNotBoughtModal(sid) {
+async function bhOpenNotBoughtModal(sid) {
   BH.currentSessionId = sid;
   const s = BH.sessions.find(x => x.idPhien === sid);
   if (!s) return;
   BH.tempReason = null;
+  // [v11.7 BH-3] Pre-fill NV nếu phiên đã có (từ đầu phiên)
+  BH.tempNotBoughtNV = s.nv ? { ma: s.nv.ma, ten: s.nv.ten } : null;
   document.getElementById('bh-md-notbought-sub').textContent = 'Phiên #' + s.num;
+  const nvInp = document.getElementById('bh-notbought-nv-input');
+  const nvInfo = document.getElementById('bh-notbought-nv-info');
+  if (BH.tempNotBoughtNV) {
+    nvInp.value = BH.tempNotBoughtNV.ma;
+    nvInfo.innerHTML = '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(BH.tempNotBoughtNV.ten) + '</span>';
+  } else {
+    nvInp.value = '';
+    nvInfo.innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
+  }
   document.getElementById('bh-notbought-note').value = '';
   [...document.querySelectorAll('.bh-reason-item')].forEach(r => r.classList.remove('selected'));
   bhUpdateNotBoughtConfirmBtn();
+  await bhLoadAllNV();
   bhOpenModal('notbought');
+
+  // NV input handler
+  nvInp.oninput = bhRenderNotBoughtNvSuggest;
+  nvInp.onfocus = bhRenderNotBoughtNvSuggest;
+  nvInp.onblur = function() { setTimeout(() => {
+    const sg = document.getElementById('bh-notbought-nv-sug');
+    if (sg) sg.style.display = 'none';
+  }, 200); };
 }
+// [v11.7 BH-3] Render suggest cho input NV ở Chưa mua
+function bhRenderNotBoughtNvSuggest() {
+  _bhRenderNvSuggestGeneric('notbought', 'bhSelectNvNotBought');
+}
+function bhSelectNvNotBought(ma, ten) {
+  BH.tempNotBoughtNV = { ma, ten };
+  document.getElementById('bh-notbought-nv-input').value = ma;
+  document.getElementById('bh-notbought-nv-info').innerHTML =
+    '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(ten) + '</span>';
+  document.getElementById('bh-notbought-nv-sug').style.display = 'none';
+  bhUpdateNotBoughtConfirmBtn();
+}
+
 function bhPickReason(el, reason) {
   [...document.querySelectorAll('.bh-reason-item')].forEach(r => r.classList.remove('selected'));
   el.classList.add('selected');
@@ -7811,12 +8078,18 @@ function bhUpdateNotBoughtConfirmBtn() {
   const btn = document.getElementById('bh-notbought-btn');
   if (!btn) return;
   const note = document.getElementById('bh-notbought-note').value.trim();
-  const ok = !!BH.tempReason && note.length > 0;
+  // [v11.7 BH-3] Yêu cầu cả NV + lý do + ghi chú
+  const ok = !!BH.tempNotBoughtNV && !!BH.tempReason && note.length > 0;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
 }
 
 async function bhNotboughtConfirm() {
+  // [v11.7 BH-3] Validate NV
+  if (!BH.tempNotBoughtNV) {
+    bhShowToast('Vui lòng nhập mã nhân viên', null);
+    return;
+  }
   if (!BH.tempReason) {
     bhShowToast('Vui lòng chọn lý do', null);
     return;
@@ -7845,7 +8118,8 @@ async function bhNotboughtConfirm() {
 
   bhRenderSessions();
   bhCloseModal('notbought');
-  bhPlayBeep(500, 150);
+  // [v11.7 BH-1] Tone D5 trầm khi chưa mua
+  bhPlayBeep(587, 700);
   bhVibrate(30);
 
   try {
@@ -7856,7 +8130,10 @@ async function bhNotboughtConfirm() {
         idPhien: sid,
         lyDo: reason,
         spQuanTam: s.products,
-        ghiChu: note
+        ghiChu: note,
+        // [v11.7 BH-3] Gửi NV trực phiên cho Chưa mua
+        maNV: BH.tempNotBoughtNV ? BH.tempNotBoughtNV.ma : '',
+        tenNV: BH.tempNotBoughtNV ? BH.tempNotBoughtNV.ten : '',
       })
     });
     const d = await r.json();
@@ -7967,19 +8244,48 @@ async function bhQlReload() {
   }
 }
 
+// [v11.7 BH-7c/d] Filter status clickable + Sort options
+function bhQlSetStatusFilter(filter) {
+  // 'all' | 'live' | 'bought' | 'notbought'
+  BH.qlStatusFilter = filter;
+  // Update UI active state on stat cards
+  ['all','live','bought','notbought'].forEach(f => {
+    const card = document.getElementById('bh-ql-stat-card-' + f);
+    if (card) card.classList.toggle('active', f === filter);
+  });
+  bhQlRenderHistory();
+}
+function bhQlSetSort(sortBy) {
+  BH.qlSort = sortBy;
+  bhQlRenderHistory();
+}
+
+// Helper: build kvAllowed param
+function _bhQlKVAllowedParam() {
+  // Nếu vai trò là QLBH (full hệ thống) hoặc ADMIN → null = full
+  // Nếu là QLBHHCM/MĐ/MT/TTN/HNTB → list KV
+  if (!SESSION || !SESSION.bhKVList) return '';
+  return '&kvAllowed=' + encodeURIComponent(JSON.stringify(SESSION.bhKVList));
+}
+
 async function bhQlLoadPhien() {
   try {
-    const url = SCRIPT_URL + '?type=phien_giam_sat'
+    let url = SCRIPT_URL + '?type=phien_giam_sat'
       + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '')
       + '&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay || '')
       + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay || '')
-      + '&q=' + encodeURIComponent(BH.qlFilterQ || '');
+      + '&q=' + encodeURIComponent(BH.qlFilterQ || '')
+      + _bhQlKVAllowedParam();
     const r = await fetch(url);
     const d = await r.json();
     const gs = d.giamSat || { live: [], finished: [] };
 
-    const live = gs.live || [];
-    const fin = gs.finished || [];
+    // Lưu data tạm để sort/filter realtime mà không fetch lại
+    BH.qlLastLive = gs.live || [];
+    BH.qlLastFinished = gs.finished || [];
+
+    const live = BH.qlLastLive;
+    const fin = BH.qlLastFinished;
     const bought = fin.filter(p => p.trangThai === 'Đã mua').length;
     const nbought = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length;
     document.getElementById('bh-ql-stat-live').textContent = live.length;
@@ -7989,7 +8295,10 @@ async function bhQlLoadPhien() {
     document.getElementById('bh-ql-stat-rate').textContent = total > 0 ? Math.round(bought / total * 100) + '%' : '–';
     document.getElementById('bh-ql-count-live').textContent = live.length;
     document.getElementById('bh-ql-count-history').textContent = fin.length;
+    const totalCard = document.getElementById('bh-ql-stat-all');
+    if (totalCard) totalCard.textContent = live.length + bought + nbought;
 
+    // Render Live (luôn hiện hết, không filter status ở Live)
     const liveEl = document.getElementById('bh-ql-content-live');
     if (!live.length) {
       liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Hiện không có phiên nào đang diễn ra</div>';
@@ -7999,12 +8308,13 @@ async function bhQlLoadPhien() {
         try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
         const elapsed = Math.floor((Date.now() - startMs) / 1000);
         const hot = elapsed >= 900 ? ' hot' : '';
+        const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
         return `
           <div class="bh-live-card${hot}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
             <div class="bh-live-card-head">
               <div>
-                <div class="bh-live-ch">${bhEscHtml(p.tenCH)}</div>
-                <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}</div>
+                <div class="bh-live-ch">${sttTC}${bhEscHtml(p.tenCH)}</div>
+                <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}</div>
               </div>
               <div class="bh-live-timer" data-qltimer="${p.idPhien}">${bhFormatTimeShort(elapsed)}</div>
             </div>
@@ -8014,31 +8324,70 @@ async function bhQlLoadPhien() {
       }).join('');
     }
 
-    const histEl = document.getElementById('bh-ql-content-history');
-    if (!fin.length) {
-      histEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Không có phiên nào trong khoảng thời gian</div>';
-    } else {
-      histEl.innerHTML = fin.map(p => {
-        const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
-        return `
-          <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
-            <div class="bh-hist-status ${cls}"></div>
-            <div class="bh-hist-info">
-              <div class="bh-hist-ch">${bhEscHtml(p.tenCH)} · ${bhEscHtml(p.trangThai)}</div>
-              <div class="bh-hist-meta">
-                ${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
-                ${p.tongGiaTri ? ' · <strong>' + bhFormatMoney(p.tongGiaTri) + 'đ</strong>' : ''}
-              </div>
-            </div>
-            <div class="bh-hist-time">${p.ngay && p.ngay !== BH.qlFilterTuNgay ? p.ngay.slice(5) : ''}</div>
-          </div>
-        `;
-      }).join('');
-    }
+    // Render History (apply filter status + sort)
+    bhQlRenderHistory();
   } catch(e) {
     console.error('[BH QL] Load lỗi:', e);
     document.getElementById('bh-ql-content-live').innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Lỗi tải dữ liệu</div>';
   }
+}
+
+// [v11.7 BH-7c/d] Render History với filter clickable + sort
+function bhQlRenderHistory() {
+  const histEl = document.getElementById('bh-ql-content-history');
+  if (!histEl) return;
+  let fin = (BH.qlLastFinished || []).slice();
+  // Apply status filter
+  const sf = BH.qlStatusFilter || 'all';
+  if (sf === 'bought') fin = fin.filter(p => p.trangThai === 'Đã mua');
+  else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng');
+  // Apply sort
+  const sb = BH.qlSort || 'time_desc';
+  fin.sort((a, b) => {
+    const tA = (a.ngay || '') + (a.gioBD || '');
+    const tB = (b.ngay || '') + (b.gioBD || '');
+    const dA = bhParseThoiLuong(a.thoiLuong);
+    const dB = bhParseThoiLuong(b.thoiLuong);
+    const vA = parseFloat(a.tongGiaTri) || 0;
+    const vB = parseFloat(b.tongGiaTri) || 0;
+    switch(sb) {
+      case 'time_asc':  return tA.localeCompare(tB);
+      case 'time_desc': return tB.localeCompare(tA);
+      case 'dur_desc':  return dB - dA;
+      case 'dur_asc':   return dA - dB;
+      case 'value_desc': return vB - vA;
+      default: return tB.localeCompare(tA);
+    }
+  });
+  if (!fin.length) {
+    histEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">Không có phiên nào</div>';
+    return;
+  }
+  histEl.innerHTML = fin.map(p => {
+    const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
+    const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
+    return `
+      <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
+        <div class="bh-hist-status ${cls}"></div>
+        <div class="bh-hist-info">
+          <div class="bh-hist-ch">${sttTC}${bhEscHtml(p.tenCH)} · ${bhEscHtml(p.trangThai)}</div>
+          <div class="bh-hist-meta">
+            ${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
+            ${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}
+            ${p.tongGiaTri ? ' · <strong>' + bhFormatMoney(p.tongGiaTri) + 'đ</strong>' : ''}
+          </div>
+        </div>
+        <div class="bh-hist-time">${p.ngay && p.ngay !== BH.qlFilterTuNgay ? p.ngay.slice(5) : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Parse "5:30" → 5.5 phút
+function bhParseThoiLuong(s) {
+  if (!s) return 0;
+  const m = String(s).split(':').map(x => parseInt(x) || 0);
+  return (m[0] || 0) + (m[1] || 0) / 60;
 }
 
 setInterval(() => {
@@ -8103,7 +8452,8 @@ async function bhQlLoadDashboard() {
     const url = SCRIPT_URL + '?type=dashboard_bh'
       + '&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay)
       + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay)
-      + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '');
+      + '&khuVuc=' + encodeURIComponent(BH.qlFilterKV || '')
+      + _bhQlKVAllowedParam();
     const r = await fetch(url);
     const d = await r.json();
     const db = d.dashboardBH || {};
