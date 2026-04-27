@@ -953,9 +953,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-selected-rm { width:26px; height:26px; border:1px solid #FCA5A5; background:#FEE2E2; color:var(--red); border-radius:6px; font-size:16px; font-weight:700; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }
 .bh-selected-rm:hover, .bh-selected-rm:active { background:var(--red); color:white; }
 /* NV autocomplete */
-.bh-nv-sug { position:absolute; top:42px; left:0; right:0; background:#fff; border:1px solid #E5E7EB; border-radius:8px; max-height:180px; overflow:auto; z-index:20; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
-.bh-nv-sug-item { padding:8px 12px; cursor:pointer; border-bottom:1px solid #F3F4F6; }
-.bh-nv-sug-item:hover { background:#F9FAFB; }
+.bh-nv-sug { position:absolute; top:calc(100% + 2px); left:0; right:0; background:#fff; border:1px solid #E5E7EB; border-radius:8px; max-height:240px; overflow:auto; z-index:20; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+.bh-nv-sug-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid #F3F4F6; -webkit-tap-highlight-color:transparent; }
+.bh-nv-sug-item:hover, .bh-nv-sug-item:active { background:#F9FAFB; }
 .bh-nv-sug-item:last-child { border-bottom:none; }
 .bh-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; }
 .bh-stat.red { background:var(--red-lt); }
@@ -1123,6 +1123,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-search-input { width:100%; padding:12px 14px 12px 40px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; font-size:15px; background:var(--gray-lt); }
 .bh-search-input:focus { outline:none; border-color:#F97316; background:#fff; }
 .bh-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-lt); pointer-events:none; }
+/* [v11.7 fix] Input không có icon kính lúp - padding đều 2 bên */
+.bh-input-plain { width:100%; padding:12px 14px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; font-size:15px; background:var(--gray-lt); box-sizing:border-box; font-family:inherit; }
+.bh-input-plain:focus { outline:none; border-color:#F97316; background:#fff; }
 
 /* SP list in modal */
 .bh-sp-list { max-height:280px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:#fff; }
@@ -2207,7 +2210,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- Trường 1: Nhân viên -->
       <div class="bh-field-label">Nhân viên trực phiên <span style="color:var(--red)">*</span></div>
       <div style="position:relative">
-        <input class="bh-search-input" id="bh-bought-nv-input" placeholder="Nhập mã NV (VD: NS01...)" type="text" autocomplete="off" style="margin-bottom:4px">
+        <input class="bh-input-plain" id="bh-bought-nv-input" placeholder="Nhập tên hoặc mã NV..." type="text" autocomplete="off" style="margin-bottom:4px">
         <div class="bh-nv-sug" id="bh-bought-nv-sug" style="display:none"></div>
       </div>
       <div id="bh-bought-nv-info" style="margin-bottom:12px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
@@ -2248,10 +2251,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="bh-md-body">
       <div class="bh-field-label">Nhập mã hoặc tên nhân viên</div>
       <div style="position:relative">
-        <input class="bh-search-input" id="bh-sessnv-input" placeholder="VD: NS01234 hoặc Nguyễn Văn A..." type="text" autocomplete="off">
-        <div class="bh-nv-sug" id="bh-sessnv-sug" style="display:none"></div>
+        <input class="bh-input-plain" id="bh-sessnv-nv-input" placeholder="VD: NS01234 hoặc Nguyễn Văn A..." type="text" autocomplete="off">
+        <div class="bh-nv-sug" id="bh-sessnv-nv-sug" style="display:none"></div>
       </div>
-      <div id="bh-sessnv-info" style="margin-top:8px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
+      <div id="bh-sessnv-nv-info" style="margin-top:8px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
       <div style="margin-top:12px;font-size:11px;color:var(--text-m);line-height:1.4">
         Có thể bỏ qua bước này. Khi kết thúc phiên (Đã mua / Chưa mua) hệ thống sẽ yêu cầu nhập NV.
       </div>
@@ -2264,7 +2267,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
   <!-- ═══ MODAL: KẾT THÚC - CHƯA MUA ═══ -->
   <div class="bh-modal-bd" id="bh-md-notbought-bd"></div>
-  <div class="bh-modal" id="bh-md-notbought"></div>
+  <div class="bh-modal" id="bh-md-notbought">
     <div class="bh-md-handle"></div>
     <div class="bh-md-header">
       <div class="bh-md-title" style="color:var(--text-d)">Khách chưa mua</div>
@@ -2274,7 +2277,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- [v11.7 BH-3] Trường Nhân viên (bắt buộc) trong modal Chưa mua -->
       <div class="bh-field-label">Nhân viên trực phiên <span style="color:var(--red)">*</span></div>
       <div style="position:relative">
-        <input class="bh-search-input" id="bh-notbought-nv-input" placeholder="Nhập tên hoặc mã NV..." type="text" autocomplete="off" style="margin-bottom:4px">
+        <input class="bh-input-plain" id="bh-notbought-nv-input" placeholder="Nhập tên hoặc mã NV..." type="text" autocomplete="off" style="margin-bottom:4px">
         <div class="bh-nv-sug" id="bh-notbought-nv-sug" style="display:none"></div>
       </div>
       <div id="bh-notbought-nv-info" style="margin-bottom:12px"><span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span></div>
@@ -7455,6 +7458,14 @@ async function bhBatDauPhien() {
     bhShowToast('Thiếu thông tin cửa hàng', null);
     return;
   }
+  // [v11.7 fix] Chống double-click trong 1 giây
+  if (BH._batDauPhienLock) {
+    console.log('[BH] Bỏ qua click - đang xử lý phiên trước');
+    return;
+  }
+  BH._batDauPhienLock = true;
+  setTimeout(() => { BH._batDauPhienLock = false; }, 1000);
+
   bhVibrate(20);
   // [v11.7 BH-1] Tone E5 hài hòa
   bhPlayBeep(659, 800);
@@ -7501,11 +7512,13 @@ async function bhBatDauPhien() {
     } else {
       BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
       bhRenderSessions();
+      console.error('[BH] Tạo phiên thất bại:', d);
       bhShowToast('Lỗi: ' + (d.error || 'Không tạo được phiên'), null);
     }
   } catch(e) {
     BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
     bhRenderSessions();
+    console.error('[BH] Network error khi tạo phiên:', e);
     bhShowToast('Mất kết nối. Vui lòng thử lại.', null);
   }
 }
@@ -7712,7 +7725,7 @@ async function bhOpenBoughtModal(sid) {
   nvInp.onblur = function() { setTimeout(() => {
     const sg = document.getElementById('bh-bought-nv-sug');
     if (sg) sg.style.display = 'none';
-  }, 200); };
+  }, 250); };
 
   // SP search handler
   document.getElementById('bh-bought-search').oninput = function(e) {
@@ -7729,14 +7742,14 @@ async function bhOpenSessionNVModal(sid) {
   if (!s) return;
   BH.tempSessionNV = s.nv ? { ma: s.nv.ma, ten: s.nv.ten } : null;
   document.getElementById('bh-md-sessnv-sub').textContent = 'Phiên #' + s.num;
-  const inp = document.getElementById('bh-sessnv-input');
+  const inp = document.getElementById('bh-sessnv-nv-input');
   if (BH.tempSessionNV) {
     inp.value = BH.tempSessionNV.ma;
-    document.getElementById('bh-sessnv-info').innerHTML =
+    document.getElementById('bh-sessnv-nv-info').innerHTML =
       '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(BH.tempSessionNV.ten) + '</span>';
   } else {
     inp.value = '';
-    document.getElementById('bh-sessnv-info').innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
+    document.getElementById('bh-sessnv-nv-info').innerHTML = '<span style="color:var(--text-lt);font-size:12px">Chưa chọn nhân viên</span>';
   }
   bhUpdateSessNVConfirmBtn();
   await bhLoadAllNV();
@@ -7744,9 +7757,9 @@ async function bhOpenSessionNVModal(sid) {
   inp.oninput = bhRenderSessNvSuggest;
   inp.onfocus = bhRenderSessNvSuggest;
   inp.onblur = function() { setTimeout(() => {
-    const sg = document.getElementById('bh-sessnv-sug');
+    const sg = document.getElementById('bh-sessnv-nv-sug');
     if (sg) sg.style.display = 'none';
-  }, 200); };
+  }, 250); };
   setTimeout(() => inp.focus(), 300);
 }
 function bhRenderSessNvSuggest() {
@@ -7754,10 +7767,10 @@ function bhRenderSessNvSuggest() {
 }
 function bhSelectSessNV(ma, ten) {
   BH.tempSessionNV = { ma, ten };
-  document.getElementById('bh-sessnv-input').value = ma;
-  document.getElementById('bh-sessnv-info').innerHTML =
+  document.getElementById('bh-sessnv-nv-input').value = ma;
+  document.getElementById('bh-sessnv-nv-info').innerHTML =
     '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(ten) + '</span>';
-  document.getElementById('bh-sessnv-sug').style.display = 'none';
+  document.getElementById('bh-sessnv-nv-sug').style.display = 'none';
   bhUpdateSessNVConfirmBtn();
 }
 function bhUpdateSessNVConfirmBtn() {
@@ -7808,13 +7821,17 @@ function _bhRenderNvSuggestGeneric(suffix, onSelectFn) {
     sug.style.display = 'block';
     return;
   }
-  sug.innerHTML = matched.map(nv =>
-    `<div class="bh-nv-sug-item" onmousedown="event.preventDefault();${onSelectFn}('${bhEscHtml(nv.ma)}','${bhEscHtml(nv.ten)}')">
+  // [v11.7 fix mobile] Dùng onpointerdown (mouse + touch unified) thay onmousedown
+  // Tránh tên NV có dấu ' phá syntax: dùng JSON.stringify để escape an toàn
+  sug.innerHTML = matched.map(nv => {
+    const maJs = JSON.stringify(nv.ma || '');
+    const tenJs = JSON.stringify(nv.ten || '');
+    return `<div class="bh-nv-sug-item" onpointerdown="event.preventDefault();${onSelectFn}(${maJs.replace(/"/g, '&quot;')},${tenJs.replace(/"/g, '&quot;')})">
       <span style="font-weight:600;color:var(--text)">${bhEscHtml(nv.ma)}</span>
       <span style="font-size:13px;color:var(--text-m);margin-left:6px">${bhEscHtml(nv.ten)}</span>
       ${nv.cuaHang ? '<span style="font-size:10px;color:var(--text-lt);margin-left:6px">· ' + bhEscHtml(nv.cuaHang) + '</span>' : ''}
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   sug.style.display = 'block';
 }
 
@@ -8052,7 +8069,7 @@ async function bhOpenNotBoughtModal(sid) {
   nvInp.onblur = function() { setTimeout(() => {
     const sg = document.getElementById('bh-notbought-nv-sug');
     if (sg) sg.style.display = 'none';
-  }, 200); };
+  }, 250); };
 }
 // [v11.7 BH-3] Render suggest cho input NV ở Chưa mua
 function bhRenderNotBoughtNvSuggest() {
