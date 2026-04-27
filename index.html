@@ -1173,6 +1173,154 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 @keyframes bhToastOut { to { opacity:0; transform:translateY(10px); } }
 .bh-toast .undo { color:#FDBA74; font-weight:600; cursor:pointer; margin-left:4px; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   [v11.7 PC] RESPONSIVE PC ≥1024px
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  /* Container chính: tăng width, vẫn căn giữa, có background nhẹ ngoài app */
+  body { font-size: 16px; background:#e8e8e3; }
+  .app { width:100%; max-width: 1100px; min-width: 720px; padding: 0 24px; background:#fff; box-shadow:0 0 30px rgba(0,0,0,0.04); min-height:100vh; }
+
+  /* Header chính */
+  .main-header { padding: 14px 32px !important; }
+  #header-page-title { font-size: 18px !important; }
+  .header-inner { max-width: 1100px !important; padding: 14px 32px !important; }
+
+  /* Login - giữ giữa màn hình, tăng nhẹ */
+  .login-box { max-width: 460px; padding: 36px 32px; }
+  .login-title { font-size: 26px; }
+  .login-sub { font-size: 14px; }
+  .login-logo-icon { width: 96px; height: 96px; font-size: 48px; }
+  .login-input, .ln-input { font-size: 16px !important; padding: 14px !important; }
+  .login-btn { font-size: 16px !important; padding: 14px !important; }
+
+  /* Bottom nav - rộng hơn */
+  .bottom-nav { max-width: 1100px !important; }
+  .nav-item { padding: 10px 16px !important; font-size: 12px !important; }
+  .nav-item svg { width: 24px !important; height: 24px !important; }
+
+  /* Page content - tăng padding */
+  .page { padding: 20px 32px !important; padding-bottom: 100px !important; }
+
+  /* ─── TAB BÁN HÀNG - View CH (PC: layout 2 cột) ─── */
+  /* Header (stat card + nút bắt đầu) bên TRÁI; danh sách phiên bên PHẢI */
+  #bh-view-ch {
+    display: grid !important;
+    grid-template-columns: 360px 1fr;
+    gap: 0 24px;
+    align-items: start;
+  }
+  /* Override khi đang ẩn (vai trò QLBH) */
+  #bh-view-ch[style*="display: none"], #bh-view-ch[style*="display:none"] { display: none !important; }
+  .bh-ch-header {
+    grid-column: 1;
+    grid-row: 1;
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    border-radius: 14px;
+    border: 0.5px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  .bh-warn { grid-column: 1; grid-row: 2; margin: 12px 0 0 !important; }
+  .bh-footer {
+    grid-column: 1;
+    grid-row: 3;
+    position: static;
+    margin-top: 14px;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+  .bh-sessions {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+    align-content: start;
+    padding: 0 !important;
+  }
+
+  /* Card phiên trên PC */
+  .bh-session-card { font-size: 14px; padding: 16px; }
+  .bh-session-num { font-size: 20px !important; }
+  .bh-timer { font-size: 26px !important; }
+  /* Hover effect cho PC */
+  .bh-session-card { transition: transform 0.15s, box-shadow 0.15s; }
+  .bh-session-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.10); }
+  .bh-card-nv-row:hover { background: #FEF3C7 !important; }
+  .bh-card-add-sp:hover { background: #F0FDF4; border-color: var(--green); }
+
+  /* Button to + hover */
+  .bh-btn-primary { font-size: 16px; padding: 16px 24px; transition: transform 0.15s, box-shadow 0.15s; }
+  .bh-btn-primary:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(249,115,22,0.3); }
+  .bh-btn:hover { opacity: 0.92; }
+
+  /* ─── TAB BÁN HÀNG - View QLBH (rộng hơn, 2 cột history+live) ─── */
+  #bh-view-qlbh { max-width: 100%; }
+  .bh-ql-stats { grid-template-columns: repeat(5, 1fr) !important; gap: 10px !important; padding: 14px 0 !important; }
+  .bh-ql-stat { padding: 14px 8px !important; transition: transform 0.15s; }
+  .bh-ql-stat .n { font-size: 24px !important; }
+  .bh-ql-stat .l { font-size: 12px !important; margin-top: 4px !important; }
+  .bh-ql-stat:hover { transform: translateY(-2px); }
+  /* History list 2 cột */
+  #bh-ql-content-history { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #bh-ql-content-live { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bh-live-card, .bh-hist-card { transition: transform 0.15s, box-shadow 0.15s; }
+  .bh-live-card:hover, .bh-hist-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+  /* ─── TAB LỊCH CA (PC: 2 cột, mỗi tuần 4 ngày 1 hàng) ─── */
+  .lc-list { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .lc-day { font-size: 14px; }
+
+  /* ─── TAB NHÂN SỰ - 2 cột ─── */
+  .ns-day-group { font-size: 14px; }
+  .dnp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dnp-day-group, .dnp-day-header, .yc-day-header { grid-column: 1 / -1; }
+  .dnp-item { transition: box-shadow 0.15s, transform 0.15s; }
+  .dnp-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
+
+  /* ─── TAB GIỜ CÔNG ─── */
+  .gc-table { font-size: 14px; }
+
+  /* ─── TAB CHẤM CÔNG (giữ 1 cột nhưng to hơn) ─── */
+  #page-chamcong { max-width: 600px; margin: 0 auto; }
+  .submit-btn { font-size: 17px; padding: 16px; }
+
+  /* ─── MODALS to hơn trên PC ─── */
+  .bh-modal { max-width: 640px !important; left: 50% !important; right: auto !important; transform: translate(-50%, 100%) !important; border-radius: 18px 18px 0 0; }
+  .bh-modal.show { transform: translate(-50%, 0) !important; }
+
+  /* ─── Notif panel rộng hơn ─── */
+  .notif-panel { max-width: 480px !important; }
+
+  /* ─── Hover input/textarea ─── */
+  input:hover, textarea:hover, select:hover { border-color: rgba(0,0,0,0.25); }
+
+  /* ─── Cursor pointer trên các element clickable ─── */
+  .nav-item, .bh-btn-primary, .bh-btn, .bh-ql-stat, .bh-card-nv-row, .bh-card-add-sp,
+  .bh-session-card, .bh-live-card, .bh-hist-card, .ns-btn-ok, .ns-btn-no,
+  .lc-day, .gt-opt, .gt-btn, .lc-preset-chip { cursor: pointer; }
+
+  /* ─── Toast hiển thị giữa màn hình PC thay góc ─── */
+  .bh-toast { left: 50% !important; transform: translateX(-50%); bottom: 32px !important; min-width: 320px; }
+
+  /* Pre-defined modal to hơn cho PW/GT/LC/NS detail */
+  .pw-box, .gt-box, .ns-detail-box, .lc-detail-box, .don-nghi-box {
+    max-width: 560px !important;
+  }
+}
+
+/* ─── PC siêu rộng ≥1440px ─── */
+@media (min-width: 1440px) {
+  .app { max-width: 1280px; }
+  .bottom-nav { max-width: 1280px !important; }
+  .header-inner { max-width: 1280px !important; }
+  #bh-view-ch { grid-template-columns: 380px 1fr; gap: 0 32px; }
+  .bh-sessions { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+}
+
 </style>
 </head>
 <body>
@@ -2081,7 +2229,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
 
       <div class="bh-footer">
-        <button class="bh-btn-primary" onclick="bhBatDauPhien()">
+        <button class="bh-btn-primary" type="button" onclick="bhBatDauPhien(event)" tabindex="-1">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span>Bắt đầu phiên mới</span>
         </button>
@@ -2585,7 +2733,10 @@ function _pollThongBao(){
   }).catch(()=>{});
 }
 // Poll thông báo mỗi 45 giây (chỉ khi đã đăng nhập)
-setInterval(()=>{ if(SESSION) _pollThongBao(); }, 45000);
+// [v11.7 perf] Skip khi tab ẩn để tiết kiệm tài nguyên & API quota
+setInterval(()=>{
+  if(SESSION && !document.hidden) _pollThongBao();
+}, 45000);
 
 // ─── NAVIGATION ─────────────────────────────────────────────
 const PAGE_TITLES={
@@ -6520,6 +6671,8 @@ function startNotifPolling() {
   if (_notifPollTimer) clearInterval(_notifPollTimer);
   _notifPollTimer = setInterval(() => {
     if (!SESSION) return;
+    // [v11.7 perf] Skip poll khi tab không visible - tiết kiệm tài nguyên & API quota
+    if (document.hidden) return;
     loadNotifications(false);
   }, 30000);
 }
@@ -7186,8 +7339,8 @@ function bhInitViewCH() {
 
   bhUpdateClock();
   if (!BH.clockInterval) BH.clockInterval = setInterval(bhUpdateClock, 1000);
-  // [v11.2 BH-02] Timer 50ms để hiển thị centiseconds mượt
-  if (!BH.timerInterval) BH.timerInterval = setInterval(bhTickTimers, 50);
+  // [v11.7+] Timer 100ms (giảm từ 50ms để bớt load PC) - vẫn đủ mượt cho hiển thị MM:SS
+  if (!BH.timerInterval) BH.timerInterval = setInterval(bhTickTimers, 100);
 
   try {
     const s = localStorage.getItem('bh_sound');
@@ -7228,6 +7381,7 @@ async function bhLoadPhienDangBan() {
     const r = await fetch(SCRIPT_URL + '?type=phien_dang_ban&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
     const d = await r.json();
     const list = d.phienList || [];
+    const wasEmpty = BH.sessions.length === 0;
     BH.sessions = list.map((p, idx) => {
       let startMs = Date.now();
       try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){}
@@ -7248,6 +7402,15 @@ async function bhLoadPhienDangBan() {
     bhLoadStatsToday();
     bhRenderSessions();
     bhUpdateStats();
+
+    // [v11.7+] Thông báo khi load lại có phiên cũ chưa đóng (giải thích cho user "tại sao tự có phiên")
+    if (wasEmpty && list.length > 0) {
+      console.log('[BH] Đã khôi phục ' + list.length + ' phiên đang bán dở từ session trước');
+      // Toast nhẹ thông báo
+      try {
+        bhShowToast('Đã khôi phục ' + list.length + ' phiên đang bán dở (từ lần đăng nhập trước). Có thể kết thúc hoặc tự đóng sau 60 phút.', null);
+      } catch(e){}
+    }
   } catch(e) {
     console.error('[BH] Load phien dang ban lỗi:', e);
   }
@@ -7441,6 +7604,14 @@ function bhRenderCardContent(card, s) {
 
 // [v11.2 BH-02] Tick mỗi 50ms cho centiseconds mượt
 function bhTickTimers() {
+  // [v11.7 perf] Skip khi tab ẩn - timer sẽ catch-up khi tab visible lại
+  if (document.hidden) return;
+  // [v11.7+ perf] Skip nếu không có phiên đang bán (tiết kiệm CPU)
+  let hasSelling = false;
+  for (let i = 0; i < BH.sessions.length; i++) {
+    if (BH.sessions[i].status === 'selling') { hasSelling = true; break; }
+  }
+  if (!hasSelling) return;
   BH.sessions.forEach(s => {
     if (s.status !== 'selling') return;
     const el = document.querySelector('[data-timer="' + s.idPhien + '"]');
@@ -7453,18 +7624,53 @@ function bhTickTimers() {
 }
 
 // ─── BẮT ĐẦU PHIÊN ──────────────────────────────────────────
-async function bhBatDauPhien() {
-  if (!SESSION || !SESSION.cuaHangMa) {
-    bhShowToast('Thiếu thông tin cửa hàng', null);
+async function bhBatDauPhien(e) {
+  // [v11.7+] CHẶN keyboard activation (Enter/Space) khi nút có focus
+  // Trên PC, sau khi user click nút khác rồi gõ Enter có thể trigger lại nút này
+  if (e && e.detail === 0 && e.type === 'click') {
+    // event.detail === 0 => không phải mouse click thật, mà do keyboard activation
+    console.log('[BH] Bỏ qua click không phải từ chuột (keyboard activation)');
     return;
   }
-  // [v11.7 fix] Chống double-click trong 1 giây
+  // [v11.7 fix] Lock IMMEDIATELY trước khi làm gì khác - chống double-click PC chắc chắn
   if (BH._batDauPhienLock) {
     console.log('[BH] Bỏ qua click - đang xử lý phiên trước');
     return;
   }
+  if (!SESSION || !SESSION.cuaHangMa) {
+    bhShowToast('Thiếu thông tin cửa hàng', null);
+    return;
+  }
   BH._batDauPhienLock = true;
-  setTimeout(() => { BH._batDauPhienLock = false; }, 1000);
+  // Disable button visual để user thấy đang xử lý
+  const btn = document.querySelector('.bh-btn-primary');
+  if (btn) {
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+  }
+  // Cooldown 2 giây (thay vì 1) - đủ thời gian cho server trả về
+  setTimeout(() => {
+    BH._batDauPhienLock = false;
+    if (btn) {
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+    }
+  }, 2000);
+
+  // [v11.7 fix] Cảnh báo khi đã có nhiều phiên đang bán - tránh tạo nhầm
+  const dangBan = BH.sessions.filter(s => s.status === 'selling').length;
+  if (dangBan >= 3) {
+    const ok = confirm(`Hiện đã có ${dangBan} phiên đang bán. Bạn có chắc muốn tạo thêm phiên mới?`);
+    if (!ok) {
+      // Release lock + restore button ngay (không đợi 2s)
+      BH._batDauPhienLock = false;
+      if (btn) {
+        btn.style.opacity = '';
+        btn.style.pointerEvents = '';
+      }
+      return;
+    }
+  }
 
   bhVibrate(20);
   // [v11.7 BH-1] Tone E5 hài hòa
