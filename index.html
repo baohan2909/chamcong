@@ -1070,7 +1070,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
 .bh-ql-stat.purple { background:#F3E8FF; } .bh-ql-stat.purple .n { color:#7C3AED; }
 /* [v11.7 BH-7b] STT toàn cục badge */
-.bh-stt-tc { display:inline-block; padding:2px 6px; background:#7C3AED; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
+.bh-stt-tc { display:inline-block; padding:2px 6px; background:#E91E63; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
 
 .bh-ql-content { padding:12px; }
 
@@ -2579,7 +2579,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzuHnxZG-iJypMC9NQdhLQm5cdVGmzeCVLCFgbowTdNpRwvERLFLfbIGMvPGFl00Jzj/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbykZnJFPHvQYTI5qHfDIqsI7cr-WAh4M0yYE5e6WGycTXfDuOFmKGOhU74MCyEx2J2Y/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -2848,6 +2848,10 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
+  // [v11.7+ fix] Force scroll về đầu trang ngay sau khi show app (browser hay giữ scroll position cũ)
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   // [v10.1 Yc #4] Xin quyền notification + set baseline timestamp
   _tbLastTs = Date.now(); // chỉ thông báo mới từ thời điểm đăng nhập
   setTimeout(_xinQuyenThongBao, 2000);
@@ -8715,13 +8719,22 @@ function bhQlOpenDetail(idPhien) {
 }
 
 // [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp
-// [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp + fire-and-forget
+// [v11.7+ fix] QLBH/ADMIN xóa phiên - dùng appConfirm đẹp + fire-and-forget
 async function bhQlXoaPhien() {
   const idPhien = BH.qlCurrentDetailId;
   if (!idPhien) return;
-  const ok1 = confirm('Xóa phiên này khỏi sheet Bán hàng?\n\nHành động KHÔNG thể hoàn tác.');
+  // [v11.7+ fix] Dùng appConfirm thay native confirm để UI đồng nhất
+  const ok1 = await appConfirm('Hành động này KHÔNG thể hoàn tác. Phiên sẽ bị xóa hẳn khỏi Google Sheets.', {
+    title: 'Xóa phiên này?',
+    okLabel: 'Xóa',
+    danger: true
+  });
   if (!ok1) return;
-  const ok2 = confirm('Xác nhận lần cuối: Xóa hẳn phiên?');
+  const ok2 = await appConfirm('Bạn chắc chắn 100% muốn xóa phiên này?', {
+    title: 'Xác nhận lần cuối',
+    okLabel: 'Tôi đồng ý xóa',
+    danger: true
+  });
   if (!ok2) return;
 
   // ─── BƯỚC 1: DỪNG TIMER NGAY (xóa khỏi BH.sessions để bhTickTimers bỏ qua) ───
@@ -8767,7 +8780,6 @@ async function bhQlXoaPhien() {
     if (d.success) {
       bhShowToast('✓ ' + (d.message || 'Đã xóa phiên'), 'success');
     } else {
-      // Server từ chối - hiển thị lỗi nhưng KHÔNG restore (user đã thấy đã xóa)
       bhShowToast('⚠ Server: ' + (d.error || 'Lỗi xóa'), null);
       console.error('[BH Xóa phiên] Server lỗi:', d);
     }
