@@ -1215,8 +1215,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   .bh-ch-header {
     grid-column: 1;
     grid-row: 1;
-    position: sticky;
-    top: 16px;
     align-self: start;
     border-radius: 14px;
     border: 0.5px solid var(--border);
@@ -1289,8 +1287,20 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   .submit-btn { font-size: 17px; padding: 16px; }
 
   /* ─── MODALS to hơn trên PC ─── */
-  .bh-modal { max-width: 640px !important; left: 50% !important; right: auto !important; transform: translate(-50%, 100%) !important; border-radius: 18px 18px 0 0; }
-  .bh-modal.show { transform: translate(-50%, 0) !important; }
+  /* [v11.7 fix lag] Bỏ transform translate-x để không tạo stacking context khiến textarea lag */
+  /* Modal vẫn slide-up nhưng dùng translateY only */
+  .bh-modal {
+    max-width: 640px !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: translateY(100%) !important;
+    border-radius: 18px 18px 0 0;
+  }
+  .bh-modal.show { transform: translateY(0) !important; }
+  /* Cô lập layout cho input/textarea trong modal - tránh relayout cha */
+  .bh-modal textarea, .bh-modal input { contain: layout style; }
 
   /* ─── Notif panel rộng hơn ─── */
   .notif-panel { max-width: 480px !important; }
@@ -2408,8 +2418,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div class="bh-md-footer">
-      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('sessnv')">Để sau</button>
-      <button class="bh-btn bh-btn-success" id="bh-sessnv-confirm-btn" onclick="bhSessionNVConfirm()" disabled style="opacity:0.5">Xác nhận</button>
+      <button class="bh-btn bh-btn-secondary" onclick="bhCloseModal('sessnv')" style="width:100%">Để sau</button>
     </div>
   </div>
 
@@ -2475,8 +2484,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     <div class="bh-md-body" id="bh-md-detail-body">
       <div style="padding:20px;text-align:center;color:var(--text-m);font-size:13px">--</div>
     </div>
-    <div class="bh-md-footer">
+    <div class="bh-md-footer" id="bh-md-detail-footer">
       <button class="bh-btn bh-btn-secondary" style="flex:1" onclick="bhCloseModal('detail')">Đóng</button>
+      <!-- [v11.7+ fix] Nút xóa - chỉ hiện cho QLBH/ADMIN -->
+      <button class="bh-btn bh-btn-danger-solid" id="bh-md-detail-delete" style="display:none;flex:0 0 auto;padding:0 18px" onclick="bhQlXoaPhien()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+        <span>Xóa</span>
+      </button>
     </div>
   </div>
 
@@ -7340,7 +7354,10 @@ function bhInitViewCH() {
   bhUpdateClock();
   if (!BH.clockInterval) BH.clockInterval = setInterval(bhUpdateClock, 1000);
   // [v11.7+] Timer 100ms (giảm từ 50ms để bớt load PC) - vẫn đủ mượt cho hiển thị MM:SS
-  if (!BH.timerInterval) BH.timerInterval = setInterval(bhTickTimers, 100);
+  if (!BH.timerInterval) {
+    BH.timerInterval = true; // mark as started
+    bhStartTickLoop();
+  }
 
   try {
     const s = localStorage.getItem('bh_sound');
@@ -7621,6 +7638,23 @@ function bhTickTimers() {
     el.textContent = bhFormatTimeCs(elapsedMs);
     el.className = 'bh-timer' + (elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : ''));
   });
+}
+
+// [v11.7 fix centi] Dùng requestAnimationFrame cho centi mượt thay setInterval
+// RAF tự động sync với refresh rate của màn hình → ổn định hơn setInterval
+let _bhTickRAF = null;
+let _bhLastTick = 0;
+function bhStartTickLoop() {
+  if (_bhTickRAF) return; // đã chạy
+  function loop(now) {
+    // Throttle ~50ms (20fps - đủ mượt cho centi đổi)
+    if (now - _bhLastTick >= 50) {
+      bhTickTimers();
+      _bhLastTick = now;
+    }
+    _bhTickRAF = requestAnimationFrame(loop);
+  }
+  _bhTickRAF = requestAnimationFrame(loop);
 }
 
 // ─── BẮT ĐẦU PHIÊN ──────────────────────────────────────────
@@ -7972,39 +8006,36 @@ function bhRenderSessNvSuggest() {
   _bhRenderNvSuggestGeneric('sessnv', 'bhSelectSessNV');
 }
 function bhSelectSessNV(ma, ten) {
+  // [v11.7 fix] Click chọn = chọn luôn, đóng modal, gửi server ngầm
+  // Không cần nút Xác nhận nữa
   BH.tempSessionNV = { ma, ten };
-  document.getElementById('bh-sessnv-nv-input').value = ma;
-  document.getElementById('bh-sessnv-nv-info').innerHTML =
-    '<span style="color:var(--green);font-size:12px;font-weight:500">✓ ' + bhEscHtml(ten) + '</span>';
-  document.getElementById('bh-sessnv-nv-sug').style.display = 'none';
-  bhUpdateSessNVConfirmBtn();
-}
-function bhUpdateSessNVConfirmBtn() {
-  const btn = document.getElementById('bh-sessnv-confirm-btn');
-  if (!btn) return;
-  const ok = !!BH.tempSessionNV;
-  btn.disabled = !ok;
-  btn.style.opacity = ok ? '1' : '0.5';
-}
-async function bhSessionNVConfirm() {
   const s = BH.sessions.find(x => x.idPhien === BH.currentSessionNVId);
-  if (!s || !BH.tempSessionNV) return;
-  s.nv = { ma: BH.tempSessionNV.ma, ten: BH.tempSessionNV.ten };
+  if (!s) {
+    bhCloseModal('sessnv');
+    return;
+  }
+  s.nv = { ma, ten };
   bhRenderSessions();
   bhCloseModal('sessnv');
-  // Gửi server ngầm
+  // Gửi server ngầm (fire-and-forget)
   try {
     fetch(SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify({
         action: 'update_nv_phien',
         idPhien: s.idPhien,
-        maNV: BH.tempSessionNV.ma,
-        tenNV: BH.tempSessionNV.ten,
+        maNV: ma,
+        tenNV: ten,
       })
     });
   } catch(e){}
-  bhShowToast('✓ Đã chọn ' + BH.tempSessionNV.ten, 'success');
+  bhShowToast('✓ Đã chọn ' + ten, 'success');
+}
+function bhUpdateSessNVConfirmBtn() {
+  // [v11.7 fix] Không còn nút Xác nhận - hàm này giữ no-op để tương thích
+}
+async function bhSessionNVConfirm() {
+  // [v11.7 fix] Không còn dùng - bhSelectSessNV đã chọn luôn
 }
 
 // [v11.7 BH-3] Helper search NV chung - dùng cho đầu phiên, Đã mua, Chưa mua
@@ -8140,12 +8171,16 @@ function bhRenderBoughtTotal() {
 }
 
 function bhUpdateBoughtConfirmBtn() {
-  const btn = document.getElementById('bh-bought-confirm-btn');
-  if (!btn) return;
-  const note = document.getElementById('bh-bought-note').value.trim();
-  const ok = !!BH.tempBoughtNV && BH.tempItems.length > 0 && note.length > 0;
-  btn.disabled = !ok;
-  btn.style.opacity = ok ? '1' : '0.5';
+  // [v11.7 perf] Debounce
+  if (BH._boughtBtnTimer) clearTimeout(BH._boughtBtnTimer);
+  BH._boughtBtnTimer = setTimeout(() => {
+    const btn = document.getElementById('bh-bought-confirm-btn');
+    if (!btn) return;
+    const note = document.getElementById('bh-bought-note').value.trim();
+    const ok = !!BH.tempBoughtNV && BH.tempItems.length > 0 && note.length > 0;
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.5';
+  }, 80);
 }
 
 async function bhBoughtConfirm() {
@@ -8298,13 +8333,16 @@ function bhPickReason(el, reason) {
 }
 
 function bhUpdateNotBoughtConfirmBtn() {
-  const btn = document.getElementById('bh-notbought-btn');
-  if (!btn) return;
-  const note = document.getElementById('bh-notbought-note').value.trim();
-  // [v11.7 BH-3] Yêu cầu cả NV + lý do + ghi chú
-  const ok = !!BH.tempNotBoughtNV && !!BH.tempReason && note.length > 0;
-  btn.disabled = !ok;
-  btn.style.opacity = ok ? '1' : '0.5';
+  // [v11.7 perf] Debounce 80ms để không gọi mỗi keystroke gây render-thrash
+  if (BH._notBoughtBtnTimer) clearTimeout(BH._notBoughtBtnTimer);
+  BH._notBoughtBtnTimer = setTimeout(() => {
+    const btn = document.getElementById('bh-notbought-btn');
+    if (!btn) return;
+    const note = document.getElementById('bh-notbought-note').value.trim();
+    const ok = !!BH.tempNotBoughtNV && !!BH.tempReason && note.length > 0;
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.5';
+  }, 80);
 }
 
 async function bhNotboughtConfirm() {
@@ -8626,9 +8664,17 @@ setInterval(() => {
 }, 1000);
 
 function bhQlOpenDetail(idPhien) {
+  // [v11.7+ fix] Lưu idPhien hiện tại để dùng cho xóa
+  BH.qlCurrentDetailId = idPhien;
   document.getElementById('bh-md-detail-title').textContent = 'Chi tiết phiên';
   document.getElementById('bh-md-detail-sub').textContent = idPhien.slice(0, 20);
   document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
+  // [v11.7+ fix] Show nút xóa cho QLBH/ADMIN/QLBH theo KV
+  const delBtn = document.getElementById('bh-md-detail-delete');
+  if (delBtn) {
+    const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN');
+    delBtn.style.display = isQLBH ? '' : 'none';
+  }
   bhOpenModal('detail');
   fetch(SCRIPT_URL + '?type=phien_giam_sat&tuNgay=' + encodeURIComponent(BH.qlFilterTuNgay) + '&denNgay=' + encodeURIComponent(BH.qlFilterDenNgay))
     .then(r => r.json())
@@ -8666,6 +8712,54 @@ function bhQlOpenDetail(idPhien) {
     .catch(() => {
       document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--red)">Lỗi mạng</div>';
     });
+}
+
+// [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp
+async function bhQlXoaPhien() {
+  const idPhien = BH.qlCurrentDetailId;
+  if (!idPhien) return;
+  const ok1 = confirm('Xóa phiên này khỏi sheet Bán hàng?\n\nHành động KHÔNG thể hoàn tác.');
+  if (!ok1) return;
+  const ok2 = confirm('Xác nhận lần cuối: Xóa hẳn phiên?');
+  if (!ok2) return;
+
+  const delBtn = document.getElementById('bh-md-detail-delete');
+  if (delBtn) {
+    delBtn.disabled = true;
+    delBtn.style.opacity = '0.5';
+    delBtn.querySelector('span').textContent = 'Đang xóa...';
+  }
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'xoa_phien',
+        idPhien,
+        maNguoiXoa: SESSION.ma,
+      })
+    });
+    const d = await r.json();
+    if (d.success) {
+      bhCloseModal('detail');
+      bhShowToast('✓ ' + (d.message || 'Đã xóa phiên'), 'success');
+      // Reload list
+      if (typeof bhQlReload === 'function') bhQlReload();
+    } else {
+      bhShowToast('Lỗi: ' + (d.error || 'Không xóa được'), null);
+      if (delBtn) {
+        delBtn.disabled = false;
+        delBtn.style.opacity = '';
+        delBtn.querySelector('span').textContent = 'Xóa';
+      }
+    }
+  } catch(e) {
+    bhShowToast('Lỗi mạng', null);
+    if (delBtn) {
+      delBtn.disabled = false;
+      delBtn.style.opacity = '';
+      delBtn.querySelector('span').textContent = 'Xóa';
+    }
+  }
 }
 
 async function bhQlLoadDashboard() {
