@@ -88,6 +88,24 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .notif-item-body { font-size:12px; color:var(--text-m); line-height:1.4; }
 .notif-item-time { font-size:11px; color:var(--text-lt); margin-top:4px; }
 .notif-item-unread-dot { width:8px; height:8px; border-radius:50%; background:#10B981; flex-shrink:0; align-self:center; }
+/* [v11.6 Item 6] Preset chip ca thông dụng */
+.lc-preset-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; align-items:center; }
+.lc-preset-label { font-size:10px; color:var(--text-m); font-weight:500; margin-right:2px; }
+.lc-preset-chip { padding:5px 9px; border-radius:14px; font-size:11px; font-weight:500; background:#EBF5FF; color:#1D4ED8; border:1px solid #BFDBFE; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; white-space:nowrap; }
+.lc-preset-chip:hover, .lc-preset-chip:active { background:#1D4ED8; color:white; border-color:#1D4ED8; }
+.lc-preset-chip.lc-preset-full { background:#FEF3C7; color:#92400E; border-color:#FDE68A; }
+.lc-preset-chip.lc-preset-full:hover { background:#92400E; color:white; border-color:#92400E; }
+/* [v11.6 Item 7] Copy + Range picker nghỉ phép */
+.lc-copy-btn { margin-top:6px; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:500; background:#EBF5FF; color:#1D4ED8; border:1px solid #BFDBFE; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; }
+.lc-copy-btn:hover, .lc-copy-btn:active { background:#1D4ED8; color:white; border-color:#1D4ED8; }
+.lc-multi-row { margin-top:10px; padding:8px 10px; background:#FAFAFA; border:1px solid #E5E7EB; border-radius:10px; }
+.lc-multi-cb { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; font-size:12px; color:var(--text-d); font-weight:500; }
+.lc-multi-cb input { margin:0; }
+.lc-multi-range { margin-top:10px; padding-top:10px; border-top:1px dashed #E5E7EB; }
+.lc-multi-input-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:12px; color:var(--text-m); }
+.lc-multi-input-row input[type="date"] { padding:5px 8px; border:1px solid #D1D5DB; border-radius:6px; font-size:12px; }
+.lc-multi-apply-btn { width:100%; margin-top:8px; padding:8px; border-radius:8px; font-size:12px; font-weight:600; background:var(--green); color:white; border:none; cursor:pointer; }
+.lc-multi-apply-btn:hover { opacity:0.9; }
 
 /* BOTTOM NAV */
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:white; border-top:0.5px solid var(--border); display:flex; z-index:20; box-shadow:0 -2px 12px rgba(0,0,0,.08); }
@@ -1205,10 +1223,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <span>Lý do khác</span>
         </div>
       </div>
-      <textarea class="gt-input" id="gt-input" rows="2" placeholder="Mô tả thêm chi tiết..." style="display:none"></textarea>
+      <!-- [v11.6 Item 5] Ghi chú giờ đây BẮT BUỘC luôn hiển thị, bất kể chọn lý do gì -->
+      <div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:500">Vui lòng mô tả chi tiết (bắt buộc, tối thiểu 10 ký tự)</div>
+      <textarea class="gt-input" id="gt-input" rows="3" placeholder="VD: Tôi đi nộp tiền ngân hàng theo yêu cầu QL nên không đến CH chấm công..." oninput="checkGtFormState()"></textarea>
       <div class="gt-err" id="gt-err"></div>
       <button class="gt-btn" id="gt-btn" onclick="guiGiaiTrinh()" disabled>GỬI GIẢI TRÌNH</button>
-      <button class="gt-skip" onclick="skipGiaiTrinh()">Bỏ qua — tôi sẽ giải trình sau</button>
+      <!-- [v11.6 Item 5] Bỏ "Bỏ qua" để bắt buộc giải trình -->
     </div>
   </div>
 </div>
@@ -2323,7 +2343,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbznykBJcsukRfritl8SkEvkyWcHMN8ATXRD9PSoMVCa7NlN9l8su2a0Cti5ry4HiI6b/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzvadh-jVmKOML3M3RuU_5tle8WTH2jKNkX8NYXI8lOB68JI9iie0yz6t627S8x8xd1/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -2861,71 +2881,91 @@ function gpsGiuChDaChon(){
 }
 
 function _doSubmitFinal(){
+  // [v11.6 Item 1] Fire-and-forget — phản hồi xanh NGAY, server xử lý ngầm
   state.submitting=true;
-  document.getElementById('submit-btn').className='submit-btn s-loading';
-  document.getElementById('submit-btn').innerHTML='<span class="spinner"></span>Đang xử lý...';
+  state.submitted=true;
   const maCH=document.getElementById('sel-cuahang').value;
-  // [v11.3 CC-05] Lấy state checkbox Trưởng ca
+  const tenCHDisplay = document.getElementById('input-ch-display').value;
   const truongCa = document.getElementById('tc-checkbox') ? document.getElementById('tc-checkbox').checked : false;
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'chamcong',
-    maCuaHang:maCH,
-    tenCuaHang:document.getElementById('input-ch-display').value,
-    maNhanVien:SESSION.ma,tenNhanVien:SESSION.ten,
-    loaiChamCong:state.loai,
-    lat:state.lat,lng:state.lng,gpsAccuracy:state.gpsAcc,
-    selfieBase64:state.selfieB64||null,
-    truongCa:truongCa,                              // [v11.3 CC-05]
-  })}, (attempt,total)=>{
-    const btn=document.getElementById('submit-btn');
-    if(btn) btn.innerHTML='<span class="spinner"></span>Server đang bận · đang gửi lại ('+attempt+'/'+total+')...';
-  })
-  .then(r=>r.json()).then(res=>{
-    state.submitting=false;state.submitted=true;
-    setBtn('s-done','✓ Đã chấm công thành công');
-    const rb=document.getElementById('result-box');rb.style.display='block';
-    if(res.gpsStatus==='HỢP LỆ'){rb.className='result-box r-ok';rb.innerHTML='✓ <strong>'+state.loai+'</strong> · GPS hợp lệ · Cách '+res.khoangCach+'m · '+res.timestamp.substring(11,19);}
-    else if(res.gpsStatus==='NGOÀI VÙNG'){rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Ngoài vùng ('+res.khoangCach+'m) · Đã cảnh báo QLNS';}
-    else{rb.className='result-box r-warn';rb.innerHTML='⚠ <strong>'+state.loai+'</strong> · Không xác định được vị trí';}
+  const nowStr = new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  const ngayCham = new Date().toISOString().substring(0, 10);
 
-    const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-    const isLoi=res.canhBao&&res.canhBao.length>0;
-    // Xác định loại lỗi để hiển thị đúng trong lịch sử
-    const loiType=res.coLoiGPS?'gps':(res.coLoiThuTu?'ca':'');
-    const ngayCham=res.ngayChamCong||new Date().toISOString().substring(0,10);
-    logs.unshift({
-      loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
-      time:res.timestamp.substring(11,19),
-      dist:res.khoangCach?res.khoangCach+'m':'--',
-      ok:!isLoi, xacNhan:isLoi?'KHÔNG HỢP LỆ':'OK',
-      ghiChu:'', loiType, tenCH:'', ngay:ngayCham,
-    });
-    renderLog();
+  // Pre-check ở client: tính xem có sai vị trí không (để hiển thị UI sớm)
+  let preCheckGPS = null;
+  let preKhoangCach = null;
+  try {
+    const ch = (typeof CH_LIST !== 'undefined' ? CH_LIST.find(c => c.ma === maCH) : null);
+    if (ch && ch.lat && ch.lng && state.lat && state.lng) {
+      preKhoangCach = Math.round(_distMeters(state.lat, state.lng, parseFloat(ch.lat), parseFloat(ch.lng)));
+      preCheckGPS = preKhoangCach <= 100; // GPS_RADIUS_METER
+    }
+  } catch(e){}
 
-    if(res.canhBao&&res.canhBao.length>0){
-      // Có lỗi → mở modal giải trình, đếm ngược 5 phút
-      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
-      // [v11.3 CC-01] Title rõ ràng theo loại lỗi
-      const khoangCach = res.khoangCach || '?';
+  // Hiển thị thành công NGAY
+  setBtn('s-done', '✓ Đã chấm công thành công');
+  const rb = document.getElementById('result-box');
+  rb.style.display = 'block';
+  if (preCheckGPS === true) {
+    rb.className = 'result-box r-ok';
+    rb.innerHTML = '✓ <strong>' + state.loai + '</strong> · GPS hợp lệ · Cách ' + preKhoangCach + 'm · ' + nowStr;
+  } else if (preCheckGPS === false) {
+    rb.className = 'result-box r-warn';
+    rb.innerHTML = '⚠ <strong>' + state.loai + '</strong> · Ngoài vùng (' + preKhoangCach + 'm) · Đã cảnh báo QLNS';
+  } else {
+    rb.className = 'result-box r-ok';
+    rb.innerHTML = '✓ <strong>' + state.loai + '</strong> · ' + nowStr;
+  }
+
+  // Update lịch sử local NGAY
+  const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+  const preIsLoi = preCheckGPS === false;
+  logs.unshift({
+    loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
+    time:nowStr,
+    dist: preKhoangCach !== null ? preKhoangCach + 'm' : '--',
+    ok:!preIsLoi, xacNhan:preIsLoi?'KHÔNG HỢP LỆ':'OK',
+    ghiChu:'', loiType: preIsLoi ? 'gps' : '',
+    tenCH:tenCHDisplay, ngay:ngayCham,
+  });
+  renderLog();
+
+  // Gửi server NGẦM (không await)
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'chamcong',
+      maCuaHang: maCH,
+      tenCuaHang: tenCHDisplay,
+      maNhanVien: SESSION.ma,
+      tenNhanVien: SESSION.ten,
+      loaiChamCong: state.loai,
+      lat: state.lat, lng: state.lng, gpsAccuracy: state.gpsAcc,
+      selfieBase64: state.selfieB64 || null,
+      truongCa: truongCa,
+    })
+  }).then(r => r.json()).then(res => {
+    // Server đã xử lý xong → nếu có thông tin chính xác hơn thì update
+    if (res && res.canhBao && res.canhBao.length > 0) {
+      // Có cảnh báo thực sự → mở modal giải trình
+      if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
+      const khoangCach = res.khoangCach || preKhoangCach || '?';
       const title = (res.coLoiGPS && res.coLoiThuTu) ? '⚠️ Chấm công cần xác nhận'
                   : res.coLoiGPS ? `⚠️ Vị trí chấm công sai ${khoangCach}m`
                   : '⚠️ Xác nhận ca làm việc';
-      // [v11.3 CC-02] Text giải trình mới
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      openGiaiTrinh(title,sub,ngayCham);
-      startGtTimer(300); // 5 phút
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham);
+      startGtTimer(300);
+    } else if (state.loai === 'Ra ca') {
+      hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
+      startCountdown(15);
     } else {
-      // Chấm đúng → 15 giây reload
-      if(state.loai==='Ra ca') hienTomTatCa(res.timestamp.substring(11,19));
       startCountdown(15);
     }
-  }).catch(()=>{
-    state.submitting=false;
-    setBtn('s-ready','XÁC NHẬN — '+state.loai.toUpperCase());
-    const rb=document.getElementById('result-box');rb.style.display='block';
-    rb.className='result-box r-err';rb.textContent='✕ Lỗi kết nối. Vui lòng thử lại.';
+  }).catch(() => {
+    // Lỗi mạng → toast vàng cảnh báo, KHÔNG rollback (đã hiện thành công cho user)
+    showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
   });
 }
 
@@ -2972,15 +3012,20 @@ function taiLichSu(){
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
       const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
-      // Xác định loại lỗi từ ghiChu
+      // [v11.6 Item 3] Server đã trả loaiLoi rõ ràng ('gps'/'ca'/'thieu'/'ok') từ sheet CB
+      // Không còn đoán từ keyword nữa — tránh bug "load lại ra sai ca"
       let loiType='';
       if(isLoi){
-        const gc=(l.ghiChu||'').toLowerCase();
-        const xn=(l.xacNhan||'').toLowerCase();
-        // Dùng tên loại cảnh báo mới: SAI CỬA HÀNG, SAI CA, THIẾU CA
-        if(gc.includes('sai cửa hàng')||gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
-        else if(gc.includes('thiếu')||gc.includes('chưa ra ca')||gc.includes('thiếu ca')) loiType='thieu';
-        else loiType='ca';
+        // Ưu tiên loaiLoi từ server (chính xác)
+        if(l.loaiLoi && l.loaiLoi !== 'ok'){
+          loiType = l.loaiLoi;
+        } else {
+          // Fallback cũ (chỉ khi server không trả loaiLoi — vd CB cũ trước v11.6)
+          const gc=(l.ghiChu||'').toLowerCase();
+          if(gc.includes('sai cửa hàng')||gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
+          else if(gc.includes('thiếu')||gc.includes('chưa ra ca')) loiType='thieu';
+          else loiType='gps'; // [v11.6] Default fallback = gps thay vì ca
+        }
       }
       logs.push({
         loai:l.loai, lbcls:lbMap[l.loai]||'lb-v',
@@ -2988,6 +3033,7 @@ function taiLichSu(){
         ok:!isLoi, xacNhan:l.xacNhan||'',
         ghiChu:l.ghiChu||'', loiType,
         tenCH:l.tenCH||'', ngay:today,
+        truongCa: l.truongCa || '',
       });
     });
     renderLog();
@@ -3298,9 +3344,11 @@ function openGiaiTrinh(title,sub,ngay){
   document.getElementById('gt-timer').style.display='flex';
   document.getElementById('gt-timer-dem').textContent='5:00';
   document.getElementById('gt-err').style.display='none';
-  document.getElementById('gt-input').style.display='none';
+  // [v11.6 Item 5] Textarea LUÔN hiển thị (bỏ display:none)
   document.getElementById('gt-input').value='';
-  document.getElementById('gt-btn').disabled=true;
+  const btn = document.getElementById('gt-btn');
+  btn.disabled=true;
+  btn.style.opacity='0.5';
   document.querySelectorAll('.gt-opt').forEach(el=>el.classList.remove('sel'));
   document.getElementById('gt-modal').classList.add('show');
 }
@@ -3334,19 +3382,40 @@ function closeGiaiTrinh(){
 function chonLyDo(el,lyDo){
   document.querySelectorAll('.gt-opt').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  const inp=document.getElementById('gt-input');
-  if(lyDo==='__khac__'){inp.style.display='block';gtLyDo='';inp.focus();}
-  else{inp.style.display='none';gtLyDo=lyDo;}
-  document.getElementById('gt-btn').disabled=false;
+  // [v11.6 Item 5] Luôn lưu lý do, textarea LUÔN hiển thị bất kể chọn gì
+  if(lyDo==='__khac__'){
+    gtLyDo='';
+    document.getElementById('gt-input').focus();
+  } else {
+    gtLyDo=lyDo;
+  }
+  checkGtFormState();
+}
+
+// [v11.6 Item 5] Validate state để enable/disable nút Gửi
+function checkGtFormState(){
+  const inp = document.getElementById('gt-input');
+  const noteVal = (inp.value || '').trim();
+  const btn = document.getElementById('gt-btn');
+  // Bắt buộc: chọn 1 lý do (gtLyDo có giá trị) + ghi chú >= 10 ký tự
+  const ok = !!gtLyDo && noteVal.length >= 10;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.5';
 }
 
 function guiGiaiTrinh(){
   const inp=document.getElementById('gt-input');
-  const isKhac=inp.style.display!=='none';
-  const lyDoGui=isKhac?inp.value.trim():gtLyDo;
-  if(!lyDoGui){
-    const err=document.getElementById('gt-err');err.textContent='Vui lòng chọn hoặc nhập lý do.';err.style.display='block';return;
+  const noteVal = (inp.value || '').trim();
+  // [v11.6 Item 5] Validate ghi chú bắt buộc
+  if(!gtLyDo){
+    const err=document.getElementById('gt-err');err.textContent='Vui lòng chọn 1 lý do.';err.style.display='block';return;
   }
+  if(noteVal.length < 10){
+    const err=document.getElementById('gt-err');err.textContent='Ghi chú bắt buộc, tối thiểu 10 ký tự.';err.style.display='block';return;
+  }
+  // [v11.6 Item 5] Gửi cả lý do chọn + ghi chú chi tiết
+  // Format: "<lý do chính>: <chi tiết>"
+  const lyDoGui = gtLyDo === noteVal ? noteVal : `${gtLyDo}: ${noteVal}`;
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
@@ -4293,9 +4362,20 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
           <div class="suggest-list lc-ch-sug" id="lc-ch-sug-${ngay}-${idx}"></div>
         </div>
         <div class="lc-ed-row" style="margin-top:8px">
-          <input type="time" class="lc-ed-time" value="${s.gioBD||'08:00'}" onchange="setLCGio('${ngay}',${idx},'bd',this.value)">
+          <input type="time" class="lc-ed-time" id="lc-time-bd-${ngay}-${idx}" value="${s.gioBD||'08:00'}" onchange="setLCGio('${ngay}',${idx},'bd',this.value)">
           <span class="lc-ed-sep">đến</span>
-          <input type="time" class="lc-ed-time" value="${s.gioKT||'17:00'}" onchange="setLCGio('${ngay}',${idx},'kt',this.value)">
+          <input type="time" class="lc-ed-time" id="lc-time-kt-${ngay}-${idx}" value="${s.gioKT||'17:00'}" onchange="setLCGio('${ngay}',${idx},'kt',this.value)">
+        </div>
+        <!-- [v11.6 Item 6] Chip preset ca thông dụng -->
+        <div class="lc-preset-row">
+          <span class="lc-preset-label">Chọn nhanh:</span>
+          <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'07:30','15:30')">Sáng 7:30-15:30</button>
+          <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'08:00','14:00')">Sáng 8:00-14:00</button>
+          <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'13:30','21:30')">Chiều 13:30-21:30</button>
+          <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'14:00','22:00')">Chiều 14:00-22:00</button>
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','21:30')">Full 7:30-21:30</button>
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','22:00')">Full 7:30-22:00</button>
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'08:00','21:00')">Full 8:00-21:00</button>
         </div>
       </div>`).join('');
     editor+=`<button type="button" class="lc-add-ca" onclick="themCa('${ngay}')">
@@ -4319,6 +4399,8 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
         placeholder="VD: Khám bệnh, việc gia đình..."
         oninput="setLCNghiLyDo('${ngay}',this.value)">${lyDoHT.replace(/</g,'&lt;')}</textarea>
 
+      ${!isLocked ? `<button type="button" class="lc-copy-btn" onclick="copyDonNgayTruoc('${ngay}')">📋 Copy đơn ngày trước</button>` : ''}
+
       <label class="lc-nghi-lbl" style="margin-top:8px">
         Ảnh đơn đính kèm ${isLocked?'<span style="color:var(--green);font-weight:400">· đã có</span>':'<span style="color:var(--red)">*</span>'}
       </label>
@@ -4329,6 +4411,24 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
         <span class="lc-nghi-anh-txt">${anhMoi?'Đã đính kèm ảnh mới':(linkAnhCu?'Đổi ảnh đơn':'Chụp / chọn ảnh đơn')}</span>
       </label>
       ${(!anhMoi && linkAnhCu) ? `<div onclick="window.open('${linkAnhCu}','_blank')" style="margin-top:6px;font-size:11px;color:var(--blue);text-decoration:underline;cursor:pointer">📎 Xem ảnh đơn đã gửi trước đây</div>` : ''}
+
+      ${!isLocked ? `
+      <div class="lc-multi-row">
+        <label class="lc-multi-cb">
+          <input type="checkbox" id="lc-multi-${ngay}" onchange="toggleApplyMultiDays('${ngay}')">
+          <span>📅 Áp dụng đơn này cho nhiều ngày liên tiếp</span>
+        </label>
+        <div class="lc-multi-range" id="lc-multi-range-${ngay}" style="display:none">
+          <div class="lc-multi-input-row">
+            <span>Từ ngày</span>
+            <input type="date" id="lc-multi-from-${ngay}" value="${ngay}" min="${ngay}">
+            <span>đến</span>
+            <input type="date" id="lc-multi-to-${ngay}" value="${ngay}" min="${ngay}">
+          </div>
+          <button type="button" class="lc-multi-apply-btn" onclick="applyMultiDays('${ngay}')">✓ Áp dụng cho dải ngày</button>
+        </div>
+      </div>
+      ` : ''}
 
       <div style="margin-top:8px;font-size:11px;color:var(--text-m);line-height:1.4">
         ${isLocked
@@ -4534,6 +4634,123 @@ function setLCGio(ngay,idx,field,value){
   if(!lcEdit[ngay]||!lcEdit[ngay].slots||!lcEdit[ngay].slots[idx])return;
   if(field==='bd')lcEdit[ngay].slots[idx].gioBD=value;
   if(field==='kt')lcEdit[ngay].slots[idx].gioKT=value;
+}
+
+// [v11.6 Item 6] Apply preset ca - tự fill 2 input giờ
+function applyPresetCa(ngay, idx, gioBD, gioKT){
+  if(!lcEdit[ngay] || !lcEdit[ngay].slots || !lcEdit[ngay].slots[idx]) return;
+  lcEdit[ngay].slots[idx].gioBD = gioBD;
+  lcEdit[ngay].slots[idx].gioKT = gioKT;
+  // Update visual NGAY 2 ô input
+  const inpBD = document.getElementById(`lc-time-bd-${ngay}-${idx}`);
+  const inpKT = document.getElementById(`lc-time-kt-${ngay}-${idx}`);
+  if(inpBD) inpBD.value = gioBD;
+  if(inpKT) inpKT.value = gioKT;
+  // Vibrate feedback
+  if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+}
+
+// [v11.6 Item 7] Copy đơn nghỉ ngày trước (lý do + ảnh) sang ngày hiện tại
+function copyDonNgayTruoc(ngay){
+  // Tìm ngày liền trước trong lcEdit có type='nghi' và có lý do
+  const ngayTuan = _ngayTuan(lcTuan);
+  const idxNow = ngayTuan.findIndex(n => n.ngay === ngay);
+  if(idxNow <= 0){
+    showToast('⚠ Không có ngày trước trong tuần này để copy', 'warn');
+    return;
+  }
+  let nguon = null;
+  for(let i = idxNow - 1; i >= 0; i--){
+    const k = ngayTuan[i].ngay;
+    const e = lcEdit[k];
+    if(e && e.type === 'nghi' && (e.lyDoMoi || (e.ghiChuNV && e.ghiChuNV.trim()))){
+      nguon = { ngay: k, edit: e };
+      break;
+    }
+  }
+  if(!nguon){
+    showToast('⚠ Không tìm thấy đơn nghỉ ngày trước để copy', 'warn');
+    return;
+  }
+  // Copy lý do
+  const ghiChuCu = nguon.edit.ghiChuNV || '';
+  const pipeCu = ghiChuCu.indexOf(' | ');
+  const lyDoCu = pipeCu >= 0 ? ghiChuCu.substring(0, pipeCu).trim() : ghiChuCu.trim();
+  const lyDo = nguon.edit.lyDoMoi !== undefined ? nguon.edit.lyDoMoi : lyDoCu;
+  if(!lcEdit[ngay]) lcEdit[ngay] = { type: 'nghi', slots: [], trangThai: 'Chờ duyệt' };
+  lcEdit[ngay].lyDoMoi = lyDo;
+  // Copy ảnh nếu có (anhB64Moi)
+  if(nguon.edit.anhB64Moi){
+    lcEdit[ngay].anhB64Moi = nguon.edit.anhB64Moi;
+  }
+  _rerenderLCDay(ngay);
+  setTimeout(() => {
+    const el = document.getElementById('lced-' + ngay);
+    if(el) el.classList.add('open');
+  }, 10);
+  showToast('✓ Đã copy đơn từ ngày ' + nguon.ngay.substring(8,10) + '/' + nguon.ngay.substring(5,7), 'ok');
+}
+
+// [v11.6 Item 7] Toggle range picker
+function toggleApplyMultiDays(ngay){
+  const cb = document.getElementById('lc-multi-' + ngay);
+  const rangeEl = document.getElementById('lc-multi-range-' + ngay);
+  if(rangeEl) rangeEl.style.display = cb.checked ? 'block' : 'none';
+}
+
+// [v11.6 Item 7] Apply đơn nghỉ cho dải ngày liên tiếp
+function applyMultiDays(ngay){
+  const fromEl = document.getElementById('lc-multi-from-' + ngay);
+  const toEl = document.getElementById('lc-multi-to-' + ngay);
+  if(!fromEl || !toEl) return;
+  const tuNgay = fromEl.value;
+  const denNgay = toEl.value;
+  if(!tuNgay || !denNgay){
+    showToast('⚠ Vui lòng chọn từ ngày và đến ngày', 'warn');
+    return;
+  }
+  if(tuNgay > denNgay){
+    showToast('⚠ Ngày kết thúc phải >= ngày bắt đầu', 'warn');
+    return;
+  }
+  // Lấy lý do + ảnh của ngày hiện tại
+  const e = lcEdit[ngay];
+  if(!e || e.type !== 'nghi'){
+    showToast('⚠ Ngày hiện tại chưa có đơn nghỉ', 'warn');
+    return;
+  }
+  const lyDo = (e.lyDoMoi !== undefined) ? e.lyDoMoi : (e.ghiChuNV || '');
+  const anhB64 = e.anhB64Moi;
+  if(!lyDo || !lyDo.trim()){
+    showToast('⚠ Vui lòng điền lý do nghỉ phép trước', 'warn');
+    return;
+  }
+  // Apply cho từng ngày trong dải (chỉ ngày trong tuần hiện tại đang hiển thị)
+  const ngayTuan = _ngayTuan(lcTuan);
+  const ngayTrongTuan = ngayTuan.map(n => n.ngay);
+  let applied = 0;
+  ngayTrongTuan.forEach(d => {
+    if(d < tuNgay || d > denNgay) return;
+    if(d === ngay) return; // skip ngày gốc đã có
+    if(!lcEdit[d]) lcEdit[d] = {};
+    lcEdit[d].type = 'nghi';
+    lcEdit[d].slots = [];
+    lcEdit[d].lyDoMoi = lyDo;
+    if(anhB64) lcEdit[d].anhB64Moi = anhB64;
+    if(!lcEdit[d].trangThai) lcEdit[d].trangThai = 'Chờ duyệt';
+    _rerenderLCDay(d);
+    applied++;
+  });
+  if(applied === 0){
+    showToast('⚠ Không có ngày nào trong dải hợp lệ trong tuần này', 'warn');
+  } else {
+    showToast(`✓ Đã áp dụng đơn cho ${applied} ngày`, 'ok');
+    // Đóng range picker
+    const cb = document.getElementById('lc-multi-' + ngay);
+    if(cb) cb.checked = false;
+    const rangeEl = document.getElementById('lc-multi-range-' + ngay);
+    if(rangeEl) rangeEl.style.display = 'none';
+  }
 }
 
 function _updateLCSendBtn(conHan, soNgayDienTu){
@@ -5185,7 +5402,7 @@ async function duyetTatCaDonNghiNS(action){
   });
 }
 
-// QLNS duyệt đơn nghỉ phép
+// QLNS duyệt đơn nghỉ phép — [v11.6 Item 1] Fire-and-forget
 function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   const ghiChuEl=document.getElementById(`dnp-note-inp-${maNV}-${ngay}`);
   let ghiChuQLNS=ghiChuEl?ghiChuEl.value.trim():'';
@@ -5194,68 +5411,53 @@ function duyetDonNP(maNV, ngay, tuan, quyetDinh){
     if(!ghiChuQLNS)return;
   }
   const itemEl=document.getElementById(`dnp-item-${maNV}-${ngay}`);
+
+  // [v11.6 Item 1] Update UI NGAY
   if(itemEl){
-    itemEl.classList.add('duyet-processing');
     const badge=itemEl.querySelector('.dnp-badge');
-    if(badge){badge.textContent='⏳ '+quyetDinh+'...';}
-  }
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetDonNghiPhep', maNhanVien:maNV, ngay, tuan,
-    quyetDinh, ghiChuQLNS, maNguoiDuyet:SESSION.ma,
-  })}, (attempt,total)=>{
-    if(itemEl){ const b=itemEl.querySelector('.dnp-badge'); if(b) b.textContent='Gửi lại ('+attempt+'/'+total+')...'; }
-  })
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt — đã thông báo NV':'✗ Đã từ chối — đã thông báo NV','ok');
-      // [v11.4 LC-03a/NS-03a] Partial DOM update thay reload
-      if(itemEl){
-        // Update trạng thái tại chỗ
-        const badge=itemEl.querySelector('.dnp-badge');
-        if(badge){
-          badge.classList.remove('dnpb-cho');
-          badge.classList.add(quyetDinh==='Đã duyệt' ? 'dnpb-da' : 'dnpb-tc');
-          badge.textContent = quyetDinh;
-        }
-        // Ẩn 2 nút duyệt + ô ghi chú
-        const noteWrap = itemEl.querySelector('.dnp-note-wrap');
-        const actions = itemEl.querySelector('.dnp-actions');
-        if(noteWrap) noteWrap.style.display='none';
-        if(actions) actions.style.display='none';
-        // Hiện ghi chú QLNS nếu có
-        if(ghiChuQLNS){
-          const noteHtml = `<div class="dnp-qlns-note">💬 ${ghiChuQLNS.replace(/</g,'&lt;')}</div>`;
-          if(actions) actions.insertAdjacentHTML('beforebegin', noteHtml);
-          else itemEl.insertAdjacentHTML('beforeend', noteHtml);
-        }
-        itemEl.classList.remove('duyet-processing');
-        // Update số "chờ" trong day-head
-        const dayGrp = itemEl.closest('.dnp-day-group');
-        if(dayGrp){
-          const dayCntEl = dayGrp.querySelector('.dnp-day-cnt');
-          if(dayCntEl){
-            const txt = dayCntEl.textContent || '';
-            const match = txt.match(/(\d+)\s*chờ/);
-            if(match){
-              const newCho = Math.max(0, parseInt(match[1]) - 1);
-              dayCntEl.textContent = txt.replace(/(\d+)\s*chờ/, newCho > 0 ? newCho+' chờ' : '');
-              if(newCho === 0) dayCntEl.textContent = dayCntEl.textContent.replace(/\s*·\s*$/, '');
-            }
-          }
+    if(badge){
+      badge.classList.remove('dnpb-cho');
+      badge.classList.add(quyetDinh==='Đã duyệt' ? 'dnpb-da' : 'dnpb-tc');
+      badge.textContent = quyetDinh;
+    }
+    const noteWrap = itemEl.querySelector('.dnp-note-wrap');
+    const actions = itemEl.querySelector('.dnp-actions');
+    if(noteWrap) noteWrap.style.display='none';
+    if(actions) actions.style.display='none';
+    if(ghiChuQLNS){
+      const noteHtml = `<div class="dnp-qlns-note">💬 ${ghiChuQLNS.replace(/</g,'&lt;')}</div>`;
+      if(actions) actions.insertAdjacentHTML('beforebegin', noteHtml);
+      else itemEl.insertAdjacentHTML('beforeend', noteHtml);
+    }
+    // Update số "chờ" trong day-head
+    const dayGrp = itemEl.closest('.dnp-day-group');
+    if(dayGrp){
+      const dayCntEl = dayGrp.querySelector('.dnp-day-cnt');
+      if(dayCntEl){
+        const txt = dayCntEl.textContent || '';
+        const match = txt.match(/(\d+)\s*chờ/);
+        if(match){
+          const newCho = Math.max(0, parseInt(match[1]) - 1);
+          dayCntEl.textContent = txt.replace(/(\d+)\s*chờ/, newCho > 0 ? newCho+' chờ' : '');
+          if(newCho === 0) dayCntEl.textContent = dayCntEl.textContent.replace(/\s*·\s*$/, '');
         }
       }
-      // Cập nhật badge số đơn chờ
-      _silentUpdateAccBadges();
+    }
+  }
+  showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối', 'ok');
+
+  // Gửi server NGẦM
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+    action:'duyetDonNghiPhep', maNhanVien:maNV, ngay, tuan,
+    quyetDinh, ghiChuQLNS, maNguoiDuyet:SESSION.ma,
+  })}).then(r=>r.json()).then(res=>{
+    if(!res.success){
+      showToast('⚠ ' + (res.error||'Server lỗi'), 'warn');
     } else {
-      if(itemEl) itemEl.classList.remove('duyet-processing');
-      // Restore badge
-      const badge=itemEl.querySelector('.dnp-badge');
-      if(badge){badge.textContent='Chờ duyệt';badge.className='dnp-badge dnpb-cho';}
-      showToast(res.error||'Lỗi.','err');
+      _silentUpdateAccBadges();
     }
   }).catch(()=>{
-    if(itemEl) itemEl.classList.remove('duyet-processing');
-    showToast('Lỗi kết nối.','err');
+    showToast('⚠ Mất kết nối - đang đồng bộ', 'warn');
   });
 }
 
@@ -5854,72 +6056,61 @@ function _renderACCDnpQL(){
 }
 
 // Hàm duyệt đơn — dùng chung cho cả QLNS page Nhân sự và page Duyệt YC
-// [v10.1 Yc #2] Optimistic UI: mờ row + cho user thao tác tiếp; xong mới toast
+// [v11.6 Item 1] Fire-and-forget: fade out NGAY, server xử lý ngầm
 function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
   if(qd==='Từ chối' && !ghiChuQLNS){
     ghiChuQLNS=prompt('Lý do từ chối đơn này?');
     if(!ghiChuQLNS)return;
   }
-  // Mờ row ngay lập tức
   const itemEl=document.querySelector(`[data-dnitem="${maNV}_${ngay}"]`);
+
+  // [v11.6 Item 1] Fade out / update NGAY trước khi gửi
   if(itemEl){
-    itemEl.classList.add('duyet-processing');
-    const badge=itemEl.querySelector('.dnp-badge');
-    if(badge){badge.textContent='⏳ '+qd+'...';badge.className='dnp-badge dnpb-cho';}
+    if(currentPage==='duyetyc' || currentPage==='nhansu'){
+      // Fade out + remove
+      itemEl.style.transition='opacity .25s, max-height .25s, margin .25s';
+      itemEl.style.opacity='0';
+      itemEl.style.maxHeight='0';
+      itemEl.style.margin='0';
+      setTimeout(() => { try { itemEl.remove(); } catch(e){} }, 260);
+      // Update _ycData state NGAY
+      if(_ycData){
+        _ycData.donNghi = (_ycData.donNghi||[]).filter(d => !(d.maNV===maNV && d.ngay===ngay));
+        const bulkCnt = document.getElementById('yc-bulk-count');
+        if(bulkCnt) bulkCnt.textContent = (_ycData.donNghi||[]).length;
+        if(!(_ycData.donNghi||[]).length){
+          const bulkBar = document.getElementById('yc-bulk-bar');
+          if(bulkBar) bulkBar.style.display='none';
+        }
+        _updateYCDayCounts();
+      }
+    } else if(currentPage==='donnghi-acc'){
+      // Update trạng thái tại chỗ
+      const badge=itemEl.querySelector('.dnp-badge');
+      if(badge){
+        badge.classList.remove('dnpb-cho');
+        badge.classList.add(qd==='Đã duyệt' ? 'dnpb-ok' : 'dnpb-no');
+        badge.textContent = qd==='Đã duyệt' ? '✓ Đã duyệt' : '✗ Từ chối';
+      }
+      const dwrap = itemEl.querySelector('.ns-duyet-wrap');
+      if(dwrap) dwrap.style.display='none';
+    }
   }
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  showToast((qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối'), 'ok');
+
+  // Gửi server NGẦM (không await)
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetDonNghiPhep',
     maNhanVien:maNV, ngay, tuan, quyetDinh:qd,
     ghiChuQLNS:ghiChuQLNS||'', maNguoiDuyet:SESSION.ma,
-  })}, (attempt,total)=>{
-    if(itemEl){ const b=itemEl.querySelector('.dnp-badge'); if(b) b.textContent='Gửi lại ('+attempt+'/'+total+')...'; }
-  }).then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast((qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối')+' — đã thông báo NV','ok');
-      // [v11.4 NS-03a/LC-03b] Bỏ reload toàn trang, chỉ update partial DOM
-      if(itemEl){
-        // Remove khỏi list YC (chờ duyệt) hoặc cập nhật trạng thái nếu trang Lịch sử
-        if(currentPage==='duyetyc' || currentPage==='nhansu'){
-          itemEl.style.transition='opacity .3s, max-height .3s, margin .3s';
-          itemEl.style.opacity='0';
-          itemEl.style.maxHeight='0';
-          itemEl.style.margin='0';
-          setTimeout(() => { try { itemEl.remove(); } catch(e){} }, 320);
-          // Update _ycData state
-          if(_ycData){
-            _ycData.donNghi = (_ycData.donNghi||[]).filter(d => !(d.maNV===maNV && d.ngay===ngay));
-            // Cập nhật bulk count
-            const bulkCnt = document.getElementById('yc-bulk-count');
-            if(bulkCnt) bulkCnt.textContent = (_ycData.donNghi||[]).length;
-            if(!(_ycData.donNghi||[]).length){
-              const bulkBar = document.getElementById('yc-bulk-bar');
-              if(bulkBar) bulkBar.style.display='none';
-            }
-            // Cập nhật day count
-            _updateYCDayCounts();
-          }
-        } else if(currentPage==='donnghi-acc'){
-          // Trang Tài khoản → cập nhật trạng thái tại chỗ
-          const badge=itemEl.querySelector('.dnp-badge');
-          if(badge){
-            badge.classList.remove('dnpb-cho');
-            badge.classList.add(qd==='Đã duyệt' ? 'dnpb-ok' : 'dnpb-no');
-            badge.textContent = qd==='Đã duyệt' ? '✓ Đã duyệt' : '✗ Từ chối';
-          }
-          // Ẩn 2 nút duyệt
-          const dwrap = itemEl.querySelector('.ns-duyet-wrap');
-          if(dwrap) dwrap.style.display='none';
-          itemEl.classList.remove('duyet-processing');
-        }
-      }
-      _silentUpdateAccBadges();
+  })}).then(r=>r.json()).then(res=>{
+    if(!res.success){
+      showToast('⚠ ' + (res.error||'Server lỗi'), 'warn');
     } else {
-      if(itemEl) itemEl.classList.remove('duyet-processing');
-      showToast(res.error||'Lỗi duyệt.','err');
+      _silentUpdateAccBadges();
     }
   }).catch(()=>{
-    if(itemEl) itemEl.classList.remove('duyet-processing');
-    showToast('Lỗi kết nối.','err');
+    showToast('⚠ Mất kết nối - đang đồng bộ', 'warn');
   });
 }
 
@@ -6072,25 +6263,38 @@ function _renderYC(){
   } else {
     // Giải trình cảnh báo
     if(!ds.length){content.innerHTML='<div class="dnp-empty">✅ Không có giải trình chờ duyệt.</div>';return;}
+    // [v11.6 Item 4] Sort phụ: đã giải trình lên TRÊN, chưa giải trình xuống DƯỚI
+    ngayList.forEach(k => {
+      grouped[k].sort((a, b) => {
+        const aDaGT = a.giaiTrinh ? 1 : 0;
+        const bDaGT = b.giaiTrinh ? 1 : 0;
+        if (aDaGT !== bDaGT) return bDaGT - aDaGT; // Đã GT (1) lên trước
+        return (a.tenNV || '').localeCompare(b.tenNV || '', 'vi');
+      });
+    });
     let html = '<div class="dnp-list">';
     ngayList.forEach(k => {
       html += `<div class="yc-day-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${fmtNgay(k)} <span class="yc-day-count">${grouped[k].length}</span></div>`;
       html += grouped[k].map(d => {
         const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-        return `<div class="dnp-item" data-gtitem="${d.maNV}_${d.ngay}">
+        // [v11.6 Item 4] data-gtitem có cbRowIdx — fix bug "duyệt thứ 3 dòng đầu mờ"
+        const cbIdx = d.cbRowIdx || 0;
+        const badgeCls = d.giaiTrinh ? 'dnpb-cho' : 'dnpb-tc'; // chưa GT thì đỏ
+        const badgeTxt = d.giaiTrinh ? 'Đã giải trình' : 'Chưa giải trình';
+        return `<div class="dnp-item" data-gtitem="${d.maNV}_${d.ngay}_${cbIdx}">
           <div class="dnp-item-top">
             <div class="ns-avatar ns-av-loi" style="width:32px;height:32px;font-size:11px">${init}</div>
             <div class="dnp-info" style="flex:1;margin-left:10px">
               <div class="dnp-name">${d.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
               <div class="dnp-sub">${d.gio} · ${d.loaiCB}${d.khuVuc?' · '+d.khuVuc:''}</div>
             </div>
-            <span class="dnp-badge dnpb-cho">Đã giải trình</span>
+            <span class="dnp-badge ${badgeCls}">${badgeTxt}</span>
           </div>
           <div class="dnp-lydo"><div class="dnp-lydo-lbl">Nội dung CB</div>${d.noiDung.replace(/\n/g,'<br>')}</div>
-          ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:''}
+          ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:'<div class="dnp-lydo" style="color:var(--red)"><div class="dnp-lydo-lbl">⚠ NV chưa giải trình</div>Khuyến nghị: chờ NV giải trình trước khi duyệt</div>'}
           <div class="ns-duyet-wrap" style="margin-top:8px">
-            <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt',${d.cbRowIdx||0})">✓ Duyệt</button>
-            <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt',${d.cbRowIdx||0})">✗ Không duyệt</button>
+            <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt',${cbIdx})">✓ Duyệt</button>
+            <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt',${cbIdx})">✗ Không duyệt</button>
           </div>
         </div>`;
       }).join('');
@@ -6211,48 +6415,42 @@ async function hoanTacDuyet(token){
 }
 
 function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
-  const itemEl=document.querySelector(`[data-gtitem="${maNV}_${ngay}"]`);
+  // [v11.6 Item 1+4] Fire-and-forget — remove item NGAY trước khi gửi
+  const itemEl=document.querySelector(`[data-gtitem="${maNV}_${ngay}_${cbRowIdx||0}"]`)
+            || document.querySelector(`[data-gtitem="${maNV}_${ngay}"]`);
   if(itemEl){
-    itemEl.classList.add('duyet-processing');
-    const badge=itemEl.querySelector('.dnp-badge');
-    if(badge){badge.textContent='⏳ '+quyetDinh+'...';}
+    itemEl.style.transition='opacity .25s, max-height .25s, margin .25s';
+    itemEl.style.opacity='0';
+    itemEl.style.maxHeight='0';
+    itemEl.style.margin='0';
+    setTimeout(() => { try { itemEl.remove(); } catch(e){} }, 260);
   }
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
+  // Update _ycData state NGAY
+  if(_ycData){
+    _ycData.giaiTrinh = (_ycData.giaiTrinh||[]).filter(d => !(d.maNV===maNV && d.ngay===ngay && (d.cbRowIdx||0) === (cbRowIdx||0)));
+    const bulkCnt = document.getElementById('yc-bulk-count');
+    if(bulkCnt) bulkCnt.textContent = (_ycData.giaiTrinh||[]).length;
+    if(!(_ycData.giaiTrinh||[]).length){
+      const bulkBar = document.getElementById('yc-bulk-bar');
+      if(bulkBar) bulkBar.style.display='none';
+    }
+    _updateYCDayCounts();
+  }
+  showToast('✓ Đã cập nhật', 'ok');
+  // Gửi server NGẦM
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
     action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
     cbRowIdx: cbRowIdx||0,
     maNguoiDuyet:SESSION.ma
-  })}, (attempt,total)=>{
-    if(itemEl){ const b=itemEl.querySelector('.dnp-badge'); if(b) b.textContent='Gửi lại '+attempt+'/'+total+'...'; }
-  }).then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast('✓ Đã cập nhật — đã thông báo NV','ok');
-      // [v11.4 NS-03a/LC-03b] Partial DOM update thay reload
-      if(itemEl){
-        itemEl.style.transition='opacity .3s, max-height .3s, margin .3s';
-        itemEl.style.opacity='0';
-        itemEl.style.maxHeight='0';
-        itemEl.style.margin='0';
-        setTimeout(() => { try { itemEl.remove(); } catch(e){} }, 320);
-        // Update _ycData state
-        if(_ycData){
-          _ycData.giaiTrinh = (_ycData.giaiTrinh||[]).filter(d => !(d.maNV===maNV && d.ngay===ngay && (d.cbRowIdx||0) === (cbRowIdx||0)));
-          const bulkCnt = document.getElementById('yc-bulk-count');
-          if(bulkCnt) bulkCnt.textContent = (_ycData.giaiTrinh||[]).length;
-          if(!(_ycData.giaiTrinh||[]).length){
-            const bulkBar = document.getElementById('yc-bulk-bar');
-            if(bulkBar) bulkBar.style.display='none';
-          }
-          _updateYCDayCounts();
-        }
-      }
-      _silentUpdateAccBadges();
+  })}).then(r=>r.json()).then(res=>{
+    if(!res.success){
+      // Server lỗi → toast vàng cảnh báo (không rollback)
+      showToast('⚠ ' + (res.error||'Lỗi server, vui lòng kiểm tra'), 'warn');
     } else {
-      if(itemEl) itemEl.classList.remove('duyet-processing');
-      showToast(res.error||'Lỗi duyệt.','err');
+      _silentUpdateAccBadges();
     }
   }).catch(()=>{
-    if(itemEl) itemEl.classList.remove('duyet-processing');
-    showToast('Lỗi kết nối.','err');
+    showToast('⚠ Mất kết nối - đang đồng bộ lại', 'warn');
   });
 }
 
