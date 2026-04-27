@@ -981,21 +981,22 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-empty-title { font-size:15px; font-weight:500; color:var(--text); margin-bottom:4px; }
 .bh-empty-sub { font-size:13px; color:var(--text-m); }
 
-/* Session card */
-.bh-card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:14px; margin-bottom:10px; border-left:3px solid var(--red); position:relative; overflow:hidden; animation:bhSlideIn 0.3s ease-out; }
+/* Session card - [v11.7+ fix] navy + font mềm mại */
+.bh-card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:14px; margin-bottom:10px; border-left:3px solid #3B82F6; position:relative; overflow:hidden; animation:bhSlideIn 0.3s ease-out; }
 .bh-card.finished { opacity:0.5; animation:bhSlideOut 0.5s ease-in forwards; pointer-events:none; }
 @keyframes bhSlideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
 @keyframes bhSlideOut { to { opacity:0; transform:scale(0.95); max-height:0; margin:0; padding:0; } }
 
 .bh-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .bh-card-title { display:flex; align-items:center; gap:8px; }
-.bh-dot { width:10px; height:10px; border-radius:50%; background:var(--red); animation:bhBlink 1.2s ease-in-out infinite; flex-shrink:0; }
+.bh-dot { width:10px; height:10px; border-radius:50%; background:#3B82F6; animation:bhBlink 1.2s ease-in-out infinite; flex-shrink:0; }
 @keyframes bhBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 /* [v11.7 BH-2] Tên phiên & timer to hơn cho dễ thấy */
 .bh-session-num { font-size:18px; font-weight:700; color:var(--text); letter-spacing:.2px; }
 .bh-session-meta { font-size:11px; color:var(--text-m); margin-top:2px; }
-.bh-timer { font-family:'SF Mono','JetBrains Mono',Menlo,Consolas,monospace; font-size:24px; font-weight:700; color:var(--red); font-variant-numeric:tabular-nums; padding:5px 12px; background:var(--red-lt); border-radius:8px; letter-spacing:.5px; }
-.bh-timer.warn { color:#CA8A04; background:#FEF3C7; animation:bhPulse 1.5s infinite; }
+/* [v11.7+ fix] Timer font mềm mại + navy đậm */
+.bh-timer { font-family:'SF Mono','Menlo','Roboto Mono',ui-monospace,monospace; font-size:24px; font-weight:600; color:#1E3A8A; font-variant-numeric:tabular-nums; padding:5px 12px; background:#DBEAFE; border-radius:8px; letter-spacing:.4px; }
+.bh-timer.warn { color:#92400E; background:#FEF3C7; animation:bhPulse 1.5s infinite; }
 .bh-timer.danger { color:var(--red); background:var(--red-lt); animation:bhPulse 1s infinite; }
 @keyframes bhPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
 @keyframes bhSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
@@ -1043,7 +1044,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-footer-link:active { color:var(--text); }
 
 /* ── VIEW QLBH ─────────────────────────────────────────── */
-.bh-ql-header { background:#fff; padding:14px 16px 0; border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:10; }
+.bh-ql-header { background:#fff; padding:14px 16px 0; border-bottom:0.5px solid var(--border); }
 .bh-ql-title { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:600; color:var(--text); margin-bottom:12px; }
 .bh-ql-title svg { color:var(--green); }
 .bh-ql-tabs { display:flex; gap:4px; }
@@ -1077,13 +1078,16 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-content { padding:12px; }
 
 /* Card live (QLBH xem) */
-.bh-live-card { background:#fff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:12px 14px; margin-bottom:8px; border-left:3px solid var(--red); cursor:pointer; }
-.bh-live-card:active { background:var(--gray-lt); }
-.bh-live-card.hot { border-left-color:#F97316; background:#FFF7ED; }
+/* [v11.7+ fix màu] Card live - nền xanh rất nhạt, sọc navy nhạt, timer navy đậm */
+.bh-live-card { background:#F0F9FF; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:12px 14px; margin-bottom:8px; border-left:3px solid #3B82F6; cursor:pointer; }
+.bh-live-card:active { background:#E0F2FE; }
+/* Hot (>15 phút) - sọc navy ĐẬM hơn để nổi bật cảnh báo, vẫn xanh nhạt nhưng tone khác */
+.bh-live-card.hot { border-left-color:#1E3A8A; border-left-width:4px; background:#FEF7E6; }
 .bh-live-card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
 .bh-live-ch { font-size:14px; font-weight:600; color:var(--text); }
 .bh-live-ch-meta { font-size:11px; color:var(--text-m); margin-top:1px; }
-.bh-live-timer { font-family:monospace; font-size:14px; font-weight:600; color:var(--red); padding:2px 6px; background:var(--red-lt); border-radius:5px; }
+/* Timer: font số mềm mại (Inter / SF Mono fallback), màu navy đậm */
+.bh-live-timer { font-family:'SF Mono','Menlo','Roboto Mono',ui-monospace,monospace; font-size:14px; font-weight:600; color:#1E3A8A; padding:3px 8px; background:#DBEAFE; border-radius:6px; letter-spacing:0.3px; font-variant-numeric:tabular-nums; }
 .bh-live-sp { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
 .bh-live-sp .bh-chip { font-size:11px; padding:2px 8px; }
 
@@ -2581,7 +2585,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbykZnJFPHvQYTI5qHfDIqsI7cr-WAh4M0yYE5e6WGycTXfDuOFmKGOhU74MCyEx2J2Y/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycby9AqtBb_OP4bmD8cGTTljnsnxyaupv6nQzjklFhVVKWzx-WyMD88uf3xMGhUVJxG-m/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
