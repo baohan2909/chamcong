@@ -8715,6 +8715,7 @@ function bhQlOpenDetail(idPhien) {
 }
 
 // [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp
+// [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp + fire-and-forget
 async function bhQlXoaPhien() {
   const idPhien = BH.qlCurrentDetailId;
   if (!idPhien) return;
@@ -8723,43 +8724,57 @@ async function bhQlXoaPhien() {
   const ok2 = confirm('Xác nhận lần cuối: Xóa hẳn phiên?');
   if (!ok2) return;
 
-  const delBtn = document.getElementById('bh-md-detail-delete');
-  if (delBtn) {
-    delBtn.disabled = true;
-    delBtn.style.opacity = '0.5';
-    delBtn.querySelector('span').textContent = 'Đang xóa...';
+  // ─── BƯỚC 1: DỪNG TIMER NGAY (xóa khỏi BH.sessions để bhTickTimers bỏ qua) ───
+  const idx = BH.sessions.findIndex(s => s.idPhien === idPhien);
+  if (idx >= 0) {
+    BH.sessions.splice(idx, 1);
   }
-  try {
-    const r = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'xoa_phien',
-        idPhien,
-        maNguoiXoa: SESSION.ma,
-      })
-    });
-    const d = await r.json();
+  // Cũng xóa khỏi qlLastLive/qlLastFinished nếu đang ở view QLBH
+  if (BH.qlLastLive) BH.qlLastLive = BH.qlLastLive.filter(p => p.idPhien !== idPhien);
+  if (BH.qlLastFinished) BH.qlLastFinished = BH.qlLastFinished.filter(p => p.idPhien !== idPhien);
+
+  // ─── BƯỚC 2: XÓA CARD KHỎI UI NGAY (fade out 250ms) ───
+  // Tìm card trong cả 2 view (CH có data-sid, QLBH có cards trong list)
+  const cardCH = document.querySelector('[data-sid="' + idPhien + '"]');
+  if (cardCH) {
+    cardCH.style.transition = 'opacity .25s, transform .25s, max-height .25s';
+    cardCH.style.opacity = '0';
+    cardCH.style.transform = 'scale(0.95)';
+    setTimeout(() => { try { cardCH.remove(); } catch(e){} }, 260);
+  }
+  // QLBH view - tìm trong live + history
+  const qlCards = document.querySelectorAll('[onclick*="' + idPhien + '"]');
+  qlCards.forEach(c => {
+    c.style.transition = 'opacity .25s, transform .25s';
+    c.style.opacity = '0';
+    c.style.transform = 'scale(0.95)';
+    setTimeout(() => { try { c.remove(); } catch(e){} }, 260);
+  });
+
+  // ─── BƯỚC 3: ĐÓNG MODAL NGAY ───
+  bhCloseModal('detail');
+  bhShowToast('✓ Đang xóa phiên...', 'success');
+
+  // ─── BƯỚC 4: GỬI SERVER NGẦM (fire-and-forget) ───
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'xoa_phien',
+      idPhien,
+      maNguoiXoa: SESSION.ma,
+    })
+  }).then(r => r.json()).then(d => {
     if (d.success) {
-      bhCloseModal('detail');
       bhShowToast('✓ ' + (d.message || 'Đã xóa phiên'), 'success');
-      // Reload list
-      if (typeof bhQlReload === 'function') bhQlReload();
     } else {
-      bhShowToast('Lỗi: ' + (d.error || 'Không xóa được'), null);
-      if (delBtn) {
-        delBtn.disabled = false;
-        delBtn.style.opacity = '';
-        delBtn.querySelector('span').textContent = 'Xóa';
-      }
+      // Server từ chối - hiển thị lỗi nhưng KHÔNG restore (user đã thấy đã xóa)
+      bhShowToast('⚠ Server: ' + (d.error || 'Lỗi xóa'), null);
+      console.error('[BH Xóa phiên] Server lỗi:', d);
     }
-  } catch(e) {
-    bhShowToast('Lỗi mạng', null);
-    if (delBtn) {
-      delBtn.disabled = false;
-      delBtn.style.opacity = '';
-      delBtn.querySelector('span').textContent = 'Xóa';
-    }
-  }
+  }).catch(e => {
+    bhShowToast('⚠ Mất kết nối - đang đồng bộ', null);
+    console.error('[BH Xóa phiên] Network error:', e);
+  });
 }
 
 async function bhQlLoadDashboard() {
