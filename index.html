@@ -919,7 +919,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 #page-banhang { padding-bottom: 80px; }
 
 /* ── Header cửa hàng (view CH) ─────────────────────────── */
-.bh-ch-header { background:#fff; padding:14px 16px 12px; border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:10; }
+.bh-ch-header { background:#fff; padding:14px 16px 12px; border-bottom:0.5px solid var(--border); }
 .bh-ch-header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:10px; }
 .bh-ch-name { font-size:16px; font-weight:600; color:var(--text); line-height:1.2; }
 .bh-ch-sub { font-size:11px; color:var(--text-m); margin-top:2px; }
@@ -2214,12 +2214,19 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
             <div class="bh-ch-name" id="bh-ch-name">--</div>
             <div class="bh-ch-sub" id="bh-ch-sub">--</div>
           </div>
-          <div style="text-align:right">
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
             <div class="bh-ch-time" id="bh-ch-time">--:--</div>
-            <button class="bh-ch-sound" id="bh-sound-toggle" onclick="bhToggleSound()">
-              <svg id="bh-sound-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-              <span id="bh-sound-label">Bật</span>
-            </button>
+            <div style="display:flex;gap:6px;align-items:center">
+              <!-- [v11.7+ fix sync] Nút Reload thủ công -->
+              <button class="bh-ch-sound" id="bh-reload-btn" onclick="bhManualReload()" title="Tải lại danh sách phiên từ server">
+                <svg id="bh-reload-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span>Tải lại</span>
+              </button>
+              <button class="bh-ch-sound" id="bh-sound-toggle" onclick="bhToggleSound()">
+                <svg id="bh-sound-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                <span id="bh-sound-label">Bật</span>
+              </button>
+            </div>
           </div>
         </div>
         <div class="bh-stats bh-stats-5">
@@ -7383,7 +7390,12 @@ function bhInitViewCH() {
   } catch(e){}
   bhUpdateSoundUI();
 
-  bhLoadPhienDangBan();
+  // [v11.7+ fix sync] Flush queue trước (gửi các phiên chưa đồng bộ từ phiên trước)
+  bhFlushKtQueue().then(() => bhLoadPhienDangBan());
+  // Auto reload mỗi 10 phút
+  bhStartAutoReload();
+  // Schedule logout 0h sáng hôm sau (chỉ cho CUA_HANG)
+  bhScheduleLogoutAt0h();
 }
 
 function bhUpdateClock() {
@@ -7449,6 +7461,77 @@ async function bhLoadPhienDangBan() {
   } catch(e) {
     console.error('[BH] Load phien dang ban lỗi:', e);
   }
+}
+
+// [v11.7+ fix sync] Manual reload thủ công - user bấm nút
+async function bhManualReload() {
+  const btn = document.getElementById('bh-reload-btn');
+  const icon = document.getElementById('bh-reload-icon');
+  if (btn) btn.disabled = true;
+  if (icon) {
+    icon.style.transition = 'transform 0.6s';
+    icon.style.transform = 'rotate(360deg)';
+  }
+  // Flush queue trước (gửi các kt_phien đang chờ)
+  await bhFlushKtQueue();
+  // Sau đó load lại từ server
+  await bhLoadPhienDangBan();
+  if (btn) btn.disabled = false;
+  if (icon) {
+    setTimeout(() => { icon.style.transition = 'none'; icon.style.transform = ''; }, 600);
+  }
+  bhShowToast('✓ Đã cập nhật từ server', 'success');
+}
+
+// [v11.7+ fix sync] Auto reload mỗi 10 phút (chỉ khi tab visible + đang ở tab bán hàng)
+let _bhAutoReloadTimer = null;
+function bhStartAutoReload() {
+  if (_bhAutoReloadTimer) clearInterval(_bhAutoReloadTimer);
+  _bhAutoReloadTimer = setInterval(() => {
+    // Skip nếu tab ẩn
+    if (document.hidden) return;
+    // Skip nếu user không ở tab bán hàng (avoid disrupt khi đang xem tab khác)
+    if (typeof CURRENT_PAGE !== 'undefined' && CURRENT_PAGE !== 'banhang') return;
+    // Skip nếu đang có modal mở (tránh ngắt user nhập liệu)
+    const anyModal = document.querySelector('.bh-modal.show');
+    if (anyModal) return;
+    // Skip nếu đang có phiên syncing
+    if (BH.sessions.some(s => s.syncing)) return;
+
+    console.log('[BH] Auto reload sau 10 phút...');
+    bhFlushKtQueue().then(() => bhLoadPhienDangBan());
+  }, 10 * 60 * 1000); // 10 phút
+}
+function bhStopAutoReload() {
+  if (_bhAutoReloadTimer) clearInterval(_bhAutoReloadTimer);
+  _bhAutoReloadTimer = null;
+}
+
+// [v11.7+ fix sync] Schedule logout vào lúc 0h sáng hôm sau
+// Trong ngày KHÔNG logout (kể cả nhận update)
+let _bhLogoutTimer = null;
+function bhScheduleLogoutAt0h() {
+  if (_bhLogoutTimer) clearTimeout(_bhLogoutTimer);
+  if (!SESSION) return;
+  // Chỉ áp dụng cho tài khoản CUA_HANG (NV/QLNS/QLBH thì không tự logout)
+  if (SESSION.vaiTro !== 'CUA_HANG') return;
+
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+  const msUntil = tomorrow.getTime() - now.getTime();
+  console.log('[BH] Schedule auto-logout lúc 0h:00:05 - sau ' + Math.round(msUntil/1000/60) + ' phút');
+  _bhLogoutTimer = setTimeout(() => {
+    bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
+    setTimeout(() => {
+      try {
+        sessionStorage.removeItem('session_cc');
+        // Xóa cache local nhưng giữ queue (gửi lên ngày mai khi login)
+        location.reload();
+      } catch(e) {
+        location.reload();
+      }
+    }, 2000);
+  }, msUntil);
 }
 
 async function bhLoadStatsToday() {
@@ -8231,69 +8314,115 @@ async function bhBoughtConfirm() {
     return;
   }
 
-  s.status = 'closing';
+  // [v11.7+ fix] Finalize UI NGAY - không đợi server
+  // Status='finished' → bhTickTimers skip → timer dừng. Render xong là card biến mất.
   const sid = s.idPhien;
   const items = [...BH.tempItems];
+  const nv = { ma: BH.tempBoughtNV.ma, ten: BH.tempBoughtNV.ten };
 
+  s.status = 'finished';
+  BH.statsToday.bought++;
   bhRenderSessions();
+  bhUpdateStats();
   bhCloseModal('bought');
-  // [v11.7 BH-1] Tone G5 vui khi đã mua
   bhPlayBeep(784, 900);
   bhVibrate(50);
 
+  // Tổng giá trị từ items
+  let total = 0;
+  items.forEach(it => total += bhGiaSP(it.maCu) * it.qty);
+  const undoFn = async () => {
+    // Hoàn tác: chỉ chạy được nếu server đã nhận → có request hoan_tac
+    try {
+      const r2 = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
+      });
+      const d2 = await r2.json();
+      if (d2.success) {
+        s.status = 'selling';
+        BH.statsToday.bought--;
+        bhRenderSessions();
+        bhUpdateStats();
+        bhShowToast('Đã hoàn tác', null);
+      }
+    } catch(e) {}
+  };
+  bhShowToast('✓ Phiên #' + s.num + ' - Đã mua' + (total > 0 ? ' · ' + bhFormatMoney(total) + 'đ' : ''), 'success', undoFn);
+
+  // Gửi server NGẦM với retry (3 lần)
+  bhSendKtPhienWithRetry({
+    action: 'kt_phien_mua',
+    idPhien: sid,
+    maNV: nv.ma,
+    tenNV: nv.ten,
+    spDaMua: items,
+    spQuanTam: s.products,
+    ghiChu: note
+  }, s, 'bought');
+}
+
+// [v11.7+ fix] Helper: gửi kết thúc phiên với retry tự động
+// Đảm bảo data tới server kể cả mạng yếu
+async function bhSendKtPhienWithRetry(payload, s, kind, retries) {
+  retries = retries || 0;
   try {
     const r = await fetch(SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'kt_phien_mua',
-        idPhien: sid,
-        maNV: BH.tempBoughtNV.ma,
-        tenNV: BH.tempBoughtNV.ten,
-        spDaMua: items,                     // [{maCu, qty}]
-        spQuanTam: s.products,
-        ghiChu: note
-      })
+      body: JSON.stringify(payload)
     });
     const d = await r.json();
-    if (!d.success) {
-      bhShowToast('Lỗi lưu: ' + (d.error || 'Vui lòng thử lại'), null);
-      s.status = 'selling';
-      bhRenderSessions();
-      bhUpdateStats();
+    if (d.success) {
+      // Thành công - không cần làm gì, UI đã update từ trước
       return;
     }
-    s.status = 'finished';
-    BH.statsToday.bought++;
-    bhRenderSessions();
-    bhUpdateStats();
-
-    // Tổng giá trị từ items
-    let total = 0;
-    items.forEach(it => total += bhGiaSP(it.maCu) * it.qty);
-    bhShowToast('✓ Phiên #' + s.num + ' - Đã mua' + (total > 0 ? ' · ' + bhFormatMoney(total) + 'đ' : ''), 'success', async () => {
-      try {
-        const r2 = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
-        });
-        const d2 = await r2.json();
-        if (d2.success) {
-          s.status = 'selling';
-          BH.statsToday.bought--;
-          bhRenderSessions();
-          bhUpdateStats();
-          bhShowToast('Đã hoàn tác', null);
-        } else {
-          bhShowToast('Không thể hoàn tác: ' + (d2.error || ''), null);
-        }
-      } catch(e){}
-    });
+    throw new Error(d.error || 'Lỗi server');
   } catch(e) {
-    bhShowToast('Mất kết nối — phiên giữ nguyên trạng thái đang bán', null);
-    s.status = 'selling';
-    bhRenderSessions();
-    bhUpdateStats();
+    console.error('[BH KT phiên] Lần ' + (retries+1) + ' thất bại:', e);
+    if (retries < 3) {
+      // Retry sau 2-4-8 giây
+      const delay = 2000 * Math.pow(2, retries);
+      setTimeout(() => bhSendKtPhienWithRetry(payload, s, kind, retries + 1), delay);
+    } else {
+      // Hết retry - lưu vào queue local để gửi lại sau
+      bhQueueKtPhien(payload);
+      bhShowToast('⚠ Không gửi được lên server. Đã lưu, sẽ gửi lại khi có mạng.', null);
+    }
   }
+}
+
+// Queue local lưu các kt_phien chưa gửi được
+function bhQueueKtPhien(payload) {
+  try {
+    const queue = JSON.parse(localStorage.getItem('bh_kt_queue') || '[]');
+    queue.push({ payload, ts: Date.now() });
+    localStorage.setItem('bh_kt_queue', JSON.stringify(queue));
+  } catch(e) {}
+}
+
+// Resend queue khi tab visible / login
+async function bhFlushKtQueue() {
+  try {
+    const queue = JSON.parse(localStorage.getItem('bh_kt_queue') || '[]');
+    if (!queue.length) return;
+    const remaining = [];
+    for (const item of queue) {
+      try {
+        const r = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(item.payload)
+        });
+        const d = await r.json();
+        if (!d.success) remaining.push(item);
+      } catch(e) {
+        remaining.push(item);
+      }
+    }
+    localStorage.setItem('bh_kt_queue', JSON.stringify(remaining));
+    if (queue.length > remaining.length) {
+      console.log('[BH] Đã flush ' + (queue.length - remaining.length) + ' phiên trong queue');
+    }
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -8390,67 +8519,48 @@ async function bhNotboughtConfirm() {
     bhCloseModal('notbought');
     return;
   }
-  s.status = 'closing';
 
+  // [v11.7+ fix] Finalize UI NGAY - không đợi server
   const sid = s.idPhien;
   const reason = BH.tempReason;
+  const nv = { ma: BH.tempNotBoughtNV.ma, ten: BH.tempNotBoughtNV.ten };
 
+  s.status = 'finished';
+  BH.statsToday.notBought++;
   bhRenderSessions();
+  bhUpdateStats();
   bhCloseModal('notbought');
-  // [v11.7 BH-1] Tone D5 trầm khi chưa mua
   bhPlayBeep(587, 700);
   bhVibrate(30);
 
-  try {
-    const r = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'kt_phien_khong_mua',
-        idPhien: sid,
-        lyDo: reason,
-        spQuanTam: s.products,
-        ghiChu: note,
-        // [v11.7 BH-3] Gửi NV trực phiên cho Chưa mua
-        maNV: BH.tempNotBoughtNV ? BH.tempNotBoughtNV.ma : '',
-        tenNV: BH.tempNotBoughtNV ? BH.tempNotBoughtNV.ten : '',
-      })
-    });
-    const d = await r.json();
-    if (!d.success) {
-      bhShowToast('Lỗi lưu: ' + (d.error || 'Vui lòng thử lại'), null);
-      s.status = 'selling';
-      bhRenderSessions();
-      bhUpdateStats();
-      return;
-    }
-    s.status = 'finished';
-    BH.statsToday.notBought++;
-    bhRenderSessions();
-    bhUpdateStats();
-    bhShowToast('Phiên #' + s.num + ' - ' + reason.slice(0, 30), null, async () => {
-      try {
-        const r2 = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
-        });
-        const d2 = await r2.json();
-        if (d2.success) {
-          s.status = 'selling';
-          BH.statsToday.notBought--;
-          bhRenderSessions();
-          bhUpdateStats();
-          bhShowToast('Đã hoàn tác', null);
-        } else {
-          bhShowToast('Không thể hoàn tác: ' + (d2.error || ''), null);
-        }
-      } catch(e){}
-    });
-  } catch(e) {
-    bhShowToast('Mất kết nối', null);
-    s.status = 'selling';
-    bhRenderSessions();
-    bhUpdateStats();
-  }
+  const undoFn = async () => {
+    try {
+      const r2 = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'hoan_tac_phien', idPhien: sid })
+      });
+      const d2 = await r2.json();
+      if (d2.success) {
+        s.status = 'selling';
+        BH.statsToday.notBought--;
+        bhRenderSessions();
+        bhUpdateStats();
+        bhShowToast('Đã hoàn tác', null);
+      }
+    } catch(e){}
+  };
+  bhShowToast('Phiên #' + s.num + ' - ' + reason.slice(0, 30), null, undoFn);
+
+  // Gửi server NGẦM với retry
+  bhSendKtPhienWithRetry({
+    action: 'kt_phien_khong_mua',
+    idPhien: sid,
+    lyDo: reason,
+    spQuanTam: s.products,
+    ghiChu: note,
+    maNV: nv.ma,
+    tenNV: nv.ten,
+  }, s, 'notbought');
 }
 
 // ═══════════════════════════════════════════════════════════════════
