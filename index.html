@@ -1035,8 +1035,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-btn-danger-solid { background:#6B7280; color:#fff; flex:1; }
 .bh-btn-danger-solid:active { background:#4B5563; }
 
-/* Footer CH */
-.bh-footer { background:#fff; border-top:0.5px solid var(--border); padding:12px 16px; position:sticky; bottom:0; z-index:5; }
+/* Footer CH - [v11.8+] đổi sticky từ bottom → top vì nút "Bắt đầu phiên" nằm TRÊN list */
+.bh-footer { background:#fff; border-bottom:0.5px solid var(--border); padding:12px 16px; position:sticky; top:0; z-index:5; }
 .bh-btn-primary { width:100%; background:#F97316; color:#fff; padding:15px; border-radius:14px; font-size:15px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(249,115,22,0.25); transition:transform 0.1s, background 0.15s; border:none; cursor:pointer; }
 .bh-btn-primary:active { transform:scale(0.98); background:#EA580C; }
 .bh-btn-primary:disabled { opacity:0.5; }
@@ -1060,7 +1060,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-daterange input[type=date] { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:#fff; }
 .bh-ql-refresh { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-.bh-ql-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px 12px; }
+.bh-ql-stats { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; padding:10px 12px; }
 .bh-ql-stat { background:var(--gray-lt); border-radius:10px; padding:8px 4px; text-align:center; cursor:pointer; transition:all .12s; -webkit-tap-highlight-color:transparent; border:2px solid transparent; }
 .bh-ql-stat:hover, .bh-ql-stat:active { transform:scale(0.97); }
 .bh-ql-stat.active { border-color:currentColor; box-shadow:0 0 0 3px rgba(0,0,0,0.04); }
@@ -1072,6 +1072,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-ql-stat.blue { background:#FEF3C7; } .bh-ql-stat.blue .n { color:#92400E; }
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
 .bh-ql-stat.purple { background:#F3E8FF; } .bh-ql-stat.purple .n { color:#7C3AED; }
+/* [v11.8+] Thẻ stat 6 - YC xóa (cam) */
+.bh-ql-stat.orange { background:#FFEDD5; } .bh-ql-stat.orange .n { color:#9A3412; }
+.bh-ql-stat.orange.has-yc { animation:bhPulseOrange 1.5s ease-in-out infinite; }
+@keyframes bhPulseOrange {
+  0%,100% { background:#FFEDD5; }
+  50%     { background:#FED7AA; }
+}
 /* [v11.7+ fix màu] STT toàn cục badge - đổi từ hồng sang navy đậm */
 .bh-stt-tc { display:inline-block; padding:2px 6px; background:#1E3A8A; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
 
@@ -1263,10 +1270,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     border: 0.5px solid var(--border);
     box-shadow: 0 1px 4px rgba(0,0,0,0.03);
   }
-  .bh-warn { grid-column: 1; grid-row: 2; margin: 12px 0 0 !important; }
+  .bh-warn { grid-column: 1; grid-row: 3; margin: 12px 0 0 !important; }
   .bh-footer {
     grid-column: 1;
-    grid-row: 3;
+    grid-row: 2;
     position: static;
     margin-top: 14px;
     padding: 0 !important;
@@ -1300,7 +1307,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
   /* ─── TAB BÁN HÀNG - View QLBH (rộng hơn, 2 cột history+live) ─── */
   #bh-view-qlbh { max-width: 100%; }
-  .bh-ql-stats { grid-template-columns: repeat(5, 1fr) !important; gap: 10px !important; padding: 14px 0 !important; }
+  .bh-ql-stats { grid-template-columns: repeat(6, 1fr) !important; gap: 10px !important; padding: 14px 0 !important; }
   .bh-ql-stat { padding: 14px 8px !important; transition: transform 0.15s; }
   .bh-ql-stat .n { font-size: 24px !important; }
   .bh-ql-stat .l { font-size: 12px !important; margin-top: 4px !important; }
@@ -2275,6 +2282,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
+      <!-- [v11.8+] Footer (nút Bắt đầu phiên) đẩy lên TRÊN bh-sessions để khỏi cuộn xa khi nhiều phiên -->
+      <div class="bh-footer">
+        <button class="bh-btn-primary" type="button" onclick="bhBatDauPhien(event)" tabindex="-1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Bắt đầu phiên mới</span>
+        </button>
+        <div class="bh-footer-link" style="display:none" onclick="bhXemLichSu()">Xem lịch sử hôm nay →</div>
+      </div>
+
       <div class="bh-warn" id="bh-warn" style="display:none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         <span id="bh-warn-text">Đang có nhiều phiên cùng lúc</span>
@@ -2284,16 +2300,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="bh-empty" id="bh-empty">
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4;margin-bottom:12px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <div class="bh-empty-title">Chưa có phiên nào</div>
-          <div class="bh-empty-sub">Bấm nút bên dưới khi có khách vào</div>
+          <div class="bh-empty-sub">Bấm nút bên trên khi có khách vào</div>
         </div>
-      </div>
-
-      <div class="bh-footer">
-        <button class="bh-btn-primary" type="button" onclick="bhBatDauPhien(event)" tabindex="-1">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>Bắt đầu phiên mới</span>
-        </button>
-        <div class="bh-footer-link" style="display:none" onclick="bhXemLichSu()">Xem lịch sử hôm nay →</div>
       </div>
     </div>
 
@@ -2346,12 +2354,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v11.7 BH-7c] Stats tổng quan + clickable filter -->
+      <!-- [v11.7 BH-7c] Stats tổng quan + clickable filter | [v11.8+] thẻ 6: YC xóa -->
       <div class="bh-ql-stats" id="bh-ql-stats">
         <div class="bh-ql-stat red active" id="bh-ql-stat-card-live" onclick="bhQlSetStatusFilter('live')"><div class="n" id="bh-ql-stat-live">0</div><div class="l">đang bán</div></div>
         <div class="bh-ql-stat green" id="bh-ql-stat-card-bought" onclick="bhQlSetStatusFilter('bought')"><div class="n" id="bh-ql-stat-bought">0</div><div class="l">đã mua</div></div>
         <div class="bh-ql-stat gray" id="bh-ql-stat-card-notbought" onclick="bhQlSetStatusFilter('notbought')"><div class="n" id="bh-ql-stat-notbought">0</div><div class="l">chưa mua</div></div>
         <div class="bh-ql-stat purple" id="bh-ql-stat-card-all" onclick="bhQlSetStatusFilter('all')"><div class="n" id="bh-ql-stat-all">0</div><div class="l">tất cả</div></div>
+        <div class="bh-ql-stat orange" id="bh-ql-stat-card-yc" onclick="bhQlSetStatusFilter('yc')"><div class="n" id="bh-ql-stat-yc">0</div><div class="l">🗑 YC xóa</div></div>
         <div class="bh-ql-stat blue"><div class="n" id="bh-ql-stat-rate">–</div><div class="l">tỷ lệ</div></div>
       </div>
 
@@ -2636,7 +2645,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxegrWmVUtKZUsU9CKxGNRs4imHRmVENnoltEglkzKd27Nn34sQU6zudqY8pyEfczBu/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzPVvQM9ULllde04yBKkyzeM6HdnSQf4chTpplGJQhWIRYGmbi_AKkqm3CKBa7rO9CF/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -8838,6 +8847,11 @@ function bhQlRenderLive() {
   const liveEl = document.getElementById('bh-ql-content-live');
   if (!liveEl) return;
   let live = (BH.qlLastLive || []).slice();
+  // [v11.8+] Filter chỉ phiên có YC xóa (khi user click thẻ "🗑 YC xóa")
+  const sf = BH.qlStatusFilter || 'all';
+  if (sf === 'yc') {
+    live = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+  }
   const q = (BH.qlFilterQ || '').toLowerCase();
   if (q) {
     live = live.filter(p => {
@@ -8847,7 +8861,10 @@ function bhQlRenderLive() {
   }
   document.getElementById('bh-ql-count-live').textContent = live.length;
   if (!live.length) {
-    liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">' + (q ? 'Không tìm thấy CH/SP/NV nào khớp' : 'Hiện không có phiên nào đang diễn ra') + '</div>';
+    let emptyMsg = 'Hiện không có phiên nào đang diễn ra';
+    if (sf === 'yc') emptyMsg = 'Hiện không có yêu cầu xóa nào';
+    else if (q) emptyMsg = 'Không tìm thấy CH/SP/NV nào khớp';
+    liveEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--text-m);font-size:13px">' + emptyMsg + '</div>';
     return;
   }
   liveEl.innerHTML = live.map(p => {
@@ -8978,13 +8995,20 @@ async function bhQlReload() {
 
 // [v11.7 BH-7c/d] Filter status clickable + Sort options
 function bhQlSetStatusFilter(filter) {
-  // 'all' | 'live' | 'bought' | 'notbought'
+  // 'all' | 'live' | 'bought' | 'notbought' | 'yc'
   BH.qlStatusFilter = filter;
   // Update UI active state on stat cards
-  ['all','live','bought','notbought'].forEach(f => {
+  ['all','live','bought','notbought','yc'].forEach(f => {
     const card = document.getElementById('bh-ql-stat-card-' + f);
     if (card) card.classList.toggle('active', f === filter);
   });
+  // [v11.8+] Filter 'yc' áp dụng cho Live (vì YC chỉ trên phiên đang bán)
+  // → tự động chuyển về tab Live nếu đang ở tab khác
+  if (filter === 'yc' && BH.qlTab !== 'live') {
+    bhQlSetTab('live');
+    return; // bhQlSetTab sẽ trigger reload + render
+  }
+  bhQlRenderLive();
   bhQlRenderHistory();
 }
 function bhQlSetSort(sortBy) {
@@ -9027,6 +9051,13 @@ async function bhQlLoadPhien() {
     document.getElementById('bh-ql-stat-rate').textContent = total > 0 ? Math.round(bought / total * 100) + '%' : '–';
     const totalCard = document.getElementById('bh-ql-stat-all');
     if (totalCard) totalCard.textContent = live.length + bought + nbought;
+
+    // [v11.8+] Update stat YC xóa - đếm số phiên Live có YC
+    const ycCount = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co).length;
+    const ycEl = document.getElementById('bh-ql-stat-yc');
+    if (ycEl) ycEl.textContent = ycCount;
+    const ycCard = document.getElementById('bh-ql-stat-card-yc');
+    if (ycCard) ycCard.classList.toggle('has-yc', ycCount > 0);
 
     // [v11.7+ fix] Dùng renderer chung - sẽ tự apply filter q, status, sort client-side
     bhQlRenderLive();
