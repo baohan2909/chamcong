@@ -1075,6 +1075,43 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* [v11.7+ fix màu] STT toàn cục badge - đổi từ hồng sang navy đậm */
 .bh-stt-tc { display:inline-block; padding:2px 6px; background:#1E3A8A; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:6px; vertical-align:middle; }
 
+/* [v11.8] Card lịch sử (Đã mua / Chưa mua / Tự đóng) ở view CH */
+.bh-hist-card-ch { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fff; border-radius:10px; box-shadow:0 1px 2px rgba(0,0,0,0.04); margin-bottom:6px; border-left:3px solid #E5E7EB; }
+.bh-hist-ch-status { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.bh-hist-ch-status.bh-hist-bought { background:#10B981; }
+.bh-hist-ch-status.bh-hist-notbought { background:#94A3B8; }
+.bh-hist-ch-status.bh-hist-auto { background:#F59E0B; }
+.bh-hist-card-ch:has(.bh-hist-bought) { border-left-color:#10B981; }
+.bh-hist-card-ch:has(.bh-hist-notbought) { border-left-color:#94A3B8; }
+.bh-hist-card-ch:has(.bh-hist-auto) { border-left-color:#F59E0B; }
+.bh-hist-ch-info { flex:1; min-width:0; }
+.bh-hist-ch-title { font-size:13px; font-weight:600; color:var(--text); }
+.bh-hist-ch-stt { display:inline-block; padding:1px 5px; background:#E0E7FF; color:#1E3A8A; font-size:10px; font-weight:700; border-radius:3px; margin-right:5px; }
+.bh-hist-ch-meta { font-size:11px; color:var(--text-m); margin-top:2px; }
+
+/* [v11.8] Trạng thái yêu cầu xóa cho card phiên */
+.bh-card.bh-card-xinxoa { background:#FFF7ED; border-left-color:#F97316; }
+.bh-card.bh-card-xinxoa .bh-dot { background:#F97316 !important; }
+.bh-yc-badge { display:inline-block; padding:1px 6px; background:#F97316; color:white; font-size:9px; font-weight:600; border-radius:4px; vertical-align:middle; margin-left:4px; letter-spacing:.2px; }
+.bh-card-yc-row { margin-top:8px; padding-top:8px; border-top:0.5px dashed #E5E7EB; text-align:center; }
+.bh-yc-link { display:inline-block; padding:4px 10px; font-size:11px; color:#92400E; cursor:pointer; border-radius:6px; transition:background .15s; }
+.bh-yc-link:hover, .bh-yc-link:active { background:#FEF3C7; }
+.bh-yc-link.cancel { color:var(--text-m); }
+.bh-yc-link.cancel:hover { background:#F3F4F6; }
+/* QLBH side: badge yêu cầu trên live card */
+.bh-live-card.has-yc { border-left-color:#F97316 !important; background:#FFF7ED !important; }
+.bh-live-card.has-yc .bh-yc-card-badge { display:inline-flex; }
+.bh-yc-card-badge { display:none; align-items:center; gap:3px; padding:2px 7px; background:#F97316; color:white; font-size:10px; font-weight:700; border-radius:4px; margin-right:5px; }
+
+/* Nút xóa hàng loạt cho QLBH */
+.bh-ql-bulk-bar { background:#FEF3C7; border:1px solid #F59E0B; border-radius:10px; padding:10px 12px; margin:8px 12px; display:none; align-items:center; gap:8px; }
+.bh-ql-bulk-bar.show { display:flex; }
+.bh-ql-bulk-text { flex:1; font-size:12.5px; color:#92400E; font-weight:500; }
+.bh-ql-bulk-text strong { color:#7C2D12; }
+.bh-ql-bulk-btn { padding:6px 12px; background:#DC2626; color:white; font-size:12px; font-weight:600; border:0; border-radius:6px; cursor:pointer; white-space:nowrap; }
+.bh-ql-bulk-btn:hover { background:#B91C1C; }
+.bh-ql-bulk-btn:active { transform:scale(0.97); }
+
 .bh-ql-content { padding:12px; }
 
 /* Card live (QLBH xem) */
@@ -2318,6 +2355,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="bh-ql-stat blue"><div class="n" id="bh-ql-stat-rate">–</div><div class="l">tỷ lệ</div></div>
       </div>
 
+      <!-- [v11.8] Thanh hiển thị yêu cầu xóa từ CH + nút xóa hàng loạt -->
+      <div class="bh-ql-bulk-bar" id="bh-ql-bulk-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="bh-ql-bulk-text" id="bh-ql-bulk-text">--</div>
+        <button class="bh-ql-bulk-btn" onclick="bhQlXoaHangLoat()">Xóa tất cả</button>
+      </div>
+
       <!-- Content area -->
       <div class="bh-ql-content" id="bh-ql-content-live"></div>
       <div class="bh-ql-content" id="bh-ql-content-history" style="display:none"></div>
@@ -2592,7 +2636,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycby9AqtBb_OP4bmD8cGTTljnsnxyaupv6nQzjklFhVVKWzx-WyMD88uf3xMGhUVJxG-m/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxegrWmVUtKZUsU9CKxGNRs4imHRmVENnoltEglkzKd27Nn34sQU6zudqY8pyEfczBu/exec';
 const GPS_RADIUS=100; // đồng bộ với Config.GPS_RADIUS_METER trong Script
 
 // [v10.1 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
@@ -4384,6 +4428,9 @@ function appConfirm(message, opts){
     const okBtn = document.getElementById('app-confirm-ok');
     okBtn.textContent = opts.okLabel || 'Xác nhận';
     okBtn.classList.toggle('danger', !!opts.danger);
+    // [v11.8] Support cancelLabel
+    const cancelBtn = document.getElementById('app-confirm-cancel');
+    if (cancelBtn) cancelBtn.textContent = opts.cancelLabel || 'Hủy';
     document.getElementById('app-confirm').classList.add('show');
     document.getElementById('app-confirm-bd').classList.add('show');
     document.getElementById('app-confirm-bd').onclick = () => appConfirmDo(false);
@@ -7440,7 +7487,9 @@ async function bhLoadPhienDangBan() {
         products: p.spQuanTam || [],
         // [v11.7 BH-3] Map NV từ server response
         nv: p.maNV ? { ma: p.maNV, ten: p.tenNV || p.maNV } : null,
-        status: 'selling'
+        status: 'selling',
+        // [v11.8] Trạng thái yêu cầu xóa
+        xinXoa: p.yeuCauXoa && p.yeuCauXoa.co ? p.yeuCauXoa : null,
       };
     });
     if (BH.sessions.length > 0) {
@@ -7539,11 +7588,17 @@ async function bhLoadStatsToday() {
     const r = await fetch(SCRIPT_URL + '?type=phien_lich_su&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
     const d = await r.json();
     const list = d.phienLS || [];
+    // [v11.8] Lưu cả list để render khi user click thẻ "Đã mua/Chưa mua"
+    BH.historyToday = list;
     BH.statsToday = {
       bought:    list.filter(p => p.trangThai === 'Đã mua').length,
       notBought: list.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length,
     };
     bhUpdateStats();
+    // Re-render nếu đang ở filter bought/notbought/all (cập nhật ngay khi load xong)
+    if (BH.filterStatus !== 'selling' && BH.filterStatus !== undefined) {
+      bhRenderSessions();
+    }
   } catch(e){}
 }
 
@@ -7593,36 +7648,48 @@ function bhSetFilter(status) {
 function bhRenderSessions() {
   const wrap = document.getElementById('bh-sessions');
   const empty = document.getElementById('bh-empty');
+  const filter = BH.filterStatus || 'selling';
 
-  // [v11.2 BH-01] Lọc theo filterStatus
-  let active = BH.sessions.filter(s => s.status !== 'finished');
-  if (BH.filterStatus === 'bought' || BH.filterStatus === 'notbought') {
-    // Lịch sử (đã kết thúc) → cần lấy từ server. Trước mắt: ẩn list, hiện thông báo
-    // (Vì BH.sessions không lưu finished sessions của ngày — load từ server khi user bấm)
-    active = [];
-    empty.style.display = 'block';
-    empty.querySelector('.bh-empty-title').textContent =
-      BH.filterStatus === 'bought' ? 'Phiên đã mua hôm nay: ' + BH.statsToday.bought : 'Phiên chưa mua hôm nay: ' + BH.statsToday.notBought;
-    empty.querySelector('.bh-empty-sub').textContent = 'Bấm "Tất cả" để quay lại danh sách đang bán';
+  // [v11.8] 4 chế độ filter:
+  //  selling (default): chỉ phiên đang bán
+  //  bought: phiên đã mua hôm nay
+  //  notbought: phiên chưa mua + tự đóng hôm nay
+  //  all: tất cả (đang bán + đã kết thúc hôm nay)
+
+  // Xóa hết history-card cũ để render lại
+  [...wrap.querySelectorAll('.bh-hist-card-ch')].forEach(c => c.remove());
+
+  // ── Chế độ chỉ history (bought / notbought) ──
+  if (filter === 'bought' || filter === 'notbought') {
+    // Ẩn cards selling
     [...wrap.querySelectorAll('.bh-card')].forEach(c => c.remove());
-    return;
-  }
-
-  if (BH.filterStatus === 'selling' || BH.filterStatus === 'all') {
-    // Hiện sessions đang bán
-  }
-
-  if (active.length === 0) {
-    if (empty) {
-      empty.style.display = 'block';
-      empty.querySelector('.bh-empty-title').textContent = 'Chưa có phiên nào';
-      empty.querySelector('.bh-empty-sub').textContent = 'Bấm nút bên dưới khi có khách vào';
+    const hist = (BH.historyToday || []).filter(p =>
+      filter === 'bought' ? p.trangThai === 'Đã mua' : (p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng')
+    );
+    if (!hist.length) {
+      if (empty) {
+        empty.style.display = 'block';
+        empty.querySelector('.bh-empty-title').textContent =
+          filter === 'bought' ? 'Chưa có phiên đã mua hôm nay' : 'Chưa có phiên chưa mua hôm nay';
+        empty.querySelector('.bh-empty-sub').textContent = 'Bấm "Đang bán" để quay lại danh sách phiên live';
+      }
+      return;
     }
-    [...wrap.querySelectorAll('.bh-card')].forEach(c => c.remove());
+    if (empty) empty.style.display = 'none';
+    // Sort mới-cũ
+    hist.sort((a, b) => (b.gioBD || '').localeCompare(a.gioBD || ''));
+    hist.forEach(p => {
+      const card = bhBuildHistCardCh(p);
+      wrap.appendChild(card);
+    });
     return;
   }
-  if (empty) empty.style.display = 'none';
 
+  // ── Chế độ 'all': hiện cả selling + history ──
+  let active = BH.sessions.filter(s => s.status !== 'finished');
+  let renderedAny = active.length > 0;
+
+  // Selling cards (giữ logic cũ)
   [...wrap.querySelectorAll('.bh-card')].forEach(c => {
     const id = c.dataset.sid;
     if (!BH.sessions.find(s => s.idPhien === id && s.status !== 'finished')) {
@@ -7630,7 +7697,6 @@ function bhRenderSessions() {
       setTimeout(() => c.remove(), 500);
     }
   });
-
   active.forEach(s => {
     let card = wrap.querySelector('[data-sid="' + s.idPhien + '"]');
     if (!card) {
@@ -7641,6 +7707,132 @@ function bhRenderSessions() {
     }
     bhRenderCardContent(card, s);
   });
+
+  // [v11.8] Nếu filter='all' → thêm history cards bên dưới
+  if (filter === 'all') {
+    const hist = BH.historyToday || [];
+    if (hist.length) {
+      hist.sort((a, b) => (b.gioBD || '').localeCompare(a.gioBD || ''));
+      hist.forEach(p => {
+        const card = bhBuildHistCardCh(p);
+        wrap.appendChild(card);
+      });
+      renderedAny = true;
+    }
+  }
+
+  if (!renderedAny) {
+    if (empty) {
+      empty.style.display = 'block';
+      empty.querySelector('.bh-empty-title').textContent = 'Chưa có phiên nào';
+      empty.querySelector('.bh-empty-sub').textContent = 'Bấm nút bên dưới khi có khách vào';
+    }
+  } else if (empty) {
+    empty.style.display = 'none';
+  }
+}
+
+// [v11.8] Build card history cho view CH (đã mua / chưa mua / tự đóng)
+// [v11.8] Build card history cho view CH (đã mua / chưa mua / tự đóng)
+function bhBuildHistCardCh(p) {
+  const card = document.createElement('div');
+  card.className = 'bh-hist-card-ch';
+  let cls = 'bh-hist-bought';
+  let label = 'Đã mua';
+  let detail = '';
+  if (p.trangThai === 'Đã mua') {
+    const total = parseFloat(p.tongGiaTri) || 0;
+    detail = total > 0 ? '<strong>' + bhFormatMoney(total) + 'đ</strong>' : '';
+    if (p.spDaMua && p.spDaMua.length) {
+      detail += (detail ? ' · ' : '') + p.spDaMua.length + ' SP';
+    }
+  } else {
+    cls = p.trangThai === 'Tự đóng' ? 'bh-hist-auto' : 'bh-hist-notbought';
+    label = p.trangThai === 'Tự đóng' ? 'Tự đóng' : 'Chưa mua';
+    if (p.lyDo) detail = bhEscHtml(p.lyDo.length > 40 ? p.lyDo.slice(0,40)+'…' : p.lyDo);
+  }
+  card.innerHTML = `
+    <div class="bh-hist-ch-status ${cls}"></div>
+    <div class="bh-hist-ch-info">
+      <div class="bh-hist-ch-title">
+        <span class="bh-hist-ch-stt">#${p.stt || '?'}</span>
+        ${bhEscHtml(label)}
+        ${p.tenNV ? '· NV: ' + bhEscHtml(p.tenNV) : ''}
+      </div>
+      <div class="bh-hist-ch-meta">
+        ${p.gioBD || '--'} → ${p.gioKT || '--'}
+        ${p.thoiLuong ? ' · ' + bhEscHtml(p.thoiLuong) : ''}
+        ${detail ? ' · ' + detail : ''}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
+async function bhYeuCauXoaPhien(idPhien) {
+  const s = BH.sessions.find(x => x.idPhien === idPhien);
+  if (!s) return;
+  if (s.xinXoa) {
+    bhShowToast('Phiên này đã có yêu cầu xóa rồi', null);
+    return;
+  }
+  if (String(idPhien).startsWith('temp_') || s.syncing) {
+    bhShowToast('Phiên đang đồng bộ, vui lòng đợi...', null);
+    return;
+  }
+
+  const ok = await appConfirm('Gửi yêu cầu xóa phiên này lên QLBH? Phiên vẫn chạy đến khi QLBH xác nhận xóa.', {
+    title: 'Yêu cầu xóa phiên #' + s.num,
+    okLabel: 'Gửi yêu cầu',
+    danger: false
+  });
+  if (!ok) return;
+
+  // Optimistic UI: đánh dấu xinXoa ngay
+  s.xinXoa = { co: true, ts: new Date().toISOString(), maNguoi: SESSION.ma || SESSION.cuaHangMa, lyDo: '' };
+  bhRenderSessions();
+  bhShowToast('✓ Đã gửi yêu cầu xóa - chờ QLBH', 'success');
+
+  // Gửi server ngầm
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'yc_xoa_phien',
+        idPhien,
+        maNguoiYeuCau: SESSION.ma || SESSION.cuaHangMa,
+        lyDo: '',
+      })
+    });
+    const d = await r.json();
+    if (!d.success) {
+      // Rollback nếu server từ chối
+      s.xinXoa = null;
+      bhRenderSessions();
+      bhShowToast('Lỗi: ' + (d.error || 'Không gửi được yêu cầu'), null);
+    }
+  } catch(e) {
+    console.error('[BH YC Xóa] Network error:', e);
+    // Giữ optimistic - sẽ sync lại lần reload sau
+  }
+}
+
+// [v11.8] CH: Hủy yêu cầu xóa
+async function bhHuyYeuCauXoa(idPhien) {
+  const s = BH.sessions.find(x => x.idPhien === idPhien);
+  if (!s) return;
+  // Optimistic UI
+  s.xinXoa = null;
+  bhRenderSessions();
+  bhShowToast('✓ Đã hủy yêu cầu xóa', 'success');
+  // Gửi server ngầm
+  try {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'huy_yc_xoa_phien', idPhien })
+    });
+  } catch(e){}
 }
 
 function bhRenderCardContent(card, s) {
@@ -7687,12 +7879,19 @@ function bhRenderCardContent(card, s) {
     ${s.products.length > 0 ? 'Thêm sản phẩm' : 'Thêm sản phẩm khách quan tâm'}
   </div>`;
 
+  // [v11.8] Đổi class card khi đã yêu cầu xóa
+  if (s.xinXoa) {
+    card.classList.add('bh-card-xinxoa');
+  } else {
+    card.classList.remove('bh-card-xinxoa');
+  }
+
   card.innerHTML = `
     <div class="bh-card-header">
       <div class="bh-card-title">
         <span class="bh-dot"></span>
         <div>
-          <div class="bh-session-num">Phiên #${s.num}</div>
+          <div class="bh-session-num">Phiên #${s.num}${s.xinXoa ? ' <span class="bh-yc-badge">⏳ chờ xóa</span>' : ''}</div>
           <div class="bh-session-meta">bắt đầu ${timeLabel}</div>
         </div>
       </div>
@@ -7717,6 +7916,13 @@ function bhRenderCardContent(card, s) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Đã mua
       </button>
+    </div>
+    <!-- [v11.8] Link nhỏ yêu cầu xóa / hủy yêu cầu -->
+    <div class="bh-card-yc-row">
+      ${s.xinXoa
+        ? `<a class="bh-yc-link cancel" onclick="bhHuyYeuCauXoa('${s.idPhien}')">↶ Hủy yêu cầu xóa</a>`
+        : `<a class="bh-yc-link" onclick="bhYeuCauXoaPhien('${s.idPhien}')">🗑 Yêu cầu xóa phiên này</a>`
+      }
     </div>`;
 }
 
@@ -7792,19 +7998,27 @@ async function bhBatDauPhien(e) {
     }
   }, 2000);
 
-  // [v11.7 fix] Cảnh báo khi đã có nhiều phiên đang bán - tránh tạo nhầm
+  // [v11.8] LUÔN hỏi confirm trước khi tạo phiên - chống tap đôi/nhầm
   const dangBan = BH.sessions.filter(s => s.status === 'selling').length;
-  if (dangBan >= 3) {
-    const ok = confirm(`Hiện đã có ${dangBan} phiên đang bán. Bạn có chắc muốn tạo thêm phiên mới?`);
-    if (!ok) {
-      // Release lock + restore button ngay (không đợi 2s)
-      BH._batDauPhienLock = false;
-      if (btn) {
-        btn.style.opacity = '';
-        btn.style.pointerEvents = '';
-      }
-      return;
+  const confirmText = dangBan >= 3
+    ? `Hiện đã có ${dangBan} phiên đang bán. Tạo thêm phiên mới?`
+    : (dangBan > 0
+      ? `Bắt đầu phiên bán mới? (đang có ${dangBan} phiên)`
+      : 'Bắt đầu phiên bán mới?');
+  const ok = await appConfirm(confirmText, {
+    title: 'Khách mới vào',
+    okLabel: '+ Tạo phiên',
+    cancelLabel: 'Hủy',
+    danger: false
+  });
+  if (!ok) {
+    // Release lock + restore button ngay
+    BH._batDauPhienLock = false;
+    if (btn) {
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
     }
+    return;
   }
 
   bhVibrate(20);
@@ -8642,11 +8856,15 @@ function bhQlRenderLive() {
     const elapsed = Math.floor((Date.now() - startMs) / 1000);
     const hot = elapsed >= 900 ? ' hot' : '';
     const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
+    // [v11.8] Badge yêu cầu xóa
+    const hasYC = p.yeuCauXoa && p.yeuCauXoa.co;
+    const ycCls = hasYC ? ' has-yc' : '';
+    const ycBadge = hasYC ? '<span class="bh-yc-card-badge">🗑 YC XÓA</span>' : '';
     return `
-      <div class="bh-live-card${hot}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
+      <div class="bh-live-card${hot}${ycCls}" onclick="bhQlOpenDetail('${p.idPhien}')" data-start="${startMs}" data-live="1">
         <div class="bh-live-card-head">
           <div>
-            <div class="bh-live-ch">${sttTC}${bhEscHtml(p.tenCH)}</div>
+            <div class="bh-live-ch">${ycBadge}${sttTC}${bhEscHtml(p.tenCH)}</div>
             <div class="bh-live-ch-meta">${bhEscHtml(p.maCH)} · ${bhEscHtml(p.khuVuc || '')} · bắt đầu ${p.gioBD}${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}</div>
           </div>
           <div class="bh-live-timer" data-qltimer="${p.idPhien}">${bhFormatTimeShort(elapsed)}</div>
@@ -8655,6 +8873,86 @@ function bhQlRenderLive() {
       </div>
     `;
   }).join('');
+
+  // [v11.8] Hiển thị thanh xóa hàng loạt nếu có yêu cầu
+  bhQlUpdateBulkBar(live);
+}
+
+// [v11.8] Cập nhật thanh hiển thị số yêu cầu xóa + nút xóa hàng loạt
+function bhQlUpdateBulkBar(live) {
+  const bar = document.getElementById('bh-ql-bulk-bar');
+  if (!bar) return;
+  const yc = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+  if (!yc.length) {
+    bar.classList.remove('show');
+    return;
+  }
+  bar.classList.add('show');
+  // List CH có YC (unique)
+  const chSet = {};
+  yc.forEach(p => { chSet[p.maCH] = (chSet[p.maCH] || 0) + 1; });
+  const chCount = Object.keys(chSet).length;
+  document.getElementById('bh-ql-bulk-text').innerHTML =
+    `<strong>${yc.length} phiên</strong> đã yêu cầu xóa từ <strong>${chCount} cửa hàng</strong>`;
+}
+
+// [v11.8] QLBH xóa hàng loạt phiên đã yêu cầu (theo KV được phép)
+async function bhQlXoaHangLoat() {
+  const live = BH.qlLastLive || [];
+  const yc = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+  if (!yc.length) {
+    bhShowToast('Không có yêu cầu xóa nào', null);
+    return;
+  }
+  const ok1 = await appConfirm(`Xóa toàn bộ ${yc.length} phiên đã yêu cầu? Hành động không thể hoàn tác.`, {
+    title: 'Xóa hàng loạt',
+    okLabel: 'Xóa tất cả',
+    danger: true
+  });
+  if (!ok1) return;
+  const ok2 = await appConfirm(`Xác nhận lần cuối: xóa hẳn ${yc.length} phiên?`, {
+    title: 'Xác nhận lần cuối',
+    okLabel: 'Tôi đồng ý',
+    danger: true
+  });
+  if (!ok2) return;
+
+  // Optimistic UI: xóa khỏi list + DOM ngay
+  const idList = yc.map(p => p.idPhien);
+  BH.qlLastLive = (BH.qlLastLive || []).filter(p => !idList.includes(p.idPhien));
+  idList.forEach(id => {
+    const cards = document.querySelectorAll('[onclick*="' + id + '"]');
+    cards.forEach(c => {
+      c.style.transition = 'opacity .3s, transform .3s';
+      c.style.opacity = '0';
+      c.style.transform = 'scale(0.95)';
+      setTimeout(() => { try { c.remove(); } catch(e){} }, 320);
+    });
+  });
+  bhQlUpdateBulkBar(BH.qlLastLive);
+  bhShowToast('✓ Đang xóa ' + yc.length + ' phiên...', 'success');
+
+  // Gửi server ngầm
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'xoa_phien_hang_loat',
+        maNguoiXoa: SESSION.ma,
+        scope: 'all_yc',
+      })
+    });
+    const d = await r.json();
+    if (d.success) {
+      bhShowToast('✓ Đã xóa ' + d.deleted + ' phiên', 'success');
+    } else {
+      bhShowToast('⚠ ' + (d.error || 'Lỗi xóa'), null);
+      // Reload để sync lại
+      bhQlReload();
+    }
+  } catch(e) {
+    bhShowToast('⚠ Mất kết nối', null);
+  }
 }
 
 async function bhQlReload() {
