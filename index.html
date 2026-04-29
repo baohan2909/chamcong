@@ -2850,6 +2850,12 @@ function goToPage(page){
     if(lcNav)lcNav.classList.add('active');
   }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
+  // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  requestAnimationFrame(() => { window.scrollTo(0, 0); });
+  setTimeout(() => { window.scrollTo(0, 0); }, 150);
   if(page==='giocong')    taiGioCong();
   if(page==='giocong-ql') taiGioCongQL();
   if(page==='taikhoan'){renderTaiKhoan();_silentUpdateAccBadges();}
@@ -7478,13 +7484,25 @@ function bhUpdateSoundUI() {
   }
 }
 
-async function bhLoadPhienDangBan() {
+async function bhLoadPhienDangBan(opts) {
+  opts = opts || {};
   if (!SESSION.cuaHangMa) return;
   try {
     const r = await fetch(SCRIPT_URL + '?type=phien_dang_ban&maCH=' + encodeURIComponent(SESSION.cuaHangMa));
     const d = await r.json();
     const list = d.phienList || [];
     const wasEmpty = BH.sessions.length === 0;
+
+    // [v11.8+] Smart reconcile: detect các phiên bị QLBH xóa
+    // So sánh local sessions (đang selling) với server list
+    const serverIds = new Set(list.map(p => p.idPhien));
+    const deletedSessions = BH.sessions.filter(s =>
+      s.status === 'selling' &&
+      !String(s.idPhien).startsWith('temp_') &&  // bỏ qua phiên đang sync
+      !serverIds.has(s.idPhien)
+    );
+    const deletedCount = deletedSessions.length;
+
     BH.sessions = list.map((p, idx) => {
       let startMs = Date.now();
       try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){}
@@ -7508,10 +7526,18 @@ async function bhLoadPhienDangBan() {
     bhRenderSessions();
     bhUpdateStats();
 
-    // [v11.7+] Thông báo khi load lại có phiên cũ chưa đóng (giải thích cho user "tại sao tự có phiên")
-    if (wasEmpty && list.length > 0) {
+    // [v11.8+] Thông báo nếu có phiên bị QLBH xóa
+    if (deletedCount > 0) {
+      const txt = deletedCount === 1
+        ? `🗑 Phiên #${deletedSessions[0].num} đã được QLBH xóa`
+        : `🗑 ${deletedCount} phiên đã được QLBH xóa`;
+      try { bhShowToast(txt, null); } catch(e){}
+      console.log('[BH] QLBH đã xóa ' + deletedCount + ' phiên:', deletedSessions.map(s => '#' + s.num).join(', '));
+    }
+
+    // [v11.7+] Thông báo khi load lại có phiên cũ chưa đóng (chỉ khi không phải auto-silent)
+    if (wasEmpty && list.length > 0 && !opts.silent) {
       console.log('[BH] Đã khôi phục ' + list.length + ' phiên đang bán dở từ session trước');
-      // Toast nhẹ thông báo
       try {
         bhShowToast('Đã khôi phục ' + list.length + ' phiên đang bán dở (từ lần đăng nhập trước). Có thể kết thúc hoặc tự đóng sau 60 phút.', null);
       } catch(e){}
@@ -7541,8 +7567,10 @@ async function bhManualReload() {
   bhShowToast('✓ Đã cập nhật từ server', 'success');
 }
 
-// [v11.7+ fix sync] Auto reload mỗi 10 phút (chỉ khi tab visible + đang ở tab bán hàng)
+// [v11.8+] Auto reload mỗi 30 giây cho CH - phát hiện QLBH xóa phiên realtime
+//          Chỉ chạy khi tab visible + ở tab bán hàng + không có modal mở
 let _bhAutoReloadTimer = null;
+const AUTO_RELOAD_MS = 30 * 1000; // 30 giây
 function bhStartAutoReload() {
   if (_bhAutoReloadTimer) clearInterval(_bhAutoReloadTimer);
   _bhAutoReloadTimer = setInterval(() => {
@@ -7556,9 +7584,9 @@ function bhStartAutoReload() {
     // Skip nếu đang có phiên syncing
     if (BH.sessions.some(s => s.syncing)) return;
 
-    console.log('[BH] Auto reload sau 10 phút...');
-    bhFlushKtQueue().then(() => bhLoadPhienDangBan());
-  }, 10 * 60 * 1000); // 10 phút
+    console.log('[BH] Auto reload (30s)...');
+    bhFlushKtQueue().then(() => bhLoadPhienDangBan({ silent: true }));
+  }, AUTO_RELOAD_MS);
 }
 function bhStopAutoReload() {
   if (_bhAutoReloadTimer) clearInterval(_bhAutoReloadTimer);
