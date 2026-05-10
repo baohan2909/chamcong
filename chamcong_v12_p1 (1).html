@@ -3505,8 +3505,9 @@ function _doSubmitFinal(){
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      // [v12-FIX] Mở modal giải trình cho CB đầu tiên, user tự bấm từng CB trong lịch sử
-      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, []);
+      // [v12-FIX] Truyền tất cả cbIds để gửi 1 lần
+      const cbIds = (res.cbMessages || []).map(m => m.cbId).filter(Boolean);
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, cbIds);
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
