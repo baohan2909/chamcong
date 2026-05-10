@@ -5797,7 +5797,7 @@ function taiDonNghiPhep(){
         createdAt: d.createdAt
       });
     });
-    const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, donList: map[ngay] }));
+    const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, danhSach: map[ngay] }));
     _dnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
     const cho=_dnpData.tongChoDuyet||0;
     const badge=document.getElementById('dnp-badge');
@@ -6643,7 +6643,7 @@ function taiDonNghiACC(){
           tuan: ''
         });
       });
-      const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, donList: map[ngay] }));
+      const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, danhSach: map[ngay] }));
       _accDnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
       _renderACCDnpQL();
     }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ '+((e&&e.message)||'Lỗi kết nối')+'</div>';});
@@ -6654,7 +6654,7 @@ function taiDonNghiACC(){
       if(error || !Array.isArray(arr)){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
       const theoDon = arr.map(d => ({
         ngay: d.ngayNghi,
-        donList: [{
+        danhSach: [{
           id: d.id, maNV: SESSION.ma, tenNV: SESSION.ten,
           ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo,
           anhUrl: d.anhUrl, trangThai: d.trangThai,
