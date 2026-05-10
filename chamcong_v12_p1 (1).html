@@ -3505,9 +3505,7 @@ function _doSubmitFinal(){
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      // [v12-FIX] Truyền tất cả cbIds để gửi 1 lần
-      const cbIds = (res.cbMessages || []).map(m => m.cbId).filter(Boolean);
-      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, cbIds);
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham);
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
@@ -3650,29 +3648,13 @@ function renderLog(){
 }
 
 function moGiaiTrinhTuLog(ngay){
-  // Fallback: tìm CB chưa giải trình đầu tiên
-  supa.from('canh_bao')
-    .select('id, loai_canh_bao')
-    .eq('ma_nv', SESSION.ma)
-    .eq('ngay', ngay)
-    .eq('trang_thai', 'CHUA_GIAI_TRINH')
-    .order('created_at', { ascending: true })
-    .limit(1)
-  .then(({ data: rows }) => {
-    const cbId = (rows && rows[0]) ? rows[0].id : null;
-    _gtCbIds = cbId ? [cbId] : [];
-    _gtCurrentCbIdx = 0;
-    openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, _gtCbIds);
-    document.getElementById('gt-timer').style.display='none';
-  });
+  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay);
+  document.getElementById('gt-timer').style.display='none';
 }
 
-// [v12-FIX] Giải trình nhiều CB cùng lúc (1 lần chấm có 2+ lỗi)
+// [v12-FIX] Giải trình tất cả CB cùng lúc — dùng chung 1 modal
 function moGiaiTrinhNhieuCB(cbIdsStr, ngay){
-  const cbIds = cbIdsStr.split(',').filter(Boolean);
-  _gtCbIds = cbIds;
-  _gtCurrentCbIdx = 0;
-  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, cbIds);
+  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay);
   document.getElementById('gt-timer').style.display='none';
 }
 
@@ -3948,24 +3930,10 @@ function showPwMsg(msg,type){const el=document.getElementById('pw-msg');el.textC
 
 // ─── MODAL GIẢI TRÌNH ───────────────────────────────────────
 let gtLyDo='', gtNgay='', _gtTimerInterval=null;
-let _gtCbIds = []; // [v12-FIX] Danh sách cbId cần giải trình
-let _gtCurrentCbIdx = 0; // Index hiện tại trong _gtCbIds
 
-function openGiaiTrinh(title,sub,ngay,cbIds){
+function openGiaiTrinh(title,sub,ngay){
   gtLyDo='';gtNgay=ngay;
-  // [v12-FIX] Lưu danh sách cbIds nếu có
-  if(cbIds && Array.isArray(cbIds) && cbIds.length){
-    _gtCbIds = cbIds;
-    _gtCurrentCbIdx = 0;
-  } else if(!_gtCbIds.length) {
-    _gtCbIds = [];
-    _gtCurrentCbIdx = 0;
-  }
-  const soLoi = _gtCbIds.length;
-  const soHT = _gtCurrentCbIdx + 1;
-  document.getElementById('gt-title').textContent = soLoi > 1
-    ? `${title} (${soHT}/${soLoi})`
-    : title;
+  document.getElementById('gt-title').textContent=title;
   document.getElementById('gt-sub').textContent=sub;
   document.getElementById('gt-timer').style.display='flex';
   document.getElementById('gt-timer-dem').textContent='5:00';
@@ -4045,46 +4013,24 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-FIX] Gửi giải trình cho TẤT CẢ CB cùng lúc (1 lần chấm = 1 giải trình)
-  const allCbIds = _gtCbIds.filter(Boolean);
-
-  // Gọi RPC cho CB đầu tiên (function sẽ xử lý)
-  const firstCbId = allCbIds.length ? allCbIds[0] : null;
+  // [v12-FIX] Gửi 1 lần — server update TẤT CẢ CB cùng NV+ngày
   supa.rpc('fn_gui_giai_trinh', {
     p_ma_nv: SESSION.ma,
     p_ngay: gtNgay,
     p_ly_do: lyDoGui,
-    p_cb_id: firstCbId,
+    p_cb_id: null,
     p_loai_cb: null,
     p_gio: null
   }).then(({ data: res, error }) => {
+    btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
-      // Nếu có nhiều CB → update thêm các CB còn lại
-      const remaining = allCbIds.slice(1);
-      if(remaining.length){
-        // Update trực tiếp qua table (đã grant anon)
-        Promise.all(remaining.map(cbId =>
-          supa.from('canh_bao').update({
-            giai_trinh: lyDoGui,
-            thoi_gian_giai_trinh: new Date().toISOString(),
-            trang_thai: 'DA_GIAI_TRINH'
-          }).eq('id', cbId)
-        )).catch(()=>{});
-        // Update ghi_chu cham_cong
-        supa.from('cham_cong').update({ ghi_chu: lyDoGui })
-          .eq('ma_nv', SESSION.ma).eq('ngay', gtNgay).eq('xac_nhan', 'KHONG_HOP_LE')
-          .then(()=>{}).catch(()=>{});
-      }
       clearInterval(_gtTimerInterval);
       closeGiaiTrinh();
       showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
-      _gtCbIds = [];
-      _gtCurrentCbIdx = 0;
       taiLichSu();
     } else {
       const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
-    btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
   }).catch(()=>{btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';});
 }
 
