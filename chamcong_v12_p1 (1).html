@@ -3607,27 +3607,26 @@ function renderLog(){
       stTxt='Cảnh báo'; stCls='ls-gps';
     }
 
-    // [v12-FIX] Hiện TỪNG cảnh báo riêng, mỗi cái có nút giải trình riêng
+    // [v12-FIX] Hiện tất cả loại lỗi, nhưng chỉ 1 nút giải trình chung per log
     let errRows='';
     if(isLoi && cbList.length){
-      errRows = cbList.map(cb=>{
-        const loaiLabel = cb.loiType==='gps'?'📍 Sai vị trí':cb.loiType==='ca'?'🔄 Sai ca':cb.loiType==='thieu'?'⏰ Thiếu Ra ca':'⚠ '+cb.loaiCB;
-        const daGT = cb.daGiaiTrinh || !!cb.giaiTrinh;
-        const ghiChuShow = cb.giaiTrinh || 'Chưa có giải trình';
-        let btn='';
-        if(daGT){
-          btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
-        } else {
-          btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhMotCB('${cb.cbId}','${l.ngay||''}')">Giải trình</button>`;
-        }
-        return `<div class="log-item-err"><span class="log-err-txt">${loaiLabel}: ${ghiChuShow}</span>${btn}</div>`;
-      }).join('');
+      const loiLabels = cbList.map(cb=>cb.loiType==='gps'?'📍 Sai vị trí':cb.loiType==='ca'?'🔄 Sai ca':cb.loiType==='thieu'?'⏰ Thiếu Ra ca':'⚠ '+cb.loaiCB);
+      const tatCaDaGT = cbList.every(cb => cb.daGiaiTrinh || !!cb.giaiTrinh);
+      const giaiTrinhText = (cbList.find(cb => cb.giaiTrinh) || {}).giaiTrinh || '';
+      const loiDisplay = loiLabels.join(' · ');
+      const ghiChuShow = giaiTrinhText || 'Chưa có giải trình';
+      let btn='';
+      if(tatCaDaGT){
+        btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
+      } else {
+        const allCbIds = cbList.filter(cb=>!cb.daGiaiTrinh && !cb.giaiTrinh).map(cb=>cb.cbId).join(',');
+        btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhNhieuCB('${allCbIds}','${l.ngay||''}')">Giải trình</button>`;
+      }
+      errRows=`<div class="log-item-err"><span class="log-err-txt">${loiDisplay}: ${ghiChuShow}</span>${btn}</div>`;
     } else if(isLoi && !cbList.length){
-      // Fallback nếu không có canhBaoList (data cũ)
-      const daGT = l.ghiChu || l.daGiaiTrinh;
       const ghiChuShow=l.ghiChu||'Chưa có giải trình';
       let btn='';
-      if(daGT){
+      if(l.ghiChu){
         btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
       } else {
         btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhTuLog('${l.ngay||''}')">Giải trình</button>`;
@@ -3667,11 +3666,12 @@ function moGiaiTrinhTuLog(ngay){
   });
 }
 
-// [v12-FIX] Giải trình 1 cảnh báo cụ thể (bấm nút trên từng dòng lỗi)
-function moGiaiTrinhMotCB(cbId, ngay){
-  _gtCbIds = [cbId];
+// [v12-FIX] Giải trình nhiều CB cùng lúc (1 lần chấm có 2+ lỗi)
+function moGiaiTrinhNhieuCB(cbIdsStr, ngay){
+  const cbIds = cbIdsStr.split(',').filter(Boolean);
+  _gtCbIds = cbIds;
   _gtCurrentCbIdx = 0;
-  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, [cbId]);
+  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, cbIds);
   document.getElementById('gt-timer').style.display='none';
 }
 
@@ -4044,28 +4044,46 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-FIX] Gửi giải trình cho ĐÚNG 1 cảnh báo, không chain
-  const currentCbId = (_gtCbIds.length > _gtCurrentCbIdx) ? _gtCbIds[_gtCurrentCbIdx] : null;
+  // [v12-FIX] Gửi giải trình cho TẤT CẢ CB cùng lúc (1 lần chấm = 1 giải trình)
+  const allCbIds = _gtCbIds.filter(Boolean);
+
+  // Gọi RPC cho CB đầu tiên (function sẽ xử lý)
+  const firstCbId = allCbIds.length ? allCbIds[0] : null;
   supa.rpc('fn_gui_giai_trinh', {
     p_ma_nv: SESSION.ma,
     p_ngay: gtNgay,
     p_ly_do: lyDoGui,
-    p_cb_id: currentCbId,
+    p_cb_id: firstCbId,
     p_loai_cb: null,
     p_gio: null
   }).then(({ data: res, error }) => {
-    btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
+      // Nếu có nhiều CB → update thêm các CB còn lại
+      const remaining = allCbIds.slice(1);
+      if(remaining.length){
+        // Update trực tiếp qua table (đã grant anon)
+        Promise.all(remaining.map(cbId =>
+          supa.from('canh_bao').update({
+            giai_trinh: lyDoGui,
+            thoi_gian_giai_trinh: new Date().toISOString(),
+            trang_thai: 'DA_GIAI_TRINH'
+          }).eq('id', cbId)
+        )).catch(()=>{});
+        // Update ghi_chu cham_cong
+        supa.from('cham_cong').update({ ghi_chu: lyDoGui })
+          .eq('ma_nv', SESSION.ma).eq('ngay', gtNgay).eq('xac_nhan', 'KHONG_HOP_LE')
+          .then(()=>{}).catch(()=>{});
+      }
       clearInterval(_gtTimerInterval);
       closeGiaiTrinh();
       showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
       _gtCbIds = [];
       _gtCurrentCbIdx = 0;
-      // Reload lịch sử để cập nhật trạng thái
       taiLichSu();
     } else {
       const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
+    btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
   }).catch(()=>{btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';});
 }
 
