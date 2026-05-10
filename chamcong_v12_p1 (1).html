@@ -7402,15 +7402,10 @@ function openNotifPanel() {
   _notifPanelOpen = true;
   document.getElementById('notif-panel').classList.add('show');
   document.getElementById('notif-panel-bd').classList.add('show');
-  renderNotifList();
-  loadNotifications(true);
-  // [v12-FIX] Mark all as read khi mở panel
-  const unreadIds = _notifList.filter(n => !n.daXem).map(n => n.id);
-  if(unreadIds.length){
-    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: unreadIds }).catch(()=>{});
-    _notifList.forEach(n => { n.daXem = true; });
-    setTimeout(()=>{ renderNotifBadge(); renderNotifList(); }, 500);
-  }
+  // Load latest data then render
+  loadNotifications(true).then(() => {
+    renderNotifList();
+  });
 }
 
 function closeNotifPanel() {
@@ -7484,22 +7479,28 @@ function _notifTimeAgo(ts) {
 
 // [v11.5 TB-04] Click thông báo → mark đã xem + deep link đến trang
 async function onNotifClick(id, link) {
-  // Mark đã xem
   const notif = _notifList.find(n => n.id === id);
   if (notif && !notif.daXem) {
     notif.daXem = true;
     renderNotifBadge();
     renderNotifList();
-    try {
-      // [v12-P3] Supabase RPC
-      supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] });
-    } catch(e){}
+    try { supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] }); } catch(e){}
   }
-  // Deep link
   closeNotifPanel();
+  // [v12-FIX] Navigate đến đúng trang khi bấm thông báo
   if (link) {
     setTimeout(() => {
-      switchPage(link);
+      // Map link → page name
+      const linkMap = {
+        'duyetyc': 'duyetyc',
+        'nhansu': 'nhansu',
+        'donnghi-cuatoi': 'donnghi-acc',
+        'lichca': 'lichca',
+        'dashboard': 'dashboard',
+        'giocong': 'giocong',
+      };
+      const page = linkMap[link] || link;
+      goToPage(page);
     }, 100);
   }
 }
@@ -7510,14 +7511,12 @@ async function danhDauDaXemTatCa() {
     showToast('Tất cả thông báo đã được đánh dấu', 'ok');
     return;
   }
-  // Update local state
   _notifList.forEach(n => { n.daXem = true; });
   renderNotifBadge();
   renderNotifList();
   try {
-    // [v12-P3] Supabase RPC
-    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: ids });
-  } catch(e){}
+    await supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: ids });
+  } catch(e){ console.warn('Mark read error:', e); }
   showToast('✓ Đã đánh dấu ' + ids.length + ' thông báo', 'ok');
 }
 
