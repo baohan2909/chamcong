@@ -5579,13 +5579,18 @@ function taiLichCaQL(){
   const tuStr = thuHai.toISOString().substring(0,10);
   const denStr = chuNhat.toISOString().substring(0,10);
 
-  // Lấy lịch ca + đơn nghỉ trong tuần
+  // Lấy lịch ca + đơn nghỉ + cửa hàng trong tuần
   Promise.all([
-    supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr),
-    supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr)
-  ]).then(([lcRes, dnRes]) => {
+    supa.from('lich_ca').select('*, cua_hang:ma_ch(ten_ch, khu_vuc)').gte('ngay', tuStr).lte('ngay', denStr),
+    supa.from('don_nghi').select('*, cua_hang:ma_ch(ten_ch, khu_vuc)').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr),
+    supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc')
+  ]).then(([lcRes, dnRes, nvRes]) => {
     const lcRows = (!lcRes.error && lcRes.data) ? lcRes.data : [];
     const dnRows = (!dnRes.error && dnRes.data) ? dnRes.data : [];
+    const nvMap = {};
+    ((!nvRes.error && nvRes.data) ? nvRes.data : []).forEach(nv => {
+      nvMap[nv.ma_nv] = { ten: nv.ho_ten, maCH: nv.ma_ch_mac_dinh, kv: nv.khu_vuc };
+    });
 
     if(!lcRows.length && !dnRows.length){
       document.getElementById('lcql-list').innerHTML='<div class="ns-empty">📋 Chưa có lịch ca / đơn nghỉ trong tuần này.</div>';
@@ -5619,16 +5624,21 @@ function taiLichCaQL(){
     // Build hierarchy: KV → CH → NV → days
     const kvData = {};
     allRows.forEach(r => {
-      const ch = chMap[r.ma_ch] || {ten: r.ten_ch_snapshot || r.ma_ch || '—', kv: '(Chưa phân khu)'};
-      const kv = ch.kv || '(Chưa phân khu)';
+      // Lấy khu vực từ join cua_hang hoặc NV fallback
+      const joinedCH = r.cua_hang || {};
+      const nvInfo = nvMap[r.ma_nv] || {};
+      const maCH = r.ma_ch || nvInfo.maCH || '—';
+      const tenCH = joinedCH.ten_ch || r.ten_ch_snapshot || (chMap[maCH]||{}).ten || maCH;
+      const kv = joinedCH.khu_vuc || (chMap[maCH]||{}).kv || nvInfo.kv || '(Chưa phân khu)';
+      const tenNV = r.ten_nv_snapshot || nvInfo.ten || r.ma_nv;
+
       if(!kvData[kv]) kvData[kv] = {};
-      const chKey = r.ma_ch || '—';
-      if(!kvData[kv][chKey]) kvData[kv][chKey] = {ten: ch.ten, nvs: {}};
+      if(!kvData[kv][maCH]) kvData[kv][maCH] = {ten: tenCH, nvs: {}};
       const nvKey = r.ma_nv;
-      if(!kvData[kv][chKey].nvs[nvKey]) kvData[kv][chKey].nvs[nvKey] = {ten: r.ten_nv_snapshot || nvKey, days: []};
+      if(!kvData[kv][maCH].nvs[nvKey]) kvData[kv][maCH].nvs[nvKey] = {ten: tenNV, days: []};
       const gio = r.gio_bat_dau ? (r.gio_bat_dau+'').substring(0,5)+'-'+(r.gio_ket_thuc+'').substring(0,5) : '';
       const tt = r.trang_thai || '';
-      kvData[kv][chKey].nvs[nvKey].days.push({
+      kvData[kv][maCH].nvs[nvKey].days.push({
         ngay: r.ngay, loai: r.loai || r.ca_lam, gio, trangThai: tt,
         isDN: r._isDonNghi, ghiChu: r.ghi_chu_nv || ''
       });
