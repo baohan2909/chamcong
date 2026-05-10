@@ -7016,13 +7016,22 @@ function taiDuyetYC(){
     _ycData = {
       donNghi: (res.donNghi || []).map(d => ({
         id: d.id, maNV: d.maNV, tenNV: d.tenNV, cuaHang: d.cuaHang,
+        khuVuc: d.khuVuc || '',
         ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo, anhUrl: d.anhUrl,
+        trangThai: d.trangThai || 'CHO_DUYET',
+        nguoiDuyet: d.nguoiDuyet || '',
+        ghiChuQLNS: d.ghiChuQLNS || '',
+        ghiChuNV: d.lyDo || '',
+        maCH: '', tenCH: d.cuaHang || '',
         createdAt: d.createdAt, tuan: ''
       })),
       giaiTrinh: (res.giaiTrinh || []).map(g => ({
         cbId: g.cbId, maNV: g.maNV, tenNV: g.tenNV, cuaHang: g.cuaHang,
+        khuVuc: g.khuVuc || '',
         ngay: g.ngay, gio: g.gio, loaiCB: g.loaiCB,
         noiDung: g.noiDung, giaiTrinh: g.giaiTrinh,
+        trangThai: g.trangThai || 'DA_GIAI_TRINH',
+        nguoiDuyet: g.nguoiDuyet || '',
         thoiGianGiaiTrinh: g.thoiGianGiaiTrinh
       })),
       soDonNghi: (res.donNghi || []).length,
@@ -7402,10 +7411,10 @@ function openNotifPanel() {
   _notifPanelOpen = true;
   document.getElementById('notif-panel').classList.add('show');
   document.getElementById('notif-panel-bd').classList.add('show');
-  // Load latest data then render
+  // Load latest from DB (reset=true) then render
   loadNotifications(true).then(() => {
     renderNotifList();
-  });
+  }).catch(() => { renderNotifList(); });
 }
 
 function closeNotifPanel() {
@@ -7484,13 +7493,11 @@ async function onNotifClick(id, link) {
     notif.daXem = true;
     renderNotifBadge();
     renderNotifList();
-    try { supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] }); } catch(e){}
+    try { await supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] }); } catch(e){}
   }
   closeNotifPanel();
-  // [v12-FIX] Navigate đến đúng trang khi bấm thông báo
   if (link) {
     setTimeout(() => {
-      // Map link → page name
       const linkMap = {
         'duyetyc': 'duyetyc',
         'nhansu': 'nhansu',
