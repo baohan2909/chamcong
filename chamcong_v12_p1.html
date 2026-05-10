@@ -2746,20 +2746,12 @@ setInterval(tick,1000);tick();
 
 // ═══════════════════════════════════════════════════════════
 // [v10.1 Yc #5] VERSION CHECK — phát hiện deploy mới → banner 5s → reload
+// [v12-P3] Đã tắt vì không còn Apps Script
 // ═══════════════════════════════════════════════════════════
 let _appVersion = null;
 function _kiemTraVersion(){
-  fetch(SCRIPT_URL+'?type=version')
-  .then(r=>r.json()).then(res=>{
-    if(!res.version)return;
-    if(_appVersion===null){
-      _appVersion=res.version;
-      return;
-    }
-    if(_appVersion !== res.version){
-      _hienBannerReload(res.version);
-    }
-  }).catch(()=>{});
+  // Disabled - Supabase deploy không cần check version
+  return;
 }
 function _hienBannerReload(newVer){
   if(document.getElementById('_ver-banner'))return;
@@ -2813,21 +2805,26 @@ function _hienThongBaoNative(tb){
 }
 function _pollThongBao(){
   if(!SESSION)return;
-  fetch(SCRIPT_URL+'?type=thong_bao&maNV='+encodeURIComponent(SESSION.ma)+'&since='+_tbLastTs)
-  .then(r=>r.json()).then(res=>{
-    const list=(res.thongBao||[]).filter(tb=>!tb.daXem);
+  // [v12-P3] Supabase RPC
+  const sinceParam = _tbLastTs ? new Date(_tbLastTs).toISOString() : null;
+  supa.rpc('fn_get_thong_bao', { p_ma_nv: SESSION.ma, p_since: sinceParam })
+  .then(({ data: arr, error }) => {
+    if(error || !Array.isArray(arr))return;
+    const list = arr.filter(tb=>!tb.daDoc);
     if(!list.length)return;
-    // Cập nhật _tbLastTs
-    list.forEach(tb=>{ if(tb.ngayTao > _tbLastTs) _tbLastTs = tb.ngayTao; });
-    // Hiện native notification + toast trong app
     list.forEach(tb=>{
-      _hienThongBaoNative(tb);
-      showToast(tb.tieuDe+'\n'+tb.noiDung, tb.loai && tb.loai.indexOf('TUCHOI')>=0 ? 'err' : 'ok');
+      const ts = tb.createdAt ? new Date(tb.createdAt).getTime() : 0;
+      if(ts > _tbLastTs) _tbLastTs = ts;
     });
-    // Đánh dấu đã xem
-    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-      action:'danhDauDaXemTB', ids:list.map(tb=>tb.id)
-    })}).catch(()=>{});
+    list.forEach(tb=>{
+      _hienThongBaoNative({
+        id: tb.id, tieuDe: tb.tieuDe, noiDung: tb.noiDung, loai: tb.loai
+      });
+      showToast(tb.tieuDe+'\n'+(tb.noiDung||''),
+        (tb.loai && tb.loai.indexOf('TUCHOI')>=0) ? 'err' : 'ok');
+    });
+    // Đánh dấu đã đọc
+    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: list.map(tb=>tb.id) }).catch(()=>{});
   }).catch(()=>{});
 }
 // Poll thông báo mỗi 45 giây (chỉ khi đã đăng nhập)
@@ -2903,10 +2900,12 @@ function doLogin(){
   document.getElementById('login-err').style.display='none';
   if(!ma||!pw){showLoginErr('Vui lòng nhập mã nhân viên và mật khẩu.');return;}
   btn.disabled=true;btn.textContent='Đang xác thực...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'login',maNhanVien:ma,matKhau:pw})})
-  .then(r=>r.json()).then(res=>{
+  // [v12-P2] Supabase RPC thay Apps Script
+  supa.rpc('fn_dang_nhap', { p_ma: ma, p_password: pw })
+  .then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='ĐĂNG NHẬP';
-    if(!res.success){showLoginErr(res.error||'Đăng nhập thất bại.');return;}
+    if(error){showLoginErr(error.message||'Lỗi máy chủ.');return;}
+    if(!res || !res.success){showLoginErr((res&&res.error)||'Đăng nhập thất bại.');return;}
     SESSION=res.nhanVien;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
   }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
 }
@@ -3019,12 +3018,14 @@ function khoiDongApp(){
     setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
   }
 
-  fetch(SCRIPT_URL+'?type=data').then(r=>r.json()).then(d=>{
-    CH_LIST=d.cuaHangList||[];
+  // [v12-P2] Lấy DS cửa hàng từ Supabase
+  supa.rpc('fn_get_data_login').then(({ data: d, error }) => {
+    if (error || !d) return;
+    CH_LIST = d.cuaHang || [];
     renderNearby();
-    buildNSSuggestData(); // xây dựng gợi ý tìm kiếm nhân sự
-    buildKVTabs();       // xây dựng tab khu vực viết tắt
-    _buildDNPKVFilter(); // [MỚI v8] filter khu vực đơn nghỉ phép
+    buildNSSuggestData();
+    buildKVTabs();
+    _buildDNPKVFilter();
   }).catch(()=>{});
   taiLichSu();
 }
@@ -3270,24 +3271,55 @@ function _doSubmitFinal(){
   });
   renderLog();
 
-  // Gửi server NGẦM (không await)
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'chamcong',
-      maCuaHang: maCH,
-      tenCuaHang: tenCHDisplay,
-      maNhanVien: SESSION.ma,
-      tenNhanVien: SESSION.ten,
-      loaiChamCong: state.loai,
-      lat: state.lat, lng: state.lng, gpsAccuracy: state.gpsAcc,
-      selfieBase64: state.selfieB64 || null,
-      truongCa: truongCa,
-    })
-  }).then(r => r.json()).then(res => {
-    // Server đã xử lý xong → nếu có thông tin chính xác hơn thì update
+  // [v12-P2] Gửi server qua Supabase Storage + RPC
+  // 1) Upload ảnh selfie lên Storage trước (nếu có) → lấy URL
+  // 2) Gọi RPC fn_ghi_cham_cong_v2 với URL ảnh
+  // Map loại chấm công text → enum
+  const loaiEnumMap = { 'Vào ca':'VAO_CA', 'Ra ca':'RA_CA', 'Ra giữa ca':'RA_GIUA_CA', 'Vào giữa ca':'VAO_GIUA_CA' };
+  const loaiEnum = loaiEnumMap[state.loai] || 'VAO_CA';
+  const idemKey = 'cc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
+  (async () => {
+    let anhUrl = null, anhPath = null;
+    // Upload ảnh nếu có
+    if (state.selfieB64) {
+      try {
+        const b64 = String(state.selfieB64).replace(/^data:image\/\w+;base64,/, '');
+        const byteChars = atob(b64);
+        const bytes = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'image/jpeg' });
+        const today = new Date();
+        const dStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+        anhPath = dStr + '/' + (SESSION.ma||'KHAC') + '_' + Date.now() + '.jpg';
+        const { error: upErr } = await supa.storage.from('cham-cong-anh').upload(anhPath, blob, { contentType: 'image/jpeg' });
+        if (!upErr) {
+          const { data: urlData } = supa.storage.from('cham-cong-anh').getPublicUrl(anhPath);
+          anhUrl = urlData ? urlData.publicUrl : null;
+        }
+      } catch(e) { console.warn('[CC] upload ảnh lỗi:', e); }
+    }
+
+    // Gọi RPC ghi chấm công
+    const { data: res, error } = await supa.rpc('fn_ghi_cham_cong_v2', {
+      p_ma_nv: SESSION.ma,
+      p_ten_nv: SESSION.ten,
+      p_ma_ch: maCH,
+      p_loai: loaiEnum,
+      p_lat: state.lat,
+      p_lng: state.lng,
+      p_gps_accuracy: state.gpsAcc,
+      p_anh_url: anhUrl,
+      p_anh_path: anhPath,
+      p_truong_ca: !!truongCa,
+      p_idempotency_key: idemKey,
+      p_device_info: navigator.userAgent.substring(0, 200)
+    });
+    if (error) {
+      showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
+      return;
+    }
     if (res && res.canhBao && res.canhBao.length > 0) {
-      // Có cảnh báo thực sự → mở modal giải trình
       if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
       const khoangCach = res.khoangCach || preKhoangCach || '?';
       const title = (res.coLoiGPS && res.coLoiThuTu) ? '⚠️ Chấm công cần xác nhận'
@@ -3304,8 +3336,7 @@ function _doSubmitFinal(){
     } else {
       startCountdown(15);
     }
-  }).catch(() => {
-    // Lỗi mạng → toast vàng cảnh báo, KHÔNG rollback (đã hiện thành công cho user)
+  })().catch(() => {
     showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
   });
 }
@@ -3328,8 +3359,10 @@ function hienTomTatCa(gioRaCa){
   const card=document.getElementById('summary-card'),rows=document.getElementById('summary-rows');
   card.style.display='block';rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Đang tải...</div>';
   document.getElementById('summary-total-val').textContent='--';
-  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma)).then(r=>r.json()).then(d=>{
-    const ls=d.lichSu||[];if(!ls.length){rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Không có dữ liệu</div>';return;}
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_get_lich_su_hom_nay', { p_ma_nv: SESSION.ma }).then(({ data, error }) => {
+    const ls = (!error && Array.isArray(data)) ? data : [];
+    if(!ls.length){rows.innerHTML='<div style="font-size:12px;color:var(--text-m)">Không có dữ liệu</div>';return;}
     let html='',gioVao='',gioRaG='',tgRaNgoai=0;
     ls.forEach(l=>{
       html+='<div class="summary-row"><span class="summary-label">'+l.loai+'</span><span class="summary-value">'+l.gio+'</span></div>';
@@ -3346,26 +3379,24 @@ function fmtPhut(m){const g=Math.floor(m/60),p=Math.round(m%60);return g+'g '+St
 // ─── LỊCH SỬ HÔM NAY ────────────────────────────────────────
 function taiLichSu(){
   if(!SESSION)return;
-  fetch(SCRIPT_URL+'?type=lichsu&maNV='+encodeURIComponent(SESSION.ma)).then(r=>r.json()).then(d=>{
-    const ls=d.lichSu||[];if(!ls.length)return;
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_get_lich_su_hom_nay', { p_ma_nv: SESSION.ma }).then(({ data, error }) => {
+    const ls = (!error && Array.isArray(data)) ? data : [];
+    if(!ls.length)return;
     const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
     const today=new Date().toISOString().substring(0,10);
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
       const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
-      // [v11.6 Item 3] Server đã trả loaiLoi rõ ràng ('gps'/'ca'/'thieu'/'ok') từ sheet CB
-      // Không còn đoán từ keyword nữa — tránh bug "load lại ra sai ca"
       let loiType='';
       if(isLoi){
-        // Ưu tiên loaiLoi từ server (chính xác)
         if(l.loaiLoi && l.loaiLoi !== 'ok'){
           loiType = l.loaiLoi;
         } else {
-          // Fallback cũ (chỉ khi server không trả loaiLoi — vd CB cũ trước v11.6)
           const gc=(l.ghiChu||'').toLowerCase();
           if(gc.includes('sai cửa hàng')||gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
           else if(gc.includes('thiếu')||gc.includes('chưa ra ca')) loiType='thieu';
-          else loiType='gps'; // [v11.6] Default fallback = gps thay vì ca
+          else loiType='gps';
         }
       }
       logs.push({
@@ -3442,25 +3473,33 @@ function taiGioCong(){
   document.getElementById('thang-label').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
   ['gc-so-ngay','gc-tong-gio'].forEach(id=>document.getElementById(id).textContent='--');
-  fetch(SCRIPT_URL+'?type=tonghop&maNV='+encodeURIComponent(SESSION.ma)+'&thang='+gcThang)
-  .then(r=>r.json()).then(d=>{
-    // v9: response là object { danhSach, soNgayCong, tongGioThang } hoặc array cũ
-    const resp=d.tonghop||{};
-    if(Array.isArray(resp)){
-      // fallback nếu server chưa deploy v9
-      gcData=resp;
-    } else {
-      gcData=resp.danhSach||[];
-      // Dùng thẳng soNgayCong và tongGioThang từ server nếu có
-      if(resp.soNgayCong!==undefined){
-        document.getElementById('gc-so-ngay').textContent=resp.soNgayCong;
-        document.getElementById('gc-tong-gio').textContent=resp.tongGioThang||'0g 00p';
-        // Chỉ render bảng
-        _renderGioCongTable();
-        return;
-      }
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_get_tong_hop_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang })
+  .then(({ data: d, error }) => {
+    if (error || !d) {
+      document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
+      return;
     }
-    renderGioCong();
+    const arr = d.data || [];
+    // Convert sang format cũ (mỗi ngày 1 dòng)
+    gcData = arr.map(x => ({
+      ngay: x.ngay,
+      gioCaVao: x.gioCaVao || '',
+      gioCaRa: x.gioCaRa || '',
+      tongGioCong: x.tongGioCong != null ? Number(x.tongGioCong).toFixed(2) + 'h' : '',
+      soLanRa: x.soLanRa || 0,
+      trangThai: x.trangThai || 'OK',
+      ghiChu: '',
+    }));
+    // Tính số ngày công + tổng giờ
+    const soNgay = gcData.filter(x => x.gioCaVao).length;
+    const tongGio = arr.reduce((sum, x) => sum + (Number(x.tongGioCong) || 0), 0);
+    const tongGioGiay = Math.round(tongGio * 3600);
+    const tgGio = Math.floor(tongGioGiay / 3600);
+    const tgPhut = Math.floor((tongGioGiay % 3600) / 60);
+    document.getElementById('gc-so-ngay').textContent = soNgay;
+    document.getElementById('gc-tong-gio').textContent = tgGio + 'g ' + String(tgPhut).padStart(2,'0') + 'p';
+    _renderGioCongTable();
   })
   .catch(()=>{document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
@@ -3554,19 +3593,18 @@ function taiGioCongQLRange(){
     fmtNgay(tu)+' → '+fmtNgay(den);
   document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
   ['gcql-nv','gcql-ngay','gcql-gio'].forEach(id=>document.getElementById(id).textContent='--');
-  // Lấy dữ liệu theo tháng rồi filter theo range
-  // Cần fetch toàn bộ tháng liên quan
+  // [v12-P2] Supabase RPC theo từng tháng rồi gộp lại
   const thangTu=tu.substring(0,7), thangDen=den.substring(0,7);
   const fetches=[];
   let cur=thangTu;
   while(cur<=thangDen){
-    fetches.push(fetch(SCRIPT_URL+'?type=tonghop_all&thang='+cur).then(r=>r.json()));
+    fetches.push(supa.rpc('fn_get_tong_hop_thang_all', { p_thang: cur }).then(r => r.data || []));
     const [y,m]=cur.split('-').map(Number);
     const next=new Date(y,m,1);
     cur=next.getFullYear()+'-'+pad(next.getMonth()+1);
   }
   Promise.all(fetches).then(results=>{
-    const all=results.flatMap(r=>r.tonghopAll||[]);
+    const all=results.flat();
     gcDataQL=all.filter(r=>r.ngay>=tu&&r.ngay<=den);
     renderGioCongQL();
   }).catch(()=>{
@@ -3590,8 +3628,16 @@ function taiGioCongQL(){
   document.getElementById('thang-label-ql').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
   ['gcql-nv','gcql-ngay','gcql-gio'].forEach(id=>document.getElementById(id).textContent='--');
-  fetch(SCRIPT_URL+'?type=tonghop_all&thang='+gcThangQL)
-  .then(r=>r.json()).then(d=>{gcDataQL=d.tonghopAll||[];renderGioCongQL();})
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_get_tong_hop_thang_all', { p_thang: gcThangQL })
+  .then(({ data, error }) => {
+    if (error || !data) {
+      document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
+      return;
+    }
+    gcDataQL = data || [];
+    renderGioCongQL();
+  })
   .catch(()=>{document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
 function renderGioCongQL(){
@@ -3663,10 +3709,16 @@ function doDoiMatKhau(){
   if(moi.length<6){showPwMsg('Mật khẩu mới phải ít nhất 6 ký tự.','err');return;}
   if(moi!==xn){showPwMsg('Mật khẩu mới và xác nhận không khớp.','err');return;}
   btn.disabled=true;btn.textContent='Đang xử lý...';
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'doiMatKhau',maNhanVien:SESSION.ma,matKhauCu:cu,matKhauMoi:moi,vaiTro:SESSION.vaiTro})})
-  .then(r=>r.json()).then(res=>{
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_doi_mat_khau_v2', {
+    p_ma: SESSION.ma,
+    p_old_password: cu,
+    p_new_password: moi,
+    p_vai_tro: SESSION.vaiTro || ''
+  }).then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';
-    if(!res.success){showPwMsg(res.error,'err');return;}
+    if(error){showPwMsg(error.message || 'Lỗi máy chủ','err');return;}
+    if(!res || !res.success){showPwMsg((res && res.error) || 'Đổi mật khẩu thất bại','err');return;}
     showPwMsg('✓ Đổi mật khẩu thành công!','ok');
     SESSION.laDatMacDinh=false;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));
     document.getElementById('banner-pw').style.display='none';
@@ -3760,20 +3812,25 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'guiGiaiTrinh',maNhanVien:SESSION.ma,ngay:gtNgay,lyDo:lyDoGui})},
-    (attempt,total)=>{ btn.textContent='Server bận · đang gửi lại ('+attempt+'/'+total+')...'; })
-  .then(r=>r.json()).then(res=>{
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_gui_giai_trinh', {
+    p_ma_nv: SESSION.ma,
+    p_ngay: gtNgay,
+    p_ly_do: lyDoGui,
+    p_cb_id: null,
+    p_loai_cb: null,
+    p_gio: null
+  }).then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
-    if(res.success){
+    if(!error && res && res.success){
       clearInterval(_gtTimerInterval);
       closeGiaiTrinh();
       showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
-      // Cập nhật lại lịch sử local
       logs.forEach(l=>{if(l.xacNhan==='KHÔNG HỢP LỆ')l.ghiChu=lyDoGui;});
       renderLog();
       startCountdown(10);
     } else {
-      const err=document.getElementById('gt-err');err.textContent=res.error||'Lỗi gửi giải trình.';err.style.display='block';
+      const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
   }).catch(()=>{btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';});
 }
@@ -3788,18 +3845,19 @@ function startNSPolling(){
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
     const [nsTu,nsDen]=_getNSRange();
-    fetch(SCRIPT_URL+'?type=nhansu&tuNgay='+nsTu+'&denNgay='+nsDen)
-    .then(r=>r.json()).then(res=>{
-      if(!res.nhanSu)return;
-      const d=res.nhanSu;
+    // [v12-P2] Supabase RPC
+    supa.rpc('fn_get_nhan_su_overview', {
+      p_q: nsSearchQ || null,
+      p_cua_hang: null, p_khu_vuc: null,
+      p_tu_ngay: nsTu, p_den_ngay: nsDen
+    }).then(({ data: d, error }) => {
+      if(error || !d)return;
       const newCBList=d.canhBaoChuaXuLy||[];
       const newCount=newCBList.length;
-      // Chỉ update UI nếu số cảnh báo thay đổi (tránh re-render thừa)
       if(newCount!==_pollLastCount){
         _pollLastCount=newCount;
         nsData=d.danhSach||[];
         nsCBList=newCBList;
-        // Cập nhật stats
         document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
         document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
@@ -3807,16 +3865,15 @@ function startNSPolling(){
         if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
         document.getElementById('ns-s-loi').textContent=newCount;
         document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
-        const banner=document.getElementById('ns-loi-banner'); /* v10.1: banner removed */
+        const banner=document.getElementById('ns-loi-banner');
         if(banner){if(newCount>0){const el=document.getElementById('ns-loi-count');if(el)el.textContent=newCount;banner.style.display='flex';}else banner.style.display='none';}
-        else banner.style.display='none';
         _capNhatBadgeNS(newCount);
         renderNhanSu();
         const now=new Date();
         document.getElementById('ns-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+' (tự động)';
       }
     }).catch(()=>{});
-  },30000); // 30 giây
+  },30000);
 }
 function stopNSPolling(){clearInterval(_pollTimer);_pollTimer=null;}
 
@@ -4042,32 +4099,31 @@ function taiNhanSu(forceRefresh){
   // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
   const [nsTu,nsDen]=_getNSRange();
   const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
-  // [v11.4 NS-05] Dùng dedupe để tránh fetch trùng khi user click qua lại nhanh
-  _dedupedFetch(SCRIPT_URL+'?type=nhansu'+q+timeParam)
-  .then(r=>r.json()).then(res=>{
-    if(!res.nhanSu)return;
-    const d=res.nhanSu;
+  // [v12-P2] Supabase RPC thay nhansu
+  supa.rpc('fn_get_nhan_su_overview', {
+    p_q: nsSearchQ || null,
+    p_cua_hang: null, p_khu_vuc: null,
+    p_tu_ngay: nsTu, p_den_ngay: nsDen
+  }).then(({ data: d, error }) => {
+    if(error || !d){list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';return;}
     nsData=d.danhSach||[];
-    nsCBList=d.canhBaoChuaXuLy||[]; // danh sách từng cảnh báo riêng lẻ
-    nsNghiMaSet=new Set(d.stats.dsNghiMa||[]); // [v10 Yc #3] mã NV có đơn nghỉ đã duyệt trong phạm vi
+    nsCBList=d.canhBaoChuaXuLy||[];
+    nsNghiMaSet=new Set((d.stats && d.stats.dsNghiMa) || []);
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
     document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
     document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
-    // [v10 Yc #3] Ô "Nghỉ phép" — tổng NV nghỉ phép đã duyệt trong phạm vi
     const nghiEl=document.getElementById('ns-s-nghi');
     if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
-    const soCB=nsCBList.length; // đếm theo số cảnh báo, không theo NV
+    const soCB=nsCBList.length;
     document.getElementById('ns-s-loi').textContent=soCB;
     document.getElementById('ns-s-tong').textContent=d.stats.tongNhanSu||nsData.length;
-    // [v10.1 Yc #6] banner đã xóa — chỉ cần cập nhật badge bottom nav
     _capNhatBadgeNS(soCB);
-    _addNVToSuggest(); // thêm NV vào gợi ý
+    _addNVToSuggest();
     const now=new Date();
     document.getElementById('ns-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
-    _pollLastCount=nsCBList.length; // sync với poll để tránh re-render thừa
+    _pollLastCount=nsCBList.length;
     renderNhanSu();
     document.getElementById('ns-refresh-btn').style.display='flex';
-    // [FIX v9 #10] Tải đơn nghỉ phép ngầm để cập nhật banner ngay (không đổi subtab)
     _silentCheckDonNghi();
   })
   .catch(()=>{list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';});
@@ -4075,13 +4131,13 @@ function taiNhanSu(forceRefresh){
 
 // [v10.1 Yc #6] Chỉ cập nhật badge (banner ns-donnghi-banner đã bị xóa)
 function _silentCheckDonNghi(){
-  fetch(SCRIPT_URL+'?type=don_nghi_phep&trangThai=Chờ duyệt&_t='+Date.now())
-  .then(r=>r.json()).then(res=>{
-    if(!res.donNghiPhep)return;
-    const cho=res.donNghiPhep.tongChoDuyet||0;
+  // [v12-P3] Supabase RPC
+  supa.rpc('fn_get_don_nghi_list', { p_trang_thai: 'Chờ duyệt' })
+  .then(({ data, error }) => {
+    if(error || !data)return;
+    const cho = data.tongChoDuyet || 0;
     const badge=document.getElementById('dnp-badge');
     if(badge){badge.textContent=cho>0?String(cho):'';badge.style.display=cho>0?'flex':'none';}
-    // Gộp badge nav Nhân sự = CB + Đơn nghỉ
     _capNhatBadgeNSDonNghi(cho);
   }).catch(()=>{});
 }
@@ -4237,17 +4293,21 @@ function duyetCB(event,cbRowIdx,maNV,quyetDinh){
   const row=document.getElementById('cb-row-'+cbRowIdx);
   if(row){row.style.opacity='0.4';row.style.pointerEvents='none';}
   // Gửi request background — không chờ
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,
-    cbRowIdx,maNguoiDuyet:SESSION.ma
-  })}, (attempt,total)=>{ if(okBtn) okBtn.textContent='Gửi lại ('+attempt+'/'+total+')...'; })
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
+  // [v12-P2] Supabase RPC. cbRowIdx có thể là UUID (sau migrate) hoặc số (legacy)
+  const isUuid = String(cbRowIdx).match(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
+  supa.rpc('fn_duyet_canh_bao', {
+    p_ma_nv: maNV,
+    p_ngay: ngay,
+    p_quyet_dinh: quyetDinh,
+    p_ma_nguoi_duyet: SESSION.ma,
+    p_cb_id: isUuid ? cbRowIdx : null,
+    p_loai_cb: null,
+    p_gio: null
+  }).then(({ data: res, error }) => {
+    if(!error && res && res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt cảnh báo — đã thông báo NV`:`✗ Đã từ chối — đã thông báo NV`,'ok');
-      // Xóa khỏi nsCBList và re-render
       const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===cbRowIdx);
       if(idx>=0)nsCBList.splice(idx,1);
-      // Cập nhật xacNhan trong nsData
       if(quyetDinh==='Duyệt'){
         const nvIdx=nsData.findIndex(n=>n.ma===maNV);
         if(nvIdx>=0&&!nsCBList.find(cb=>cb.maNV===maNV))
@@ -4256,7 +4316,7 @@ function duyetCB(event,cbRowIdx,maNV,quyetDinh){
       renderNhanSu();
       _capNhatBadgeNS(nsCBList.length);
     } else {
-      showToast(res.error||'Lỗi duyệt.','err');
+      showToast((res&&res.error)||(error&&error.message)||'Lỗi duyệt.','err');
       if(row){row.style.opacity='1';row.style.pointerEvents='';}
       btns.forEach(b=>{b.disabled=false;});
     }
@@ -4304,21 +4364,26 @@ function xemGiaiTrinhChiTiet(maNV,tenNV,giaiTrinh,xacNhan){
 function closeNsDetail(){document.getElementById('ns-detail-modal').classList.remove('show');}
 function duyetTuModal(quyetDinh){
   closeNsDetail();
-  if(_nsdCBIdx>0){
-    // Duyệt theo cbRowIdx cụ thể
+  if(_nsdCBIdx>0 || (typeof _nsdCBIdx === 'string' && _nsdCBIdx)){
     const ngay=new Date().toISOString().substring(0,10);
-    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-      action:'duyetCanhBao',maNhanVien:_nsdCBMaNV,ngay,quyetDinh,
-      cbRowIdx:_nsdCBIdx,maNguoiDuyet:SESSION.ma
-    })})
-    .then(r=>r.json()).then(res=>{
-      if(res.success){
+    const isUuid = String(_nsdCBIdx).match(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
+    // [v12-P2] Supabase RPC
+    supa.rpc('fn_duyet_canh_bao', {
+      p_ma_nv: _nsdCBMaNV,
+      p_ngay: ngay,
+      p_quyet_dinh: quyetDinh,
+      p_ma_nguoi_duyet: SESSION.ma,
+      p_cb_id: isUuid ? _nsdCBIdx : null,
+      p_loai_cb: null,
+      p_gio: null
+    }).then(({ data: res, error }) => {
+      if(!error && res && res.success){
         showToast(quyetDinh==='Duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
         const idx=nsCBList.findIndex(cb=>cb.cbRowIdx===_nsdCBIdx);
         if(idx>=0)nsCBList.splice(idx,1);
         renderNhanSu();
         _capNhatBadgeNS(nsCBList.length);
-      }else{showToast(res.error||'Lỗi.','err');}
+      }else{showToast((res&&res.error)||(error&&error.message)||'Lỗi.','err');}
     }).catch(()=>showToast('Lỗi kết nối.','err'));
   } else {
     _duyetNVThuc(_nsdMaNV,_nsdNgay,quyetDinh);
@@ -4335,15 +4400,23 @@ function duyetNhanSu(event,maNV,quyetDinh){
   _duyetNVThuc(maNV,ngay,quyetDinh,btns);
 }
 function _duyetNVThuc(maNV,ngay,quyetDinh,btns){
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'duyetCanhBao',maNhanVien:maNV,ngay,quyetDinh,maNguoiDuyet:SESSION.ma})})
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
+  // [v12-P2] Supabase RPC
+  supa.rpc('fn_duyet_canh_bao', {
+    p_ma_nv: maNV,
+    p_ngay: ngay,
+    p_quyet_dinh: quyetDinh,
+    p_ma_nguoi_duyet: SESSION.ma,
+    p_cb_id: null,
+    p_loai_cb: null,
+    p_gio: null
+  }).then(({ data: res, error }) => {
+    if(!error && res && res.success){
       showToast(quyetDinh==='Duyệt'?`✓ Đã duyệt`:`✗ Đã từ chối`,'ok');
       const idx=nsData.findIndex(n=>n.ma===maNV);
       if(idx>=0)nsData[idx].xacNhan=quyetDinh==='Duyệt'?'DUYỆT':'KHÔNG HỢP LỆ';
       renderNhanSu();
     } else {
-      showToast(res.error||'Lỗi duyệt.','err');
+      showToast((res&&res.error)||(error&&error.message)||'Lỗi duyệt.','err');
       if(btns)btns.forEach(b=>{b.disabled=false;});
     }
   }).catch(()=>{showToast('Lỗi kết nối.','err');if(btns)btns.forEach(b=>{b.disabled=false;});});
@@ -4581,35 +4654,61 @@ function taiLichCa(){
   _taiGoiYCH(); // [v10.1] Preload gợi ý CH
   document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
   document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
-  fetch(SCRIPT_URL+'?type=lichca&maNV='+encodeURIComponent(SESSION.ma)+'&tuan='+lcTuan)
-  .then(r=>r.json()).then(res=>{
-    lcData=res.lichCa||{};
+  // [v12-P3] Supabase RPC, adapt response sang format cũ
+  supa.rpc('fn_get_lich_ca', { p_ma_nv: SESSION.ma, p_tuan: lcTuan })
+  .then(({ data: res, error }) => {
+    if(error || !res){document.getElementById('lc-week').innerHTML='<div class="ns-empty">❌ Lỗi tải. Thử lại.</div>';return;}
+    // Build lcData theo format cũ: { lichCa: [{ngay, daDangKy, slots:[]}], conHan, ngayDau, ngayCuoi }
+    const slots = res.lichCa || [];
+    // Group theo ngày
+    const map = {};
+    slots.forEach(s => {
+      if(!map[s.ngay]) map[s.ngay] = [];
+      map[s.ngay].push({
+        loai: s.loai, maCH: s.maCH, tenCH: s.tenCH,
+        gioBatDau: s.gioBatDau, gioKetThuc: s.gioKetThuc,
+        trangThai: s.trangThai,
+        ghiChuNV: s.ghiChuNV, ghiChuQLNS: s.ghiChuQLNS
+      });
+    });
+    // Tạo array 7 ngày
+    const arr = [];
+    const ngayDau = new Date(res.ngayDau);
+    for(let i=0; i<7; i++){
+      const d = new Date(ngayDau); d.setDate(d.getDate()+i);
+      const ngayStr = d.toISOString().substring(0,10);
+      arr.push({
+        ngay: ngayStr,
+        daDangKy: !!map[ngayStr],
+        slots: map[ngayStr] || []
+      });
+    }
+    // Tính conHan: cho phép gửi đến hết thứ 7 tuần đó
+    const today = new Date(); today.setHours(0,0,0,0);
+    const ngayCuoi = new Date(res.ngayCuoi);
+    const conHan = today <= ngayCuoi;
+    lcData = { lichCa: arr, conHan: conHan, ngayDau: res.ngayDau, ngayCuoi: res.ngayCuoi, tuan: res.tuan };
     lcEdit={};
     _npCamB64={};
-    // [FIX v9 #4] lcEdit[ngay] = { type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT,trangThai}], trangThai, ghiChuQLNS }
-    const lichCaArr=lcData.lichCa||[];
-    lichCaArr.forEach(ng=>{
-      if(ng.daDangKy&&ng.slots.length){
+    arr.forEach(ng=>{
+      if(ng.daDangKy && ng.slots.length){
         const firstLoai=ng.slots[0].loai;
         if(firstLoai===LC_NGHI_PHEP){
-          // Ngày nghỉ — lấy slot đầu để biết trạng thái/QLNS phản hồi
           const s=ng.slots[0];
           lcEdit[ng.ngay]={
-            type:'nghi',
-            slots:[],
+            type:'nghi',slots:[],
             trangThai:s.trangThai||'Chờ duyệt',
             ghiChuNV:s.ghiChuNV||'',
             ghiChuQLNS:s.ghiChuQLNS||'',
           };
         } else {
-          // Ngày đi làm — có thể có nhiều slot
           lcEdit[ng.ngay]={
             type:'work',
             slots:ng.slots.map(s=>({
               maCH:s.maCH||'', tenCH:s.tenCH||'',
               gioBD:s.gioBatDau||'08:00', gioKT:s.gioKetThuc||'17:00',
             })),
-            trangThai:'Đã gửi', // [FIX v9 #4] lịch đi làm không cần duyệt
+            trangThai:'Đã gửi',
           };
         }
       }
@@ -4926,8 +5025,18 @@ function xoaCa(ngay,idx){
 let _goiYCH_cache = null;
 function _taiGoiYCH(){
   if(_goiYCH_cache || !SESSION)return;
-  fetch(SCRIPT_URL+'?type=goi_y_cua_hang&maNV='+encodeURIComponent(SESSION.ma))
-    .then(r=>r.json()).then(res=>{ _goiYCH_cache = res.goiYCH || []; }).catch(()=>{ _goiYCH_cache = []; });
+  // [v12-P3] Đơn giản: dùng CH mặc định + top CH gần đó trong CH_LIST
+  // Nếu có ma_ch_mac_dinh trong SESSION thì ưu tiên đầu tiên
+  const goiY = [];
+  if(SESSION.cuaHangMa && SESSION.cuaHangTen){
+    goiY.push({ maCH: SESSION.cuaHangMa, tenCH: SESSION.cuaHangTen, soLan: 5 });
+  }
+  // Thêm các CH cùng khu vực
+  if(CH_LIST && CH_LIST.length && SESSION.khuVuc){
+    CH_LIST.filter(ch => ch.khuVuc === SESSION.khuVuc && ch.ma !== SESSION.cuaHangMa)
+      .slice(0, 4).forEach(ch => goiY.push({ maCH: ch.ma, tenCH: ch.ten, soLan: 1 }));
+  }
+  _goiYCH_cache = goiY;
 }
 function onLCCHInput(ngay,idx){
   const inp=document.getElementById(`lc-ch-inp-${ngay}-${idx}`);
@@ -5167,19 +5276,41 @@ function guiLichCa(){
   }
   if(!lichCaArr.length){showToast('Chưa đăng ký ngày nào.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'guiLichCa', maNhanVien:SESSION.ma, tenNhanVien:SESSION.ten,
-    tuan:lcTuan, lichCa:lichCaArr,
-  })}, (attempt,total)=>{ btn.innerHTML='<span class="spinner"></span>Gửi lại '+attempt+'/'+total+'...'; })
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast(`✓ ${res.message}`,'ok');
-      taiLichCa();
-    } else {
-      showToast(res.error||'Lỗi gửi lịch.','err');
-      btn.disabled=false;btn.textContent='Gửi lịch tuần';
+
+  // [v12-P3] Upload ảnh nghỉ phép lên Storage trước (nếu có), rồi gọi RPC
+  (async () => {
+    for (const item of lichCaArr) {
+      if (item.loai === LC_NGHI_PHEP && item.anhBase64) {
+        try {
+          const b64 = String(item.anhBase64).replace(/^data:image\/\w+;base64,/, '');
+          const byteChars = atob(b64);
+          const bytes = new Uint8Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+          const blob = new Blob([bytes], { type: 'image/jpeg' });
+          const path = item.ngay + '/' + SESSION.ma + '_' + Date.now() + '.jpg';
+          const { error: upErr } = await supa.storage.from('don-nghi-anh').upload(path, blob, { contentType: 'image/jpeg' });
+          if (!upErr) {
+            const { data: urlData } = supa.storage.from('don-nghi-anh').getPublicUrl(path);
+            item.anhUrl = urlData ? urlData.publicUrl : '';
+          }
+        } catch(e) { console.warn('Upload ảnh nghỉ lỗi:', e); }
+        delete item.anhBase64;
+      }
     }
-  }).catch(()=>{showToast('Lỗi kết nối.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';});
+    const { data: res, error } = await supa.rpc('fn_gui_lich_ca', {
+      p_ma_nv: SESSION.ma,
+      p_ten_nv: SESSION.ten,
+      p_tuan: lcTuan,
+      p_lich_ca: lichCaArr
+    });
+    if (error || !res || !res.success) {
+      showToast((res && res.error) || (error && error.message) || 'Lỗi gửi lịch.','err');
+      btn.disabled=false;btn.textContent='Gửi lịch tuần';
+      return;
+    }
+    showToast('✓ Đã gửi ' + (res.count || 0) + ' ngày','ok');
+    taiLichCa();
+  })().catch(()=>{showToast('Lỗi kết nối.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';});
 }
 
 // ─── QLNS xem lịch ca — accordion phân tầng [SỬA HOÀN TOÀN v8] ──
@@ -5215,15 +5346,16 @@ function taiLichCaQL(){
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
   document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
-  const q=(document.getElementById('lcql-search')?.value||'').trim();
-  fetch(SCRIPT_URL+'?type=lichca_ql&tuan='+lcqlTuan+(q?'&q='+encodeURIComponent(q):''))
-  .then(r=>r.json()).then(res=>{
-    lcqlData=res.lichCaQL;
-    if(!lcqlData)return;
-    const now=new Date();
-    document.getElementById('lcql-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
-    renderLCQL();
-  }).catch(()=>{document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi tải.</div>';});
+  // [v12-P3] Tạm dùng fn_get_lich_ca cho từng NV — TODO: thêm RPC fn_get_lich_ca_ql riêng
+  // Hiện tại trả empty data để không crash
+  lcqlData = {
+    tuan: lcqlTuan,
+    danhSachKV: [],
+    tongDaGui: 0, tongChuaGui: 0, tongNV: 0
+  };
+  document.getElementById('lcql-list').innerHTML = '<div class="ns-empty">📋 Chức năng xem lịch ca QL đang được nâng cấp. Vui lòng dùng Tab Duyệt yêu cầu để xem các đơn nghỉ phép cần duyệt.</div>';
+  const now=new Date();
+  document.getElementById('lcql-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
 }
 
 function setLCQLMode(mode){
@@ -5479,14 +5611,23 @@ function closeLCDetail(){document.getElementById('lc-detail-modal').classList.re
 function duyetLichTuModal(qd){
   const quyetDinh=qd==='Da duyet'?'Đã duyệt':(qd==='Tu choi'?'Từ chối':qd);
   closeLCDetail();
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetLichCa', maNhanVien:_lcMaNV, tuan:_lcTuanModal,
-    quyetDinh, maNguoiDuyet:SESSION.ma,
-  })})
-  .then(r=>r.json()).then(res=>{
-    if(res.success){showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt lịch ca':'✗ Đã từ chối lịch ca','ok');taiLichCaQL();}
-    else showToast(res.error||'Lỗi.','err');
-  }).catch(()=>showToast('Lỗi kết nối.','err'));
+  // [v12-P3] Lịch ca duyệt - chuyển trạng thái lich_ca rows sang DA_DUYET/TU_CHOI
+  // Tạm dùng update trực tiếp qua bảng (RLS đã grant)
+  const ttEnum = quyetDinh === 'Đã duyệt' ? 'DA_DUYET' : 'TU_CHOI';
+  // Tính ngày đầu/cuối tuần
+  const ngayDau = new Date(_thuHai(_lcTuanModal)+'T00:00:00');
+  const ngayCuoi = new Date(ngayDau); ngayCuoi.setDate(ngayCuoi.getDate()+6);
+  const dStr = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  supa.from('lich_ca')
+    .update({ trang_thai: ttEnum, nguoi_duyet: SESSION.ma, thoi_gian_duyet: new Date().toISOString() })
+    .eq('ma_nv', _lcMaNV)
+    .gte('ngay', dStr(ngayDau))
+    .lte('ngay', dStr(ngayCuoi))
+    .then(({ error }) => {
+      if(error){showToast('Lỗi: '+error.message,'err');return;}
+      showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt lịch ca':'✗ Đã từ chối lịch ca','ok');
+      taiLichCaQL();
+    });
 }
 
 // ─── TAB CON NHÂN SỰ / ĐƠN NGHỈ PHÉP [MỚI v8] ──────────────
@@ -5509,28 +5650,39 @@ function taiDonNghiPhep(){
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
   const tt=document.getElementById('dnp-f-tt')?.value||'';
   const q=document.getElementById('dnp-f-search')?.value?.trim()||'';
-  // [v10 Yc #2] Phạm vi thời gian
   const [dnpTu,dnpDen]=_getDNPRange();
-  const url=SCRIPT_URL+'?type=don_nghi_phep'
-    +'&trangThai='+encodeURIComponent(tt)
-    +'&q='+encodeURIComponent(q)
-    +'&tuNgay='+dnpTu+'&denNgay='+dnpDen;
-  fetch(url)
-  .then(r=>r.json()).then(res=>{
-    _dnpData=res.donNghiPhep;
-    if(!_dnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
-    // Cập nhật badge
+  // [v12-P3] Supabase RPC
+  supa.rpc('fn_get_don_nghi_list', {
+    p_trang_thai: tt || null,
+    p_tu_ngay: dnpTu, p_den_ngay: dnpDen,
+    p_q: q || null
+  }).then(({ data: res, error }) => {
+    if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
+    // Adapt RPC → Apps Script format
+    const ds = res.danhSach || [];
+    const map = {};
+    ds.forEach(d => {
+      if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
+      map[d.ngayNghi].push({
+        id: d.id, maNV: d.maNV, tenNV: d.tenNV,
+        maCH: '', tenCH: d.cuaHang || '', khuVuc: d.khuVuc,
+        ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo,
+        anhUrl: d.anhUrl, trangThai: d.trangThai,
+        ghiChuQLNS: d.ghiChuQLNS, nguoiDuyet: d.nguoiDuyet,
+        createdAt: d.createdAt
+      });
+    });
+    const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, donList: map[ngay] }));
+    _dnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
     const cho=_dnpData.tongChoDuyet||0;
     const badge=document.getElementById('dnp-badge');
     if(badge){badge.textContent=cho>0?String(cho):'';badge.style.display=cho>0?'flex':'none';}
-    // [FIX v9 #10] Banner đơn nghỉ cần duyệt
     const bnr=document.getElementById('ns-donnghi-banner');
     const bnrCnt=document.getElementById('ns-donnghi-count');
     if(bnr&&bnrCnt){
       if(cho>0){bnrCnt.textContent=cho;bnr.style.display='flex';}
       else bnr.style.display='none';
     }
-    // Badge ở nav Nhân sự gộp cả cảnh báo + đơn nghỉ
     const tongCanXuLy=(nsCBList?nsCBList.length:0)+cho;
     _capNhatBadgeNS(tongCanXuLy);
     renderDonNghiPhep();
@@ -5639,25 +5791,18 @@ async function duyetTatCaCBNS(action){
     const row=document.getElementById('cb-row-'+cb.cbRowIdx);
     if(row) row.classList.add('duyet-processing');
   });
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetBatch', loai:'GIAI_TRINH', quyetDinh:qd,
-    maNguoiDuyet:SESSION.ma,
-    // [v10.8] Truyền cbRowIdx + loaiCB + gio để match CHẶT từng dòng cụ thể
-    items: daGT.map(cb=>({
-      maNV:cb.maNV, ngay:cb.ngay,
-      cbRowIdx:cb.cbRowIdx||0,
-      loaiCB:cb.loaiCB||'', gio:cb.gio||''
-    })),
-  })}, (attempt,total)=>{
-    daGT.forEach(cb=>{
-      const row=document.getElementById('cb-row-'+cb.cbRowIdx);
-      if(row){ const b=row.querySelector('.ns-badge'); if(b) b.textContent='Gửi lại '+attempt+'/'+total; }
-    });
-  }).then(r=>r.json()).then(res=>{
-    if(res.success){
-      const msg = `✓ Đã ${verb} ${res.soThanhCong}/${daGT.length} cảnh báo.`;
-      showToastVoiHoanTac(msg, res.undoToken, res.expiresAt);
-      // Reload data
+  // [v12-P3] Supabase RPC
+  const cbIds = daGT.map(cb => cb.cbRowIdx).filter(Boolean);
+  supa.rpc('fn_duyet_batch', {
+    p_loai: 'GIAI_TRINH',
+    p_quyet_dinh: qd,
+    p_ma_nguoi_duyet: SESSION.ma,
+    p_ids: cbIds,
+    p_ghi_chu_qlns: null
+  }).then(({ data: res, error }) => {
+    if(!error && res && res.success){
+      const msg = `✓ Đã ${verb} ${res.count}/${daGT.length} cảnh báo.`;
+      showToast(msg, 'ok');
       if(typeof taiNhanSu==='function') taiNhanSu();
       _silentUpdateAccBadges();
     } else {
@@ -5665,7 +5810,7 @@ async function duyetTatCaCBNS(action){
         const row=document.getElementById('cb-row-'+cb.cbRowIdx);
         if(row) row.classList.remove('duyet-processing');
       });
-      showToast(res.error||'Lỗi batch.','err');
+      showToast((res&&res.error)||(error&&error.message)||'Lỗi batch.','err');
     }
   }).catch(()=>{
     daGT.forEach(cb=>{
@@ -5697,25 +5842,34 @@ async function duyetTatCaDonNghiNS(action){
   document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('dnp-bulk-bar');
   if(bulkBar) bulkBar.style.opacity='.5';
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetBatch', loai:'DON_NGHI', quyetDinh:qd, ghiChuQLNS,
-    maNguoiDuyet:SESSION.ma,
-    items: items.map(d=>({maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||''})),
-  })}, (attempt,total)=>{
-    const bar=document.getElementById('dnp-bulk-bar');
-    if(bar){ const btn=bar.querySelector('.yc-bulk-ok'); if(btn) btn.textContent='Gửi lại '+attempt+'/'+total+'...'; }
-  }).then(r=>r.json()).then(res=>{
+  // [v12-P3] Supabase RPC - cần lookup UUIDs từ ma_nv+ngay
+  (async () => {
+    // Lookup IDs
+    const ids = [];
+    for (const it of items) {
+      const { data: dn } = await supa.from('don_nghi')
+        .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay).eq('trang_thai', 'CHO_DUYET')
+        .limit(1).maybeSingle();
+      if (dn) ids.push(dn.id);
+    }
+    const { data: res, error } = await supa.rpc('fn_duyet_batch', {
+      p_loai: 'DON_NGHI',
+      p_quyet_dinh: qd,
+      p_ma_nguoi_duyet: SESSION.ma,
+      p_ids: ids,
+      p_ghi_chu_qlns: ghiChuQLNS || null
+    });
     if(bulkBar) bulkBar.style.opacity='1';
-    if(res.success){
-      const msg = `✓ Đã ${verb} ${res.soThanhCong}/${items.length} đơn.`;
-      showToastVoiHoanTac(msg, res.undoToken, res.expiresAt);
+    if(!error && res && res.success){
+      const msg = `✓ Đã ${verb} ${res.count}/${items.length} đơn.`;
+      showToast(msg, 'ok');
       taiDonNghiPhep();
       _silentUpdateAccBadges();
     } else {
       document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
-      showToast(res.error||'Lỗi batch.','err');
+      showToast((res&&res.error)||(error&&error.message)||'Lỗi batch.','err');
     }
-  }).catch(()=>{
+  })().catch(()=>{
     if(bulkBar) bulkBar.style.opacity='1';
     document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
     showToast('Lỗi kết nối.','err');
@@ -5766,17 +5920,24 @@ function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   }
   showToast(quyetDinh==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối', 'ok');
 
-  // Gửi server NGẦM
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetDonNghiPhep', maNhanVien:maNV, ngay, tuan,
-    quyetDinh, ghiChuQLNS, maNguoiDuyet:SESSION.ma,
-  })}).then(r=>r.json()).then(res=>{
-    if(!res.success){
-      showToast('⚠ ' + (res.error||'Server lỗi'), 'warn');
+  // [v12-P3] Supabase RPC - cần lấy id đơn từ ma_nv + ngay
+  (async () => {
+    const { data: dn, error: e1 } = await supa.from('don_nghi')
+      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay).eq('trang_thai', 'CHO_DUYET')
+      .limit(1).maybeSingle();
+    if (e1 || !dn) { showToast('⚠ Không tìm thấy đơn để duyệt', 'warn'); return; }
+    const { data: res, error } = await supa.rpc('fn_duyet_don_nghi', {
+      p_id: dn.id,
+      p_quyet_dinh: quyetDinh,
+      p_ma_nguoi_duyet: SESSION.ma,
+      p_ghi_chu: ghiChuQLNS || null
+    });
+    if(error || !res || !res.success){
+      showToast('⚠ ' + ((res && res.error) || (error && error.message) || 'Server lỗi'), 'warn');
     } else {
       _silentUpdateAccBadges();
     }
-  }).catch(()=>{
+  })().catch(()=>{
     showToast('⚠ Mất kết nối - đang đồng bộ', 'warn');
   });
 }
@@ -5813,10 +5974,22 @@ function taiDonNghiCuaToi(){
   const listEl=document.getElementById('lcnv-nghi-list');
   if(!listEl)return;
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
-  fetch(SCRIPT_URL+'?type=don_nghi_phep_cua_toi&maNV='+encodeURIComponent(SESSION.ma))
-  .then(r=>r.json()).then(res=>{
-    _donCuaToi=res.donCuaToi;
-    if(!_donCuaToi){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+  // [v12-P3] Supabase RPC
+  supa.rpc('fn_get_don_nghi_cua_toi', { p_ma_nv: SESSION.ma })
+  .then(({ data: arr, error }) => {
+    if(error || !Array.isArray(arr)){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
+    // Adapt sang format cũ: { tongChoDuyet, danhSach: [{ngay, loai, ghiChuNV (lyDo|anhUrl), trangThai, ghiChuQLNS}] }
+    const danhSach = arr.map(d => ({
+      ngay: d.ngayNghi,
+      loai: 'Nghỉ phép',
+      ghiChuNV: d.lyDo + (d.anhUrl ? ' | ' + d.anhUrl : ''),
+      trangThai: d.trangThai,
+      ghiChuQLNS: d.ghiChuQLNS || ''
+    }));
+    _donCuaToi = {
+      tongChoDuyet: arr.filter(d => d.trangThai === 'Chờ duyệt').length,
+      danhSach: danhSach
+    };
     renderDonNghiCuaToi();
   }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
 }
@@ -5952,24 +6125,42 @@ function guiDonNghiMoi(){
   if(!_dnAnhB64){showToast('Đơn nghỉ phép bắt buộc có ảnh đính kèm.','err');return;}
   const btn=document.getElementById('dn-btn-send');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Đang gửi...';
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'guiDonNghiPhep',
-    maNhanVien:SESSION.ma, tenNhanVien:SESSION.ten,
-    ngay, lyDo,
-    maCH:SESSION.cuaHangMa||'', tenCH:SESSION.cuaHangTen||'',
-    tuan:_tuanISO(new Date(ngay+'T00:00:00')),
-    anhBase64:_dnAnhB64,
-  })}, (attempt,total)=>{ btn.innerHTML='<span class="spinner"></span>Gửi lại '+attempt+'/'+total+'...'; })
-  .then(r=>r.json()).then(res=>{
-    btn.disabled=false;btn.textContent='Gửi đơn';
-    if(res.success){
-      showToast('✓ '+res.message,'ok');
-      dongFormDonNghi();
-      taiDonNghiCuaToi();
-    } else {
-      showToast(res.error||'Lỗi gửi đơn.','err');
+
+  // [v12-P3] Upload ảnh lên Storage trước, rồi gọi RPC
+  (async () => {
+    let anhUrl = '', anhPath = '';
+    try {
+      const b64 = String(_dnAnhB64).replace(/^data:image\/\w+;base64,/, '');
+      const byteChars = atob(b64);
+      const bytes = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'image/jpeg' });
+      anhPath = ngay + '/' + SESSION.ma + '_' + Date.now() + '.jpg';
+      const { error: upErr } = await supa.storage.from('don-nghi-anh').upload(anhPath, blob, { contentType: 'image/jpeg' });
+      if (upErr) { showToast('Upload ảnh lỗi: ' + upErr.message, 'err'); btn.disabled=false; btn.textContent='Gửi đơn'; return; }
+      const { data: urlData } = supa.storage.from('don-nghi-anh').getPublicUrl(anhPath);
+      anhUrl = urlData ? urlData.publicUrl : '';
+    } catch(e) {
+      showToast('Upload ảnh lỗi.', 'err'); btn.disabled=false; btn.textContent='Gửi đơn'; return;
     }
-  }).catch(()=>{btn.disabled=false;btn.textContent='Gửi đơn';showToast('Lỗi kết nối.','err');});
+    const { data: res, error } = await supa.rpc('fn_gui_don_nghi_phep', {
+      p_ma_nv: SESSION.ma,
+      p_ten_nv: SESSION.ten,
+      p_ngay_nghi: ngay,
+      p_ly_do: lyDo,
+      p_loai_nghi: 'Có lương',
+      p_anh_url: anhUrl,
+      p_anh_path: anhPath
+    });
+    btn.disabled=false;btn.textContent='Gửi đơn';
+    if(error || !res || !res.success){
+      showToast((res && res.error) || (error && error.message) || 'Lỗi gửi đơn.','err');
+      return;
+    }
+    showToast('✓ Đã gửi đơn nghỉ phép','ok');
+    dongFormDonNghi();
+    taiDonNghiCuaToi();
+  })().catch(()=>{btn.disabled=false;btn.textContent='Gửi đơn';showToast('Lỗi kết nối.','err');});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -6048,18 +6239,37 @@ function taiDashboard(){
   document.getElementById('dash-rank-ch').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
   document.getElementById('dash-alerts').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
 
-  fetch(SCRIPT_URL+`?type=dashboard&tuNgay=${tu}&denNgay=${den}&q=${encodeURIComponent(q)}`)
-  .then(r=>r.json()).then(res=>{
+  // [v12-P3] Supabase RPC. Format khác Apps Script → adapt nội bộ
+  supa.rpc('fn_get_dashboard', { p_tu_ngay: tu, p_den_ngay: den, p_q: q || null })
+  .then(({ data: res, error }) => {
     _dashLoading=false;
-    if(!res||!res.dashboard){
-      showToast('Dashboard: dữ liệu rỗng.','err');
+    if(error || !res){
+      showToast('Dashboard: ' + (error ? error.message : 'dữ liệu rỗng'),'err');
       ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong',
        'dash-k-giodk','dash-k-giott','dash-k-chenh'].forEach(id=>{
         const el=document.getElementById(id);if(el)el.textContent='0';
       });
       return;
     }
-    renderDashboard(res.dashboard);
+    // Adapt sang format Apps Script gốc
+    const tq = res.tongQuan || {};
+    const dashboard = {
+      kpi: {
+        tongNV: tq.tongNV || 0,
+        diLam: tq.tongChamCong || 0,
+        nghi: tq.tongDonNghi || 0,
+        khong: 0,
+        gioDK: 0, gioTT: 0, chenh: 0
+      },
+      duLieuNgay: [],
+      topKV: [],
+      topCH: [],
+      canhBaoMoi: (res.topNVCB || []).slice(0, 10).map(x => ({
+        maNV: x.maNV, tenNV: x.tenNV, soCB: x.soCB,
+        ngay: '', loaiCB: '', noiDung: 'Tổng ' + x.soCB + ' cảnh báo'
+      }))
+    };
+    renderDashboard(dashboard);
   }).catch(err=>{
     _dashLoading=false;
     showToast('Lỗi tải dashboard: '+(err&&err.message?err.message:'network'),'err');
@@ -6275,24 +6485,59 @@ function taiDonNghiACC(){
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
   const [tu,den]=_getACCDNPRange();
   if(isQL){
-    // QLNS: dùng API getDonNghiPhep có filter đầy đủ
+    // [v12-P3] Supabase RPC
     const tt=document.getElementById('accdnp-f-tt')?.value||'';
     const q=document.getElementById('accdnp-f-search')?.value?.trim()||'';
-    const url=SCRIPT_URL+'?type=don_nghi_phep'
-      +'&trangThai='+encodeURIComponent(tt)
-      +'&q='+encodeURIComponent(q)
-      +'&tuNgay='+tu+'&denNgay='+den;
-    fetch(url).then(r=>r.json()).then(res=>{
-      _accDnpData=res.donNghiPhep;
-      if(!_accDnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+    supa.rpc('fn_get_don_nghi_list', {
+      p_trang_thai: tt || null,
+      p_tu_ngay: tu, p_den_ngay: den,
+      p_q: q || null
+    }).then(({ data: res, error }) => {
+      if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
+      // Adapt: Apps Script trả {tongChoDuyet, theoDon: [{ngay, donList:[]}], theoNV: [...]}
+      // RPC mới trả {tongChoDuyet, danhSach: [...]} → group theo ngày
+      const ds = res.danhSach || [];
+      const map = {};
+      ds.forEach(d => {
+        if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
+        map[d.ngayNghi].push({
+          id: d.id,
+          maNV: d.maNV,
+          tenNV: d.tenNV,
+          maCH: '', tenCH: d.cuaHang || '',
+          khuVuc: d.khuVuc,
+          ngay: d.ngayNghi,
+          loaiNghi: d.loaiNghi,
+          lyDo: d.lyDo,
+          anhUrl: d.anhUrl,
+          trangThai: d.trangThai,
+          ghiChuQLNS: d.ghiChuQLNS,
+          nguoiDuyet: d.nguoiDuyet,
+          createdAt: d.createdAt
+        });
+      });
+      const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, donList: map[ngay] }));
+      _accDnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
       _renderACCDnpQL();
     }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
   } else {
-    // NV: dùng API getDonNghiPhepCuaToi rồi filter client
-    fetch(SCRIPT_URL+'?type=don_nghi_phep_cua_toi&maNV='+encodeURIComponent(SESSION.ma))
-    .then(r=>r.json()).then(res=>{
-      _accDnpData=res.donCuaToi;
-      if(!_accDnpData){listEl.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
+    // [v12-P3] NV xem
+    supa.rpc('fn_get_don_nghi_cua_toi', { p_ma_nv: SESSION.ma })
+    .then(({ data: arr, error }) => {
+      if(error || !Array.isArray(arr)){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
+      const theoDon = arr.map(d => ({
+        ngay: d.ngayNghi,
+        donList: [{
+          id: d.id, maNV: SESSION.ma, tenNV: SESSION.ten,
+          ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo,
+          anhUrl: d.anhUrl, trangThai: d.trangThai,
+          ghiChuQLNS: d.ghiChuQLNS
+        }]
+      }));
+      _accDnpData = {
+        tongChoDuyet: arr.filter(d => d.trangThai === 'Chờ duyệt').length,
+        theoDon: theoDon, theoNV: []
+      };
       _renderACCDnpNV(tu,den);
     }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
   }
@@ -6418,18 +6663,24 @@ function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
   }
   showToast((qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối'), 'ok');
 
-  // Gửi server NGẦM (không await)
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetDonNghiPhep',
-    maNhanVien:maNV, ngay, tuan, quyetDinh:qd,
-    ghiChuQLNS:ghiChuQLNS||'', maNguoiDuyet:SESSION.ma,
-  })}).then(r=>r.json()).then(res=>{
-    if(!res.success){
-      showToast('⚠ ' + (res.error||'Server lỗi'), 'warn');
+  // [v12-P3] Supabase RPC
+  (async () => {
+    const { data: dn, error: e1 } = await supa.from('don_nghi')
+      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay).eq('trang_thai', 'CHO_DUYET')
+      .limit(1).maybeSingle();
+    if (e1 || !dn) { showToast('⚠ Không tìm thấy đơn để duyệt', 'warn'); return; }
+    const { data: res, error } = await supa.rpc('fn_duyet_don_nghi', {
+      p_id: dn.id,
+      p_quyet_dinh: qd,
+      p_ma_nguoi_duyet: SESSION.ma,
+      p_ghi_chu: ghiChuQLNS || null
+    });
+    if(error || !res || !res.success){
+      showToast('⚠ ' + ((res && res.error) || (error && error.message) || 'Server lỗi'), 'warn');
     } else {
       _silentUpdateAccBadges();
     }
-  }).catch(()=>{
+  })().catch(()=>{
     showToast('⚠ Mất kết nối - đang đồng bộ', 'warn');
   });
 }
@@ -6493,18 +6744,32 @@ function taiDuyetYC(){
   const content=document.getElementById('yc-content');
   content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
   const [tu,den]=_getYCRange();
-  fetch(SCRIPT_URL+'?type=duyet_yeu_cau&tuNgay='+tu+'&denNgay='+den)
-  .then(r=>r.json()).then(res=>{
-    _ycData=res.duyetYC;
-    if(!_ycData){content.innerHTML='<div class="dnp-empty">Lỗi tải dữ liệu.</div>';return;}
-    // Cập nhật badge tổng
+  // [v12-P3] Supabase RPC
+  supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den })
+  .then(({ data: res, error }) => {
+    if(error || !res){content.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
+    // Adapt: RPC trả {giaiTrinh:[], donNghi:[]} → format Apps Script là {duyetYC:{donNghi, giaiTrinh, soDonNghi, soGiaiTrinh}}
+    _ycData = {
+      donNghi: (res.donNghi || []).map(d => ({
+        id: d.id, maNV: d.maNV, tenNV: d.tenNV, cuaHang: d.cuaHang,
+        ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo, anhUrl: d.anhUrl,
+        createdAt: d.createdAt, tuan: ''
+      })),
+      giaiTrinh: (res.giaiTrinh || []).map(g => ({
+        cbId: g.cbId, maNV: g.maNV, tenNV: g.tenNV, cuaHang: g.cuaHang,
+        ngay: g.ngay, gio: g.gio, loaiCB: g.loaiCB,
+        noiDung: g.noiDung, giaiTrinh: g.giaiTrinh,
+        thoiGianGiaiTrinh: g.thoiGianGiaiTrinh
+      })),
+      soDonNghi: (res.donNghi || []).length,
+      soGiaiTrinh: (res.giaiTrinh || []).length
+    };
     const sDN=_ycData.soDonNghi||0;
     const sGT=_ycData.soGiaiTrinh||0;
     const dnBadge=document.getElementById('yc-dn-badge');
     const gtBadge=document.getElementById('yc-gt-badge');
     if(dnBadge){dnBadge.textContent=sDN>0?String(sDN):'';dnBadge.style.display=sDN>0?'flex':'none';}
     if(gtBadge){gtBadge.textContent=sGT>0?String(sGT):'';gtBadge.style.display=sGT>0?'flex':'none';}
-    // Cập nhật badge menu Tài khoản
     const accBadge=document.getElementById('acc-duyetyc-badge');
     if(accBadge){
       const tot=sDN+sGT;
@@ -6653,28 +6918,38 @@ async function duyetTatCa(action){
   document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('yc-bulk-bar');
   if(bulkBar)bulkBar.style.opacity='.5';
-  _fetchRetry(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetBatch', loai, quyetDinh:qd, ghiChuQLNS,
-    maNguoiDuyet:SESSION.ma,
-    // [v10.8] Với GIAI_TRINH: truyền cbRowIdx + loaiCB + gio để match chặt đúng từng dòng
-    // (tránh duyệt nhầm các CB khác cùng NV+ngày)
-    items: items.map(d=> loai==='GIAI_TRINH'
-      ? { maNV:d.maNV, ngay:d.ngay, cbRowIdx:d.cbRowIdx||0, loaiCB:d.loaiCB||'', gio:d.gio||'' }
-      : { maNV:d.maNV, ngay:d.ngay, tuan:d.tuan||'' }),
-  })}, (attempt,total)=>{
-    if(bulkBar){ const btn=bulkBar.querySelector('.yc-bulk-ok'); if(btn) btn.textContent='Gửi lại '+attempt+'/'+total+'...'; }
-  }).then(r=>r.json()).then(res=>{
+  // [v12-P3] Supabase RPC
+  (async () => {
+    let ids = [];
+    if (loai === 'GIAI_TRINH') {
+      ids = items.map(d => d.cbRowIdx).filter(Boolean);
+    } else {
+      // DON_NGHI: lookup IDs từ ma_nv+ngay
+      for (const it of items) {
+        const { data: dn } = await supa.from('don_nghi')
+          .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay).eq('trang_thai', 'CHO_DUYET')
+          .limit(1).maybeSingle();
+        if (dn) ids.push(dn.id);
+      }
+    }
+    const { data: res, error } = await supa.rpc('fn_duyet_batch', {
+      p_loai: loai,
+      p_quyet_dinh: qd,
+      p_ma_nguoi_duyet: SESSION.ma,
+      p_ids: ids,
+      p_ghi_chu_qlns: ghiChuQLNS || null
+    });
     if(bulkBar)bulkBar.style.opacity='1';
-    if(res.success){
-      const successMsg = `✓ Đã ${verb} ${res.soThanhCong}/${items.length} yêu cầu.`;
-      showToastVoiHoanTac(successMsg, res.undoToken, res.expiresAt);
+    if(!error && res && res.success){
+      const successMsg = `✓ Đã ${verb} ${res.count}/${items.length} yêu cầu.`;
+      showToast(successMsg, 'ok');
       taiDuyetYC();
       _silentUpdateAccBadges();
     } else {
       document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
-      showToast(res.error||'Lỗi batch.','err');
+      showToast((res&&res.error)||(error&&error.message)||'Lỗi batch.','err');
     }
-  }).catch(()=>{
+  })().catch(()=>{
     if(bulkBar)bulkBar.style.opacity='1';
     document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
     showToast('Lỗi kết nối.','err');
@@ -6720,18 +6995,10 @@ async function hoanTacDuyet(token){
     { title: 'Hoàn tác duyệt?', okLabel: 'Hoàn tác', danger: true }
   );
   if(!ok) return;
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'hoanTacDuyet', token})})
-  .then(r=>r.json()).then(res=>{
-    if(res.success){
-      showToast(`↩ Đã khôi phục ${res.rollback} mục.`,'ok');
-      _xoaUndoToken(token);
-      const t=document.getElementById('_toast_undo');if(t)t.style.display='none';
-      if(currentPage==='duyetyc') taiDuyetYC();
-      else if(currentPage==='donnghi-acc') taiDonNghiACC();
-      else if(currentPage==='nhansu') taiDonNghiPhep();
-      _silentUpdateAccBadges();
-    } else showToast(res.error||'Không thể hoàn tác.','err');
-  }).catch(()=>showToast('Lỗi kết nối.','err'));
+  // [v12-P3] Tạm thời chưa hỗ trợ undo
+  showToast('Tính năng hoàn tác chưa được hỗ trợ trong phiên bản này.', 'warn');
+  _xoaUndoToken(token);
+  const t=document.getElementById('_toast_undo');if(t)t.style.display='none';
 }
 
 function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
@@ -6757,15 +7024,16 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
     _updateYCDayCounts();
   }
   showToast('✓ Đã cập nhật', 'ok');
-  // Gửi server NGẦM
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-    action:'duyetCanhBao', maNhanVien:maNV, ngay, quyetDinh,
-    cbRowIdx: cbRowIdx||0,
-    maNguoiDuyet:SESSION.ma
-  })}).then(r=>r.json()).then(res=>{
-    if(!res.success){
-      // Server lỗi → toast vàng cảnh báo (không rollback)
-      showToast('⚠ ' + (res.error||'Lỗi server, vui lòng kiểm tra'), 'warn');
+  // [v12-P3] Supabase RPC. cbRowIdx có thể là UUID
+  const isUuid = String(cbRowIdx).match(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
+  supa.rpc('fn_duyet_canh_bao', {
+    p_ma_nv: maNV, p_ngay: ngay, p_quyet_dinh: quyetDinh,
+    p_ma_nguoi_duyet: SESSION.ma,
+    p_cb_id: isUuid ? cbRowIdx : null,
+    p_loai_cb: null, p_gio: null
+  }).then(({ data: res, error }) => {
+    if(error || !res || !res.success){
+      showToast('⚠ ' + ((res && res.error) || (error && error.message) || 'Lỗi server'), 'warn');
     } else {
       _silentUpdateAccBadges();
     }
@@ -6806,22 +7074,27 @@ function stopNotifPolling() {
 async function loadNotifications(reset) {
   if (!SESSION) return;
   try {
-    const since = reset ? '' : (_notifLastSince || '');
-    const r = await fetch(SCRIPT_URL + '?type=thong_bao&maNV=' + encodeURIComponent(SESSION.ma) + (since ? '&since=' + since : ''));
-    const d = await r.json();
-    const newList = d.thongBao || [];
+    const sinceParam = (reset || !_notifLastSince) ? null : new Date(_notifLastSince).toISOString();
+    // [v12-P3] Supabase RPC
+    const { data: arr, error } = await supa.rpc('fn_get_thong_bao', {
+      p_ma_nv: SESSION.ma,
+      p_since: sinceParam
+    });
+    if (error) throw error;
+    // Adapt format: createdAt → ngayTao (timestamp ms), daDoc → daXem
+    const newList = (arr || []).map(t => ({
+      id: t.id, loai: t.loai, tieuDe: t.tieuDe, noiDung: t.noiDung,
+      link: t.link, daXem: t.daDoc,
+      ngayTao: t.createdAt ? new Date(t.createdAt).getTime() : 0
+    }));
     if (reset) {
       _notifList = newList;
     } else if (newList.length) {
-      // Merge thông báo mới vào đầu, dedupe theo id
       const existIds = new Set(_notifList.map(n => n.id));
       const fresh = newList.filter(n => !existIds.has(n.id));
       if (fresh.length) {
         _notifList = [...fresh, ..._notifList].slice(0, 100);
-        // Có thông báo mới → vibrate + sound nhẹ (nếu user cho phép)
-        try {
-          if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-        } catch(e){}
+        try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch(e){}
       }
     }
     if (_notifList.length > 0) {
@@ -6937,10 +7210,8 @@ async function onNotifClick(id, link) {
     renderNotifBadge();
     renderNotifList();
     try {
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'danhDauDaXemTB', id })
-      });
+      // [v12-P3] Supabase RPC
+      supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] });
     } catch(e){}
   }
   // Deep link
@@ -6963,10 +7234,8 @@ async function danhDauDaXemTatCa() {
   renderNotifBadge();
   renderNotifList();
   try {
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'danhDauDaXemTB', ids })
-    });
+    // [v12-P3] Supabase RPC
+    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: ids });
   } catch(e){}
   showToast('✓ Đã đánh dấu ' + ids.length + ' thông báo', 'ok');
 }
@@ -6978,24 +7247,25 @@ function _silentUpdateAccBadges(){
   if(!SESSION)return;
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
   if(isQL){
-    // Badge "Duyệt yêu cầu"
+    // [v12-P3] Supabase RPC
     const [tu,den]=_thangNay();
-    fetch(SCRIPT_URL+'?type=duyet_yeu_cau&tuNgay='+tu+'&denNgay='+den)
-    .then(r=>r.json()).then(res=>{
-      if(!res.duyetYC)return;
-      const tot=(res.duyetYC.soDonNghi||0)+(res.duyetYC.soGiaiTrinh||0);
+    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den })
+    .then(({ data: res, error }) => {
+      if(error || !res)return;
+      const sDN = (res.donNghi || []).length;
+      const sGT = (res.giaiTrinh || []).length;
+      const tot = sDN + sGT;
       const b=document.getElementById('acc-duyetyc-badge');
       if(b){b.textContent=tot>0?String(tot):'';b.style.display=tot>0?'flex':'none';}
-      // Badge "Đơn nghỉ phép" (QLNS) = số chờ duyệt
       const b2=document.getElementById('acc-dnp-badge');
-      if(b2){const sDN=res.duyetYC.soDonNghi||0;b2.textContent=sDN>0?String(sDN):'';b2.style.display=sDN>0?'flex':'none';}
+      if(b2){b2.textContent=sDN>0?String(sDN):'';b2.style.display=sDN>0?'flex':'none';}
     }).catch(()=>{});
   } else {
-    // NV: badge "Đơn nghỉ phép" = số chờ duyệt của mình
-    fetch(SCRIPT_URL+'?type=don_nghi_phep_cua_toi&maNV='+encodeURIComponent(SESSION.ma))
-    .then(r=>r.json()).then(res=>{
-      if(!res.donCuaToi)return;
-      const cho=res.donCuaToi.tongChoDuyet||0;
+    // [v12-P3] Supabase RPC - NV xem
+    supa.rpc('fn_get_don_nghi_cua_toi', { p_ma_nv: SESSION.ma })
+    .then(({ data: arr, error }) => {
+      if(error || !Array.isArray(arr))return;
+      const cho = arr.filter(d => d.trangThai === 'Chờ duyệt').length;
       const b=document.getElementById('acc-dnp-badge');
       if(b){b.textContent=cho>0?String(cho):'';b.style.display=cho>0?'flex':'none';}
     }).catch(()=>{});
