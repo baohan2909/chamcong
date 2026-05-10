@@ -5973,7 +5973,7 @@ async function duyetTatCaDonNghiNS(action){
     const ids = [];
     for (const it of items) {
       const { data: dn } = await supa.from('don_nghi')
-        .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay).eq('trang_thai', 'CHO_DUYET')
+        .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay)
         .limit(1).maybeSingle();
       if (dn) ids.push(dn.id);
     }
@@ -6048,7 +6048,7 @@ function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   // [v12-P3] Supabase RPC - cần lấy id đơn từ ma_nv + ngay
   (async () => {
     const { data: dn, error: e1 } = await supa.from('don_nghi')
-      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay).eq('trang_thai', 'CHO_DUYET')
+      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay)
       .limit(1).maybeSingle();
     if (e1 || !dn) { showToast('⚠ Không tìm thấy đơn để duyệt', 'warn'); return; }
     const { data: res, error } = await supa.rpc('fn_duyet_don_nghi', {
@@ -6834,7 +6834,7 @@ function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
   // [v12-P3] Supabase RPC
   (async () => {
     const { data: dn, error: e1 } = await supa.from('don_nghi')
-      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay).eq('trang_thai', 'CHO_DUYET')
+      .select('id').eq('ma_nv', maNV).eq('ngay_nghi', ngay)
       .limit(1).maybeSingle();
     if (e1 || !dn) { showToast('⚠ Không tìm thấy đơn để duyệt', 'warn'); return; }
     const { data: res, error } = await supa.rpc('fn_duyet_don_nghi', {
@@ -7446,6 +7446,15 @@ async function onNotifClick(id, link) {
       };
       const page = linkMap[link] || link;
       goToPage(page);
+      // [v12-FIX] Chuyển đúng sub-tab dựa vào loại thông báo
+      if(page === 'duyetyc' && notif){
+        const loai = notif.loai || '';
+        if(loai.startsWith('GT_') || loai.startsWith('CB_')){
+          setTimeout(()=>setYCTab('giaitrinh'), 300);
+        } else if(loai.startsWith('DN_') || loai === 'DON_NGHI_MOI'){
+          setTimeout(()=>setYCTab('donnghi'), 300);
+        }
+      }
     }, 100);
   }
 }
