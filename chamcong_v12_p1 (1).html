@@ -2837,8 +2837,7 @@ function _pollThongBao(){
       showToast(tb.tieuDe+'\n'+(tb.noiDung||''),
         (tb.loai && tb.loai.indexOf('TUCHOI')>=0) ? 'err' : 'ok');
     });
-    // Đánh dấu đã đọc
-    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: list.map(tb=>tb.id) }).catch(()=>{});
+    // [v12-FIX] KHÔNG đánh dấu đã đọc khi poll — chỉ mark khi user mở panel xem
   }).catch(()=>{});
 }
 // Poll thông báo mỗi 45 giây (chỉ khi đã đăng nhập)
@@ -7362,7 +7361,11 @@ async function loadNotifications(reset) {
       const fresh = newList.filter(n => !existIds.has(n.id));
       if (fresh.length) {
         _notifList = [...fresh, ..._notifList].slice(0, 100);
-        try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch(e){}
+        // Chỉ vibrate nếu có items MỚI CHƯA ĐỌC (không phải load lần đầu)
+        const freshUnread = fresh.filter(n => !n.daXem);
+        if(freshUnread.length) {
+          try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch(e){}
+        }
       }
     }
     if (_notifList.length > 0) {
@@ -7400,8 +7403,14 @@ function openNotifPanel() {
   document.getElementById('notif-panel').classList.add('show');
   document.getElementById('notif-panel-bd').classList.add('show');
   renderNotifList();
-  // Load lại để chắc chắn có data mới nhất
   loadNotifications(true);
+  // [v12-FIX] Mark all as read khi mở panel
+  const unreadIds = _notifList.filter(n => !n.daXem).map(n => n.id);
+  if(unreadIds.length){
+    supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: unreadIds }).catch(()=>{});
+    _notifList.forEach(n => { n.daXem = true; });
+    setTimeout(()=>{ renderNotifBadge(); renderNotifList(); }, 500);
+  }
 }
 
 function closeNotifPanel() {
