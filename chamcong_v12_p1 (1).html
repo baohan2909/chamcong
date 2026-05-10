@@ -7109,15 +7109,35 @@ async function duyetTatCa(action){
   (async () => {
     let ids = [];
     if (loai === 'GIAI_TRINH') {
-      ids = items.map(d => d.cbRowIdx).filter(Boolean);
-    } else {
-      // DON_NGHI: lookup IDs từ ma_nv+ngay
-      for (const it of items) {
-        const { data: dn } = await supa.from('don_nghi')
-          .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay).eq('trang_thai', 'CHO_DUYET')
-          .limit(1).maybeSingle();
-        if (dn) ids.push(dn.id);
+      ids = items.map(d => d.cbId).filter(Boolean);
+      // Fallback: lookup từ DB nếu cbId null
+      if (!ids.length) {
+        for (const it of items) {
+          const { data: cb } = await supa.from('canh_bao')
+            .select('id').eq('ma_nv', it.maNV).eq('ngay', it.ngay)
+            .in('trang_thai', ['CHUA_GIAI_TRINH','DA_GIAI_TRINH'])
+            .limit(1).maybeSingle();
+          if (cb) ids.push(cb.id);
+        }
       }
+    } else {
+      ids = items.map(d => d.id).filter(Boolean);
+      if (!ids.length) {
+        for (const it of items) {
+          const ngay = it.ngay || it.ngayNghi;
+          if (!ngay) continue;
+          const { data: dn } = await supa.from('don_nghi')
+            .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', ngay).eq('trang_thai', 'CHO_DUYET')
+            .limit(1).maybeSingle();
+          if (dn) ids.push(dn.id);
+        }
+      }
+    }
+    if(!ids.length){
+      showToast('⚠ Không tìm thấy yêu cầu để duyệt.','warn');
+      if(bulkBar)bulkBar.style.opacity='1';
+      document.querySelectorAll('#yc-content .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+      return;
     }
     const { data: res, error } = await supa.rpc('fn_duyet_batch', {
       p_loai: loai,
