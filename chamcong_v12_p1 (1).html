@@ -3505,9 +3505,8 @@ function _doSubmitFinal(){
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      // [v12-FIX] Truyền danh sách cbId để giải trình từng cái
-      const cbIds = (res.cbMessages || []).map(m => m.cbId).filter(Boolean);
-      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, cbIds);
+      // [v12-FIX] Mở modal giải trình cho CB đầu tiên, user tự bấm từng CB trong lịch sử
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, []);
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
@@ -3567,24 +3566,16 @@ function taiLichSu(){
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
       const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
-      let loiType='';
-      if(isLoi){
-        if(l.loaiLoi && l.loaiLoi !== 'ok'){
-          loiType = l.loaiLoi;
-        } else {
-          const gc=(l.ghiChu||'').toLowerCase();
-          if(gc.includes('sai cửa hàng')||gc.includes('ngoài vùng')||gc.includes('vị trí')||gc.includes('gps')) loiType='gps';
-          else if(gc.includes('thiếu')||gc.includes('chưa ra ca')) loiType='thieu';
-          else loiType='gps';
-        }
-      }
+      // [v12-FIX] Lưu danh sách cảnh báo per log
+      const cbList = l.canhBaoList || [];
       logs.push({
         loai:l.loai, lbcls:lbMap[l.loai]||'lb-v',
         time:l.gio.substring(0,5), dist:'--',
         ok:!isLoi, xacNhan:l.xacNhan||'',
-        ghiChu:l.ghiChu||'', daGiaiTrinh: l.daGiaiTrinh || false, loiType,
+        ghiChu:l.ghiChu||'',
         tenCH:l.tenCH||'', ngay:today,
         truongCa: l.truongCa || '',
+        canhBaoList: cbList,
       });
     });
     renderLog();
@@ -3597,17 +3588,42 @@ function renderLog(){
   el.innerHTML=logs.map((l,i)=>{
     const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
     const isDuyet=l.xacNhan==='DUYỆT';
-    // Xác định text và class trạng thái
+    const cbList = l.canhBaoList || [];
+
+    // Xác định text trạng thái tổng
     let stTxt='',stCls='ls-ok';
-    if(isLoi){
-      stCls=l.loiType==='gps'?'ls-gps':'ls-ca';
-      // [v11.3 CC-03] Đổi "Sai cửa hàng" → "Sai vị trí" cho rõ nghĩa
-      stTxt=l.loiType==='gps'?'Sai vị trí':l.loiType==='thieu'?'Thiếu Ra ca':'Sai ca';
+    if(isLoi && cbList.length){
+      const types = cbList.map(cb=>cb.loiType);
+      if(types.includes('gps') && types.includes('ca')){
+        stTxt='Sai vị trí + Sai ca'; stCls='ls-gps';
+      } else if(types.includes('gps')){
+        stTxt='Sai vị trí'; stCls='ls-gps';
+      } else if(types.includes('thieu')){
+        stTxt='Thiếu Ra ca'; stCls='ls-ca';
+      } else {
+        stTxt='Sai ca'; stCls='ls-ca';
+      }
+    } else if(isLoi){
+      stTxt='Cảnh báo'; stCls='ls-gps';
     }
-    // Nút giải trình — chỉ hiện cho dòng lỗi
-    let errRow='';
-    if(isLoi){
-      // [v12-FIX] Check cả ghiChu VÀ daGiaiTrinh (server trả)
+
+    // [v12-FIX] Hiện TỪNG cảnh báo riêng, mỗi cái có nút giải trình riêng
+    let errRows='';
+    if(isLoi && cbList.length){
+      errRows = cbList.map(cb=>{
+        const loaiLabel = cb.loiType==='gps'?'📍 Sai vị trí':cb.loiType==='ca'?'🔄 Sai ca':cb.loiType==='thieu'?'⏰ Thiếu Ra ca':'⚠ '+cb.loaiCB;
+        const daGT = cb.daGiaiTrinh || !!cb.giaiTrinh;
+        const ghiChuShow = cb.giaiTrinh || 'Chưa có giải trình';
+        let btn='';
+        if(daGT){
+          btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
+        } else {
+          btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhMotCB('${cb.cbId}','${l.ngay||''}')">Giải trình</button>`;
+        }
+        return `<div class="log-item-err"><span class="log-err-txt">${loaiLabel}: ${ghiChuShow}</span>${btn}</div>`;
+      }).join('');
+    } else if(isLoi && !cbList.length){
+      // Fallback nếu không có canhBaoList (data cũ)
       const daGT = l.ghiChu || l.daGiaiTrinh;
       const ghiChuShow=l.ghiChu||'Chưa có giải trình';
       let btn='';
@@ -3616,10 +3632,11 @@ function renderLog(){
       } else {
         btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhTuLog('${l.ngay||''}')">Giải trình</button>`;
       }
-      errRow=`<div class="log-item-err"><span class="log-err-txt">${ghiChuShow}</span>${btn}</div>`;
+      errRows=`<div class="log-item-err"><span class="log-err-txt">${ghiChuShow}</span>${btn}</div>`;
     } else if(isDuyet){
-      errRow='<div class="log-item-err"><span class="log-err-txt" style="color:var(--green-m)">✓ Đã được duyệt</span></div>';
+      errRows='<div class="log-item-err"><span class="log-err-txt" style="color:var(--green-m)">✓ Đã được duyệt</span></div>';
     }
+
     return `<div class="log-item">
       <div class="log-item-top">
         <span class="log-badge ${l.lbcls}">${l.loai}</span>
@@ -3627,30 +3644,35 @@ function renderLog(){
         ${l.tenCH?`<span class="log-ch">· ${l.tenCH}</span>`:''}
         ${isLoi?`<span class="log-st ${stCls}">⚠ ${stTxt}</span>`:`<span class="log-st ls-ok">✓ Hợp lệ</span>`}
       </div>
-      ${errRow}
+      ${errRows}
     </div>`;
   }).join('');
 }
 
 function moGiaiTrinhTuLog(ngay){
-  // [v12-FIX] Query danh sách cảnh báo chưa giải trình cho NV+ngày
+  // Fallback: tìm CB chưa giải trình đầu tiên
   supa.from('canh_bao')
     .select('id, loai_canh_bao')
     .eq('ma_nv', SESSION.ma)
     .eq('ngay', ngay)
     .eq('trang_thai', 'CHUA_GIAI_TRINH')
     .order('created_at', { ascending: true })
-  .then(({ data: rows, error }) => {
-    const cbIds = (!error && rows) ? rows.map(r => r.id) : [];
-    _gtCbIds = cbIds;
+    .limit(1)
+  .then(({ data: rows }) => {
+    const cbId = (rows && rows[0]) ? rows[0].id : null;
+    _gtCbIds = cbId ? [cbId] : [];
     _gtCurrentCbIdx = 0;
-    const soLoi = cbIds.length;
-    const title = soLoi > 1
-      ? '⚠️ Giải trình chấm công (1/' + soLoi + ')'
-      : '⚠️ Giải trình chấm công';
-    openGiaiTrinh(title, 'Vui lòng chọn lý do để QLNS xem xét.', ngay, cbIds);
+    openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, _gtCbIds);
     document.getElementById('gt-timer').style.display='none';
   });
+}
+
+// [v12-FIX] Giải trình 1 cảnh báo cụ thể (bấm nút trên từng dòng lỗi)
+function moGiaiTrinhMotCB(cbId, ngay){
+  _gtCbIds = [cbId];
+  _gtCurrentCbIdx = 0;
+  openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay, [cbId]);
+  document.getElementById('gt-timer').style.display='none';
 }
 
 // ─── GIỜ CÔNG (NV) ──────────────────────────────────────────
@@ -4022,7 +4044,7 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-FIX] Gửi giải trình cho ĐÚNG cảnh báo hiện tại
+  // [v12-FIX] Gửi giải trình cho ĐÚNG 1 cảnh báo, không chain
   const currentCbId = (_gtCbIds.length > _gtCurrentCbIdx) ? _gtCbIds[_gtCurrentCbIdx] : null;
   supa.rpc('fn_gui_giai_trinh', {
     p_ma_nv: SESSION.ma,
@@ -4034,38 +4056,13 @@ function guiGiaiTrinh(){
   }).then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
-      // Update chỉ log tương ứng (nếu biết cbId)
-      if(currentCbId){
-        // Tìm log có cùng lỗi và chưa có ghiChu → gán cho đúng 1 cái
-        const logIdx = logs.findIndex(l => l.xacNhan==='KHÔNG HỢP LỆ' && !l.ghiChu && !l.daGiaiTrinh);
-        if(logIdx >= 0){ logs[logIdx].ghiChu = lyDoGui; logs[logIdx].daGiaiTrinh = true; }
-      }
-
-      // Còn cảnh báo khác?
-      if(res.conCanhBao > 0 && _gtCurrentCbIdx < _gtCbIds.length - 1){
-        _gtCurrentCbIdx++;
-        showToast('✓ Đã gửi 1 giải trình. Còn ' + res.conCanhBao + ' cảnh báo.', 'ok');
-        // Reset form cho cảnh báo tiếp
-        gtLyDo = '';
-        document.getElementById('gt-input').value = '';
-        document.querySelectorAll('.gt-opt').forEach(el=>el.classList.remove('sel'));
-        const soLoi = _gtCbIds.length;
-        const soHT = _gtCurrentCbIdx + 1;
-        document.getElementById('gt-title').textContent = '⚠️ Giải trình cảnh báo (' + soHT + '/' + soLoi + ')';
-        document.getElementById('gt-sub').textContent = res.nextLoaiCB
-          ? 'Cảnh báo: ' + res.nextLoaiCB + '. Vui lòng nhập lý do.'
-          : 'Vui lòng giải trình cảnh báo tiếp theo.';
-        checkGtFormState();
-      } else {
-        // Hết → đóng modal
-        clearInterval(_gtTimerInterval);
-        closeGiaiTrinh();
-        showToast('✓ Đã gửi tất cả giải trình. QLNS sẽ xem xét sớm.','ok');
-        _gtCbIds = [];
-        _gtCurrentCbIdx = 0;
-        renderLog();
-        startCountdown(10);
-      }
+      clearInterval(_gtTimerInterval);
+      closeGiaiTrinh();
+      showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
+      _gtCbIds = [];
+      _gtCurrentCbIdx = 0;
+      // Reload lịch sử để cập nhật trạng thái
+      taiLichSu();
     } else {
       const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
