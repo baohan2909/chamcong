@@ -3482,7 +3482,9 @@ function _doSubmitFinal(){
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham);
+      // [v12-FIX] Truyền danh sách cbId để giải trình từng cái
+      const cbIds = (res.cbMessages || []).map(m => m.cbId).filter(Boolean);
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, cbIds);
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
@@ -3885,19 +3887,33 @@ function showPwMsg(msg,type){const el=document.getElementById('pw-msg');el.textC
 
 // ─── MODAL GIẢI TRÌNH ───────────────────────────────────────
 let gtLyDo='', gtNgay='', _gtTimerInterval=null;
+let _gtCbIds = []; // [v12-FIX] Danh sách cbId cần giải trình
+let _gtCurrentCbIdx = 0; // Index hiện tại trong _gtCbIds
 
-function openGiaiTrinh(title,sub,ngay){
+function openGiaiTrinh(title,sub,ngay,cbIds){
   gtLyDo='';gtNgay=ngay;
-  document.getElementById('gt-title').textContent=title;
+  // [v12-FIX] Lưu danh sách cbIds nếu có
+  if(cbIds && Array.isArray(cbIds) && cbIds.length){
+    _gtCbIds = cbIds;
+    _gtCurrentCbIdx = 0;
+  } else if(!_gtCbIds.length) {
+    _gtCbIds = [];
+    _gtCurrentCbIdx = 0;
+  }
+  const soLoi = _gtCbIds.length;
+  const soHT = _gtCurrentCbIdx + 1;
+  document.getElementById('gt-title').textContent = soLoi > 1
+    ? `${title} (${soHT}/${soLoi})`
+    : title;
   document.getElementById('gt-sub').textContent=sub;
   document.getElementById('gt-timer').style.display='flex';
   document.getElementById('gt-timer-dem').textContent='5:00';
   document.getElementById('gt-err').style.display='none';
-  // [v11.6 Item 5] Textarea LUÔN hiển thị (bỏ display:none)
   document.getElementById('gt-input').value='';
   const btn = document.getElementById('gt-btn');
   btn.disabled=true;
   btn.style.opacity='0.5';
+  btn.textContent='GỬI GIẢI TRÌNH';
   document.querySelectorAll('.gt-opt').forEach(el=>el.classList.remove('sel'));
   document.getElementById('gt-modal').classList.add('show');
 }
@@ -3968,23 +3984,50 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-P2] Supabase RPC
+  // [v12-FIX] Gửi giải trình cho ĐÚNG cảnh báo hiện tại
+  const currentCbId = (_gtCbIds.length > _gtCurrentCbIdx) ? _gtCbIds[_gtCurrentCbIdx] : null;
   supa.rpc('fn_gui_giai_trinh', {
     p_ma_nv: SESSION.ma,
     p_ngay: gtNgay,
     p_ly_do: lyDoGui,
-    p_cb_id: null,
+    p_cb_id: currentCbId,
     p_loai_cb: null,
     p_gio: null
   }).then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
-      clearInterval(_gtTimerInterval);
-      closeGiaiTrinh();
-      showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
-      logs.forEach(l=>{if(l.xacNhan==='KHÔNG HỢP LỆ')l.ghiChu=lyDoGui;});
-      renderLog();
-      startCountdown(10);
+      // Update chỉ log tương ứng (nếu biết cbId)
+      if(currentCbId){
+        // Tìm log có cùng lỗi và chưa có ghiChu → gán cho đúng 1 cái
+        const logIdx = logs.findIndex(l => l.xacNhan==='KHÔNG HỢP LỆ' && !l.ghiChu && !l.daGiaiTrinh);
+        if(logIdx >= 0){ logs[logIdx].ghiChu = lyDoGui; logs[logIdx].daGiaiTrinh = true; }
+      }
+
+      // Còn cảnh báo khác?
+      if(res.conCanhBao > 0 && _gtCurrentCbIdx < _gtCbIds.length - 1){
+        _gtCurrentCbIdx++;
+        showToast('✓ Đã gửi 1 giải trình. Còn ' + res.conCanhBao + ' cảnh báo.', 'ok');
+        // Reset form cho cảnh báo tiếp
+        gtLyDo = '';
+        document.getElementById('gt-input').value = '';
+        document.querySelectorAll('.gt-opt').forEach(el=>el.classList.remove('sel'));
+        const soLoi = _gtCbIds.length;
+        const soHT = _gtCurrentCbIdx + 1;
+        document.getElementById('gt-title').textContent = '⚠️ Giải trình cảnh báo (' + soHT + '/' + soLoi + ')';
+        document.getElementById('gt-sub').textContent = res.nextLoaiCB
+          ? 'Cảnh báo: ' + res.nextLoaiCB + '. Vui lòng nhập lý do.'
+          : 'Vui lòng giải trình cảnh báo tiếp theo.';
+        checkGtFormState();
+      } else {
+        // Hết → đóng modal
+        clearInterval(_gtTimerInterval);
+        closeGiaiTrinh();
+        showToast('✓ Đã gửi tất cả giải trình. QLNS sẽ xem xét sớm.','ok');
+        _gtCbIds = [];
+        _gtCurrentCbIdx = 0;
+        renderLog();
+        startCountdown(10);
+      }
     } else {
       const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
