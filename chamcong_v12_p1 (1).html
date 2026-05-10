@@ -798,6 +798,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .dnp-sub       { font-size:11px; color:var(--text-m); margin-top:2px; }
 .dnp-badge     { font-size:10px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; flex-shrink:0; }
 .dnpb-cho   { background:var(--amber-lt); color:#412402; }
+.dnpb-dd    { background:var(--green-lt, #d1fae5); color:var(--green-m, #047857); }
 .dnpb-da    { background:var(--green-lt); color:#085041; }
 .dnpb-tc    { background:var(--red-lt); color:var(--red); }
 .dnp-lydo   { font-size:12px; color:var(--text-m); margin-top:7px; line-height:1.5; background:var(--gray-lt); border-radius:8px; padding:8px 10px; }
@@ -2241,6 +2242,16 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         Giải trình cảnh báo <span class="ns-subtab-badge" id="yc-gt-badge" style="display:none"></span>
       </button>
     </div>
+    <!-- [v12-FIX] Bộ lọc trạng thái -->
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+      <select id="yc-filter-tt" onchange="taiDuyetYC()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:white">
+        <option value="">Chờ duyệt</option>
+        <option value="DA_DUYET">Đã duyệt</option>
+        <option value="TU_CHOI">Đã từ chối</option>
+        <option value="TAT_CA">Tất cả</option>
+      </select>
+      <input type="text" id="yc-filter-q" placeholder="Tìm NV..." oninput="filterYCLocal()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+    </div>
     <!-- [v10.1 Yc #1] Thanh hành động hàng loạt -->
     <div class="yc-bulk-bar" id="yc-bulk-bar" style="display:none">
       <button class="yc-bulk-btn yc-bulk-ok"  onclick="duyetTatCa('ok')">✓ Duyệt tất cả (<span id="yc-bulk-count">0</span>)</button>
@@ -3052,10 +3063,11 @@ function khoiDongApp(){
     setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
   }
 
-  // [v12-P2] Lấy DS cửa hàng từ Supabase
+  // [v12-P2] Lấy DS cửa hàng + quản lý từ Supabase
   supa.rpc('fn_get_data_login').then(({ data: d, error }) => {
     if (error || !d) return;
     CH_LIST = d.cuaHang || [];
+    window.QL_LIST = d.quanLy || [];
     renderNearby();
     buildNSSuggestData();
     buildKVTabs();
@@ -3499,12 +3511,15 @@ function _doSubmitFinal(){
     if (res && res.canhBao && res.canhBao.length > 0) {
       if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
       const khoangCach = res.khoangCach || preKhoangCach || '?';
-      const title = (res.coLoiGPS && res.coLoiThuTu) ? '⚠️ Chấm công cần xác nhận'
-                  : res.coLoiGPS ? `⚠️ Vị trí chấm công sai ${khoangCach}m`
-                  : '⚠️ Xác nhận ca làm việc';
-      const sub = res.coLoiGPS
-        ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
-        : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
+      // [v12-FIX] Hiện rõ loại lỗi thay vì "Chấm công cần xác nhận"
+      const loiParts = [];
+      if(res.coLoiGPS) loiParts.push('Sai vị trí (' + khoangCach + 'm)');
+      if(res.coLoiThuTu) loiParts.push('Sai ca');
+      const title = '⚠️ ' + loiParts.join(' + ');
+      const subParts = [];
+      if(res.coLoiGPS) subParts.push('Vị trí chấm công cách cửa hàng ' + khoangCach + 'm');
+      if(res.coLoiThuTu) subParts.push('Chấm công không đúng trình tự ca');
+      const sub = subParts.join('. ') + '. Vui lòng giải trình để quản lý duyệt.';
       _gtCcId = res.id || ''; // cham_cong_id vừa tạo
       openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, res.id);
       startGtTimer(300);
@@ -6824,6 +6839,42 @@ function _renderACCDnpQL(){
   }).join('');
 }
 
+// [v12-FIX] Duyệt đơn nghỉ bằng UUID trực tiếp
+function duyetDonNghiById(dnId, qd){
+  let ghiChu = '';
+  if(qd==='Từ chối'){
+    ghiChu=prompt('Lý do từ chối đơn này?');
+    if(!ghiChu)return;
+  }
+  // Fade out UI
+  const itemEl=document.querySelector(`[data-dnitem="${dnId}"]`);
+  if(itemEl){
+    itemEl.style.transition='opacity .25s, max-height .25s, margin .25s';
+    itemEl.style.opacity='0';itemEl.style.maxHeight='0';itemEl.style.margin='0';
+    setTimeout(()=>{try{itemEl.remove();}catch(e){}},260);
+  }
+  // Update local data
+  if(_ycData){
+    _ycData.donNghi=(_ycData.donNghi||[]).filter(d=>d.id!==dnId);
+    const cnt=document.getElementById('yc-bulk-count');
+    if(cnt)cnt.textContent=(_ycData.donNghi||[]).length;
+    if(!(_ycData.donNghi||[]).length){
+      const bar=document.getElementById('yc-bulk-bar');
+      if(bar)bar.style.display='none';
+    }
+    _updateYCDayCounts();
+  }
+  showToast(qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
+  supa.rpc('fn_duyet_don_nghi',{
+    p_id:dnId, p_quyet_dinh:qd,
+    p_ma_nguoi_duyet:SESSION.ma,
+    p_ghi_chu:ghiChu||null
+  }).then(({data:res,error})=>{
+    if(error||!res||!res.success) showToast('⚠ '+ ((res&&res.error)||(error&&error.message)||'Lỗi'),'warn');
+    else _silentUpdateAccBadges();
+  }).catch(()=>showToast('⚠ Mất kết nối','warn'));
+}
+
 // Hàm duyệt đơn — dùng chung cho cả QLNS page Nhân sự và page Duyệt YC
 // [v11.6 Item 1] Fire-and-forget: fade out NGAY, server xử lý ngầm
 function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
@@ -6943,13 +6994,19 @@ function setYCTab(tab){
   document.getElementById('yctab-giaitrinh').classList.toggle('active',tab==='giaitrinh');
   _renderYC();
 }
+// [v12-FIX] Filter local theo tên NV
+function filterYCLocal(){
+  const q = (document.getElementById('yc-filter-q')||{}).value || '';
+  _renderYC(q.trim().toLowerCase());
+}
 
 function taiDuyetYC(){
   const content=document.getElementById('yc-content');
   content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
   const [tu,den]=_getYCRange();
-  // [v12-P3] Supabase RPC
-  supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den })
+  const ttFilter = (document.getElementById('yc-filter-tt')||{}).value || null;
+  // [v12-FIX] Truyền filter trạng thái
+  supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den, p_trang_thai: ttFilter || null })
   .then(({ data: res, error }) => {
     if(error || !res){content.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
     // Adapt: RPC trả {giaiTrinh:[], donNghi:[]} → format Apps Script là {duyetYC:{donNghi, giaiTrinh, soDonNghi, soGiaiTrinh}}
@@ -6984,15 +7041,20 @@ function taiDuyetYC(){
   }).catch(()=>{content.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
 }
 
-function _renderYC(){
+function _renderYC(filterQ){
   const content=document.getElementById('yc-content');
   if(!_ycData){return;}
-  // [v10.1 Yc #1] Hiển thị / ẩn thanh "Duyệt tất cả"
   const bulkBar=document.getElementById('yc-bulk-bar');
   const bulkCnt=document.getElementById('yc-bulk-count');
-  const ds = _ycTab==='donnghi' ? (_ycData.donNghi||[]) : (_ycData.giaiTrinh||[]);
+  let ds = _ycTab==='donnghi' ? (_ycData.donNghi||[]) : (_ycData.giaiTrinh||[]);
+  // [v12-FIX] Filter local theo tên/mã NV
+  if(filterQ){
+    ds = ds.filter(d => (d.tenNV||'').toLowerCase().includes(filterQ) || (d.maNV||'').toLowerCase().includes(filterQ));
+  }
+  const ttFilter = (document.getElementById('yc-filter-tt')||{}).value || '';
+  // Hiện/ẩn nút duyệt tất cả: chỉ khi filter = chờ duyệt
   if(bulkBar){
-    if(ds.length>0){
+    if(ds.length>0 && !ttFilter){
       bulkBar.style.display='flex';
       if(bulkCnt)bulkCnt.textContent=ds.length;
     } else bulkBar.style.display='none';
@@ -7029,21 +7091,21 @@ function _renderYC(){
         let lyDoTxt=lyDo, linkAnh='';
         const pipeIdx=lyDo.indexOf(' | ');
         if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
-        return `<div class="dnp-item" data-dnitem="${d.maNV}_${d.ngay}">
+        return `<div class="dnp-item" data-dnitem="${d.id||d.maNV+'_'+d.ngay}">
           <div class="dnp-item-top">
             <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
             <div class="dnp-info" style="flex:1;margin-left:10px">
               <div class="dnp-name">${d.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
               <div class="dnp-sub">${d.tenCH||d.maCH||'—'}${d.khuVuc?' · '+d.khuVuc:''}</div>
             </div>
-            <span class="dnp-badge dnpb-cho">Chờ duyệt</span>
+            <span class="dnp-badge ${d.trangThai==='DA_DUYET'?'dnpb-dd':d.trangThai==='TU_CHOI'?'dnpb-tc':'dnpb-cho'}">${d.trangThai==='DA_DUYET'?'Đã duyệt':d.trangThai==='TU_CHOI'?'Từ chối':'Chờ duyệt'}</span>
           </div>
           ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
           ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
-          <div class="ns-duyet-wrap" style="margin-top:8px">
-            <button class="ns-btn-ok" onclick="duyetDonNghi('${d.maNV}','${d.ngay}','${d.tuan}','Đã duyệt','',true)">✓ Duyệt</button>
-            <button class="ns-btn-no" onclick="duyetDonNghi('${d.maNV}','${d.ngay}','${d.tuan}','Từ chối','',true)">✗ Từ chối</button>
-          </div>
+          ${d.trangThai==='CHO_DUYET'?`<div class="ns-duyet-wrap" style="margin-top:8px">
+            <button class="ns-btn-ok" onclick="duyetDonNghiById('${d.id}','Đã duyệt')">✓ Duyệt</button>
+            <button class="ns-btn-no" onclick="duyetDonNghiById('${d.id}','Từ chối')">✗ Từ chối</button>
+          </div>`:(d.nguoiDuyet?`<div style="font-size:11px;color:var(--text-m);margin-top:6px">Duyệt bởi: ${d.nguoiDuyet}${d.ghiChuQLNS?' · '+d.ghiChuQLNS:''}</div>`:'')}
         </div>`;
       }).join('');
     });
@@ -7066,25 +7128,24 @@ function _renderYC(){
       html += `<div class="yc-day-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${fmtNgay(k)} <span class="yc-day-count">${grouped[k].length}</span></div>`;
       html += grouped[k].map(d => {
         const init=d.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-        // [v11.6 Item 4] data-gtitem có cbRowIdx — fix bug "duyệt thứ 3 dòng đầu mờ"
-        const cbIdx = d.cbRowIdx || 0;
-        const badgeCls = d.giaiTrinh ? 'dnpb-cho' : 'dnpb-tc'; // chưa GT thì đỏ
+        const cbId = d.cbId || d.cbRowIdx || '';
+        const badgeCls = d.giaiTrinh ? 'dnpb-cho' : 'dnpb-tc';
         const badgeTxt = d.giaiTrinh ? 'Đã giải trình' : 'Chưa giải trình';
-        return `<div class="dnp-item" data-gtitem="${d.maNV}_${d.ngay}_${cbIdx}">
+        return `<div class="dnp-item" data-gtitem="${cbId}">
           <div class="dnp-item-top">
             <div class="ns-avatar ns-av-loi" style="width:32px;height:32px;font-size:11px">${init}</div>
             <div class="dnp-info" style="flex:1;margin-left:10px">
               <div class="dnp-name">${d.tenNV} <span style="font-size:10px;font-weight:400;color:var(--text-m)">${d.maNV}</span></div>
               <div class="dnp-sub">${d.gio} · ${d.loaiCB}${d.khuVuc?' · '+d.khuVuc:''}</div>
             </div>
-            <span class="dnp-badge ${badgeCls}">${badgeTxt}</span>
+            <span class="dnp-badge ${d.trangThai==='DA_DUYET'?'dnpb-dd':d.trangThai==='TU_CHOI'?'dnpb-tc':badgeCls}">${d.trangThai==='DA_DUYET'?'Đã duyệt':d.trangThai==='TU_CHOI'?'Từ chối':badgeTxt}</span>
           </div>
           <div class="dnp-lydo"><div class="dnp-lydo-lbl">Nội dung CB</div>${d.noiDung.replace(/\n/g,'<br>')}</div>
           ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:'<div class="dnp-lydo" style="color:var(--red)"><div class="dnp-lydo-lbl">⚠ NV chưa giải trình</div>Khuyến nghị: chờ NV giải trình trước khi duyệt</div>'}
-          <div class="ns-duyet-wrap" style="margin-top:8px">
-            <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt',${cbIdx})">✓ Duyệt</button>
-            <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt',${cbIdx})">✗ Không duyệt</button>
-          </div>
+          ${(d.trangThai==='DA_GIAI_TRINH'||d.trangThai==='CHUA_GIAI_TRINH')?`<div class="ns-duyet-wrap" style="margin-top:8px">
+            <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt','${cbId}')">✓ Duyệt</button>
+            <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt','${cbId}')">✗ Không duyệt</button>
+          </div>`:(d.nguoiDuyet?`<div style="font-size:11px;color:var(--text-m);margin-top:6px">Duyệt bởi: ${d.nguoiDuyet}</div>`:'')}
         </div>`;
       }).join('');
     });
@@ -7205,10 +7266,9 @@ async function hoanTacDuyet(token){
   const t=document.getElementById('_toast_undo');if(t)t.style.display='none';
 }
 
-function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
-  // [v11.6 Item 1+4] Fire-and-forget — remove item NGAY trước khi gửi
-  const itemEl=document.querySelector(`[data-gtitem="${maNV}_${ngay}_${cbRowIdx||0}"]`)
-            || document.querySelector(`[data-gtitem="${maNV}_${ngay}"]`);
+function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbId){
+  // Remove item từ UI ngay
+  const itemEl=document.querySelector(`[data-gtitem="${cbId}"]`);
   if(itemEl){
     itemEl.style.transition='opacity .25s, max-height .25s, margin .25s';
     itemEl.style.opacity='0';
@@ -7216,9 +7276,9 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
     itemEl.style.margin='0';
     setTimeout(() => { try { itemEl.remove(); } catch(e){} }, 260);
   }
-  // Update _ycData state NGAY
+  // Update _ycData state
   if(_ycData){
-    _ycData.giaiTrinh = (_ycData.giaiTrinh||[]).filter(d => !(d.maNV===maNV && d.ngay===ngay && (d.cbRowIdx||0) === (cbRowIdx||0)));
+    _ycData.giaiTrinh = (_ycData.giaiTrinh||[]).filter(d => d.cbId !== cbId);
     const bulkCnt = document.getElementById('yc-bulk-count');
     if(bulkCnt) bulkCnt.textContent = (_ycData.giaiTrinh||[]).length;
     if(!(_ycData.giaiTrinh||[]).length){
@@ -7228,12 +7288,12 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
     _updateYCDayCounts();
   }
   showToast('✓ Đã cập nhật', 'ok');
-  // [v12-P3] Supabase RPC. cbRowIdx có thể là UUID
-  const isUuid = String(cbRowIdx).match(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
+  // Supabase RPC
+  const isUuid = String(cbId).match(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
   supa.rpc('fn_duyet_canh_bao', {
     p_ma_nv: maNV, p_ngay: ngay, p_quyet_dinh: quyetDinh,
     p_ma_nguoi_duyet: SESSION.ma,
-    p_cb_id: isUuid ? cbRowIdx : null,
+    p_cb_id: isUuid ? cbId : null,
     p_loai_cb: null, p_gio: null
   }).then(({ data: res, error }) => {
     if(error || !res || !res.success){
@@ -7242,7 +7302,7 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbRowIdx){
       _silentUpdateAccBadges();
     }
   }).catch(()=>{
-    showToast('⚠ Mất kết nối - đang đồng bộ lại', 'warn');
+    showToast('⚠ Mất kết nối', 'warn');
   });
 }
 
