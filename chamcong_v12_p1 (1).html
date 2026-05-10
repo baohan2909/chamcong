@@ -8171,13 +8171,19 @@ function bhStartRealtimeSubCH() {
         event: '*', schema: 'public', table: 'phien_ban_hang',
         filter: 'ma_ch=eq.' + SESSION.cuaHangMa
       }, (payload) => {
-        // Skip nếu đang có modal mở (tránh ngắt user) - sẽ reload khi đóng modal
+        // DELETE hoặc trạng thái đổi (QLBH xóa) → reload ngay lập tức
+        if (payload.eventType === 'DELETE' || 
+            (payload.eventType === 'UPDATE' && payload.new && payload.new.trang_thai !== 'DANG_MO')) {
+          if (currentPage === 'banhang') bhLoadPhienDangBan({ silent: true });
+          return;
+        }
+        // INSERT/UPDATE bình thường → debounce ngắn, skip nếu modal mở
         const anyModal = document.querySelector('.bh-modal.show');
         if (anyModal) return;
         _bhRtDebounce(() => {
           if (currentPage !== 'banhang') return;
           bhLoadPhienDangBan({ silent: true });
-        }, 600);
+        }, 300);
       })
       .subscribe((status) => {
         console.log('[BH RT CH]', status);
