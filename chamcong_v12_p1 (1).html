@@ -92,8 +92,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 /* [v11.6 Item 6] Preset chip ca thông dụng - [v11.7 L1] label tách dòng riêng */
 .lc-preset-label { font-size:10px; color:var(--text-m); font-weight:600; margin-top:10px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
 .lc-preset-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
-.lc-preset-chip { padding:5px 9px; border-radius:14px; font-size:11px; font-weight:500; background:#EBF5FF; color:#1D4ED8; border:1px solid #BFDBFE; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; white-space:nowrap; }
-.lc-preset-chip:hover, .lc-preset-chip:active { background:#1D4ED8; color:white; border-color:#1D4ED8; }
+.lc-preset-chip { padding:5px 9px; border-radius:14px; font-size:11px; font-weight:500; background:var(--green-lt); color:var(--green); border:1px solid var(--green-bd, #a7f3d0); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .12s; white-space:nowrap; }
+.lc-preset-chip:hover, .lc-preset-chip:active { background:var(--green); color:white; border-color:var(--green); }
 .lc-preset-chip.lc-preset-full { background:#FEF3C7; color:#92400E; border-color:#FDE68A; }
 .lc-preset-chip.lc-preset-full:hover { background:#92400E; color:white; border-color:#92400E; }
 /* [v11.6 Item 7] / [v11.7 L2] Range picker nghỉ phép - 2 dòng đẹp */
@@ -1767,7 +1767,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div id="summary-rows"></div>
       <div class="summary-total"><span class="summary-label">Tổng giờ làm việc</span><span class="summary-value" id="summary-total-val">--</span></div>
     </div>
-    <div class="countdown-bar" id="countdown-bar"></div>
 
     <div class="card" style="margin-bottom:4px">
       <!-- [v11.3 CC-05] Checkbox Trưởng ca -->
@@ -1788,6 +1787,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="card-section">Lịch sử hôm nay</div>
       <div class="log-list" id="log-list"><div class="log-empty">Chưa có dữ liệu hôm nay.</div></div>
     </div>
+    <!-- Countdown bar ở cuối trang -->
+    <div class="countdown-bar" id="countdown-bar"></div>
   </div>
 
   <!-- [v11.4 NS-03b] App-style confirm modal -->
@@ -4437,8 +4438,8 @@ function renderNhanSu(){
             Chưa giải trình · Bấm để xem cảnh báo
           </div>`;
       const btnDuyet=isQL?`<div class="ns-duyet-wrap">
-        <button class="ns-btn-ok" onclick="duyetCB(event,${cb.cbRowIdx},'${cb.maNV}','Duyệt')">✓ Duyệt</button>
-        <button class="ns-btn-no" onclick="duyetCB(event,${cb.cbRowIdx},'${cb.maNV}','Không duyệt')">✗ Từ chối</button>
+        <button class="ns-btn-ok" onclick="duyetCB(event,'${cb.cbRowIdx}','${cb.maNV}','Duyệt','${cb.ngay||''}')">✓ Duyệt</button>
+        <button class="ns-btn-no" onclick="duyetCB(event,'${cb.cbRowIdx}','${cb.maNV}','Không duyệt','${cb.ngay||''}')">✗ Từ chối</button>
       </div>`:'';
       return `<div class="ns-item" id="cb-row-${cb.cbRowIdx}">
         <div class="ns-avatar ns-av-loi">${initials}</div>
@@ -4499,9 +4500,9 @@ function renderNhanSu(){
 }
 
 // Duyệt từng cảnh báo riêng lẻ theo cbRowIdx
-function duyetCB(event,cbRowIdx,maNV,quyetDinh){
+function duyetCB(event,cbRowIdx,maNV,quyetDinh,ngayParam){
   event.stopPropagation();
-  const ngay=new Date().toISOString().substring(0,10);
+  const ngay = ngayParam || new Date().toISOString().substring(0,10);
   const wrap=event.target.closest('.ns-duyet-wrap');
   const btns=wrap?wrap.querySelectorAll('button'):[];
   // Phản hồi UI ngay lập tức
@@ -5568,14 +5569,70 @@ function taiLichCaQL(){
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
   document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
-  // [v12-P3] Tạm dùng fn_get_lich_ca cho từng NV — TODO: thêm RPC fn_get_lich_ca_ql riêng
-  // Hiện tại trả empty data để không crash
-  lcqlData = {
-    tuan: lcqlTuan,
-    danhSachKV: [],
-    tongDaGui: 0, tongChuaGui: 0, tongNV: 0
-  };
-  document.getElementById('lcql-list').innerHTML = '<div class="ns-empty">📋 Chức năng xem lịch ca QL đang được nâng cấp. Vui lòng dùng Tab Duyệt yêu cầu để xem các đơn nghỉ phép cần duyệt.</div>';
+  // [v12-FIX] Load lịch ca từ DB
+  const tuanClean = lcqlTuan.replace('W','');
+  const parts = tuanClean.split('-');
+  const year = parseInt(parts[0]);
+  const week = parseInt(parts[1]);
+  // Tính ngày đầu + cuối tuần
+  const jan4 = new Date(year, 0, 4);
+  const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
+  const thuHai = new Date(ms);
+  const chuNhat = new Date(thuHai.getTime() + 6*86400000);
+  const tuStr = thuHai.toISOString().substring(0,10);
+  const denStr = chuNhat.toISOString().substring(0,10);
+  
+  supa.from('lich_ca')
+    .select('ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, ngay, loai, ca_lam, gio_bat_dau, gio_ket_thuc, trang_thai, ghi_chu_nv')
+    .gte('ngay', tuStr)
+    .lte('ngay', denStr)
+    .order('ngay', {ascending: true})
+  .then(({data: rows, error}) => {
+    if(error || !rows){
+      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi tải lịch ca.</div>';
+      return;
+    }
+    if(!rows.length){
+      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">📋 Chưa có lịch ca nào trong tuần này.</div>';
+      return;
+    }
+    // Group by ngay
+    const grouped = {};
+    rows.forEach(r => {
+      const k = r.ngay;
+      if(!grouped[k]) grouped[k] = [];
+      grouped[k].push(r);
+    });
+    const ngayList = Object.keys(grouped).sort();
+    const dow = ['CN','T2','T3','T4','T5','T6','T7'];
+    let html = '';
+    ngayList.forEach(k => {
+      const d = new Date(k);
+      const label = dow[d.getDay()] + ' ' + k.substring(8) + '/' + k.substring(5,7);
+      html += `<div class="yc-day-header">${label} <span class="yc-day-count">${grouped[k].length}</span></div>`;
+      grouped[k].forEach(r => {
+        const tt = r.trang_thai || '';
+        const badgeCls = tt === 'DA_DUYET' ? 'dnpb-dd' : tt === 'TU_CHOI' ? 'dnpb-tc' : tt === 'DA_GUI' ? 'dnpb-cho' : 'dnpb-cho';
+        const badgeTxt = tt === 'DA_DUYET' ? 'Đã duyệt' : tt === 'TU_CHOI' ? 'Từ chối' : tt === 'DA_GUI' ? 'Đã gửi' : 'Chờ duyệt';
+        const gio = (r.gio_bat_dau||'').substring(0,5) + '-' + (r.gio_ket_thuc||'').substring(0,5);
+        html += `<div class="dnp-item" style="padding:10px 14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px">${r.ten_nv_snapshot||r.ma_nv}</div>
+              <div style="font-size:11px;color:var(--text-m)">${r.ten_ch_snapshot||r.ma_ch||''} · ${r.loai||r.ca_lam} · ${gio}</div>
+            </div>
+            <span class="dnp-badge ${badgeCls}">${badgeTxt}</span>
+          </div>
+        </div>`;
+      });
+    });
+    document.getElementById('lcql-list').innerHTML = html || '<div class="ns-empty">📋 Không có dữ liệu.</div>';
+    // Stats
+    document.getElementById('lcql-ms1').textContent = rows.length;
+    document.getElementById('lcql-ms1-lbl').textContent = 'Tổng lịch';
+  }).catch(()=>{
+    document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi kết nối.</div>';
+  });
   const now=new Date();
   document.getElementById('lcql-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
 }
