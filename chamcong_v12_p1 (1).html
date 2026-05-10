@@ -371,8 +371,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .pw-err    { background:var(--red-lt); color:var(--red); border-left:3px solid var(--red); }
 
 /* MODAL GIẢI TRÌNH */
-#gt-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2100; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
+#gt-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2100; display:none; align-items:flex-end; justify-content:center; }
 #gt-modal.show { display:flex; }
+#gt-modal .gt-box { pointer-events:auto; }
+#gt-modal .gt-input { -webkit-user-select:text; user-select:text; pointer-events:auto; opacity:1 !important; }
 .gt-box    { background:white; border-radius:20px 20px 0 0; width:100%; max-width:430px; animation:slideUp .25s ease; }
 .gt-handle { width:40px; height:4px; background:#e0ddd5; border-radius:99px; margin:12px auto 0; flex-shrink:0; }
 .gt-title  { font-size:15px; font-weight:700; color:var(--red); padding:14px 20px 0; }
@@ -3111,11 +3113,129 @@ function layViTri(){
 function setGpsErr(msg){document.getElementById('gps-btn').className='gps-btn error';document.getElementById('gps-label').textContent=msg;document.getElementById('gps-sub').textContent='Bấm để thử lại';document.getElementById('gps-badge').textContent='Thử lại';document.getElementById('gps-icon').textContent='❌';state.gpsOk=false;updateSubmitBtn();}
 
 // ─── CAMERA ─────────────────────────────────────────────────
-function moCamera(){
+// [v12-FIX] Camera stream thực sự - không cho chọn từ thư viện
+let _cameraStream = null;
+let _cameraVideo = null;
+let _cameraTarget = 'cham_cong'; // 'cham_cong' | 'don_nghi' | 'lich_nghi'
+let _cameraNgay = '';
+
+async function moCamera(){
   if(state.submitted)return;
-  document.getElementById('camera-file-input').value='';
-  document.getElementById('camera-file-input').click();
+  _cameraTarget = 'cham_cong';
+  await _moCameraDialog('user'); // 'user' = front camera (selfie)
 }
+
+async function _moCameraDialog(facingMode){
+  // Tạo dialog camera nếu chưa có
+  let dlg = document.getElementById('cameraDialog');
+  if(!dlg){
+    dlg = document.createElement('div');
+    dlg.id = 'cameraDialog';
+    dlg.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+    dlg.innerHTML = `
+      <video id="cameraVideo" autoplay playsinline style="max-width:100%;max-height:75vh;background:#000"></video>
+      <div style="position:absolute;top:16px;left:16px;color:#fff;font-size:14px" id="cameraStatus">⏳ Đang mở camera...</div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;display:flex;gap:16px;justify-content:center;align-items:center">
+        <button onclick="dongCamera()" style="padding:14px 22px;background:#444;color:#fff;border:none;border-radius:50px;font-size:14px">Hủy</button>
+        <button onclick="chupAnhCamera()" id="btn-chup-anh" style="width:72px;height:72px;border-radius:50%;background:#fff;border:5px solid #ccc;font-size:32px">📷</button>
+      </div>
+    `;
+    document.body.appendChild(dlg);
+  }
+  dlg.style.display = 'flex';
+  _cameraVideo = document.getElementById('cameraVideo');
+  const status = document.getElementById('cameraStatus');
+
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('Browser không hỗ trợ camera');
+    }
+    _cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    _cameraVideo.srcObject = _cameraStream;
+    status.textContent = '📷 Bấm nút để chụp';
+  } catch(e) {
+    status.textContent = '❌ Không truy cập được camera: ' + e.message;
+    setTimeout(()=>{
+      dongCamera();
+      // Fallback: dùng input file (không lý tưởng nhưng để không kẹt)
+      const inp = document.getElementById('camera-file-input');
+      if(inp){ inp.value=''; inp.click(); }
+    }, 2000);
+  }
+}
+
+function dongCamera(){
+  if(_cameraStream){
+    _cameraStream.getTracks().forEach(t=>t.stop());
+    _cameraStream = null;
+  }
+  const dlg = document.getElementById('cameraDialog');
+  if(dlg) dlg.style.display = 'none';
+}
+
+function chupAnhCamera(){
+  if(!_cameraVideo || !_cameraStream)return;
+  const v = _cameraVideo;
+  const w = v.videoWidth, h = v.videoHeight;
+  if(!w || !h){ alert('Camera chưa sẵn sàng, đợi 1s rồi thử lại'); return; }
+  // Resize về 800px
+  const MAX = 800;
+  let nw = w, nh = h;
+  if(w > h){ if(w > MAX){ nh = Math.round(h*MAX/w); nw = MAX; } }
+  else { if(h > MAX){ nw = Math.round(w*MAX/h); nh = MAX; } }
+  const canvas = document.createElement('canvas');
+  canvas.width = nw; canvas.height = nh;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(v, 0, 0, nw, nh);
+  // Watermark
+  const now = new Date();
+  const ts = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+  ctx.font = '13px monospace'; ctx.fillStyle = 'rgba(0,0,0,.45)';
+  ctx.fillRect(0, nh-26, nw, 26);
+  ctx.fillStyle = 'white';
+  ctx.fillText('📍 '+ts+'  '+(SESSION ? SESSION.ma : ''), 8, nh-9);
+  const b64 = canvas.toDataURL('image/jpeg', 0.75);
+  dongCamera();
+
+  // Routing theo target
+  if(_cameraTarget === 'cham_cong'){
+    state.selfieB64 = b64; state.selfieOk = true;
+    const preview = document.getElementById('selfie-preview');
+    preview.src = b64; preview.style.display = 'block';
+    document.getElementById('selfie-icon').style.display = 'none';
+    document.getElementById('selfie-btn').className = 'selfie-btn done';
+    document.getElementById('selfie-text').textContent = 'Ảnh đã chụp ✓';
+    document.getElementById('selfie-sub').textContent = 'Bấm để chụp lại nếu cần';
+    updateSubmitBtn();
+  } else if(_cameraTarget === 'don_nghi'){
+    _dnAnhB64 = b64;
+    const prev = document.getElementById('dn-anh-preview');
+    if(prev){ prev.src = b64; prev.style.display = 'block'; }
+    const btn = document.getElementById('dn-anh-btn');
+    if(btn) btn.textContent = '✓ Đã đính kèm ảnh';
+  } else if(_cameraTarget === 'lich_nghi' && _cameraNgay){
+    _npCamB64[_cameraNgay] = b64;
+    const prev = document.getElementById('lcnghi-preview-' + _cameraNgay);
+    if(prev){ prev.src = b64; prev.style.display = 'block'; }
+  }
+}
+
+// Wrapper cho đơn nghỉ phép - mở camera sau (environment)
+async function moCameraDonNghi(){
+  _cameraTarget = 'don_nghi';
+  await _moCameraDialog('environment');
+}
+// Wrapper cho lịch nghỉ
+async function moCameraLichNghi(ngay){
+  _cameraTarget = 'lich_nghi';
+  _cameraNgay = ngay;
+  await _moCameraDialog('environment');
+}
+
+// Hàm cũ giữ làm fallback
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
