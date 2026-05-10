@@ -1747,7 +1747,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="card-section">Ảnh xác minh <span style="color:var(--amber);font-weight:700">— Bắt buộc</span></div>
       <div class="selfie-wrap">
         <input type="file" id="camera-file-input" accept="image/*" capture="user"
-               style="display:none" onchange="xuLyAnhChup(this)">
+               style="display:none;pointer-events:none" disabled onchange="xuLyAnhChup(this)">
         <div class="selfie-btn" id="selfie-btn" onclick="moCamera()">
           <div class="selfie-icon" id="selfie-icon">📷</div>
           <img id="selfie-preview" class="selfie-preview" alt="selfie">
@@ -3157,13 +3157,15 @@ async function _moCameraDialog(facingMode){
     _cameraVideo.srcObject = _cameraStream;
     status.textContent = '📷 Bấm nút để chụp';
   } catch(e) {
-    status.textContent = '❌ Không truy cập được camera: ' + e.message;
-    setTimeout(()=>{
-      dongCamera();
-      // Fallback: dùng input file (không lý tưởng nhưng để không kẹt)
-      const inp = document.getElementById('camera-file-input');
-      if(inp){ inp.value=''; inp.click(); }
-    }, 2000);
+    status.textContent = '❌ Không truy cập được camera';
+    // [v12-FIX] KHÔNG fallback sang chọn ảnh — buộc phải có camera
+    const btnChup = document.getElementById('btn-chup-anh');
+    if(btnChup) btnChup.style.display = 'none';
+    // Hiện hướng dẫn
+    status.innerHTML = '❌ Thiết bị không có camera hoặc chưa cấp quyền.<br><br>' +
+      '<span style="font-size:13px;color:#ccc">Vui lòng:<br>' +
+      '• Sử dụng điện thoại có camera<br>' +
+      '• Cấp quyền truy cập camera cho trình duyệt</span>';
   }
 }
 
