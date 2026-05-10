@@ -5811,7 +5811,7 @@ function taiDonNghiPhep(){
     const tongCanXuLy=(nsCBList?nsCBList.length:0)+cho;
     _capNhatBadgeNS(tongCanXuLy);
     renderDonNghiPhep();
-  }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+  }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi: '+(e.message||e)+'</div>';});
 }
 
 function renderDonNghiPhep(){
@@ -6634,17 +6634,19 @@ function taiDonNghiACC(){
           ngay: d.ngayNghi,
           loaiNghi: d.loaiNghi,
           lyDo: d.lyDo,
+          ghiChuNV: d.lyDo || '',
           anhUrl: d.anhUrl,
           trangThai: d.trangThai,
           ghiChuQLNS: d.ghiChuQLNS,
           nguoiDuyet: d.nguoiDuyet,
-          createdAt: d.createdAt
+          createdAt: d.createdAt,
+          tuan: ''
         });
       });
       const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, donList: map[ngay] }));
       _accDnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
       _renderACCDnpQL();
-    }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+    }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ '+((e&&e.message)||'Lỗi kết nối')+'</div>';});
   } else {
     // [v12-P3] NV xem
     supa.rpc('fn_get_don_nghi_cua_toi', { p_ma_nv: SESSION.ma })
@@ -6664,7 +6666,7 @@ function taiDonNghiACC(){
         theoDon: theoDon, theoNV: []
       };
       _renderACCDnpNV(tu,den);
-    }).catch(()=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi kết nối.</div>';});
+    }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ '+((e&&e.message)||'Lỗi NV')+'</div>';});
   }
 }
 
@@ -6722,8 +6724,8 @@ function _renderACCDnpQL(){
       if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
       const btns=don.trangThai==='Chờ duyệt'
         ? `<div class="ns-duyet-wrap" style="margin-top:8px">
-             <button class="ns-btn-ok" onclick="duyetDonNghi('${don.maNV}','${don.ngay}','${don.tuan}','Đã duyệt','',true)">✓ Duyệt</button>
-             <button class="ns-btn-no" onclick="duyetDonNghi('${don.maNV}','${don.ngay}','${don.tuan}','Từ chối','',true)">✗ Từ chối</button>
+             <button class="ns-btn-ok" onclick="duyetDonNghiById('${don.id}','Đã duyệt')">✓ Duyệt</button>
+             <button class="ns-btn-no" onclick="duyetDonNghiById('${don.id}','Từ chối')">✗ Từ chối</button>
            </div>`
         : '';
       const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
