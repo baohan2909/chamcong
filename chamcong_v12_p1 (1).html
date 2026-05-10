@@ -3525,9 +3525,9 @@ function _doSubmitFinal(){
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
-      startCountdown(15);
+      startCountdown(30);
     } else {
-      startCountdown(15);
+      startCountdown(30);
     }
   })().catch(() => {
     showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
@@ -3976,7 +3976,7 @@ function startGtTimer(giay){
     if(dem<=0){
       clearInterval(_gtTimerInterval);
       closeGiaiTrinh();
-      startCountdown(15); // hết giờ → bỏ qua, reload sau 15s
+      startCountdown(30); // hết giờ → bỏ qua, reload sau 15s
     }
   },1000);
 }
@@ -3984,7 +3984,7 @@ function startGtTimer(giay){
 function skipGiaiTrinh(){
   clearInterval(_gtTimerInterval);
   closeGiaiTrinh();
-  startCountdown(15);
+  startCountdown(30);
 }
 
 function closeGiaiTrinh(){
@@ -4048,6 +4048,7 @@ function guiGiaiTrinh(){
       closeGiaiTrinh();
       showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
       taiLichSu();
+      startCountdown(30);
     } else {
       const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
     }
@@ -5028,16 +5029,19 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
           <span class="lc-ed-sep">đến</span>
           <input type="time" class="lc-ed-time" id="lc-time-kt-${ngay}-${idx}" value="${s.gioKT||'17:00'}" onchange="setLCGio('${ngay}',${idx},'kt',this.value)">
         </div>
-        <!-- [v11.7 L1] Chip preset ca thông dụng - label riêng dòng trên -->
-        <div class="lc-preset-label">Chọn nhanh:</div>
+        <!-- [v12-FIX] Chia Ca / Full trên 2 dòng -->
+        <div class="lc-preset-label">Ca:</div>
         <div class="lc-preset-row">
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'07:30','15:30')">Sáng 7:30-15:30</button>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'08:00','14:00')">Sáng 8:00-14:00</button>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'13:30','21:30')">Chiều 13:30-21:30</button>
           <button type="button" class="lc-preset-chip" onclick="applyPresetCa('${ngay}',${idx},'14:00','22:00')">Chiều 14:00-22:00</button>
-          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','21:30')">Full 7:30-21:30</button>
-          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','22:00')">Full 7:30-22:00</button>
-          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'08:00','21:00')">Full 8:00-21:00</button>
+        </div>
+        <div class="lc-preset-label" style="margin-top:4px">Full:</div>
+        <div class="lc-preset-row">
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','21:30')">7:30-21:30</button>
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'07:30','22:00')">7:30-22:00</button>
+          <button type="button" class="lc-preset-chip lc-preset-full" onclick="applyPresetCa('${ngay}',${idx},'08:00','21:00')">8:00-21:00</button>
         </div>
       </div>`).join('');
     editor+=`<button type="button" class="lc-add-ca" onclick="themCa('${ngay}')">
@@ -7444,6 +7448,10 @@ function _notifIcon(loai) {
     'CB_MOI': '⚠',
     'CB_HOAN_TAC': '↩',
     'GT_MOI': '📝',
+    'DN_MOI': '🏖',
+    'DN_DUYET': '✅',
+    'DN_TUCHOI': '❌',
+    'LC_MOI': '📅',
     'LICH_MOI': '📋',
     'INFO': '🔔',
   };
@@ -7511,9 +7519,8 @@ function _silentUpdateAccBadges(){
   if(!SESSION)return;
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
   if(isQL){
-    // [v12-P3] Supabase RPC
-    const [tu,den]=_thangNay();
-    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den })
+    // [v12-FIX] Badge = tổng chưa duyệt (không giới hạn tháng)
+    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: '2020-01-01', p_den_ngay: '2999-12-31', p_trang_thai: null })
     .then(({ data: res, error }) => {
       if(error || !res)return;
       const sDN = (res.donNghi || []).length;
