@@ -5565,6 +5565,7 @@ function onLCQLSearch(){
   renderLCQL();
 }
 
+let _lcqlAllData = [];
 function taiLichCaQL(){
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
@@ -5578,336 +5579,93 @@ function taiLichCaQL(){
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
   const tuStr = thuHai.toISOString().substring(0,10);
   const denStr = chuNhat.toISOString().substring(0,10);
-
-  // Lấy lịch ca + đơn nghỉ + cửa hàng trong tuần
   Promise.all([
-    supa.from('lich_ca').select('*, cua_hang:ma_ch(ten_ch, khu_vuc)').gte('ngay', tuStr).lte('ngay', denStr),
-    supa.from('don_nghi').select('*, cua_hang:ma_ch(ten_ch, khu_vuc)').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr),
-    supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc')
-  ]).then(([lcRes, dnRes, nvRes]) => {
-    const lcRows = (!lcRes.error && lcRes.data) ? lcRes.data : [];
-    const dnRows = (!dnRes.error && dnRes.data) ? dnRes.data : [];
-    const nvMap = {};
-    ((!nvRes.error && nvRes.data) ? nvRes.data : []).forEach(nv => {
-      nvMap[nv.ma_nv] = { ten: nv.ho_ten, maCH: nv.ma_ch_mac_dinh, kv: nv.khu_vuc };
-    });
-
-    if(!lcRows.length && !dnRows.length){
-      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">📋 Chưa có lịch ca / đơn nghỉ trong tuần này.</div>';
-      _lcqlUpdateStats(0,0,0);
-      return;
-    }
-
-    // Merge đơn nghỉ vào dạng lịch ca
-    const allRows = [...lcRows];
-    dnRows.forEach(dn => {
-      allRows.push({
-        ma_nv: dn.ma_nv,
-        ten_nv_snapshot: null,
-        ma_ch: dn.ma_ch,
-        ten_ch_snapshot: null,
-        ngay: dn.ngay_nghi,
-        loai: 'Nghỉ phép',
-        ca_lam: dn.loai_nghi || 'Nghỉ phép',
-        gio_bat_dau: null,
-        gio_ket_thuc: null,
-        trang_thai: dn.trang_thai,
-        ghi_chu_nv: dn.ly_do,
-        _isDonNghi: true,
-        _dnId: dn.id
+    supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr),
+    supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr),
+    supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc'),
+    supa.from('cua_hang').select('ma_ch, ten_ch, khu_vuc')
+  ]).then(([lcRes, dnRes, nvRes, chRes]) => {
+    const nvMap = {}; (nvRes.data||[]).forEach(nv => { nvMap[nv.ma_nv] = nv; });
+    const chMap = {}; (chRes.data||[]).forEach(ch => { chMap[ch.ma_ch] = ch; });
+    _lcqlAllData = [];
+    (lcRes.data||[]).forEach(r => {
+      const ch = chMap[r.ma_ch] || {};
+      const nv = nvMap[r.ma_nv] || {};
+      _lcqlAllData.push({
+        maNV: r.ma_nv, tenNV: r.ten_nv_snapshot || nv.ho_ten || r.ma_nv,
+        maCH: r.ma_ch || nv.ma_ch_mac_dinh || '—',
+        tenCH: ch.ten_ch || r.ten_ch_snapshot || r.ma_ch || '—',
+        khuVuc: ch.khu_vuc || nv.khu_vuc || '(Chưa phân khu)',
+        ngay: r.ngay, loai: r.loai || r.ca_lam,
+        gio: r.gio_bat_dau ? (r.gio_bat_dau+'').substring(0,5)+'-'+(r.gio_ket_thuc+'').substring(0,5) : '',
+        trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
-
-    // Lấy tên NV + CH từ cache
-    const chMap = {}; (window.CH_LIST||[]).forEach(c=>{chMap[c.ma]={ten:c.ten,kv:c.khuVuc};});
-
-    // Build hierarchy: KV → CH → NV → days
-    const kvData = {};
-    allRows.forEach(r => {
-      // Lấy khu vực từ join cua_hang hoặc NV fallback
-      const joinedCH = r.cua_hang || {};
-      const nvInfo = nvMap[r.ma_nv] || {};
-      const maCH = r.ma_ch || nvInfo.maCH || '—';
-      const tenCH = joinedCH.ten_ch || r.ten_ch_snapshot || (chMap[maCH]||{}).ten || maCH;
-      const kv = joinedCH.khu_vuc || (chMap[maCH]||{}).kv || nvInfo.kv || '(Chưa phân khu)';
-      const tenNV = r.ten_nv_snapshot || nvInfo.ten || r.ma_nv;
-
-      if(!kvData[kv]) kvData[kv] = {};
-      if(!kvData[kv][maCH]) kvData[kv][maCH] = {ten: tenCH, nvs: {}};
-      const nvKey = r.ma_nv;
-      if(!kvData[kv][maCH].nvs[nvKey]) kvData[kv][maCH].nvs[nvKey] = {ten: tenNV, days: []};
-      const gio = r.gio_bat_dau ? (r.gio_bat_dau+'').substring(0,5)+'-'+(r.gio_ket_thuc+'').substring(0,5) : '';
-      const tt = r.trang_thai || '';
-      kvData[kv][maCH].nvs[nvKey].days.push({
-        ngay: r.ngay, loai: r.loai || r.ca_lam, gio, trangThai: tt,
-        isDN: r._isDonNghi, ghiChu: r.ghi_chu_nv || ''
+    (dnRes.data||[]).forEach(dn => {
+      const ch = chMap[dn.ma_ch] || {};
+      const nv = nvMap[dn.ma_nv] || {};
+      _lcqlAllData.push({
+        maNV: dn.ma_nv, tenNV: nv.ho_ten || dn.ma_nv,
+        maCH: dn.ma_ch || nv.ma_ch_mac_dinh || '—',
+        tenCH: ch.ten_ch || dn.ma_ch || '—',
+        khuVuc: ch.khu_vuc || nv.khu_vuc || '(Chưa phân khu)',
+        ngay: dn.ngay_nghi, loai: 'Nghỉ phép', gio: '',
+        trangThai: dn.trang_thai || 'CHO_DUYET', ghiChu: dn.ly_do || ''
       });
     });
-
-    // Render accordion
-    const kvList = Object.keys(kvData).sort();
-    let totalCH = 0, totalNV = new Set(), totalDays = 0;
-    let html = '';
-
-    kvList.forEach(kv => {
-      const chKeys = Object.keys(kvData[kv]).sort();
-      totalCH += chKeys.length;
-      html += `<div class="lcql-kv-group">
-        <div class="lcql-kv-header" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;padding:12px 14px;background:var(--green-lt);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px">
-          <span>📍 ${kv}</span>
-          <span style="font-size:11px;font-weight:400;color:var(--text-m)">${chKeys.length} CH</span>
-        </div>
-        <div class="lcql-kv-body" style="display:none;padding-left:8px">`;
-
-      chKeys.forEach(chKey => {
-        const chInfo = kvData[kv][chKey];
-        const nvKeys = Object.keys(chInfo.nvs).sort();
-        html += `<div class="lcql-ch-group" style="margin-bottom:6px">
-          <div class="lcql-ch-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="cursor:pointer;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600">
-            <span>🏪 ${chInfo.ten} <span style="font-weight:400;color:var(--text-lt)">${chKey}</span></span>
-            <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nvKeys.length} NV</span>
-          </div>
-          <div style="display:none;padding-left:10px;margin-top:4px">`;
-
-        nvKeys.forEach(nvKey => {
-          totalNV.add(nvKey);
-          const nvInfo = chInfo.nvs[nvKey];
-          totalDays += nvInfo.days.length;
-          const dow = ['CN','T2','T3','T4','T5','T6','T7'];
-          const daysHtml = nvInfo.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(d => {
-            const dt = new Date(d.ngay);
-            const dayLabel = dow[dt.getDay()] + ' ' + d.ngay.substring(8) + '/' + d.ngay.substring(5,7);
-            const ttCls = d.trangThai==='DA_DUYET'?'color:var(--green-m)':d.trangThai==='TU_CHOI'?'color:var(--red)':d.trangThai==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';
-            const ttTxt = d.trangThai==='DA_DUYET'?'✓ Đã duyệt':d.trangThai==='TU_CHOI'?'✗ Từ chối':d.trangThai==='CHO_DUYET'?'⏳ Chờ duyệt':d.trangThai==='DA_GUI'?'Đã gửi':'—';
-            return `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid #f3f4f6">
-              <span>${dayLabel} · ${d.loai}${d.gio?' · '+d.gio:''}</span>
-              <span style="${ttCls};font-weight:500">${ttTxt}</span>
-            </div>`;
-          }).join('');
-
-          html += `<div style="margin-bottom:6px">
-            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px">
-              <span>👤 ${nvInfo.ten} <span style="color:var(--text-lt)">${nvKey}</span></span>
-              <span style="color:var(--text-m)">${nvInfo.days.length} ngày</span>
-            </div>
-            <div style="display:none;padding:4px 10px">${daysHtml}</div>
-          </div>`;
-        });
-
-        html += `</div></div>`;
-      });
-
-      html += `</div></div>`;
-    });
-
-    // CSS cho accordion open
-    html = `<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}</style>` + html;
-
-    document.getElementById('lcql-list').innerHTML = html || '<div class="ns-empty">📋 Không có dữ liệu.</div>';
-    _lcqlUpdateStats(kvList.length, totalCH, totalNV.size);
+    renderLCQL();
+    const kvs = new Set(_lcqlAllData.map(d=>d.khuVuc));
+    const chs = new Set(_lcqlAllData.map(d=>d.maCH));
+    const nvs = new Set(_lcqlAllData.map(d=>d.maNV));
+    _lcqlUpdateStats(kvs.size, chs.size, nvs.size);
   }).catch(()=>{
     document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi kết nối.</div>';
   });
   const now=new Date();
   document.getElementById('lcql-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
 }
-
-function _lcqlUpdateStats(kvCount, chCount, nvCount){
-  document.getElementById('lcql-ms1').textContent = kvCount;
+function _lcqlUpdateStats(kvC, chC, nvC){
+  document.getElementById('lcql-ms1').textContent = kvC;
   document.getElementById('lcql-ms1-lbl').textContent = 'Khu vực';
-  document.getElementById('lcql-ms2').textContent = chCount;
+  document.getElementById('lcql-ms2').textContent = chC;
   document.getElementById('lcql-ms2-lbl').textContent = 'Cửa hàng';
-  document.getElementById('lcql-ms3').textContent = nvCount;
+  document.getElementById('lcql-ms3').textContent = nvC;
   document.getElementById('lcql-ms3-lbl').textContent = 'Nhân viên';
-  document.getElementById('lcql-ms4').textContent = '--';
-  document.getElementById('lcql-ms4-lbl').textContent = '';
+  document.getElementById('lcql-ms4').textContent = _lcqlAllData.length;
+  document.getElementById('lcql-ms4-lbl').textContent = 'Tổng lịch';
 }
-
 function setLCQLMode(mode){
   lcqlMode=mode;
-  _accOpenKV=''; _accOpenCH='';
-  _lcqlFilter='all'; // reset filter khi đổi mode
   document.querySelectorAll('.lcql-mode-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('lcqlm-'+mode).classList.add('active');
-  // Xoá active trên các stat
-  document.querySelectorAll('.lcql-mstat').forEach(b=>b.classList.remove('active'));
-  document.getElementById('lcql-ms1-wrap')?.classList.add('active');
   renderLCQL();
 }
-
 function renderLCQL(){
-  if(!lcqlData)return;
-  const el=document.getElementById('lcql-list');
-  const s=lcqlData.stats;
-  const kv=lcqlData.theoKhuVuc||[];
-  const q=(document.getElementById('lcql-search')?.value||'').toLowerCase().trim();
-
-  // ── Cập nhật 4 ô thống kê — đúng theo mode [FIX v9] ──
+  const data = _lcqlAllData;
+  const list = document.getElementById('lcql-list');
+  if(!data.length){ list.innerHTML='<div class="ns-empty">📋 Chưa có lịch ca / đơn nghỉ.</div>'; return; }
+  const q = ((document.getElementById('lcql-search')||{}).value||'').toLowerCase();
+  const filtered = q ? data.filter(d => (d.tenNV||'').toLowerCase().includes(q)||(d.maNV||'').toLowerCase().includes(q)||(d.tenCH||'').toLowerCase().includes(q)||(d.maCH||'').toLowerCase().includes(q)||(d.khuVuc||'').toLowerCase().includes(q)) : data;
+  const dow=['CN','T2','T3','T4','T5','T6','T7'];
+  const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
+  const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
+  const _dr=d=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid #f3f4f6"><span>${_dl(d)} · ${d.loai}${d.gio?' · '+d.gio:''}</span>${_tt(d)}</div>`;
+  const _tog=`onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"`;
+  const _togP=`onclick="this.parentElement.classList.toggle('open')"`;
+  let html='<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}</style>';
   if(lcqlMode==='kv'){
-    // Đã gửi = số KV có ít nhất 1 NV đã đăng ký
-    const kvDaGui=kv.filter(k=>k.daDangKy>0).length;
-    const kvChuaGui=kv.filter(k=>k.daDangKy===0).length;
-    document.getElementById('lcql-ms1').textContent=kv.length;
-    document.getElementById('lcql-ms1-lbl').textContent='Khu vực';
-    document.getElementById('lcql-ms2').textContent=kvDaGui;
-    document.getElementById('lcql-ms2-lbl').textContent='Đã có lịch';
-    document.getElementById('lcql-ms3').textContent=kvChuaGui;
-    document.getElementById('lcql-ms3-lbl').textContent='Chưa có';
-    document.getElementById('lcql-ms4').textContent=s.tongGio||'--';
-    document.getElementById('lcql-ms4-lbl').textContent='Tổng giờ';
+    const g={};filtered.forEach(d=>{if(!g[d.khuVuc])g[d.khuVuc]={};if(!g[d.khuVuc][d.maCH])g[d.khuVuc][d.maCH]={ten:d.tenCH,nvs:{}};if(!g[d.khuVuc][d.maCH].nvs[d.maNV])g[d.khuVuc][d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.khuVuc][d.maCH].nvs[d.maNV].days.push(d);});
+    Object.keys(g).sort().forEach(kv=>{const cks=Object.keys(g[kv]).sort();html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:12px 14px;background:var(--green-lt);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px"><span>📍 ${kv}</span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${cks.length} CH</span></div><div class="lcql-kv-body" style="display:none;padding-left:8px">`;cks.forEach(ck=>{const ci=g[kv][ck];const nks=Object.keys(ci.nvs).sort();html+=`<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600"><span>🏪 ${ci.ten} <span style="font-weight:400;color:var(--text-lt)">${ck}</span></span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${nks.length} NV</span></div><div style="display:none;padding-left:10px;margin-top:4px">`;nks.forEach(nk=>{const ni=ci.nvs[nk];html+=`<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px"><span>👤 ${ni.ten} <span style="color:var(--text-lt)">${nk}</span></span><span style="color:var(--text-m)">${ni.days.length} ngày</span></div><div style="display:none;padding:4px 10px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;});html+=`</div></div>`;});html+=`</div></div>`;});
   } else if(lcqlMode==='ch'){
-    const chAll=kv.flatMap(k=>k.cuaHang||[]);
-    const chDaGui=chAll.filter(c=>c.daDangKy>0).length;
-    const chChuaGui=chAll.filter(c=>c.daDangKy===0).length;
-    document.getElementById('lcql-ms1').textContent=chAll.length;
-    document.getElementById('lcql-ms1-lbl').textContent='Cửa hàng';
-    document.getElementById('lcql-ms2').textContent=chDaGui;
-    document.getElementById('lcql-ms2-lbl').textContent='Đã gửi';
-    document.getElementById('lcql-ms3').textContent=chChuaGui;
-    document.getElementById('lcql-ms3-lbl').textContent='Chưa gửi';
-    document.getElementById('lcql-ms4').textContent=s.tongGio||'--';
-    document.getElementById('lcql-ms4-lbl').textContent='Tổng giờ';
+    const g={};filtered.forEach(d=>{if(!g[d.maCH])g[d.maCH]={ten:d.tenCH,kv:d.khuVuc,nvs:{}};if(!g[d.maCH].nvs[d.maNV])g[d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.maCH].nvs[d.maNV].days.push(d);});
+    Object.keys(g).sort().forEach(ck=>{const ci=g[ck];const nks=Object.keys(ci.nvs).sort();html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:10px 14px;background:#f8fafc;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px"><span>🏪 ${ci.ten} <span style="font-weight:400;color:var(--text-lt)">${ck}</span></span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${ci.kv} · ${nks.length} NV</span></div><div class="lcql-kv-body" style="display:none;padding-left:8px">`;nks.forEach(nk=>{const ni=ci.nvs[nk];html+=`<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px"><span>👤 ${ni.ten} <span style="color:var(--text-lt)">${nk}</span></span><span style="color:var(--text-m)">${ni.days.length} ngày</span></div><div style="display:none;padding:4px 10px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;});html+=`</div></div>`;});
   } else {
-    document.getElementById('lcql-ms1').textContent=s.tongNV;
-    document.getElementById('lcql-ms1-lbl').textContent='Nhân viên';
-    document.getElementById('lcql-ms2').textContent=s.daDangKy;
-    document.getElementById('lcql-ms2-lbl').textContent='Đã gửi';
-    document.getElementById('lcql-ms3').textContent=s.chuaDangKy;
-    document.getElementById('lcql-ms3-lbl').textContent='Chưa gửi';
-    document.getElementById('lcql-ms4').textContent=s.tongGio||'--';
-    document.getElementById('lcql-ms4-lbl').textContent='Tổng giờ';
+    const g={};filtered.forEach(d=>{if(!g[d.maNV])g[d.maNV]={ten:d.tenNV,ch:d.tenCH,maCH:d.maCH,kv:d.khuVuc,days:[]};g[d.maNV].days.push(d);});
+    Object.keys(g).sort((a,b)=>(g[a].ten||'').localeCompare(g[b].ten||'','vi')).forEach(nk=>{const ni=g[nk];html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:10px 14px;background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px"><span>👤 <strong>${ni.ten}</strong> <span style="color:var(--text-lt)">${nk}</span></span><span style="font-size:11px;color:var(--text-m)">${ni.ch} · ${ni.days.length} ngày</span></div><div class="lcql-kv-body" style="display:none;padding:4px 14px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;});
   }
-
-  // ── Helper filter item theo q ──
-  const matchQ=(text)=>!q||text.toLowerCase().includes(q);
-
-  // ── MODE KHU VỰC ──────────────────────────────────────────
-  if(lcqlMode==='kv'){
-    let kvList=kv;
-    if(q)kvList=kv.filter(kvObj=>
-      matchQ(kvObj.khuVuc)||
-      kvObj.cuaHang.some(c=>matchQ(c.tenCH)||matchQ(c.maCH))||
-      kvObj.cuaHang.some(c=>c.nvList.some(n=>matchQ(n.ten)||matchQ(n.ma)))
-    );
-    if(_lcqlFilter==='dagui')  kvList=kvList.filter(k=>k.daDangKy>0);
-    if(_lcqlFilter==='chuagui')kvList=kvList.filter(k=>k.chuaDangKy>0);
-    if(!kvList.length){el.innerHTML='<div class="ns-empty">Không có dữ liệu phù hợp.</div>';return;}
-    el.innerHTML=kvList.map(kvObj=>{
-      const isOpenKV=_accOpenKV===kvObj.khuVuc||!!q;
-      let chList=kvObj.cuaHang;
-      if(q)chList=chList.filter(c=>matchQ(c.tenCH)||matchQ(c.maCH)||c.nvList.some(n=>matchQ(n.ten)||matchQ(n.ma)));
-      if(_lcqlFilter==='dagui')  chList=chList.filter(c=>c.daDangKy>0);
-      if(_lcqlFilter==='chuagui')chList=chList.filter(c=>c.chuaDangKy>0);
-      const chHtml=chList.map(chObj=>{
-        const isOpenCH=_accOpenCH===kvObj.khuVuc+'_'+chObj.maCH||!!q;
-        let nvList=chObj.nvList;
-        if(q)nvList=nvList.filter(n=>matchQ(n.ten)||matchQ(n.ma));
-        if(_lcqlFilter==='dagui')  nvList=nvList.filter(n=>n.daDangKy);
-        if(_lcqlFilter==='chuagui')nvList=nvList.filter(n=>!n.daDangKy);
-        const nvHtml=nvList.map(nv=>{
-          const init=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-          const avCls=nv.coTuChoi?'warn':nv.daDangKy?'':'gray';
-          const badge=nv.daDangKy?(nv.coTuChoi?'⚠ Cần xem':nv.tongGio||'--'):'Chưa gửi';
-          const badgeCls=nv.coTuChoi?'nsb-loi lc-ql-badge':nv.daDangKy?'nsb-dang lc-ql-badge':'nsb-chua lc-ql-badge';
-          return `<div class="acc-nv-item" onclick="xemLichCaNV('${nv.ma}','${nv.ten.replace(/'/g,"\\'")}')">
-            <div class="acc-nv-av ${avCls}">${init}</div>
-            <div style="flex:1;min-width:0"><div class="acc-nv-name">${nv.ten} <span style="font-size:10px;color:var(--text-m)">${nv.ma}</span></div></div>
-            <span class="${badgeCls}">${badge}</span>
-          </div>`;
-        }).join('');
-        return `<div class="acc-ch-item${isOpenCH?' open':''}" onclick="toggleAccCH('${kvObj.khuVuc}','${chObj.maCH}')">
-          <svg style="width:15px;height:15px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-          <div style="flex:1;min-width:0"><div class="acc-ch-name">${chObj.tenCH}</div><div class="acc-ch-stats">${chObj.daDangKy}/${chObj.tongNV} NV · ${chObj.tongGio}</div></div>
-          <span class="acc-ch-arr">›</span>
-        </div>
-        <div class="acc-nv-list${isOpenCH?' open':''}">${nvHtml}</div>`;
-      }).join('');
-      return `<div class="acc-kv">
-        <div class="acc-kv-head${isOpenKV?' open':''}" onclick="toggleAccKV('${kvObj.khuVuc}')">
-          <svg style="width:18px;height:18px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <div style="flex:1"><div class="acc-kv-name">${kvObj.khuVuc}</div><div class="acc-kv-stats">${kvObj.daDangKy}/${kvObj.tongNV} NV · ${kvObj.tongGio}</div></div>
-          <span class="acc-kv-arr">›</span>
-        </div>
-        <div class="acc-ch-list${isOpenKV?' open':''}">${chHtml}</div>
-      </div>`;
-    }).join('');
-    return;
-  }
-
-  // ── MODE CỬA HÀNG ─────────────────────────────────────────
-  if(lcqlMode==='ch'){
-    let chAll=lcqlData.theoKhuVuc.flatMap(k=>(k.cuaHang||[]).map(c=>({...c,khuVuc:k.khuVuc})));
-    if(q)chAll=chAll.filter(c=>matchQ(c.tenCH)||matchQ(c.maCH)||matchQ(c.khuVuc)||c.nvList.some(n=>matchQ(n.ten)||matchQ(n.ma)));
-    if(_lcqlFilter==='dagui')  chAll=chAll.filter(c=>c.daDangKy>0);
-    if(_lcqlFilter==='chuagui')chAll=chAll.filter(c=>c.chuaDangKy>0);
-    if(!chAll.length){el.innerHTML='<div class="ns-empty">Không có dữ liệu phù hợp.</div>';return;}
-    let lastKV='';
-    el.innerHTML=chAll.map(chObj=>{
-      const isOpenCH=_accOpenCH==='_'+chObj.maCH||!!q;
-      let sep='';
-      if(chObj.khuVuc!==lastKV){sep=`<div class="ns-group-sep"><span class="ns-group-dot"></span>${chObj.khuVuc}</div>`;lastKV=chObj.khuVuc;}
-      let nvList=chObj.nvList;
-      if(q)nvList=nvList.filter(n=>matchQ(n.ten)||matchQ(n.ma));
-      if(_lcqlFilter==='dagui')  nvList=nvList.filter(n=>n.daDangKy);
-      if(_lcqlFilter==='chuagui')nvList=nvList.filter(n=>!n.daDangKy);
-      const nvHtml=nvList.map(nv=>{
-        const init=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-        const avCls=nv.coTuChoi?'warn':nv.daDangKy?'':'gray';
-        const badge=nv.daDangKy?(nv.coTuChoi?'⚠ Cần xem':nv.tongGio||'--'):'Chưa gửi';
-        const badgeCls=nv.coTuChoi?'nsb-loi lc-ql-badge':nv.daDangKy?'nsb-dang lc-ql-badge':'nsb-chua lc-ql-badge';
-        return `<div class="acc-nv-item" onclick="xemLichCaNV('${nv.ma}','${nv.ten.replace(/'/g,"\\'")}')">
-          <div class="acc-nv-av ${avCls}">${init}</div>
-          <div style="flex:1;min-width:0"><div class="acc-nv-name">${nv.ten} <span style="font-size:10px;color:var(--text-m)">${nv.ma}</span></div></div>
-          <span class="${badgeCls}">${badge}</span>
-        </div>`;
-      }).join('');
-      return sep+`<div class="acc-kv" style="margin-bottom:6px">
-        <div class="acc-ch-item${isOpenCH?' open':''}" onclick="toggleAccCH('','${chObj.maCH}')" style="padding:13px 16px">
-          <svg style="width:15px;height:15px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-          <div style="flex:1;min-width:0"><div class="acc-ch-name">${chObj.tenCH}</div><div class="acc-ch-stats">${chObj.daDangKy}/${chObj.tongNV} NV · ${chObj.tongGio}</div></div>
-          <span class="acc-ch-arr">›</span>
-        </div>
-        <div class="acc-nv-list${isOpenCH?' open':''}">${nvHtml}</div>
-      </div>`;
-    }).join('');
-    return;
-  }
-
-  // ── MODE NHÂN SỰ ──────────────────────────────────────────
-  let list=[...lcqlData.danhSachLich];
-  if(q)list=list.filter(n=>matchQ(n.ma)||matchQ(n.ten)||(n.cuaHang||'').toLowerCase().includes(q)||(n.khuVuc||'').toLowerCase().includes(q));
-  if(_lcqlFilter==='dagui')  list=list.filter(n=>n.daDangKy);
-  if(_lcqlFilter==='chuagui')list=list.filter(n=>!n.daDangKy);
-  if(!list.length){el.innerHTML='<div class="ns-empty">Không có nhân sự phù hợp.</div>';return;}
-  const ngayTuan=_ngayTuan(lcqlTuan);
-  el.innerHTML=list.map(nv=>{
-    const initials=nv.ten.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
-    const avCls=nv.coTuChoi?'warn':nv.daDangKy?'':'gray';
-    const badge=nv.coTuChoi?'⚠ Cần xem':nv.daDangKy?`${nv.tongGio||nv.soNgayLam+'ng'}`:'Chưa gửi';
-    const badgeCls=nv.coTuChoi?'nsb-loi':nv.daDangKy?'nsb-dang':'nsb-chua';
-    const mini=ngayTuan.map(({ngay,dow})=>{
-      const slot=nv.lich.find(l=>l.ngay===ngay);
-      const cls=!slot?'none':
-        slot.loai===LC_NGHI_PHEP?'nghi':
-        slot.trangThai==='Từ chối'?'deny':
-        slot.trangThai==='Chờ duyệt'?'wait':'work';
-      return `<div class="lc-mini-day ${cls}">${dow[1]||dow[0]}</div>`;
-    }).join('');
-    return `<div class="lc-ql-item" onclick="xemLichCaNV('${nv.ma}','${nv.ten.replace(/'/g,"\\'")}')">
-      <div class="lc-ql-nv-row">
-        <div class="lc-ql-av ${avCls}">${initials}</div>
-        <div style="flex:1;min-width:0">
-          <div class="lc-ql-name">${nv.ten} <span style="font-size:11px;color:var(--text-m)">${nv.ma}</span></div>
-          <div class="lc-ql-sub">${nv.cuaHang} · ${nv.khuVuc}</div>
-        </div>
-        <span class="lc-ql-badge ${badgeCls}">${badge}</span>
-      </div>
-      <div class="lc-mini-week">${mini}</div>
-    </div>`;
-  }).join('');
+  list.innerHTML = html || '<div class="ns-empty">📋 Không tìm thấy.</div>';
 }
 
-// Toggle accordion
 function toggleAccKV(kv){
   _accOpenKV=_accOpenKV===kv?'':kv;
   _accOpenCH='';
