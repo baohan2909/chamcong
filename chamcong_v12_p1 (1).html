@@ -3633,9 +3633,24 @@ function renderLog(){
 }
 
 function moGiaiTrinhTuLog(ngay){
-  openGiaiTrinh('⚠️ Giải trình chấm công','Vui lòng chọn lý do để QLNS xem xét.',ngay||new Date().toISOString().substring(0,10));
-  // Không bật timer khi giải trình từ lịch sử
-  document.getElementById('gt-timer').style.display='none';
+  // [v12-FIX] Query danh sách cảnh báo chưa giải trình cho NV+ngày
+  supa.from('canh_bao')
+    .select('id, loai_canh_bao')
+    .eq('ma_nv', SESSION.ma)
+    .eq('ngay', ngay)
+    .eq('trang_thai', 'CHUA_GIAI_TRINH')
+    .order('created_at', { ascending: true })
+  .then(({ data: rows, error }) => {
+    const cbIds = (!error && rows) ? rows.map(r => r.id) : [];
+    _gtCbIds = cbIds;
+    _gtCurrentCbIdx = 0;
+    const soLoi = cbIds.length;
+    const title = soLoi > 1
+      ? '⚠️ Giải trình chấm công (1/' + soLoi + ')'
+      : '⚠️ Giải trình chấm công';
+    openGiaiTrinh(title, 'Vui lòng chọn lý do để QLNS xem xét.', ngay, cbIds);
+    document.getElementById('gt-timer').style.display='none';
+  });
 }
 
 // ─── GIỜ CÔNG (NV) ──────────────────────────────────────────
