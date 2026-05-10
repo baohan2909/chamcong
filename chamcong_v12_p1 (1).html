@@ -5589,12 +5589,13 @@ function taiLichCaQL(){
     const chMap = {}; (chRes.data||[]).forEach(ch => { chMap[ch.ma_ch] = ch; });
     _lcqlAllData = [];
     (lcRes.data||[]).forEach(r => {
-      const ch = chMap[r.ma_ch] || {};
       const nv = nvMap[r.ma_nv] || {};
+      const effectiveMaCH = r.ma_ch || nv.ma_ch_mac_dinh || '—';
+      const ch = chMap[effectiveMaCH] || chMap[r.ma_ch] || {};
       _lcqlAllData.push({
         maNV: r.ma_nv, tenNV: r.ten_nv_snapshot || nv.ho_ten || r.ma_nv,
-        maCH: r.ma_ch || nv.ma_ch_mac_dinh || '—',
-        tenCH: ch.ten_ch || r.ten_ch_snapshot || r.ma_ch || '—',
+        maCH: effectiveMaCH,
+        tenCH: ch.ten_ch || r.ten_ch_snapshot || effectiveMaCH,
         khuVuc: ch.khu_vuc || nv.khu_vuc || '(Chưa phân khu)',
         ngay: r.ngay, loai: r.loai || r.ca_lam,
         gio: r.gio_bat_dau ? (r.gio_bat_dau+'').substring(0,5)+'-'+(r.gio_ket_thuc+'').substring(0,5) : '',
@@ -5602,12 +5603,13 @@ function taiLichCaQL(){
       });
     });
     (dnRes.data||[]).forEach(dn => {
-      const ch = chMap[dn.ma_ch] || {};
       const nv = nvMap[dn.ma_nv] || {};
+      const effectiveMaCH = dn.ma_ch || nv.ma_ch_mac_dinh || '—';
+      const ch = chMap[effectiveMaCH] || chMap[dn.ma_ch] || {};
       _lcqlAllData.push({
         maNV: dn.ma_nv, tenNV: nv.ho_ten || dn.ma_nv,
-        maCH: dn.ma_ch || nv.ma_ch_mac_dinh || '—',
-        tenCH: ch.ten_ch || dn.ma_ch || '—',
+        maCH: effectiveMaCH,
+        tenCH: ch.ten_ch || effectiveMaCH,
         khuVuc: ch.khu_vuc || nv.khu_vuc || '(Chưa phân khu)',
         ngay: dn.ngay_nghi, loai: 'Nghỉ phép', gio: '',
         trangThai: dn.trang_thai || 'CHO_DUYET', ghiChu: dn.ly_do || ''
