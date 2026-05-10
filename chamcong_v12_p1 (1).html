@@ -3555,7 +3555,7 @@ function taiLichSu(){
         loai:l.loai, lbcls:lbMap[l.loai]||'lb-v',
         time:l.gio.substring(0,5), dist:'--',
         ok:!isLoi, xacNhan:l.xacNhan||'',
-        ghiChu:l.ghiChu||'', loiType,
+        ghiChu:l.ghiChu||'', daGiaiTrinh: l.daGiaiTrinh || false, loiType,
         tenCH:l.tenCH||'', ngay:today,
         truongCa: l.truongCa || '',
       });
@@ -3580,9 +3580,11 @@ function renderLog(){
     // Nút giải trình — chỉ hiện cho dòng lỗi
     let errRow='';
     if(isLoi){
+      // [v12-FIX] Check cả ghiChu VÀ daGiaiTrinh (server trả)
+      const daGT = l.ghiChu || l.daGiaiTrinh;
       const ghiChuShow=l.ghiChu||'Chưa có giải trình';
       let btn='';
-      if(l.ghiChu){
+      if(daGT){
         btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
       } else {
         btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhTuLog('${l.ngay||''}')">Giải trình</button>`;
