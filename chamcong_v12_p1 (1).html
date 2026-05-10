@@ -5569,72 +5569,148 @@ function taiLichCaQL(){
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
   document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
-  // [v12-FIX] Load lịch ca từ DB
   const tuanClean = lcqlTuan.replace('W','');
   const parts = tuanClean.split('-');
-  const year = parseInt(parts[0]);
-  const week = parseInt(parts[1]);
-  // Tính ngày đầu + cuối tuần
+  const year = parseInt(parts[0]); const week = parseInt(parts[1]);
   const jan4 = new Date(year, 0, 4);
   const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
   const thuHai = new Date(ms);
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
   const tuStr = thuHai.toISOString().substring(0,10);
   const denStr = chuNhat.toISOString().substring(0,10);
-  
-  supa.from('lich_ca')
-    .select('ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, ngay, loai, ca_lam, gio_bat_dau, gio_ket_thuc, trang_thai, ghi_chu_nv')
-    .gte('ngay', tuStr)
-    .lte('ngay', denStr)
-    .order('ngay', {ascending: true})
-  .then(({data: rows, error}) => {
-    if(error || !rows){
-      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi tải lịch ca.</div>';
+
+  // Lấy lịch ca + đơn nghỉ trong tuần
+  Promise.all([
+    supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr),
+    supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr)
+  ]).then(([lcRes, dnRes]) => {
+    const lcRows = (!lcRes.error && lcRes.data) ? lcRes.data : [];
+    const dnRows = (!dnRes.error && dnRes.data) ? dnRes.data : [];
+
+    if(!lcRows.length && !dnRows.length){
+      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">📋 Chưa có lịch ca / đơn nghỉ trong tuần này.</div>';
+      _lcqlUpdateStats(0,0,0);
       return;
     }
-    if(!rows.length){
-      document.getElementById('lcql-list').innerHTML='<div class="ns-empty">📋 Chưa có lịch ca nào trong tuần này.</div>';
-      return;
-    }
-    // Group by ngay
-    const grouped = {};
-    rows.forEach(r => {
-      const k = r.ngay;
-      if(!grouped[k]) grouped[k] = [];
-      grouped[k].push(r);
-    });
-    const ngayList = Object.keys(grouped).sort();
-    const dow = ['CN','T2','T3','T4','T5','T6','T7'];
-    let html = '';
-    ngayList.forEach(k => {
-      const d = new Date(k);
-      const label = dow[d.getDay()] + ' ' + k.substring(8) + '/' + k.substring(5,7);
-      html += `<div class="yc-day-header">${label} <span class="yc-day-count">${grouped[k].length}</span></div>`;
-      grouped[k].forEach(r => {
-        const tt = r.trang_thai || '';
-        const badgeCls = tt === 'DA_DUYET' ? 'dnpb-dd' : tt === 'TU_CHOI' ? 'dnpb-tc' : tt === 'DA_GUI' ? 'dnpb-cho' : 'dnpb-cho';
-        const badgeTxt = tt === 'DA_DUYET' ? 'Đã duyệt' : tt === 'TU_CHOI' ? 'Từ chối' : tt === 'DA_GUI' ? 'Đã gửi' : 'Chờ duyệt';
-        const gio = (r.gio_bat_dau||'').substring(0,5) + '-' + (r.gio_ket_thuc||'').substring(0,5);
-        html += `<div class="dnp-item" style="padding:10px 14px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="flex:1">
-              <div style="font-weight:600;font-size:13px">${r.ten_nv_snapshot||r.ma_nv}</div>
-              <div style="font-size:11px;color:var(--text-m)">${r.ten_ch_snapshot||r.ma_ch||''} · ${r.loai||r.ca_lam} · ${gio}</div>
-            </div>
-            <span class="dnp-badge ${badgeCls}">${badgeTxt}</span>
-          </div>
-        </div>`;
+
+    // Merge đơn nghỉ vào dạng lịch ca
+    const allRows = [...lcRows];
+    dnRows.forEach(dn => {
+      allRows.push({
+        ma_nv: dn.ma_nv,
+        ten_nv_snapshot: null,
+        ma_ch: dn.ma_ch,
+        ten_ch_snapshot: null,
+        ngay: dn.ngay_nghi,
+        loai: 'Nghỉ phép',
+        ca_lam: dn.loai_nghi || 'Nghỉ phép',
+        gio_bat_dau: null,
+        gio_ket_thuc: null,
+        trang_thai: dn.trang_thai,
+        ghi_chu_nv: dn.ly_do,
+        _isDonNghi: true,
+        _dnId: dn.id
       });
     });
+
+    // Lấy tên NV + CH từ cache
+    const chMap = {}; (window.CH_LIST||[]).forEach(c=>{chMap[c.ma]={ten:c.ten,kv:c.khuVuc};});
+
+    // Build hierarchy: KV → CH → NV → days
+    const kvData = {};
+    allRows.forEach(r => {
+      const ch = chMap[r.ma_ch] || {ten: r.ten_ch_snapshot || r.ma_ch || '—', kv: '(Chưa phân khu)'};
+      const kv = ch.kv || '(Chưa phân khu)';
+      if(!kvData[kv]) kvData[kv] = {};
+      const chKey = r.ma_ch || '—';
+      if(!kvData[kv][chKey]) kvData[kv][chKey] = {ten: ch.ten, nvs: {}};
+      const nvKey = r.ma_nv;
+      if(!kvData[kv][chKey].nvs[nvKey]) kvData[kv][chKey].nvs[nvKey] = {ten: r.ten_nv_snapshot || nvKey, days: []};
+      const gio = r.gio_bat_dau ? (r.gio_bat_dau+'').substring(0,5)+'-'+(r.gio_ket_thuc+'').substring(0,5) : '';
+      const tt = r.trang_thai || '';
+      kvData[kv][chKey].nvs[nvKey].days.push({
+        ngay: r.ngay, loai: r.loai || r.ca_lam, gio, trangThai: tt,
+        isDN: r._isDonNghi, ghiChu: r.ghi_chu_nv || ''
+      });
+    });
+
+    // Render accordion
+    const kvList = Object.keys(kvData).sort();
+    let totalCH = 0, totalNV = new Set(), totalDays = 0;
+    let html = '';
+
+    kvList.forEach(kv => {
+      const chKeys = Object.keys(kvData[kv]).sort();
+      totalCH += chKeys.length;
+      html += `<div class="lcql-kv-group">
+        <div class="lcql-kv-header" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;padding:12px 14px;background:var(--green-lt);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px">
+          <span>📍 ${kv}</span>
+          <span style="font-size:11px;font-weight:400;color:var(--text-m)">${chKeys.length} CH</span>
+        </div>
+        <div class="lcql-kv-body" style="display:none;padding-left:8px">`;
+
+      chKeys.forEach(chKey => {
+        const chInfo = kvData[kv][chKey];
+        const nvKeys = Object.keys(chInfo.nvs).sort();
+        html += `<div class="lcql-ch-group" style="margin-bottom:6px">
+          <div class="lcql-ch-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="cursor:pointer;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600">
+            <span>🏪 ${chInfo.ten}</span>
+            <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nvKeys.length} NV</span>
+          </div>
+          <div style="display:none;padding-left:10px;margin-top:4px">`;
+
+        nvKeys.forEach(nvKey => {
+          totalNV.add(nvKey);
+          const nvInfo = chInfo.nvs[nvKey];
+          totalDays += nvInfo.days.length;
+          const dow = ['CN','T2','T3','T4','T5','T6','T7'];
+          const daysHtml = nvInfo.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(d => {
+            const dt = new Date(d.ngay);
+            const dayLabel = dow[dt.getDay()] + ' ' + d.ngay.substring(8) + '/' + d.ngay.substring(5,7);
+            const ttCls = d.trangThai==='DA_DUYET'?'color:var(--green-m)':d.trangThai==='TU_CHOI'?'color:var(--red)':d.trangThai==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';
+            const ttTxt = d.trangThai==='DA_DUYET'?'✓ Đã duyệt':d.trangThai==='TU_CHOI'?'✗ Từ chối':d.trangThai==='CHO_DUYET'?'⏳ Chờ duyệt':d.trangThai==='DA_GUI'?'Đã gửi':'—';
+            return `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid #f3f4f6">
+              <span>${dayLabel} · ${d.loai}${d.gio?' · '+d.gio:''}</span>
+              <span style="${ttCls};font-weight:500">${ttTxt}</span>
+            </div>`;
+          }).join('');
+
+          html += `<div style="margin-bottom:6px">
+            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px">
+              <span>👤 ${nvInfo.ten} <span style="color:var(--text-lt)">${nvKey}</span></span>
+              <span style="color:var(--text-m)">${nvInfo.days.length} ngày</span>
+            </div>
+            <div style="display:none;padding:4px 10px">${daysHtml}</div>
+          </div>`;
+        });
+
+        html += `</div></div>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    // CSS cho accordion open
+    html = `<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}</style>` + html;
+
     document.getElementById('lcql-list').innerHTML = html || '<div class="ns-empty">📋 Không có dữ liệu.</div>';
-    // Stats
-    document.getElementById('lcql-ms1').textContent = rows.length;
-    document.getElementById('lcql-ms1-lbl').textContent = 'Tổng lịch';
+    _lcqlUpdateStats(kvList.length, totalCH, totalNV.size);
   }).catch(()=>{
     document.getElementById('lcql-list').innerHTML='<div class="ns-empty">❌ Lỗi kết nối.</div>';
   });
   const now=new Date();
   document.getElementById('lcql-updated').textContent='Cập nhật lúc '+pad(now.getHours())+':'+pad(now.getMinutes());
+}
+
+function _lcqlUpdateStats(kvCount, chCount, nvCount){
+  document.getElementById('lcql-ms1').textContent = kvCount;
+  document.getElementById('lcql-ms1-lbl').textContent = 'Khu vực';
+  document.getElementById('lcql-ms2').textContent = chCount;
+  document.getElementById('lcql-ms2-lbl').textContent = 'Cửa hàng';
+  document.getElementById('lcql-ms3').textContent = nvCount;
+  document.getElementById('lcql-ms3-lbl').textContent = 'Nhân viên';
+  document.getElementById('lcql-ms4').textContent = '--';
+  document.getElementById('lcql-ms4-lbl').textContent = '';
 }
 
 function setLCQLMode(mode){
@@ -6923,6 +6999,13 @@ function duyetDonNghiById(dnId, qd){
       if(bar)bar.style.display='none';
     }
     _updateYCDayCounts();
+    // [v12-FIX] Update badge ngay lập tức
+    const remainDN = (_ycData.donNghi||[]).length;
+    const remainGT = (_ycData.giaiTrinh||[]).length;
+    const dnBadge=document.getElementById('yc-dn-badge');
+    if(dnBadge){dnBadge.textContent=remainDN>0?String(remainDN):'';dnBadge.style.display=remainDN>0?'flex':'none';}
+    const accBadge=document.getElementById('acc-duyetyc-badge');
+    if(accBadge){const t=remainDN+remainGT;accBadge.textContent=t>0?String(t):'';accBadge.style.display=t>0?'flex':'none';}
   }
   showToast(qd==='Đã duyệt'?'✓ Đã duyệt':'✗ Đã từ chối','ok');
   supa.rpc('fn_duyet_don_nghi',{
@@ -7355,6 +7438,13 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbId){
       if(bulkBar) bulkBar.style.display='none';
     }
     _updateYCDayCounts();
+    // [v12-FIX] Badge update ngay
+    const rGT=(_ycData.giaiTrinh||[]).length;
+    const rDN=(_ycData.donNghi||[]).length;
+    const gtB=document.getElementById('yc-gt-badge');
+    if(gtB){gtB.textContent=rGT>0?String(rGT):'';gtB.style.display=rGT>0?'flex':'none';}
+    const aB=document.getElementById('acc-duyetyc-badge');
+    if(aB){const t=rGT+rDN;aB.textContent=t>0?String(t):'';aB.style.display=t>0?'flex':'none';}
   }
   showToast('✓ Đã cập nhật', 'ok');
   // Supabase RPC
