@@ -5664,7 +5664,7 @@ function taiLichCaQL(){
         const nvKeys = Object.keys(chInfo.nvs).sort();
         html += `<div class="lcql-ch-group" style="margin-bottom:6px">
           <div class="lcql-ch-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="cursor:pointer;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600">
-            <span>🏪 ${chInfo.ten}</span>
+            <span>🏪 ${chInfo.ten} <span style="font-weight:400;color:var(--text-lt)">${chKey}</span></span>
             <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nvKeys.length} NV</span>
           </div>
           <div style="display:none;padding-left:10px;margin-top:4px">`;
