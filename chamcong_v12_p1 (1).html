@@ -109,7 +109,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .lc-multi-apply-btn:hover, .lc-multi-apply-btn:active { opacity:0.9; }
 
 /* BOTTOM NAV */
-.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:white; border-top:0.5px solid var(--border); display:flex; z-index:20; box-shadow:0 -2px 12px rgba(0,0,0,.08); }
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:white; border-top:0.5px solid var(--border); display:flex; z-index:20; box-shadow:0 -2px 12px rgba(0,0,0,.08); transition: transform 0.2s ease; }
+.bottom-nav.kb-hidden { transform:translate(-50%, 100%); }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 4px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:none; background:none; }
 .nav-svg  { width:22px; height:22px; margin-bottom:3px; stroke:var(--text-lt); transition:stroke .15s; display:block; }
 .nav-label { font-size:10px; font-weight:500; color:var(--text-lt); transition:color .15s; }
@@ -2926,7 +2927,38 @@ async function doLogout(){
 window.addEventListener('load',()=>{
   const s=sessionStorage.getItem('session_cc');
   if(s){try{SESSION=JSON.parse(s);khoiDongApp();}catch(e){sessionStorage.removeItem('session_cc');}}
+  // [v12-P3] Ẩn bottom-nav khi bàn phím hiện (iOS/Android)
+  _setupKeyboardHandler();
 });
+
+// Ẩn bottom-nav khi gõ phím để menu không bị đẩy lên
+function _setupKeyboardHandler(){
+  const nav = document.querySelector('.bottom-nav');
+  if(!nav)return;
+  // Cách 1: focus/blur trên input
+  document.addEventListener('focusin', (e)=>{
+    if(e.target && (e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA' || e.target.isContentEditable)){
+      nav.classList.add('kb-hidden');
+    }
+  });
+  document.addEventListener('focusout', ()=>{
+    setTimeout(()=>{
+      const a = document.activeElement;
+      if(!a || (a.tagName!=='INPUT' && a.tagName!=='TEXTAREA' && !a.isContentEditable)){
+        nav.classList.remove('kb-hidden');
+      }
+    }, 100);
+  });
+  // Cách 2 (chính xác hơn): visualViewport API trên iOS
+  if(window.visualViewport){
+    const baseHeight = window.innerHeight;
+    window.visualViewport.addEventListener('resize', ()=>{
+      const diff = baseHeight - window.visualViewport.height;
+      if(diff > 150) nav.classList.add('kb-hidden');
+      else nav.classList.remove('kb-hidden');
+    });
+  }
+}
 
 // ─── KHỞI ĐỘNG ──────────────────────────────────────────────
 function khoiDongApp(){
