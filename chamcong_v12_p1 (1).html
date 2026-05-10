@@ -3505,7 +3505,8 @@ function _doSubmitFinal(){
       const sub = res.coLoiGPS
         ? `Vị trí chấm công cách cửa hàng ${khoangCach}m, vui lòng giải trình để quản lý duyệt.`
         : 'Thông tin ca làm việc cần được xác nhận lại. Vui lòng giải trình để quản lý duyệt.';
-      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham);
+      _gtCcId = res.id || ''; // cham_cong_id vừa tạo
+      openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, res.id);
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
@@ -3568,6 +3569,7 @@ function taiLichSu(){
       // [v12-FIX] Lưu danh sách cảnh báo per log
       const cbList = l.canhBaoList || [];
       logs.push({
+        ccId:l.ccId||'',
         loai:l.loai, lbcls:lbMap[l.loai]||'lb-v',
         time:l.gio.substring(0,5), dist:'--',
         ok:!isLoi, xacNhan:l.xacNhan||'',
@@ -3619,7 +3621,7 @@ function renderLog(){
         btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
       } else {
         const allCbIds = cbList.filter(cb=>!cb.daGiaiTrinh && !cb.giaiTrinh).map(cb=>cb.cbId).join(',');
-        btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhNhieuCB('${allCbIds}','${l.ngay||''}')">Giải trình</button>`;
+        btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhNhieuCB('${allCbIds}','${l.ngay||''}','${l.ccId||''}')">Giải trình</button>`;
       }
       errRows=`<div class="log-item-err"><span class="log-err-txt">${loiDisplay}: ${ghiChuShow}</span>${btn}</div>`;
     } else if(isLoi && !cbList.length){
@@ -3653,7 +3655,8 @@ function moGiaiTrinhTuLog(ngay){
 }
 
 // [v12-FIX] Giải trình tất cả CB cùng lúc — dùng chung 1 modal
-function moGiaiTrinhNhieuCB(cbIdsStr, ngay){
+function moGiaiTrinhNhieuCB(cbIdsStr, ngay, ccId){
+  _gtCcId = ccId || '';
   openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay);
   document.getElementById('gt-timer').style.display='none';
 }
@@ -3929,10 +3932,11 @@ function doDoiMatKhau(){
 function showPwMsg(msg,type){const el=document.getElementById('pw-msg');el.textContent=msg;el.className='pw-msg '+(type==='ok'?'pw-ok':'pw-err');el.style.display='block';}
 
 // ─── MODAL GIẢI TRÌNH ───────────────────────────────────────
-let gtLyDo='', gtNgay='', _gtTimerInterval=null;
+let gtLyDo='', gtNgay='', _gtTimerInterval=null, _gtCcId='';
 
-function openGiaiTrinh(title,sub,ngay){
+function openGiaiTrinh(title,sub,ngay,ccId){
   gtLyDo='';gtNgay=ngay;
+  if(ccId) _gtCcId = ccId;
   document.getElementById('gt-title').textContent=title;
   document.getElementById('gt-sub').textContent=sub;
   document.getElementById('gt-timer').style.display='flex';
@@ -4013,14 +4017,15 @@ function guiGiaiTrinh(){
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-FIX] Gửi 1 lần — server update TẤT CẢ CB cùng NV+ngày
+  // [v12-FIX] Gửi 1 lần — server update CHỈ CB thuộc lần chấm này
   supa.rpc('fn_gui_giai_trinh', {
     p_ma_nv: SESSION.ma,
     p_ngay: gtNgay,
     p_ly_do: lyDoGui,
     p_cb_id: null,
     p_loai_cb: null,
-    p_gio: null
+    p_gio: null,
+    p_cc_id: _gtCcId || null
   }).then(({ data: res, error }) => {
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
