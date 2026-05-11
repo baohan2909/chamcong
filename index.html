@@ -7829,7 +7829,7 @@ async function bhLoadSpData() {
     while (true) {
       const { data: rows, error } = await supa
         .from('san_pham')
-        .select('ma_sp, ten_sp, ma_vach, sku, gia_niem_yet, gia_sale, gia_ban, nganh_hang_1, nganh_hang_2, nganh_hang_3')
+        .select('ma_sp, ten_sp, ma_vach, ma_tham_chieu, sku, gia_niem_yet, gia_sale, gia_ban, nganh_hang_1, nganh_hang_2, nganh_hang_3')
         .eq('trang_thai', 'ACTIVE')
         .order('ma_sp', { ascending: true })
         .range(offset, offset + PAGE - 1);
@@ -7843,6 +7843,7 @@ async function bhLoadSpData() {
     // Convert sang format frontend kỳ vọng (maCu, ten, sku, giaNY, giaSale...)
     const list = allRows.map(r => ({
       maCu:    r.ma_sp,
+      maThamChieu: r.ma_tham_chieu || '',
       ten:     r.ten_sp,
       maVach:  r.ma_vach || '',
       sku:     r.sku || '',
@@ -8587,7 +8588,7 @@ function bhRenderCardContent(card, s) {
     spListHtml = s.products.map(maCu => {
       const sp = (BH.spCache && BH.spCache[maCu]) || BH_SP_CACHE[maCu];
       const ten = sp ? sp.ten : maCu;
-      const ma  = sp ? sp.maCu : maCu;
+      const ma  = sp ? (sp.maThamChieu || sp.maCu) : maCu;
       return `<div class="bh-card-sp-item">
         <div class="bh-card-sp-name">${bhEscHtml(ten)}</div>
         <div class="bh-card-sp-meta">Mã: ${bhEscHtml(ma)}</div>
@@ -8891,7 +8892,7 @@ function bhRenderSpSelectedQT() {
   wrap.innerHTML = BH.tempProducts.map(maCu => {
     const sp = (BH.spCache && BH.spCache[maCu]) || BH_SP_CACHE[maCu];
     const ten = sp ? sp.ten : maCu;
-    const ma  = sp ? sp.maCu : maCu;
+    const ma  = sp ? (sp.maThamChieu || sp.maCu) : maCu;
     const gia = sp ? ((sp.giaSale > 0) ? sp.giaSale : (sp.giaNY || 0)) : 0;
     return `
       <div class="bh-selected-item">
@@ -9198,7 +9199,7 @@ function bhRenderBoughtSelected() {
   wrap.innerHTML = BH.tempItems.map(it => {
     const sp = (BH.spCache && BH.spCache[it.maCu]) || BH_SP_CACHE[it.maCu];
     const ten = sp ? sp.ten : it.maCu;
-    const ma  = sp ? sp.maCu : it.maCu;
+    const ma  = sp ? (sp.maThamChieu || sp.maCu) : it.maCu;
     const gia = bhGiaSP(it.maCu);
     const subtotal = gia * it.qty;
     return `
