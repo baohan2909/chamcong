@@ -3508,18 +3508,18 @@ function _doSubmitFinal(){
       showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
       return;
     }
-    if (res && res.canhBao && res.canhBao.length > 0) {
+    if (res && (res.coLoiGPS || res.coLoiThuTu || (res.canhBao && res.canhBao.length > 0))) {
       if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
       const khoangCach = res.khoangCach || preKhoangCach || '?';
       // [v12-FIX] Hiện rõ loại lỗi thay vì "Chấm công cần xác nhận"
       const loiParts = [];
       if(res.coLoiGPS) loiParts.push('Sai vị trí (' + khoangCach + 'm)');
       if(res.coLoiThuTu) loiParts.push('Sai ca');
-      const title = '⚠️ ' + loiParts.join(' + ');
+      const title = '⚠️ ' + (loiParts.length ? loiParts.join(' + ') : 'Cần giải trình');
       const subParts = [];
       if(res.coLoiGPS) subParts.push('Vị trí chấm công cách cửa hàng ' + khoangCach + 'm');
       if(res.coLoiThuTu) subParts.push('Chấm công không đúng trình tự ca');
-      const sub = subParts.join('. ') + '. Vui lòng giải trình để quản lý duyệt.';
+      const sub = (subParts.length ? subParts.join('. ') + '. ' : '') + 'Vui lòng giải trình để quản lý duyệt.';
       _gtCcId = res.id || ''; // cham_cong_id vừa tạo
       openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, res.id);
       startGtTimer(300);
