@@ -3505,9 +3505,13 @@ function _doSubmitFinal(){
       p_device_info: navigator.userAgent.substring(0, 200)
     });
     if (error) {
+      console.error('CC error:', error);
       showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
       return;
     }
+    // [DEBUG] Log response để debug
+    console.log('CC response:', res);
+    console.log('coLoiGPS:', res?.coLoiGPS, 'coLoiThuTu:', res?.coLoiThuTu, 'canhBao:', res?.canhBao);
     if (res && (res.coLoiGPS || res.coLoiThuTu || (res.canhBao && res.canhBao.length > 0))) {
       if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
       const khoangCach = res.khoangCach || preKhoangCach || '?';
@@ -3572,16 +3576,27 @@ function fmtPhut(m){const g=Math.floor(m/60),p=Math.round(m%60);return g+'g '+St
 // ─── LỊCH SỬ HÔM NAY ────────────────────────────────────────
 function taiLichSu(){
   if(!SESSION)return;
+  console.log('[taiLichSu] gọi cho ma_nv:', SESSION.ma);
   // [v12-P2] Supabase RPC
   supa.rpc('fn_get_lich_su_hom_nay', { p_ma_nv: SESSION.ma }).then(({ data, error }) => {
-    const ls = (!error && Array.isArray(data)) ? data : [];
-    if(!ls.length)return;
+    if (error) {
+      console.error('[taiLichSu] LỖI:', error);
+      return;
+    }
+    console.log('[taiLichSu] data:', data);
+    const ls = (Array.isArray(data)) ? data : [];
+    if(!ls.length) {
+      console.log('[taiLichSu] không có data');
+      // Vẫn render empty state
+      logs.length = 0;
+      try { renderLog(); } catch(e) {}
+      return;
+    }
     const lbMap={'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
     const today=new Date().toISOString().substring(0,10);
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
       const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
-      // [v12-FIX] Lưu danh sách cảnh báo per log
       const cbList = l.canhBaoList || [];
       logs.push({
         ccId:l.ccId||'',
@@ -3595,7 +3610,9 @@ function taiLichSu(){
       });
     });
     renderLog();
-  }).catch(()=>{});
+  }).catch((e)=>{
+    console.error('[taiLichSu] catch:', e);
+  });
 }
 
 function renderLog(){
