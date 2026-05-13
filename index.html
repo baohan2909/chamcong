@@ -8890,7 +8890,7 @@ async function bhRenderSpListLocal(containerId, query, toggleFn, selectedList) {
       <div class="bh-sp-item ${sel ? 'selected' : ''}" onclick="${toggleFn}('${bhEscHtml(p.maCu)}')">
         <div class="bh-sp-name">${bhEscHtml(p.ten)}</div>
         <div class="bh-sp-meta">
-          <span class="sku">${bhEscHtml(p.maCu || p.sku)}</span>
+          <span class="sku">${bhEscHtml(p.maThamChieu || p.maCu)}</span>
           ${gia > 0 ? '<span class="price">' + bhFormatMoney(gia) + 'đ</span>' : ''}
         </div>
       </div>
