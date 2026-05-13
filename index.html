@@ -9842,8 +9842,6 @@ async function bhQlLoadPhien() {
     if (BH.qlFilterTuNgay) finQ = finQ.gte('ngay', BH.qlFilterTuNgay);
     if (BH.qlFilterDenNgay) finQ = finQ.lte('ngay', BH.qlFilterDenNgay);
     finQ = applyKVFilter(finQ);
-    const finRes = await finQ;
-    if (finRes.error) throw finRes.error;
 
     // Helper format
     const fmtTime = ts => {
@@ -9883,7 +9881,7 @@ async function bhQlLoadPhien() {
     }));
 
     // Convert finished → format frontend
-    BH.qlLastFinished = (finRes.data || []).map(r => ({
+    BH.qlLastFinished = finData.map(r => ({
       idPhien: r.id,
       maCH: r.ma_ch,
       tenCH: r.ten_ch_snapshot || r.ma_ch,
