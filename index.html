@@ -3018,9 +3018,8 @@ function khoiDongApp(){
   // Phân quyền QLNS/ADMIN
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
   // [v11] Thêm: CUA_HANG và QLBH
-  const isCH     = SESSION.vaiTro==='CUA_HANG';
-  const isADMINBH= SESSION.vaiTro==='ADMINBH';
-  const isQLBH   = SESSION.vaiTro==='QLBH' || isADMINBH;
+  const isCH  = SESSION.vaiTro==='CUA_HANG';
+  const isQLBH= SESSION.vaiTro==='QLBH';
 
   if(isQL){
     document.getElementById('nav-nhansu').style.display='';
@@ -7986,7 +7985,7 @@ function bhInitPage() {
   const viewCH = document.getElementById('bh-view-ch');
   const viewQL = document.getElementById('bh-view-qlbh');
   const isCH = SESSION.vaiTro === 'CUA_HANG';
-  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH';
+  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN';
 
   // Load SP data (async, không block UI)
   bhLoadSpData();
@@ -9793,7 +9792,7 @@ function bhQlSetSort(sortBy) {
 
 // Helper: build kvAllowed param
 function _bhQlKVAllowedParam() {
-  // Nếu vai trò là QLBH/ADMINBH (full hệ thống) hoặc ADMIN → null = full
+  // Nếu vai trò là QLBH (full hệ thống) hoặc ADMIN → null = full
   // Nếu là QLBHHCM/MĐ/MT/TTN/HNTB → list KV
   if (!SESSION || !SESSION.bhKVList) return '';
   return '&kvAllowed=' + encodeURIComponent(JSON.stringify(SESSION.bhKVList));
@@ -9825,9 +9824,8 @@ async function bhQlLoadPhien() {
     let liveQ = supa.from('phien_ban_hang')
       .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, ngay, stt_trong_ngay, stt_toan_cuc, sp_quan_tam_text, yeu_cau_xoa, ly_do_xoa, nguoi_yeu_cau_xoa, thoi_gian_yeu_cau_xoa')
       .eq('trang_thai', 'DANG_MO')
-      .order('gio_mo', { ascending: false });
-    // ADMINBH: không giới hạn; các role khác giới hạn 500
-    if (SESSION.vaiTro !== 'ADMINBH') liveQ = liveQ.limit(500);
+      .order('gio_mo', { ascending: false })
+      .limit(500);
     liveQ = applyKVFilter(liveQ);
     const liveRes = await liveQ;
     if (liveRes.error) throw liveRes.error;
@@ -9836,12 +9834,13 @@ async function bhQlLoadPhien() {
     let finQ = supa.from('phien_ban_hang')
       .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ngay, stt_trong_ngay, stt_toan_cuc, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_quan_tam_text, sp_da_mua_text, ghi_chu')
       .eq('trang_thai', 'DA_DONG')
-      .order('gio_mo', { ascending: false });
-    // ADMINBH: không giới hạn số phiên; các role khác giới hạn 1000
-    if (SESSION.vaiTro !== 'ADMINBH') finQ = finQ.limit(1000);
+      .order('gio_mo', { ascending: false })
+      .limit(1000);
     if (BH.qlFilterTuNgay) finQ = finQ.gte('ngay', BH.qlFilterTuNgay);
     if (BH.qlFilterDenNgay) finQ = finQ.lte('ngay', BH.qlFilterDenNgay);
     finQ = applyKVFilter(finQ);
+    const finRes = await finQ;
+    if (finRes.error) throw finRes.error;
 
     // Helper format
     const fmtTime = ts => {
@@ -9881,7 +9880,7 @@ async function bhQlLoadPhien() {
     }));
 
     // Convert finished → format frontend
-    BH.qlLastFinished = finData.map(r => ({
+    BH.qlLastFinished = (finRes.data || []).map(r => ({
       idPhien: r.id,
       maCH: r.ma_ch,
       tenCH: r.ten_ch_snapshot || r.ma_ch,
@@ -10017,7 +10016,7 @@ function bhQlOpenDetail(idPhien) {
   // [v11.7+ fix] Show nút xóa cho QLBH/ADMIN/QLBH theo KV
   const delBtn = document.getElementById('bh-md-detail-delete');
   if (delBtn) {
-    const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH' || String(SESSION.vaiTro || '').startsWith('QLBH'));
+    const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || String(SESSION.vaiTro || '').startsWith('QLBH'));
     delBtn.style.display = isQLBH ? '' : 'none';
   }
   bhOpenModal('detail');
