@@ -1039,6 +1039,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-btn-secondary:active { background:var(--gray-lt); }
 .bh-btn-danger-solid { background:#6B7280; color:#fff; flex:1; }
 .bh-btn-danger-solid:active { background:#4B5563; }
+.bh-btn-warning-solid { background:#F59E0B; color:#fff; flex:1; }
+.bh-btn-warning-solid:active { background:#D97706; }
 
 /* Footer CH - [v11.8+] đổi sticky từ bottom → top vì nút "Bắt đầu phiên" nằm TRÊN list */
 .bh-footer { background:#fff; border-bottom:0.5px solid var(--border); padding:12px 16px; position:sticky; top:0; z-index:5; }
@@ -2568,6 +2570,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div class="bh-md-footer" id="bh-md-detail-footer">
       <button class="bh-btn bh-btn-secondary" style="flex:1" onclick="bhCloseModal('detail')">Đóng</button>
+      <!-- [v12] Nút đóng phiên - chỉ hiện cho QLBH/ADMIN khi phiên đang mở -->
+      <button class="bh-btn bh-btn-warning-solid" id="bh-md-detail-close" style="display:none;flex:0 0 auto;padding:0 18px" onclick="bhQlDongPhien()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+        <span>Đóng phiên</span>
+      </button>
       <!-- [v11.7+ fix] Nút xóa - chỉ hiện cho QLBH/ADMIN -->
       <button class="bh-btn bh-btn-danger-solid" id="bh-md-detail-delete" style="display:none;flex:0 0 auto;padding:0 18px" onclick="bhQlXoaPhien()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
@@ -8063,6 +8070,8 @@ function bhUpdateSoundUI() {
 async function bhLoadPhienDangBan(opts) {
   opts = opts || {};
   if (!SESSION.cuaHangMa) return;
+  // [v12] Auto đóng phiên quá 60 phút (DB tự xử lý, fire-and-forget)
+  try { supa.rpc('fn_bh_auto_close_phien'); } catch(e){}
   try {
     // [v12-P1] Query trực tiếp Supabase: lấy phiên DANG_MO của CH
     const { data: rows, error } = await supa
@@ -9652,7 +9661,7 @@ function bhQlRenderLive() {
     try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
     const elapsed = Math.floor((Date.now() - startMs) / 1000);
     const hot = elapsed >= 900 ? ' hot' : '';
-    const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
+    const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
     // [v11.8] Badge yêu cầu xóa
     const hasYC = p.yeuCauXoa && p.yeuCauXoa.co;
     const ycCls = hasYC ? ' has-yc' : '';
@@ -9800,6 +9809,8 @@ function _bhQlKVAllowedParam() {
 
 async function bhQlLoadPhien() {
   try {
+    // [v12] Auto đóng phiên quá 60 phút (DB tự xử lý, fire-and-forget)
+    try { await supa.rpc('fn_bh_auto_close_phien'); } catch(e){}
     // [v12-P1] Query trực tiếp Supabase, build 2 query song song:
     //   live: phiên DANG_MO trong toàn hệ thống (theo KV nếu có)
     //   finished: phiên DA_DONG trong khoảng tu→den
@@ -10001,7 +10012,7 @@ function bhQlRenderHistory() {
   }
   histEl.innerHTML = fin.map(p => {
     const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
-    const sttTC = p.sttToanCuc ? `<span class="bh-stt-tc">#${p.sttToanCuc}</span>` : '';
+    const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
         <div class="bh-hist-status ${cls}"></div>
@@ -10046,10 +10057,11 @@ function bhQlOpenDetail(idPhien) {
   document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
   // [v11.7+ fix] Show nút xóa cho QLBH/ADMIN/QLBH theo KV
   const delBtn = document.getElementById('bh-md-detail-delete');
-  if (delBtn) {
-    const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH' || String(SESSION.vaiTro || '').startsWith('QLBH'));
-    delBtn.style.display = isQLBH ? '' : 'none';
-  }
+  const closeBtn = document.getElementById('bh-md-detail-close');
+  const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH' || String(SESSION.vaiTro || '').startsWith('QLBH'));
+  if (delBtn) delBtn.style.display = isQLBH ? '' : 'none';
+  // [v12] Nút đóng phiên: ẩn ban đầu, chỉ show khi biết phiên DANG_MO
+  if (closeBtn) closeBtn.style.display = 'none';
   bhOpenModal('detail');
 
   // [v12-P1] Query trực tiếp 1 phiên theo id từ Supabase
@@ -10082,6 +10094,8 @@ function bhQlOpenDetail(idPhien) {
       };
       document.getElementById('bh-md-detail-title').textContent = 'Phiên #' + p.stt + ' · ' + p.trangThai;
       document.getElementById('bh-md-detail-sub').textContent = p.tenCH + ' (' + p.maCH + ')';
+      // [v12] Show nút "Đóng phiên" nếu phiên đang mở + user là QLBH/ADMIN
+      if (closeBtn && isQLBH && r.trang_thai === 'DANG_MO') closeBtn.style.display = '';
       const spQTHtml = (p.spQuanTam && p.spQuanTam.length)
         ? '<div class="bh-chips">' + p.spQuanTam.map(s => '<span class="bh-chip">' + bhEscHtml(bhTenSP(s)) + '</span>').join('') + '</div>'
         : '<div style="color:var(--text-lt);font-size:12px">Không có</div>';
@@ -10108,6 +10122,43 @@ function bhQlOpenDetail(idPhien) {
       console.error('[BH detail]', e);
       document.getElementById('bh-md-detail-body').innerHTML = '<div style="padding:24px;text-align:center;color:var(--red)">Lỗi mạng</div>';
     });
+}
+
+// [v12] QLBH/ADMINBH đóng phiên đang mở → KHONG_MUA
+async function bhQlDongPhien() {
+  const idPhien = BH.qlCurrentDetailId;
+  if (!idPhien) return;
+  const ok = await appConfirm('Phiên sẽ bị đóng ngay và tính là "Không mua". Nhân viên cửa hàng sẽ không thể thao tác tiếp trên phiên này.', {
+    title: 'Đóng phiên này?',
+    okLabel: 'Đóng phiên',
+    danger: true
+  });
+  if (!ok) return;
+
+  bhCloseModal('detail');
+  bhShowToast('✓ Đang đóng phiên...', 'success');
+
+  // Gỡ khỏi state local ngay
+  const idx = BH.sessions.findIndex(s => s.idPhien === idPhien);
+  if (idx >= 0) BH.sessions.splice(idx, 1);
+  if (BH.qlLastLive) BH.qlLastLive = BH.qlLastLive.filter(p => p.idPhien !== idPhien);
+
+  supa.rpc('fn_bh_dong_phien', {
+    p_phien_id: idPhien,
+    p_ma_nguoi_dong: SESSION.ma,
+  }).then(({ data: d, error }) => {
+    if (!error && d && d.success) {
+      bhShowToast('✓ ' + (d.message || 'Đã đóng phiên'), 'success');
+    } else {
+      bhShowToast('⚠ Server: ' + ((d && d.error) || (error && error.message) || 'Lỗi đóng phiên'), null);
+      console.error('[BH Đóng phiên] Server lỗi:', d || error);
+    }
+    // Reload lại danh sách
+    try { if (typeof bhQlLoadPhien === 'function' && BH.qlTab) bhQlLoadPhien(); } catch(e){}
+  }).catch(e => {
+    bhShowToast('⚠ Mất kết nối', null);
+    console.error('[BH Đóng phiên] Network error:', e);
+  });
 }
 
 // [v11.7+ fix] QLBH/ADMIN xóa phiên - confirm 2 lớp
