@@ -7789,6 +7789,18 @@ function bhGiaSP(maCu) {
   return (sp.giaSale > 0) ? sp.giaSale : (sp.giaNY || 0);
 }
 
+// [v12] Đếm TỔNG SỐ LƯỢNG sản phẩm từ list dòng text dạng "MÃ_TC (x3)"
+// spDaMua là array các dòng; mỗi dòng có thể có hậu tố " (xN)", không có = 1
+function bhCountSpQty(spList) {
+  if (!Array.isArray(spList) || !spList.length) return 0;
+  let total = 0;
+  spList.forEach(line => {
+    const m = String(line || '').match(/\(x\s*(\d+)\)\s*$/i);
+    total += m ? parseInt(m[1], 10) : 1;
+  });
+  return total;
+}
+
 function bhShowToast(text, type, undoFn) {
   const wrap = document.getElementById('bh-toast-wrap');
   if (!wrap) return;
@@ -8501,7 +8513,7 @@ function bhBuildHistCardCh(p) {
     const total = parseFloat(p.tongGiaTri) || 0;
     detail = total > 0 ? '<strong>' + bhFormatMoney(total) + 'đ</strong>' : '';
     if (p.spDaMua && p.spDaMua.length) {
-      detail += (detail ? ' · ' : '') + p.spDaMua.length + ' SP';
+      detail += (detail ? ' · ' : '') + bhCountSpQty(p.spDaMua) + ' SP';
     }
   } else {
     cls = p.trangThai === 'Tự đóng' ? 'bh-hist-auto' : 'bh-hist-notbought';
@@ -10295,12 +10307,13 @@ async function bhQlLoadDashboard() {
           sttSPQT[ma] = (sttSPQT[ma] || 0) + 1;
         });
       }
-      // Top SP đã mua (split text - format có thể có "tenSP x2")
+      // Top SP đã mua (format: "MÃ_TC (xN)" — gom theo mã, cộng số lượng)
       if (r.sp_da_mua_text) {
         r.sp_da_mua_text.split('\n').filter(Boolean).forEach(line => {
-          // Bỏ phần " xN" để gom nhóm
-          const key = line.replace(/\s+x\d+$/, '').trim();
-          sttSPDaMua[key] = (sttSPDaMua[key] || 0) + 1;
+          const m = String(line).match(/\(x\s*(\d+)\)\s*$/i);
+          const qty = m ? parseInt(m[1], 10) : 1;
+          const key = String(line).replace(/\s*\(x\s*\d+\)\s*$/i, '').trim();
+          sttSPDaMua[key] = (sttSPDaMua[key] || 0) + qty;
         });
       }
       // Top CH
