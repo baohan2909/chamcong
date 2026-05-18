@@ -1388,56 +1388,159 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   .bh-sessions { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 }
 
-/* ═══ [v12] ADMIN STYLES ═══ */
-#page-admin { padding-bottom:84px; display:none; }
+/* ═══════════════════════════════════════════════════════════ */
+/* [v12 ADMIN v2] DESIGN SYSTEM - Clean, modern, professional   */
+/* ═══════════════════════════════════════════════════════════ */
+#page-admin { padding-bottom:88px; display:none; background:#F7F8FA; min-height:100vh; }
 #page-admin.active { display:block; }
-.adm-wrap { padding:12px; max-width:900px; margin:0 auto; }
-.adm-tabs { display:flex; gap:4px; overflow-x:auto; padding:4px; background:#fff; border-radius:10px; margin-bottom:12px; border:1px solid var(--border); position:sticky; top:54px; z-index:5; }
-.adm-tab { flex:0 0 auto; padding:8px 14px; border:none; background:transparent; color:var(--text-m); font-size:13px; font-weight:500; border-radius:8px; cursor:pointer; white-space:nowrap; }
-.adm-tab.active { background:var(--brand); color:#fff; }
-.adm-pane { display:none; }
-.adm-pane.active { display:block; }
-.adm-section-title { font-size:15px; font-weight:600; color:var(--text-d); margin:8px 0 10px; }
-.adm-stats-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
-.adm-stat-card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px; }
-.adm-stat-label { font-size:11px; color:var(--text-m); text-transform:uppercase; letter-spacing:0.3px; }
-.adm-stat-value { font-size:22px; font-weight:700; color:var(--text-d); margin-top:4px; }
-.adm-stat-value.money { font-size:16px; color:var(--green); }
-.adm-stat-value.warn { color:#D97706; }
-.adm-stat-value.danger { color:#DC2626; }
-.adm-filter-row { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
-.adm-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#fff; min-width:0; }
-.adm-input:focus { outline:none; border-color:var(--brand); }
-.adm-btn { padding:8px 14px; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; }
-.adm-btn-primary { background:var(--brand); color:#fff; }
-.adm-btn-secondary { background:#fff; color:var(--text-d); border:1px solid var(--border); }
-.adm-btn-danger { background:#DC2626; color:#fff; }
-.adm-btn-warn { background:#F59E0B; color:#fff; }
-.adm-btn:active { opacity:0.85; }
-.adm-list { background:#fff; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-.adm-acc-item { padding:12px; border-bottom:1px solid var(--border); }
-.adm-acc-item:last-child { border-bottom:none; }
-.adm-acc-head { display:flex; gap:8px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
-.adm-badge { font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600; }
-.adm-badge.nv { background:#DBEAFE; color:#1E40AF; }
-.adm-badge.ql { background:#FEF3C7; color:#92400E; }
-.adm-badge.ch { background:#D1FAE5; color:#065F46; }
-.adm-badge.role { background:#E0E7FF; color:#3730A3; }
-.adm-badge.status { background:#FEE2E2; color:#991B1B; }
-.adm-badge.status.active { background:#D1FAE5; color:#065F46; }
-.adm-acc-ma { font-weight:600; font-size:14px; color:var(--text-d); }
-.adm-acc-ten { font-size:13px; color:var(--text-d); }
-.adm-acc-meta { font-size:11px; color:var(--text-m); margin:2px 0 6px; }
-.adm-acc-pw { font-family: monospace; font-size:12px; color:#6B7280; background:#F3F4F6; padding:2px 6px; border-radius:4px; }
-.adm-acc-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-.adm-acc-actions .adm-btn { font-size:11px; padding:5px 10px; }
-.adm-action-card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; }
-.adm-action-title { font-weight:600; font-size:13px; color:var(--text-d); margin-bottom:4px; }
-.adm-action-desc { font-size:12px; color:var(--text-m); margin-bottom:10px; }
-.adm-audit-item { padding:10px 12px; border-bottom:1px solid var(--border); font-size:12px; }
-.adm-audit-head { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px; }
-.adm-audit-time { font-size:11px; color:var(--text-m); }
-.adm-audit-detail { font-size:11px; color:var(--text-m); margin-top:2px; font-family:monospace; word-break:break-all; }
+.adm2-wrap { max-width:960px; margin:0 auto; padding:14px 14px 0; }
+
+/* Sticky segmented tabs */
+.adm2-tabs {
+  position:sticky; top:54px; z-index:10;
+  display:flex; gap:4px; padding:4px;
+  background:rgba(255,255,255,0.92); backdrop-filter:saturate(180%) blur(12px);
+  border:1px solid rgba(0,0,0,0.06); border-radius:12px;
+  margin-bottom:16px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.adm2-tabs::-webkit-scrollbar { display:none; }
+.adm2-tab {
+  flex:0 0 auto; display:flex; align-items:center; gap:6px;
+  padding:8px 14px; border:none; background:transparent;
+  color:#6B7280; font-size:13px; font-weight:500;
+  border-radius:8px; cursor:pointer; white-space:nowrap;
+  transition:all 0.15s;
+}
+.adm2-tab svg { width:15px; height:15px; flex:0 0 15px; }
+.adm2-tab:hover { color:#1F2937; background:rgba(0,0,0,0.04); }
+.adm2-tab.active { background:#111827; color:#fff; }
+.adm2-tab.active:hover { background:#111827; }
+.adm2-pane { display:none; }
+.adm2-pane.active { display:block; animation: adm2FadeIn 0.2s ease; }
+@keyframes adm2FadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+/* Section header */
+.adm2-section-head { display:flex; justify-content:space-between; align-items:center; margin:0 4px 12px; }
+.adm2-section-title { font-size:15px; font-weight:600; color:#111827; }
+.adm2-section-sub { font-size:12px; color:#6B7280; }
+
+/* Stat cards (clickable) */
+.adm2-stats { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+@media (min-width: 720px) { .adm2-stats { grid-template-columns:repeat(3, 1fr); } }
+.adm2-stat {
+  background:#fff; border:1px solid rgba(0,0,0,0.05);
+  border-radius:14px; padding:14px;
+  cursor:pointer; transition:all 0.15s;
+  position:relative; overflow:hidden;
+}
+.adm2-stat:hover { transform:translateY(-2px); box-shadow:0 8px 20px -8px rgba(0,0,0,0.12); border-color:rgba(0,0,0,0.1); }
+.adm2-stat:active { transform:translateY(0); }
+.adm2-stat-icon {
+  width:34px; height:34px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  background:#F3F4F6; color:#4B5563; margin-bottom:10px;
+}
+.adm2-stat-icon svg { width:18px; height:18px; }
+.adm2-stat-icon.blue { background:#EFF6FF; color:#2563EB; }
+.adm2-stat-icon.amber { background:#FFFBEB; color:#D97706; }
+.adm2-stat-icon.emerald { background:#ECFDF5; color:#059669; }
+.adm2-stat-icon.violet { background:#F5F3FF; color:#7C3AED; }
+.adm2-stat-icon.rose { background:#FFF1F2; color:#E11D48; }
+.adm2-stat-icon.slate { background:#F1F5F9; color:#475569; }
+.adm2-stat-label { font-size:11px; color:#6B7280; font-weight:500; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+.adm2-stat-value { font-size:22px; font-weight:700; color:#111827; line-height:1.1; }
+.adm2-stat-value.warn { color:#D97706; }
+.adm2-stat-value.alert { color:#DC2626; }
+.adm2-stat-suffix { font-size:12px; color:#9CA3AF; font-weight:500; margin-left:4px; }
+.adm2-stat-chev { position:absolute; top:14px; right:14px; color:#D1D5DB; }
+.adm2-stat-chev svg { width:14px; height:14px; }
+
+/* Detail panel */
+.adm2-detail { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:14px; margin-top:14px; overflow:hidden; animation: adm2SlideIn 0.25s ease; }
+@keyframes adm2SlideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.adm2-detail-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.06); background:#FAFAFA; }
+.adm2-detail-title { font-size:14px; font-weight:600; color:#111827; }
+.adm2-detail-close { background:none; border:none; cursor:pointer; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#6B7280; }
+.adm2-detail-close:hover { background:rgba(0,0,0,0.05); color:#111827; }
+.adm2-detail-close svg { width:16px; height:16px; }
+.adm2-detail-body { max-height:480px; overflow-y:auto; }
+.adm2-empty { text-align:center; color:#9CA3AF; padding:40px 20px; font-size:13px; }
+
+/* List items */
+.adm2-row { padding:12px 16px; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.adm2-row:last-child { border-bottom:none; }
+.adm2-row-main { flex:1; min-width:0; }
+.adm2-row-title { font-size:13px; font-weight:600; color:#111827; margin-bottom:2px; }
+.adm2-row-sub { font-size:11px; color:#6B7280; }
+.adm2-row-actions { display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+
+/* Filter row */
+.adm2-filter { display:flex; gap:8px; align-items:center; background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:8px; margin-bottom:12px; }
+.adm2-select, .adm2-input-text, .adm2-date { border:none; outline:none; background:transparent; padding:6px 10px; font-size:13px; color:#111827; border-radius:8px; min-width:0; }
+.adm2-select { background:#F3F4F6; flex:0 0 auto; }
+.adm2-input-text { flex:1; }
+.adm2-date { background:#F3F4F6; }
+
+/* Buttons */
+.adm2-btn { border:none; cursor:pointer; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; white-space:nowrap; }
+.adm2-btn svg { width:14px; height:14px; }
+.adm2-btn-primary { background:#111827; color:#fff; }
+.adm2-btn-primary:hover { background:#1F2937; }
+.adm2-btn-secondary { background:#F3F4F6; color:#374151; }
+.adm2-btn-secondary:hover { background:#E5E7EB; }
+.adm2-btn-warn { background:#F59E0B; color:#fff; }
+.adm2-btn-warn:hover { background:#D97706; }
+.adm2-btn-danger { background:#DC2626; color:#fff; }
+.adm2-btn-danger:hover { background:#B91C1C; }
+.adm2-btn-ghost { background:transparent; color:#6B7280; padding:6px 10px; }
+.adm2-btn-ghost:hover { background:#F3F4F6; color:#111827; }
+.adm2-btn-sm { padding:5px 10px; font-size:11px; }
+.adm2-btn-sm svg { width:12px; height:12px; }
+
+/* Action cards */
+.adm2-action-card { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:14px; padding:16px; margin-bottom:12px; }
+.adm2-action-head { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
+.adm2-action-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.adm2-action-icon svg { width:16px; height:16px; }
+.adm2-action-icon.warn { background:#FFFBEB; color:#D97706; }
+.adm2-action-icon.danger { background:#FEF2F2; color:#DC2626; }
+.adm2-action-icon.success { background:#ECFDF5; color:#059669; }
+.adm2-action-title { font-size:14px; font-weight:600; color:#111827; }
+.adm2-action-desc { font-size:12px; color:#6B7280; margin:4px 0 10px 42px; }
+.adm2-action-body { padding-left:42px; }
+
+/* Badges */
+.adm2-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:10px; font-weight:600; letter-spacing:0.02em; text-transform:uppercase; }
+.adm2-badge.nv { background:#DBEAFE; color:#1E40AF; }
+.adm2-badge.ql { background:#FEF3C7; color:#92400E; }
+.adm2-badge.ch { background:#D1FAE5; color:#065F46; }
+.adm2-badge.role { background:#EDE9FE; color:#5B21B6; }
+.adm2-badge.active { background:#D1FAE5; color:#065F46; }
+.adm2-badge.inactive { background:#FEE2E2; color:#991B1B; }
+.adm2-badge.warn { background:#FEF3C7; color:#92400E; }
+
+/* Password pill */
+.adm2-pw { display:inline-flex; align-items:center; gap:4px; font-family:'SF Mono', Monaco, monospace; font-size:11px; background:#F3F4F6; color:#4B5563; padding:2px 8px; border-radius:6px; margin-top:4px; }
+.adm2-pw.warn { background:#FEF3C7; color:#92400E; }
+
+/* Custom modal */
+.adm2-modal-bg { position:fixed; inset:0; z-index:9999; background:rgba(17,24,39,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; animation: adm2FadeIn 0.18s ease; }
+.adm2-modal { background:#fff; border-radius:16px; width:100%; max-width:420px; box-shadow:0 24px 60px rgba(0,0,0,0.25); overflow:hidden; animation: adm2ModalIn 0.22s ease; }
+@keyframes adm2ModalIn { from { opacity:0; transform:scale(0.96) translateY(8px); } to { opacity:1; transform:none; } }
+.adm2-modal-head { padding:18px 20px 6px; }
+.adm2-modal-title { font-size:16px; font-weight:600; color:#111827; }
+.adm2-modal-sub { font-size:13px; color:#6B7280; margin-top:4px; }
+.adm2-modal-body { padding:14px 20px; }
+.adm2-modal-input, .adm2-modal-select { width:100%; padding:10px 12px; border:1px solid #E5E7EB; border-radius:9px; font-size:14px; color:#111827; outline:none; transition:border 0.15s; background:#fff; }
+.adm2-modal-input:focus, .adm2-modal-select:focus { border-color:#111827; }
+.adm2-modal-foot { display:flex; gap:8px; justify-content:flex-end; padding:8px 20px 18px; }
+
+/* Toast */
+.adm2-toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 16px; border-radius:10px; font-size:13px; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:10000; animation: adm2ToastIn 0.25s ease; }
+.adm2-toast.success { background:#059669; }
+.adm2-toast.error { background:#DC2626; }
+@keyframes adm2ToastIn { from { opacity:0; transform:translate(-50%, 10px); } to { opacity:1; transform:translate(-50%, 0); } }
 
 </style>
 </head>
@@ -1448,7 +1551,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng</div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.0</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2113,6 +2216,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
+    <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
+      Phiên bản <strong style="color:#6B7280">v5.0</strong>
+    </div>
   </div>
 
   <!-- PAGE: GIAO DIỆN (theme) [v10.1] -->
@@ -2318,91 +2424,138 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <!-- [v12] PAGE: ADMIN — quản trị toàn hệ thống                    -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="page" id="page-admin">
-    <div class="adm-wrap">
-      <!-- Sub-tab navigation -->
-      <div class="adm-tabs">
-        <button class="adm-tab active" data-tab="dashboard" onclick="admSwitchTab('dashboard')">📊 Tổng quan</button>
-        <button class="adm-tab" data-tab="taikhoan" onclick="admSwitchTab('taikhoan')">👥 Tài khoản</button>
-        <button class="adm-tab" data-tab="phienbh" onclick="admSwitchTab('phienbh')">🛒 Phiên BH</button>
-        <button class="adm-tab" data-tab="chamcong" onclick="admSwitchTab('chamcong')">⏰ Chấm công</button>
-        <button class="adm-tab" data-tab="audit" onclick="admSwitchTab('audit')">📋 Audit log</button>
+    <div class="adm2-wrap">
+      <!-- Tabs -->
+      <div class="adm2-tabs">
+        <button class="adm2-tab active" data-tab="tongquan" onclick="adm2SwitchTab('tongquan')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          <span>Tổng quan</span>
+        </button>
+        <button class="adm2-tab" data-tab="taikhoan" onclick="adm2SwitchTab('taikhoan')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Tài khoản</span>
+        </button>
+        <button class="adm2-tab" data-tab="phienbh" onclick="adm2SwitchTab('phienbh')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span>Phiên BH</span>
+        </button>
+        <button class="adm2-tab" data-tab="chamcong" onclick="adm2SwitchTab('chamcong')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Chấm công</span>
+        </button>
       </div>
 
-      <!-- Sub-tab: Dashboard -->
-      <div class="adm-pane active" id="adm-pane-dashboard">
-        <div class="adm-section-title">Tổng quan hệ thống</div>
-        <div id="adm-dashboard-grid" class="adm-stats-grid">
-          <div style="grid-column:1/-1;text-align:center;color:var(--text-m);padding:30px">Đang tải...</div>
+      <!-- Pane: Tổng quan -->
+      <div class="adm2-pane active" id="adm2-pane-tongquan">
+        <div class="adm2-section-head">
+          <div>
+            <div class="adm2-section-title">Tổng quan hệ thống</div>
+            <div class="adm2-section-sub">Bấm vào thẻ để xem chi tiết</div>
+          </div>
+          <button class="adm2-btn adm2-btn-ghost adm2-btn-sm" onclick="adm2LoadDashboard()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            <span>Làm mới</span>
+          </button>
         </div>
-        <button class="adm-btn adm-btn-secondary" style="margin-top:12px;width:100%" onclick="admLoadDashboard()">🔄 Làm mới</button>
+        <div id="adm2-stats" class="adm2-stats"></div>
+        <div id="adm2-detail-wrap"></div>
       </div>
 
-      <!-- Sub-tab: Tài khoản -->
-      <div class="adm-pane" id="adm-pane-taikhoan">
-        <div class="adm-section-title">Quản lý tài khoản</div>
-        <div class="adm-filter-row">
-          <select id="adm-acc-loai" class="adm-input" style="flex:0 0 100px" onchange="admSearchAccount()">
+      <!-- Pane: Tài khoản -->
+      <div class="adm2-pane" id="adm2-pane-taikhoan">
+        <div class="adm2-section-head">
+          <div class="adm2-section-title">Quản lý tài khoản</div>
+        </div>
+        <div class="adm2-filter">
+          <select id="adm2-acc-loai" class="adm2-select" onchange="adm2SearchAcc()">
             <option value="ALL">Tất cả</option>
             <option value="NV">Nhân viên</option>
             <option value="QL">Quản lý</option>
             <option value="CH">Cửa hàng</option>
           </select>
-          <input type="text" id="adm-acc-search" class="adm-input" style="flex:1" placeholder="Tìm mã / tên / SĐT..." oninput="admDebouncedSearch()" />
-          <button class="adm-btn adm-btn-primary" onclick="admSearchAccount()">🔍 Tìm</button>
+          <input type="text" id="adm2-acc-kw" class="adm2-input-text" placeholder="Tìm theo mã, tên, SĐT..." oninput="adm2DebounceSearch()" />
+          <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SearchAcc()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Tìm</span>
+          </button>
         </div>
-        <div id="adm-acc-result" class="adm-list">
-          <div style="text-align:center;color:var(--text-m);padding:30px">Nhập từ khóa để tìm kiếm...</div>
-        </div>
+        <div id="adm2-acc-list"></div>
       </div>
 
-      <!-- Sub-tab: Phiên BH -->
-      <div class="adm-pane" id="adm-pane-phienbh">
-        <div class="adm-section-title">Quản lý phiên bán hàng</div>
-        <div class="adm-action-card">
-          <div class="adm-action-title">⚠️ Force đóng tất cả phiên đang mở</div>
-          <div class="adm-action-desc">Đóng ngay tất cả phiên trên toàn hệ thống. Phiên bị đóng sẽ tính là "Không mua".</div>
-          <button class="adm-btn adm-btn-danger" onclick="admDongAllPhien()">Force đóng tất cả</button>
-        </div>
-        <div class="adm-action-card">
-          <div class="adm-action-title">🗑️ Xóa phiên theo khoảng ngày</div>
-          <div class="adm-action-desc">XÓA VĨNH VIỄN. Dùng cẩn trọng.</div>
-          <div class="adm-filter-row" style="margin:8px 0">
-            <input type="date" id="adm-xoa-tu" class="adm-input" />
-            <input type="date" id="adm-xoa-den" class="adm-input" />
+      <!-- Pane: Phiên BH -->
+      <div class="adm2-pane" id="adm2-pane-phienbh">
+        <div class="adm2-section-head">
+          <div>
+            <div class="adm2-section-title">Phiên đang mở</div>
+            <div class="adm2-section-sub"><span id="adm2-phien-count">0</span> phiên · cập nhật mỗi 15s</div>
           </div>
-          <button class="adm-btn adm-btn-danger" onclick="admXoaPhienTheoNgay()">Xóa phiên trong khoảng</button>
+          <button class="adm2-btn adm2-btn-ghost adm2-btn-sm" onclick="adm2LoadPhienDangMo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            <span>Làm mới</span>
+          </button>
+        </div>
+        <div id="adm2-phien-list" class="adm2-list" style="background:#fff;border:1px solid rgba(0,0,0,0.05);border-radius:14px;overflow:hidden;margin-bottom:14px"></div>
+
+        <div class="adm2-action-card">
+          <div class="adm2-action-head">
+            <div class="adm2-action-icon warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="adm2-action-title">Force đóng tất cả phiên đang mở</div>
+          </div>
+          <div class="adm2-action-desc">Đóng toàn bộ phiên trên hệ thống — tính là "Không mua".</div>
+          <div class="adm2-action-body">
+            <button class="adm2-btn adm2-btn-warn" onclick="adm2DongAllPhien()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <span>Đóng tất cả phiên đang mở</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="adm2-action-card">
+          <div class="adm2-action-head">
+            <div class="adm2-action-icon danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </div>
+            <div class="adm2-action-title">Xóa phiên theo khoảng ngày</div>
+          </div>
+          <div class="adm2-action-desc">XÓA VĨNH VIỄN. Cần thiết khi cần dọn dữ liệu lỗi.</div>
+          <div class="adm2-action-body">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+              <input type="date" id="adm2-xoa-tu" class="adm2-date" />
+              <span style="color:#9CA3AF">→</span>
+              <input type="date" id="adm2-xoa-den" class="adm2-date" />
+            </div>
+            <button class="adm2-btn adm2-btn-danger" onclick="adm2XoaPhienTheoNgay()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              <span>Xóa trong khoảng</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Sub-tab: Chấm công -->
-      <div class="adm-pane" id="adm-pane-chamcong">
-        <div class="adm-section-title">Quản lý chấm công</div>
-        <div class="adm-action-card">
-          <div class="adm-action-title">✅ Duyệt tất cả cảnh báo chưa xử lý</div>
-          <div class="adm-action-desc">Đánh dấu DA_DUYET cho mọi cảnh báo đang ở DA_GIAI_TRINH / CHUA_GIAI_TRINH.</div>
-          <button class="adm-btn adm-btn-primary" onclick="admDuyetAllCanhBao()">Duyệt tất cả</button>
+      <!-- Pane: Chấm công -->
+      <div class="adm2-pane" id="adm2-pane-chamcong">
+        <div class="adm2-section-head">
+          <div class="adm2-section-title">Quản lý chấm công</div>
+        </div>
+        <div class="adm2-action-card">
+          <div class="adm2-action-head">
+            <div class="adm2-action-icon success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="adm2-action-title">Duyệt tất cả cảnh báo chưa xử lý</div>
+          </div>
+          <div class="adm2-action-desc">Đánh dấu DA_DUYET cho mọi cảnh báo đang DA_GIAI_TRINH / CHUA_GIAI_TRINH.</div>
+          <div class="adm2-action-body">
+            <button class="adm2-btn adm2-btn-primary" onclick="adm2DuyetAllCanhBao()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Duyệt tất cả</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Sub-tab: Audit log -->
-      <div class="adm-pane" id="adm-pane-audit">
-        <div class="adm-section-title">Audit log (100 hành động gần nhất)</div>
-        <div class="adm-filter-row">
-          <select id="adm-audit-bang" class="adm-input" style="flex:1" onchange="admLoadAudit()">
-            <option value="">-- Tất cả bảng --</option>
-            <option value="nhan_vien">nhan_vien</option>
-            <option value="quan_ly">quan_ly</option>
-            <option value="cua_hang">cua_hang</option>
-            <option value="phien_ban_hang">phien_ban_hang</option>
-            <option value="canh_bao">canh_bao</option>
-            <option value="cham_cong">cham_cong</option>
-          </select>
-          <button class="adm-btn adm-btn-secondary" onclick="admLoadAudit()">🔄</button>
-        </div>
-        <div id="adm-audit-result" class="adm-list">
-          <div style="text-align:center;color:var(--text-m);padding:30px">Đang tải...</div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -2805,7 +2958,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </button>
     <!-- [v12] Tab Admin — hiện khi vaiTro=ADMIN hoặc ADMINBH -->
     <button class="nav-item" id="nav-admin" onclick="goToPage('admin')" style="display:none">
-      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
       <div class="nav-label">Admin</div>
     </button>
     <button class="nav-item" id="nav-taikhoan" onclick="goToPage('taikhoan')">
@@ -3054,7 +3207,7 @@ function goToPage(page){
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
   if(page==='giaodien')    _capNhatGDUI(); // [v10.5]
   if(page==='banhang')     bhInitPage();    // [v11] Init module bán hàng
-  if(page==='admin')       adminInitPage(); // [v12]
+  if(page==='admin')       adm2InitPage(); // [v12 v2]
   if(page!=='nhansu') stopNSPolling();
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
@@ -9826,8 +9979,13 @@ function bhQlRenderLive() {
     return;
   }
   liveEl.innerHTML = live.map(p => {
+    // [v5.1 fix BH-4] Dùng _gioMoIso (timestamp ISO đầy đủ có giây + ms)
+    // KHÔNG dùng ngay+gioBD (chỉ HH:MM → mất giây → tất cả phiên cùng phút có startMs giống nhau)
     let startMs;
-    try { startMs = new Date(p.ngay + 'T' + p.gioBD).getTime(); } catch(e){ startMs = Date.now(); }
+    try {
+      startMs = p._gioMoIso ? new Date(p._gioMoIso).getTime() : new Date(p.ngay + 'T' + p.gioBD).getTime();
+      if (isNaN(startMs)) startMs = Date.now();
+    } catch(e){ startMs = Date.now(); }
     const elapsed = Math.floor((Date.now() - startMs) / 1000);
     const hot = elapsed >= 900 ? ' hot' : '';
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
@@ -9907,11 +10065,11 @@ async function bhQlXoaHangLoat() {
   bhQlUpdateBulkBar(BH.qlLastLive);
   bhShowToast('✓ Đang xóa ' + yc.length + ' phiên...', 'success');
 
-  // [v12-P1] Supabase RPC
+  // [v12-P1] Supabase RPC — [FIX BH-1] truyền danh sách ID cụ thể
   try {
     const { data: d, error } = await supa.rpc('fn_bh_xoa_hang_loat', {
       p_ma_nguoi_xoa: SESSION.ma,
-      p_scope: 'all_yc',
+      p_ids: idList,
     });
     if (!error && d && d.success) {
       bhShowToast('✓ Đã xóa ' + d.deleted + ' phiên', 'success');
@@ -10562,239 +10720,581 @@ window.addEventListener('beforeunload', () => {
 
 
 // ════════════════════════════════════════════════════════════════
-// [v12] MODULE ADMIN
+// [v12 v2] MODULE ADMIN — design pro, click stat → detail
 // ════════════════════════════════════════════════════════════════
-const ADM = {
-  currentTab: 'dashboard',
-  loaded: { dashboard: false, taikhoan: false, audit: false },
+const ADM2 = {
+  currentTab: 'tongquan',
+  dashboardData: null,
   searchTimer: null,
+  phienTimer: null,
+  activeDetail: null,
 };
 
-function admInitPage() {
+// ─── Init ──────────────────────────────────────────────────
+function adm2InitPage() {
   if (!SESSION || (SESSION.vaiTro !== 'ADMIN' && SESSION.vaiTro !== 'ADMINBH')) {
-    document.getElementById('page-admin').innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--red)">Không có quyền truy cập.</div>';
+    document.querySelector('#page-admin .adm2-wrap').innerHTML =
+      '<div class="adm2-empty">Không có quyền truy cập.</div>';
     return;
   }
-  // Auto load dashboard lần đầu
-  if (!ADM.loaded.dashboard) {
-    admLoadDashboard();
-    ADM.loaded.dashboard = true;
-  }
+  adm2LoadDashboard();
+  if (ADM2.currentTab === 'phienbh') adm2StartPhienAutoRefresh();
 }
 
-function admSwitchTab(tab) {
-  ADM.currentTab = tab;
-  document.querySelectorAll('.adm-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.querySelectorAll('.adm-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('adm-pane-' + tab).classList.add('active');
-  if (tab === 'dashboard' && !ADM.loaded.dashboard) { admLoadDashboard(); ADM.loaded.dashboard = true; }
-  if (tab === 'audit') admLoadAudit();
+function adm2SwitchTab(tab) {
+  ADM2.currentTab = tab;
+  document.querySelectorAll('.adm2-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.adm2-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('adm2-pane-' + tab).classList.add('active');
+
+  if (tab === 'tongquan') { adm2LoadDashboard(); adm2StopPhienAutoRefresh(); }
+  if (tab === 'taikhoan') { adm2StopPhienAutoRefresh(); }
+  if (tab === 'phienbh')  { adm2LoadPhienDangMo(); adm2StartPhienAutoRefresh(); }
+  if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); }
 }
 
-function admFmtMoney(n) {
-  return (parseFloat(n) || 0).toLocaleString('vi-VN');
-}
-function admEsc(s) {
+// ─── Helpers ───────────────────────────────────────────────
+function adm2Esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+function adm2FmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('vi-VN', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+}
+function adm2FmtDuration(min) {
+  if (min == null) return '';
+  const m = Math.max(0, Math.round(Number(min)));
+  if (m < 60) return m + ' phút';
+  return Math.floor(m/60) + 'h' + (m%60 ? (m%60+'p') : '');
+}
 
-// ─── 1. DASHBOARD ───────────────────────────────────────────
-async function admLoadDashboard() {
-  const el = document.getElementById('adm-dashboard-grid');
-  el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-m);padding:30px">Đang tải...</div>';
-  try {
-    const { data, error } = await supa.rpc('fn_admin_dashboard', { p_admin: SESSION.ma });
-    if (error || !data || !data.success) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
-    const d = data.data;
-    el.innerHTML = `
-      <div class="adm-stat-card"><div class="adm-stat-label">Nhân viên</div><div class="adm-stat-value">${d.nv_active}/${d.nv_total}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Quản lý</div><div class="adm-stat-value">${d.ql_active}/${d.ql_total}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Cửa hàng</div><div class="adm-stat-value">${d.ch_active}/${d.ch_total}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Đã đổi mật khẩu</div><div class="adm-stat-value">${d.nv_da_doi_mk}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Chấm công hôm nay</div><div class="adm-stat-value">${d.cc_hom_nay}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Cảnh báo chưa duyệt</div><div class="adm-stat-value ${d.cb_chua_duyet>0?'warn':''}">${d.cb_chua_duyet}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Phiên đang mở</div><div class="adm-stat-value ${d.phien_dang_mo>0?'warn':''}">${d.phien_dang_mo}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Phiên hôm nay</div><div class="adm-stat-value">${d.phien_da_mua_hom_nay}/${d.phien_hom_nay}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Doanh thu hôm nay</div><div class="adm-stat-value money">${admFmtMoney(d.doanh_thu_hom_nay)}đ</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Doanh thu tháng</div><div class="adm-stat-value money">${admFmtMoney(d.doanh_thu_thang)}đ</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Đơn nghỉ chờ duyệt</div><div class="adm-stat-value ${d.don_nghi_cho_duyet>0?'warn':''}">${d.don_nghi_cho_duyet}</div></div>
-      <div class="adm-stat-card"><div class="adm-stat-label">Lịch ca chờ duyệt</div><div class="adm-stat-value ${d.lich_ca_cho_duyet>0?'warn':''}">${d.lich_ca_cho_duyet}</div></div>
+// ─── Toast ────────────────────────────────────────────────
+function adm2Toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'adm2-toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 200); }, 2400);
+}
+
+// ─── Modal custom (thay prompt/alert/confirm) ─────────────
+function adm2Modal(opts) {
+  // opts: { title, sub, type:'prompt'|'select'|'confirm', value, options, okLabel, danger, onOk }
+  return new Promise(resolve => {
+    const bg = document.createElement('div');
+    bg.className = 'adm2-modal-bg';
+    const inputHtml = opts.type === 'prompt'
+      ? `<input class="adm2-modal-input" id="adm2-modal-input" type="${opts.password ? 'text' : 'text'}" value="${adm2Esc(opts.value || '')}" placeholder="${adm2Esc(opts.placeholder || '')}" />`
+      : opts.type === 'select'
+        ? `<select class="adm2-modal-select" id="adm2-modal-input">${(opts.options||[]).map(o => `<option value="${adm2Esc(o.value)}"${o.value===opts.value?' selected':''}>${adm2Esc(o.label || o.value)}</option>`).join('')}</select>`
+        : '';
+    bg.innerHTML = `
+      <div class="adm2-modal" onclick="event.stopPropagation()">
+        <div class="adm2-modal-head">
+          <div class="adm2-modal-title">${adm2Esc(opts.title || '')}</div>
+          ${opts.sub ? `<div class="adm2-modal-sub">${adm2Esc(opts.sub)}</div>` : ''}
+        </div>
+        ${inputHtml ? `<div class="adm2-modal-body">${inputHtml}</div>` : ''}
+        <div class="adm2-modal-foot">
+          <button class="adm2-btn adm2-btn-secondary" id="adm2-modal-cancel">Hủy</button>
+          <button class="adm2-btn ${opts.danger ? 'adm2-btn-danger' : 'adm2-btn-primary'}" id="adm2-modal-ok">${adm2Esc(opts.okLabel || 'OK')}</button>
+        </div>
+      </div>
     `;
-  } catch (e) {
-    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--red);padding:30px">Lỗi: ' + admEsc(e.message) + '</div>';
-  }
+    document.body.appendChild(bg);
+    const inp = bg.querySelector('#adm2-modal-input');
+    if (inp) setTimeout(() => inp.focus(), 50);
+    const close = (val) => { bg.remove(); resolve(val); };
+    bg.querySelector('#adm2-modal-cancel').onclick = () => close(null);
+    bg.querySelector('#adm2-modal-ok').onclick = () => close(inp ? inp.value : true);
+    bg.onclick = () => close(null);
+    if (inp) inp.onkeydown = e => { if (e.key === 'Enter') close(inp.value); };
+  });
 }
 
-// ─── 2. TÀI KHOẢN ───────────────────────────────────────────
-function admDebouncedSearch() {
-  clearTimeout(ADM.searchTimer);
-  ADM.searchTimer = setTimeout(admSearchAccount, 400);
+async function adm2Confirm(title, sub, danger) {
+  return !!(await adm2Modal({ title, sub, type:'confirm', okLabel: danger ? 'Xác nhận' : 'OK', danger }));
 }
 
-async function admSearchAccount() {
-  const kw = document.getElementById('adm-acc-search').value.trim();
-  const loai = document.getElementById('adm-acc-loai').value;
-  const el = document.getElementById('adm-acc-result');
-  el.innerHTML = '<div style="text-align:center;color:var(--text-m);padding:30px">Đang tìm...</div>';
+// ─── RPC wrapper ──────────────────────────────────────────
+async function adm2Rpc(fn, params) {
+  const { data, error } = await supa.rpc(fn, params);
+  if (error) throw new Error(error.message || 'Network error');
+  if (data && data.success === false) throw new Error(data.error || 'Lỗi');
+  return data;
+}
+
+// ─── 1. DASHBOARD - các stat card ─────────────────────────
+const ADM2_STATS_CONFIG = [
+  // key, label, icon (svg path), color, click handler
+  { key:'nv', label:'Nhân viên', color:'blue',
+    icon:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    value: d => d.nv_active, suffix: d => '/' + d.nv_total, detail:'nv' },
+  { key:'ql', label:'Quản lý', color:'violet',
+    icon:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    value: d => d.ql_active, suffix: d => '/' + d.ql_total, detail:'ql' },
+  { key:'ch', label:'Cửa hàng', color:'emerald',
+    icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    value: d => d.ch_active, suffix: d => '/' + d.ch_total, detail:'ch' },
+  { key:'mk', label:'Đã đổi mật khẩu', color:'slate',
+    icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    value: d => d.nv_da_doi_mk, detail:'mk' },
+  { key:'cc', label:'Chấm công hôm nay', color:'blue',
+    icon:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    value: d => d.cc_hom_nay, detail:'cc' },
+  { key:'cb', label:'Cảnh báo chưa duyệt', color:'amber',
+    icon:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    value: d => d.cb_chua_duyet, warn: d => d.cb_chua_duyet > 0, detail:'cb' },
+  { key:'phien_mo', label:'Phiên đang mở', color:'amber',
+    icon:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    value: d => d.phien_dang_mo, warn: d => d.phien_dang_mo > 0, detail:'phien_mo' },
+  { key:'phien_today', label:'Phiên hôm nay', color:'emerald',
+    icon:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+    value: d => d.phien_da_mua_hom_nay, suffix: d => '/' + d.phien_hom_nay, detail:'phien_today' },
+  { key:'dn', label:'Đơn nghỉ chờ duyệt', color:'rose',
+    icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    value: d => d.don_nghi_cho_duyet, warn: d => d.don_nghi_cho_duyet > 0, detail:'dn' },
+  { key:'lc', label:'Lịch ca chờ duyệt', color:'violet',
+    icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    value: d => d.lich_ca_cho_duyet, warn: d => d.lich_ca_cho_duyet > 0, detail:'lc' },
+];
+
+async function adm2LoadDashboard() {
+  const el = document.getElementById('adm2-stats');
+  el.innerHTML = '<div class="adm2-empty" style="grid-column:1/-1">Đang tải...</div>';
   try {
-    const { data, error } = await supa.rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword: kw, p_loai: loai, p_limit: 100 });
-    if (error || !data || !data.success) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
-    admRenderAccounts(data.data || []);
+    const data = await adm2Rpc('fn_admin_dashboard', { p_admin: SESSION.ma });
+    const d = data.data; ADM2.dashboardData = d;
+    el.innerHTML = ADM2_STATS_CONFIG.map(s => {
+      const val = s.value(d);
+      const sfx = s.suffix ? s.suffix(d) : '';
+      const cls = s.warn && s.warn(d) ? 'warn' : '';
+      return `
+        <div class="adm2-stat" onclick="adm2OpenDetail('${s.detail}')">
+          <div class="adm2-stat-chev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="adm2-stat-icon ${s.color}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg>
+          </div>
+          <div class="adm2-stat-label">${s.label}</div>
+          <div class="adm2-stat-value ${cls}">${val}<span class="adm2-stat-suffix">${sfx}</span></div>
+        </div>
+      `;
+    }).join('');
   } catch (e) {
-    el.innerHTML = '<div style="text-align:center;color:var(--red);padding:30px">Lỗi: ' + admEsc(e.message) + '</div>';
+    el.innerHTML = '<div class="adm2-empty" style="color:#DC2626;grid-column:1/-1">Lỗi: ' + adm2Esc(e.message) + '</div>';
   }
 }
 
-function admRenderAccounts(list) {
-  const el = document.getElementById('adm-acc-result');
-  if (!list.length) { el.innerHTML = '<div style="text-align:center;color:var(--text-m);padding:30px">Không tìm thấy</div>'; return; }
-  el.innerHTML = list.map(a => {
-    const loaiCls = a.loai.toLowerCase();
-    const statusCls = String(a.trang_thai || '').toUpperCase() === 'ACTIVE' ? 'active' : '';
-    const pwDisplay = a.mat_khau_plain
-      ? `<span class="adm-acc-pw">🔑 ${admEsc(a.mat_khau_plain)}</span>`
-      : (a.da_doi_mk
-          ? `<span class="adm-acc-pw" style="background:#FEF3C7;color:#92400E">⚠ Đã đổi (không lưu được)</span>`
-          : `<span class="adm-acc-pw">Ns280396 (mặc định)</span>`);
-    const canChangeRole = a.loai !== 'CH';
+// ─── Stat detail panel ────────────────────────────────────
+function adm2CloseDetail() {
+  document.getElementById('adm2-detail-wrap').innerHTML = '';
+  ADM2.activeDetail = null;
+}
+
+function adm2OpenDetail(key) {
+  if (ADM2.activeDetail === key) { adm2CloseDetail(); return; }
+  ADM2.activeDetail = key;
+  const w = document.getElementById('adm2-detail-wrap');
+  w.innerHTML = `
+    <div class="adm2-detail">
+      <div class="adm2-detail-head">
+        <div class="adm2-detail-title" id="adm2-detail-title">Đang tải...</div>
+        <button class="adm2-detail-close" onclick="adm2CloseDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="adm2-detail-body" id="adm2-detail-body">
+        <div class="adm2-empty">Đang tải...</div>
+      </div>
+    </div>
+  `;
+  w.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  // Dispatch theo key
+  const titleEl = document.getElementById('adm2-detail-title');
+  const bodyEl  = document.getElementById('adm2-detail-body');
+  const map = {
+    nv:        { title:'Danh sách nhân viên không hoạt động', loader: () => adm2DetailListAcc('NV', 'INACTIVE', bodyEl) },
+    ql:        { title:'Danh sách quản lý',                    loader: () => adm2DetailListAcc('QL', null, bodyEl) },
+    ch:        { title:'Cửa hàng không hoạt động',             loader: () => adm2DetailListAcc('CH', 'INACTIVE', bodyEl) },
+    mk:        { title:'Tài khoản đã đổi mật khẩu',            loader: () => adm2DetailDaDoiMK(bodyEl) },
+    cc:        { title:'Chấm công hôm nay',                    loader: () => adm2DetailCCHomNay(bodyEl) },
+    cb:        { title:'Cảnh báo chưa duyệt',                  loader: () => adm2DetailCanhBao(bodyEl) },
+    phien_mo:  { title:'Phiên đang mở',                        loader: () => adm2DetailPhienDangMo(bodyEl) },
+    phien_today:{title:'Phiên hôm nay',                        loader: () => adm2DetailPhienHomNay(bodyEl) },
+    dn:        { title:'Đơn nghỉ chờ duyệt',                   loader: () => adm2DetailDonNghi(bodyEl) },
+    lc:        { title:'Lịch ca chờ duyệt',                    loader: () => adm2DetailLichCa(bodyEl) },
+  };
+  const m = map[key];
+  if (m) { titleEl.textContent = m.title; m.loader(); }
+}
+
+// Detail: list account theo filter
+async function adm2DetailListAcc(loai, statusFilter, bodyEl) {
+  try {
+    const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword:'', p_loai:loai, p_limit:200 });
+    let list = data.data || [];
+    if (statusFilter) list = list.filter(a => String(a.trang_thai||'').toUpperCase() !== 'ACTIVE');
+    adm2RenderAccRows(list, bodyEl);
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+async function adm2DetailDaDoiMK(bodyEl) {
+  try {
+    const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword:'', p_loai:'ALL', p_limit:500 });
+    const list = (data.data || []).filter(a => a.da_doi_mk);
+    adm2RenderAccRows(list, bodyEl);
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+function adm2RenderAccRows(list, bodyEl) {
+  if (!list.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có dữ liệu</div>'; return; }
+  bodyEl.innerHTML = list.map(a => adm2AccRowHtml(a)).join('');
+}
+
+function adm2AccRowHtml(a) {
+  const cls = a.loai.toLowerCase();
+  const stCls = String(a.trang_thai||'').toUpperCase()==='ACTIVE' ? 'active' : 'inactive';
+  const pwHtml = a.mat_khau_plain
+    ? `<span class="adm2-pw">${adm2Esc(a.mat_khau_plain)}</span>`
+    : (a.da_doi_mk
+        ? `<span class="adm2-pw warn">Đã đổi · không lưu</span>`
+        : `<span class="adm2-pw">Ns280396 (mặc định)</span>`);
+  const canRole = a.loai !== 'CH';
+  return `
+    <div class="adm2-row">
+      <div class="adm2-row-main">
+        <div class="adm2-row-title">
+          <span class="adm2-badge ${cls}">${a.loai}</span>
+          ${adm2Esc(a.ma)} · ${adm2Esc(a.ten)}
+        </div>
+        <div class="adm2-row-sub">
+          <span class="adm2-badge role">${adm2Esc(a.vai_tro)}</span>
+          <span class="adm2-badge ${stCls}">${adm2Esc(a.trang_thai)}</span>
+          ${a.khu_vuc ? ' · ' + adm2Esc(a.khu_vuc) : ''}
+          ${a.cua_hang && a.loai==='NV' ? ' · ' + adm2Esc(a.cua_hang) : ''}
+          ${a.so_dien_thoai ? ' · ' + adm2Esc(a.so_dien_thoai) : ''}
+        </div>
+        ${pwHtml}
+      </div>
+      <div class="adm2-row-actions">
+        <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2ActSetPw('${a.loai}','${adm2Esc(a.ma)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Đặt MK
+        </button>
+        <button class="adm2-btn adm2-btn-warn adm2-btn-sm" onclick="adm2ActResetPw('${a.loai}','${adm2Esc(a.ma)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Reset
+        </button>
+        ${canRole ? `<button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2ActSetRole('${a.loai}','${adm2Esc(a.ma)}','${adm2Esc(a.vai_tro)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Vai trò
+        </button>` : ''}
+        <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2ActSetStatus('${a.loai}','${adm2Esc(a.ma)}','${adm2Esc(a.trang_thai)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Trạng thái
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Detail: chấm công hôm nay
+async function adm2DetailCCHomNay(bodyEl) {
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const iso = today.toISOString();
+    const { data, error } = await supa.from('cham_cong')
+      .select('id, thoi_gian, ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, loai, xac_nhan')
+      .gte('thoi_gian', iso).order('thoi_gian', { ascending:false }).limit(200);
+    if (error) throw error;
+    if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Chưa có chấm công nào hôm nay</div>'; return; }
+    const loaiMap = { VAO_CA:'Vào ca', RA_CA:'Ra ca', RA_GIUA_CA:'Ra giữa ca', VAO_GIUA_CA:'Vào giữa ca' };
+    bodyEl.innerHTML = data.map(r => `
+      <div class="adm2-row">
+        <div class="adm2-row-main">
+          <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} <span class="adm2-row-sub" style="font-weight:400">· ${adm2Esc(loaiMap[r.loai] || r.loai)}</span></div>
+          <div class="adm2-row-sub">${adm2FmtTime(r.thoi_gian)} · ${adm2Esc(r.ten_ch_snapshot || r.ma_ch || '')}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+// Detail: cảnh báo chưa duyệt
+async function adm2DetailCanhBao(bodyEl) {
+  try {
+    const { data, error } = await supa.from('canh_bao')
+      .select('id, ngay, gio_chamcong, ma_nv, ten_nv_snapshot, loai_canh_bao, noi_dung, giai_trinh, trang_thai')
+      .in('trang_thai', ['DA_GIAI_TRINH','CHUA_GIAI_TRINH']).order('created_at', { ascending:false }).limit(100);
+    if (error) throw error;
+    if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có cảnh báo nào</div>'; return; }
+    bodyEl.innerHTML = data.map(r => `
+      <div class="adm2-row" id="adm2-cb-${r.id}">
+        <div class="adm2-row-main">
+          <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · ${adm2Esc(r.loai_canh_bao || '')}</div>
+          <div class="adm2-row-sub">${adm2Esc(r.ngay)} · ${adm2Esc(r.noi_dung || '')} ${r.giai_trinh ? '· GT: '+adm2Esc(r.giai_trinh) : ''}</div>
+        </div>
+        <div class="adm2-row-actions">
+          <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2DuyetCanhBao('${r.id}')">Duyệt</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+async function adm2DuyetCanhBao(id) {
+  try {
+    const { error } = await supa.from('canh_bao').update({
+      trang_thai: 'DA_DUYET', nguoi_duyet: SESSION.ma, thoi_gian_duyet: new Date().toISOString()
+    }).eq('id', id);
+    if (error) throw error;
+    const row = document.getElementById('adm2-cb-' + id);
+    if (row) row.remove();
+    adm2Toast('Đã duyệt', 'success');
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+// Detail: phiên đang mở
+async function adm2DetailPhienDangMo(bodyEl) {
+  try {
+    const { data, error } = await supa.from('phien_ban_hang')
+      .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, stt_trong_ngay, ngay')
+      .eq('trang_thai', 'DANG_MO').order('gio_mo', { ascending:false }).limit(200);
+    if (error) throw error;
+    adm2RenderPhienMoList(data, bodyEl);
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+function adm2RenderPhienMoList(list, container) {
+  if (!list || !list.length) { container.innerHTML = '<div class="adm2-empty">Không có phiên nào đang mở</div>'; return; }
+  container.innerHTML = list.map(p => {
+    const elapsed = p.gio_mo ? Math.round((Date.now() - new Date(p.gio_mo).getTime()) / 60000) : 0;
     return `
-      <div class="adm-acc-item">
-        <div class="adm-acc-head">
-          <span class="adm-badge ${loaiCls}">${a.loai}</span>
-          <span class="adm-acc-ma">${admEsc(a.ma)}</span>
-          <span class="adm-acc-ten">${admEsc(a.ten)}</span>
-          <span class="adm-badge role">${admEsc(a.vai_tro)}</span>
-          <span class="adm-badge status ${statusCls}">${admEsc(a.trang_thai)}</span>
+      <div class="adm2-row" id="adm2-phien-${p.id}">
+        <div class="adm2-row-main">
+          <div class="adm2-row-title">#${p.stt_trong_ngay || '?'} · ${adm2Esc(p.ten_ch_snapshot || p.ma_ch)}</div>
+          <div class="adm2-row-sub">
+            ${adm2Esc(p.khu_vuc || '')} · NV: ${adm2Esc(p.ten_nv_snapshot || p.ma_nv || '—')}
+            · Mở: ${adm2FmtTime(p.gio_mo)} (${adm2FmtDuration(elapsed)})
+          </div>
         </div>
-        <div class="adm-acc-meta">
-          ${a.khu_vuc ? '📍 ' + admEsc(a.khu_vuc) : ''}
-          ${a.cua_hang && a.loai==='NV' ? ' · 🏪 ' + admEsc(a.cua_hang) : ''}
-          ${a.chuc_vu ? ' · ' + admEsc(a.chuc_vu) : ''}
-          ${a.so_dien_thoai ? ' · 📞 ' + admEsc(a.so_dien_thoai) : ''}
-        </div>
-        <div>${pwDisplay}</div>
-        <div class="adm-acc-actions">
-          <button class="adm-btn adm-btn-secondary" onclick="admPromptSetPw('${a.loai}','${admEsc(a.ma)}')">🔑 Đặt MK mới</button>
-          <button class="adm-btn adm-btn-warn" onclick="admResetPw('${a.loai}','${admEsc(a.ma)}')">♻️ Reset MK</button>
-          ${canChangeRole ? `<button class="adm-btn adm-btn-secondary" onclick="admPromptSetRole('${a.loai}','${admEsc(a.ma)}','${admEsc(a.vai_tro)}')">👤 Đổi vai trò</button>` : ''}
-          <button class="adm-btn adm-btn-secondary" onclick="admPromptSetStatus('${a.loai}','${admEsc(a.ma)}','${admEsc(a.trang_thai)}')">🔄 Trạng thái</button>
+        <div class="adm2-row-actions">
+          <button class="adm2-btn adm2-btn-warn adm2-btn-sm" onclick="adm2DongPhien('${p.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+            Đóng
+          </button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-async function admResetPw(loai, ma) {
-  if (!confirm(`Reset mật khẩu ${ma} về Ns280396?`)) return;
+async function adm2DongPhien(id) {
+  const ok = await adm2Confirm('Đóng phiên này?', 'Phiên sẽ tính là Không mua. Không thể hoàn tác.');
+  if (!ok) return;
   try {
-    const { data, error } = await supa.rpc('fn_admin_reset_password', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã reset. ' + ma + ' giờ đăng nhập bằng Ns280396.');
-    admSearchAccount();
-  } catch (e) { alert('❌ ' + e.message); }
+    await adm2Rpc('fn_bh_dong_phien', { p_phien_id: id, p_ma_nguoi_dong: SESSION.ma });
+    const row = document.getElementById('adm2-phien-' + id);
+    if (row) row.remove();
+    adm2Toast('Đã đóng phiên', 'success');
+  } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-async function admPromptSetPw(loai, ma) {
-  const pw = prompt('Nhập mật khẩu mới cho ' + ma + ' (≥ 6 ký tự):');
-  if (!pw) return;
+// Detail: phiên hôm nay
+async function adm2DetailPhienHomNay(bodyEl) {
   try {
-    const { data, error } = await supa.rpc('fn_admin_set_password', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_new_pw: pw });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã đặt mật khẩu mới cho ' + ma);
-    admSearchAccount();
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-async function admPromptSetRole(loai, ma, curRole) {
-  const roles = loai === 'NV'
-    ? ['NV','QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB']
-    : ['QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB'];
-  const newRole = prompt(`Vai trò hiện tại: ${curRole}\n\nNhập vai trò mới (chọn 1):\n${roles.join(', ')}`, curRole);
-  if (!newRole || newRole === curRole) return;
-  if (!roles.includes(newRole.toUpperCase())) { alert('Vai trò không hợp lệ.'); return; }
-  try {
-    const { data, error } = await supa.rpc('fn_admin_set_role', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_role: newRole });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã đổi vai trò ' + ma + ' → ' + newRole);
-    admSearchAccount();
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-async function admPromptSetStatus(loai, ma, curStatus) {
-  const newStatus = prompt(`Trạng thái hiện tại: ${curStatus}\n\nNhập trạng thái mới (ACTIVE / INACTIVE / NGHI_VIEC):`, curStatus);
-  if (!newStatus || newStatus === curStatus) return;
-  try {
-    const { data, error } = await supa.rpc('fn_admin_set_status', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_status: newStatus });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã đổi trạng thái ' + ma + ' → ' + newStatus);
-    admSearchAccount();
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-// ─── 3. PHIÊN BH ────────────────────────────────────────────
-async function admDongAllPhien() {
-  if (!confirm('Force đóng TẤT CẢ phiên đang mở trên toàn hệ thống? Hành động này không hoàn tác được.')) return;
-  try {
-    const { data, error } = await supa.rpc('fn_admin_dong_all_phien', { p_admin: SESSION.ma });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã đóng ' + (data.closed || 0) + ' phiên.');
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-async function admXoaPhienTheoNgay() {
-  const tu = document.getElementById('adm-xoa-tu').value;
-  const den = document.getElementById('adm-xoa-den').value;
-  if (!tu || !den) { alert('Chọn đủ 2 ngày.'); return; }
-  if (!confirm(`XÓA VĨNH VIỄN tất cả phiên từ ${tu} đến ${den}? Không hoàn tác được.`)) return;
-  if (!confirm('Bạn THỰC SỰ chắc chắn?')) return;
-  try {
-    const { data, error } = await supa.rpc('fn_admin_xoa_phien_theo_ngay', { p_admin: SESSION.ma, p_tu_ngay: tu, p_den_ngay: den });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã xóa ' + (data.deleted || 0) + ' phiên.');
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-// ─── 4. CHẤM CÔNG ───────────────────────────────────────────
-async function admDuyetAllCanhBao() {
-  if (!confirm('Duyệt tất cả cảnh báo chưa xử lý?')) return;
-  try {
-    const { data, error } = await supa.rpc('fn_admin_duyet_all_canh_bao', { p_admin: SESSION.ma });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    alert('✅ Đã duyệt ' + (data.approved || 0) + ' cảnh báo.');
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-// ─── 5. AUDIT LOG ───────────────────────────────────────────
-async function admLoadAudit() {
-  const bang = document.getElementById('adm-audit-bang').value || null;
-  const el = document.getElementById('adm-audit-result');
-  el.innerHTML = '<div style="text-align:center;color:var(--text-m);padding:30px">Đang tải...</div>';
-  try {
-    const { data, error } = await supa.rpc('fn_admin_get_audit_log', { p_admin: SESSION.ma, p_limit: 100, p_bang: bang, p_hanh_dong: null });
-    if (error || !data || !data.success) throw new Error((data && data.error) || 'Lỗi');
-    const rows = data.data || [];
-    if (!rows.length) { el.innerHTML = '<div style="text-align:center;color:var(--text-m);padding:30px">Không có log</div>'; return; }
-    el.innerHTML = rows.map(r => {
-      const t = r.created_at ? new Date(r.created_at).toLocaleString('vi-VN') : '';
-      const detail = r.du_lieu_moi
-        ? JSON.stringify(r.du_lieu_moi)
-        : (r.du_lieu_cu ? '(xóa) ' + JSON.stringify(r.du_lieu_cu).slice(0,150) : '');
+    const today = new Date().toISOString().slice(0,10);
+    const { data, error } = await supa.from('phien_ban_hang')
+      .select('id, stt_trong_ngay, ten_ch_snapshot, ma_ch, ten_nv_snapshot, gio_mo, gio_dong, ket_qua, trang_thai, thoi_luong_phut')
+      .eq('ngay', today).order('gio_mo', { ascending:false }).limit(200);
+    if (error) throw error;
+    if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Chưa có phiên nào hôm nay</div>'; return; }
+    bodyEl.innerHTML = data.map(p => {
+      const kq = p.ket_qua === 'DA_MUA' ? '<span class="adm2-badge active">Đã mua</span>'
+        : p.ket_qua === 'TU_DONG' ? '<span class="adm2-badge warn">Tự đóng</span>'
+        : p.trang_thai === 'DANG_MO' ? '<span class="adm2-badge warn">Đang mở</span>'
+        : '<span class="adm2-badge inactive">Không mua</span>';
       return `
-        <div class="adm-audit-item">
-          <div class="adm-audit-head">
-            <span class="adm-badge role">${admEsc(r.hanh_dong)}</span>
-            <span style="font-weight:600">${admEsc(r.bang)}</span>
-            ${r.record_id ? '<span style="color:var(--text-m);font-size:11px">'+admEsc(r.record_id.slice(0,8))+'</span>' : ''}
-            <span style="color:var(--text-m)">👤 ${admEsc(r.nguoi_thuc_hien)}</span>
-            <span class="adm-audit-time" style="margin-left:auto">${t}</span>
+        <div class="adm2-row">
+          <div class="adm2-row-main">
+            <div class="adm2-row-title">#${p.stt_trong_ngay || '?'} · ${adm2Esc(p.ten_ch_snapshot || p.ma_ch)} ${kq}</div>
+            <div class="adm2-row-sub">NV: ${adm2Esc(p.ten_nv_snapshot || '—')} · ${adm2FmtTime(p.gio_mo)} → ${p.gio_dong ? adm2FmtTime(p.gio_dong) : '...'} · ${adm2FmtDuration(p.thoi_luong_phut)}</div>
           </div>
-          ${detail ? '<div class="adm-audit-detail">' + admEsc(detail.slice(0, 200)) + '</div>' : ''}
         </div>
       `;
     }).join('');
-  } catch (e) {
-    el.innerHTML = '<div style="text-align:center;color:var(--red);padding:30px">Lỗi: ' + admEsc(e.message) + '</div>';
-  }
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+async function adm2DetailDonNghi(bodyEl) {
+  try {
+    const { data, error } = await supa.from('don_nghi')
+      .select('id, ma_nv, ngay_nghi, loai_nghi, ly_do, created_at')
+      .eq('trang_thai','CHO_DUYET').order('created_at', { ascending:false }).limit(100);
+    if (error) throw error;
+    if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có đơn nghỉ chờ duyệt</div>'; return; }
+    bodyEl.innerHTML = data.map(r => `
+      <div class="adm2-row">
+        <div class="adm2-row-main">
+          <div class="adm2-row-title">${adm2Esc(r.ma_nv)} · ${adm2Esc(r.loai_nghi || '')}</div>
+          <div class="adm2-row-sub">Nghỉ: ${adm2Esc(r.ngay_nghi)} · ${adm2Esc(r.ly_do || '')}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+async function adm2DetailLichCa(bodyEl) {
+  try {
+    const { data, error } = await supa.from('lich_ca')
+      .select('id, ma_nv, ten_nv_snapshot, ma_ch, ngay, gio_bat_dau, gio_ket_thuc, loai, trang_thai')
+      .in('trang_thai',['CHO_DUYET','DA_GUI']).order('ngay').limit(200);
+    if (error) throw error;
+    if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có lịch ca chờ duyệt</div>'; return; }
+    bodyEl.innerHTML = data.map(r => `
+      <div class="adm2-row">
+        <div class="adm2-row-main">
+          <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · ${adm2Esc(r.ngay)}</div>
+          <div class="adm2-row-sub">${adm2Esc(r.ma_ch || '')} · ${adm2Esc(String(r.gio_bat_dau || '').slice(0,5))}-${adm2Esc(String(r.gio_ket_thuc || '').slice(0,5))} · ${adm2Esc(r.loai || '')}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+// ─── 2. TÀI KHOẢN ─────────────────────────────────────────
+function adm2DebounceSearch() {
+  clearTimeout(ADM2.searchTimer);
+  ADM2.searchTimer = setTimeout(adm2SearchAcc, 400);
+}
+
+async function adm2SearchAcc() {
+  const kw = document.getElementById('adm2-acc-kw').value.trim();
+  const loai = document.getElementById('adm2-acc-loai').value;
+  const el = document.getElementById('adm2-acc-list');
+  if (!kw) { el.innerHTML = '<div class="adm2-empty">Nhập từ khóa để tìm kiếm</div>'; return; }
+  el.innerHTML = '<div class="adm2-empty">Đang tìm...</div>';
+  try {
+    const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword: kw, p_loai: loai, p_limit: 100 });
+    const list = data.data || [];
+    if (!list.length) { el.innerHTML = '<div class="adm2-empty">Không tìm thấy</div>'; return; }
+    el.innerHTML = '<div class="adm2-detail" style="margin-top:0"><div class="adm2-detail-body" style="max-height:none">' +
+      list.map(a => adm2AccRowHtml(a)).join('') + '</div></div>';
+  } catch (e) { el.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+// Actions cho tài khoản
+async function adm2ActSetPw(loai, ma) {
+  const pw = await adm2Modal({ title:'Đặt mật khẩu mới', sub:'Cho ' + ma + ' (≥ 6 ký tự)', type:'prompt', placeholder:'Mật khẩu mới', okLabel:'Lưu' });
+  if (!pw) return;
+  try {
+    await adm2Rpc('fn_admin_set_password', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_new_pw: pw });
+    adm2Toast('Đã đặt mật khẩu mới', 'success');
+    adm2RefreshActive();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2ActResetPw(loai, ma) {
+  const ok = await adm2Confirm('Reset mật khẩu ' + ma + '?', 'Mật khẩu sẽ về Ns280396.');
+  if (!ok) return;
+  try {
+    await adm2Rpc('fn_admin_reset_password', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma });
+    adm2Toast('Đã reset · ' + ma + ' đăng nhập bằng Ns280396', 'success');
+    adm2RefreshActive();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2ActSetRole(loai, ma, curRole) {
+  const roles = loai === 'NV'
+    ? ['NV','QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB']
+    : ['QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB'];
+  const newRole = await adm2Modal({ title:'Đổi vai trò ' + ma, sub:'Hiện tại: ' + curRole, type:'select', value: curRole,
+    options: roles.map(r => ({ value:r, label:r })), okLabel:'Lưu' });
+  if (!newRole || newRole === curRole) return;
+  try {
+    await adm2Rpc('fn_admin_set_role', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_role: newRole });
+    adm2Toast('Đã đổi vai trò → ' + newRole, 'success');
+    adm2RefreshActive();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2ActSetStatus(loai, ma, curStatus) {
+  const newSt = await adm2Modal({ title:'Đổi trạng thái ' + ma, sub:'Hiện tại: ' + curStatus, type:'select', value: curStatus,
+    options: [{value:'ACTIVE',label:'ACTIVE'},{value:'INACTIVE',label:'INACTIVE'},{value:'NGHI_VIEC',label:'NGHI_VIEC'}], okLabel:'Lưu' });
+  if (!newSt || newSt === curStatus) return;
+  try {
+    await adm2Rpc('fn_admin_set_status', { p_admin: SESSION.ma, p_loai: loai, p_ma: ma, p_status: newSt });
+    adm2Toast('Đã đổi trạng thái → ' + newSt, 'success');
+    adm2RefreshActive();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+function adm2RefreshActive() {
+  // Refresh whatever's open
+  if (ADM2.currentTab === 'taikhoan' && document.getElementById('adm2-acc-kw').value.trim()) adm2SearchAcc();
+  if (ADM2.currentTab === 'tongquan' && ADM2.activeDetail) adm2OpenDetail(ADM2.activeDetail);
+}
+
+// ─── 3. PHIÊN BH TAB ──────────────────────────────────────
+async function adm2LoadPhienDangMo() {
+  const el = document.getElementById('adm2-phien-list');
+  el.innerHTML = '<div class="adm2-empty">Đang tải...</div>';
+  try {
+    const { data, error } = await supa.from('phien_ban_hang')
+      .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, stt_trong_ngay, ngay')
+      .eq('trang_thai', 'DANG_MO').order('gio_mo', { ascending:false }).limit(500);
+    if (error) throw error;
+    document.getElementById('adm2-phien-count').textContent = data.length;
+    adm2RenderPhienMoList(data, el);
+  } catch (e) { el.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+function adm2StartPhienAutoRefresh() {
+  adm2StopPhienAutoRefresh();
+  ADM2.phienTimer = setInterval(() => {
+    if (ADM2.currentTab === 'phienbh') adm2LoadPhienDangMo();
+  }, 15000);
+}
+function adm2StopPhienAutoRefresh() {
+  if (ADM2.phienTimer) { clearInterval(ADM2.phienTimer); ADM2.phienTimer = null; }
+}
+
+async function adm2DongAllPhien() {
+  const ok = await adm2Confirm('Force đóng TẤT CẢ phiên đang mở?', 'Hành động này không hoàn tác được. Tất cả phiên sẽ tính là Không mua.', true);
+  if (!ok) return;
+  try {
+    const data = await adm2Rpc('fn_admin_dong_all_phien', { p_admin: SESSION.ma });
+    adm2Toast('Đã đóng ' + (data.closed || 0) + ' phiên', 'success');
+    adm2LoadPhienDangMo();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2XoaPhienTheoNgay() {
+  const tu = document.getElementById('adm2-xoa-tu').value;
+  const den = document.getElementById('adm2-xoa-den').value;
+  if (!tu || !den) { adm2Toast('Chọn đủ 2 ngày', 'error'); return; }
+  const ok1 = await adm2Confirm('Xóa phiên từ ' + tu + ' đến ' + den + '?', 'XÓA VĨNH VIỄN. Không thể khôi phục.', true);
+  if (!ok1) return;
+  const ok2 = await adm2Confirm('Thực sự chắc chắn?', 'Xác nhận xóa lần cuối.', true);
+  if (!ok2) return;
+  try {
+    const data = await adm2Rpc('fn_admin_xoa_phien_theo_ngay', { p_admin: SESSION.ma, p_tu_ngay: tu, p_den_ngay: den });
+    adm2Toast('Đã xóa ' + (data.deleted || 0) + ' phiên', 'success');
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+// ─── 4. CHẤM CÔNG TAB ─────────────────────────────────────
+async function adm2DuyetAllCanhBao() {
+  const ok = await adm2Confirm('Duyệt tất cả cảnh báo chưa xử lý?', 'Toàn bộ cảnh báo DA_GIAI_TRINH / CHUA_GIAI_TRINH sẽ chuyển thành DA_DUYET.');
+  if (!ok) return;
+  try {
+    const data = await adm2Rpc('fn_admin_duyet_all_canh_bao', { p_admin: SESSION.ma });
+    adm2Toast('Đã duyệt ' + (data.approved || 0) + ' cảnh báo', 'success');
+  } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
 </script>
