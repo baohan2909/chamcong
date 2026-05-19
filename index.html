@@ -9698,6 +9698,14 @@ async function bhSendKtPhienWithRetry(payload, s, kind, retries) {
     if (data && data.success) return;
     throw new Error((data && data.error) || 'Lỗi không xác định');
   } catch(e) {
+    const msg = (e && e.message) || '';
+    // [V3] Trigger chặn kết phiên khi đang YC xóa → không retry, toast rõ ràng
+    if (msg.includes('yêu cầu xóa') || msg.includes('yeu cau xoa') || msg.includes('P0001')) {
+      bhShowToast('⛔ ' + msg.replace(/^.*?:\s*/,''), null);
+      // Mở khóa phiên trên UI để CH có thể hủy YC xóa hoặc chờ QLBH
+      if (s) { s.syncing = false; bhRenderSessions(); }
+      return;
+    }
     console.error('[BH KT phiên] Lần ' + (retries+1) + ' thất bại:', e);
     if (retries < 3) {
       const delay = 2000 * Math.pow(2, retries);
