@@ -1414,8 +1414,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 }
 .adm2-tab svg { width:15px; height:15px; flex:0 0 15px; }
 .adm2-tab:hover { color:#1F2937; background:rgba(0,0,0,0.04); }
-.adm2-tab.active { background:#111827; color:#fff; }
-.adm2-tab.active:hover { background:#111827; }
+.adm2-tab.active { background:#EEF2FF; color:#4F46E5; }
+.adm2-tab.active:hover { background:#E0E7FF; }
 .adm2-pane { display:none; }
 .adm2-pane.active { display:block; animation: adm2FadeIn 0.2s ease; }
 @keyframes adm2FadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
@@ -1485,16 +1485,16 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 /* Buttons */
 .adm2-btn { border:none; cursor:pointer; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; white-space:nowrap; }
 .adm2-btn svg { width:14px; height:14px; }
-.adm2-btn-primary { background:#111827; color:#fff; }
-.adm2-btn-primary:hover { background:#1F2937; }
-.adm2-btn-secondary { background:#F3F4F6; color:#374151; }
-.adm2-btn-secondary:hover { background:#E5E7EB; }
-.adm2-btn-warn { background:#F59E0B; color:#fff; }
-.adm2-btn-warn:hover { background:#D97706; }
-.adm2-btn-danger { background:#DC2626; color:#fff; }
-.adm2-btn-danger:hover { background:#B91C1C; }
-.adm2-btn-ghost { background:transparent; color:#6B7280; padding:6px 10px; }
-.adm2-btn-ghost:hover { background:#F3F4F6; color:#111827; }
+.adm2-btn-primary { background:#4F46E5; color:#fff; }
+.adm2-btn-primary:hover { background:#4338CA; }
+.adm2-btn-secondary { background:#F1F5F9; color:#334155; border:1px solid #E2E8F0; }
+.adm2-btn-secondary:hover { background:#E2E8F0; }
+.adm2-btn-warn { background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; }
+.adm2-btn-warn:hover { background:#FED7AA; }
+.adm2-btn-danger { background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; }
+.adm2-btn-danger:hover { background:#FECACA; }
+.adm2-btn-ghost { background:transparent; color:#64748B; padding:6px 10px; }
+.adm2-btn-ghost:hover { background:#F1F5F9; color:#0F172A; }
 .adm2-btn-sm { padding:5px 10px; font-size:11px; }
 .adm2-btn-sm svg { width:12px; height:12px; }
 
@@ -1503,9 +1503,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .adm2-action-head { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
 .adm2-action-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .adm2-action-icon svg { width:16px; height:16px; }
-.adm2-action-icon.warn { background:#FFFBEB; color:#D97706; }
-.adm2-action-icon.danger { background:#FEF2F2; color:#DC2626; }
-.adm2-action-icon.success { background:#ECFDF5; color:#059669; }
+.adm2-action-icon.warn { background:#FFF7ED; color:#EA580C; }
+.adm2-action-icon.danger { background:#FEF2F2; color:#E11D48; }
+.adm2-action-icon.success { background:#F0FDF4; color:#16A34A; }
 .adm2-action-title { font-size:14px; font-weight:600; color:#111827; }
 .adm2-action-desc { font-size:12px; color:#6B7280; margin:4px 0 10px 42px; }
 .adm2-action-body { padding-left:42px; }
@@ -1551,7 +1551,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.6</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.7</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2225,7 +2225,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v5.6</strong>
+      Phiên bản <strong style="color:#6B7280">v5.7</strong>
     </div>
   </div>
 
@@ -2503,9 +2503,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           </button>
         </div>
 
-        <div class="adm2-action-card" style="background:linear-gradient(135deg,#F0FDF4 0%,#ECFDF5 100%);border:1px solid #BBF7D0">
+        <div class="adm2-action-card" style="border:1px solid #E2E8F0;background:#fff">
           <div class="adm2-action-head">
-            <div class="adm2-action-icon" style="background:#DCFCE7;color:#16A34A">
+            <div class="adm2-action-icon" style="background:#EEF2FF;color:#4F46E5">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             </div>
             <div class="adm2-action-title">Giám sát bán hàng — Giao diện QLBH</div>
