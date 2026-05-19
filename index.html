@@ -1551,7 +1551,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.2</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.3</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2217,7 +2217,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v5.2</strong>
+      Phiên bản <strong style="color:#6B7280">v5.3</strong>
     </div>
   </div>
 
@@ -10760,10 +10760,10 @@ function adm2SwitchTab(tab) {
   document.querySelectorAll('.adm2-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('adm2-pane-' + tab).classList.add('active');
 
-  if (tab === 'tongquan') { adm2LoadDashboard(); adm2StopPhienAutoRefresh(); }
-  if (tab === 'taikhoan') { adm2StopPhienAutoRefresh(); }
+  if (tab === 'tongquan') { adm2LoadDashboard(); adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
+  if (tab === 'taikhoan') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'phienbh')  { adm2LoadPhienDangMo(); adm2StartPhienAutoRefresh(); }
-  if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); }
+  if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
 }
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -10905,6 +10905,10 @@ async function adm2LoadDashboard() {
 function adm2CloseDetail() {
   document.getElementById('adm2-detail-wrap').innerHTML = '';
   ADM2.activeDetail = null;
+  // [v5.3] Nếu không còn card trên trang → tắt timer cho đỡ tốn CPU
+  if (!document.querySelector('#adm2-phien-list .bh-live-card, #adm2-detail-body .bh-live-card')) {
+    adm2StopLiveTimer();
+  }
 }
 
 function adm2OpenDetail(key) {
@@ -11084,26 +11088,63 @@ async function adm2DetailPhienDangMo(bodyEl) {
 
 function adm2RenderPhienMoList(list, container) {
   if (!list || !list.length) { container.innerHTML = '<div class="adm2-empty">Không có phiên nào đang mở</div>'; return; }
+  // [v5.3] Card đẹp giống QLBH + timer giây + nút Đóng có chữ
+  container.style.background = 'transparent';
+  container.style.border = 'none';
+  container.style.padding = '0';
   container.innerHTML = list.map(p => {
-    const elapsed = p.gio_mo ? Math.round((Date.now() - new Date(p.gio_mo).getTime()) / 60000) : 0;
+    let startMs;
+    try { startMs = p.gio_mo ? new Date(p.gio_mo).getTime() : Date.now(); if (isNaN(startMs)) startMs = Date.now(); }
+    catch(e){ startMs = Date.now(); }
+    const elapsed = Math.floor((Date.now() - startMs) / 1000);
+    const m = Math.floor(elapsed / 60), s = elapsed % 60;
+    const tt = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    const hot = m >= 45 ? 'hot' : '';
     return `
-      <div class="adm2-row" id="adm2-phien-${p.id}">
-        <div class="adm2-row-main">
-          <div class="adm2-row-title">#${p.stt_trong_ngay || '?'} · ${adm2Esc(p.ten_ch_snapshot || p.ma_ch)}</div>
-          <div class="adm2-row-sub">
-            ${adm2Esc(p.khu_vuc || '')} · NV: ${adm2Esc(p.ten_nv_snapshot || p.ma_nv || '—')}
-            · Mở: ${adm2FmtTime(p.gio_mo)} (${adm2FmtDuration(elapsed)})
+      <div class="bh-live-card ${hot}" id="adm2-phien-${p.id}" data-start="${startMs}" style="cursor:default">
+        <div class="bh-live-card-head">
+          <div style="font-weight:600;color:#0F172A;font-size:14px">
+            #${p.stt_trong_ngay || '?'} · ${adm2Esc(p.ten_ch_snapshot || p.ma_ch)}
           </div>
+          <div class="bh-live-timer" data-elapsed-target>${tt}</div>
         </div>
-        <div class="adm2-row-actions">
-          <button class="adm2-btn adm2-btn-warn adm2-btn-sm" onclick="adm2DongPhien('${p.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
-            Đóng
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#475569">
+          <div style="flex:1;min-width:0">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${adm2Esc(p.khu_vuc || '—')} · NV: ${adm2Esc(p.ten_nv_snapshot || p.ma_nv || '—')}
+            </div>
+            <div style="opacity:0.7;margin-top:2px">Mở lúc ${adm2FmtTime(p.gio_mo)}</div>
+          </div>
+          <button class="adm2-btn adm2-btn-warn adm2-btn-sm" style="flex-shrink:0" onclick="adm2DongPhien('${p.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <span>Đóng phiên</span>
           </button>
         </div>
       </div>
     `;
   }).join('');
+  adm2StartLiveTimer();
+}
+
+// [v5.3] Timer giây — update mỗi 1s text trong .bh-live-timer
+function adm2StartLiveTimer() {
+  if (window.ADM2 && ADM2.liveTickTimer) return; // đã chạy rồi
+  if (!window.ADM2) window.ADM2 = {};
+  ADM2.liveTickTimer = setInterval(() => {
+    document.querySelectorAll('#adm2-phien-list .bh-live-card, #adm2-detail-body .bh-live-card').forEach(card => {
+      const start = parseInt(card.dataset.start || '0', 10);
+      if (!start) return;
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      const m = Math.floor(elapsed / 60), s = elapsed % 60;
+      const tt = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      const timerEl = card.querySelector('[data-elapsed-target]');
+      if (timerEl) timerEl.textContent = tt;
+      if (m >= 45 && !card.classList.contains('hot')) card.classList.add('hot');
+    });
+  }, 1000);
+}
+function adm2StopLiveTimer() {
+  if (window.ADM2 && ADM2.liveTickTimer) { clearInterval(ADM2.liveTickTimer); ADM2.liveTickTimer = null; }
 }
 
 async function adm2DongPhien(id) {
