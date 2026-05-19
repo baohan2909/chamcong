@@ -1551,7 +1551,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.0</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.2</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2217,7 +2217,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v5.0</strong>
+      Phiên bản <strong style="color:#6B7280">v5.2</strong>
     </div>
   </div>
 
@@ -2956,7 +2956,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="nav-label">Bán hàng</div>
       <span class="nav-badge" id="bh-nav-badge" style="display:none"></span>
     </button>
-    <!-- [v12] Tab Admin — hiện khi vaiTro=ADMIN hoặc ADMINBH -->
+    <!-- [v5.2] Tab Admin — hiện khi vaiTro=ADMIN -->
     <button class="nav-item" id="nav-admin" onclick="goToPage('admin')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
       <div class="nav-label">Admin</div>
@@ -3330,9 +3330,9 @@ function khoiDongApp(){
   const isQL=SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN';
   // [v11] Thêm: CUA_HANG và QLBH
   const isCH  = SESSION.vaiTro==='CUA_HANG';
-  const isQLBH= SESSION.vaiTro==='QLBH' || SESSION.vaiTro==='ADMINBH' || String(SESSION.vaiTro||'').startsWith('QLBH');
-  // [v12] Admin tab cho ADMIN + ADMINBH
-  const isAdminAll = SESSION.vaiTro==='ADMIN' || SESSION.vaiTro==='ADMINBH';
+  const isQLBH= SESSION.vaiTro==='QLBH' || String(SESSION.vaiTro||'').startsWith('QLBH');
+  // [v5.2] Admin tab cho ADMIN
+  const isAdminAll = SESSION.vaiTro==='ADMIN';
   if (isAdminAll) {
     const nA = document.getElementById('nav-admin');
     if (nA) nA.style.display='';
@@ -8314,7 +8314,7 @@ function bhInitPage() {
   const viewCH = document.getElementById('bh-view-ch');
   const viewQL = document.getElementById('bh-view-qlbh');
   const isCH = SESSION.vaiTro === 'CUA_HANG';
-  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH' || String(SESSION.vaiTro || '').startsWith('QLBH');
+  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || String(SESSION.vaiTro || '').startsWith('QLBH');
 
   // Load SP data (async, không block UI)
   bhLoadSpData();
@@ -10155,8 +10155,8 @@ async function bhQlLoadPhien() {
 
     const kvFilter = BH.qlFilterKV || '';
     // kvAllowed: list KV nếu QLBH theo vùng cụ thể
-    // [v12-fix] ADMINBH/ADMIN: xem toàn HT, bỏ qua bhKVList
-    const isAdminScope = SESSION && (SESSION.vaiTro === 'ADMINBH' || SESSION.vaiTro === 'ADMIN');
+    // [v12-fix] ADMIN: xem toàn HT, bỏ qua bhKVList
+    const isAdminScope = SESSION && (SESSION.vaiTro === 'ADMIN');
     let kvAllowed = null;
     try {
       if (!isAdminScope && SESSION && SESSION.bhKVList && SESSION.bhKVList.length) {
@@ -10182,8 +10182,8 @@ async function bhQlLoadPhien() {
     if (liveRes.error) throw liveRes.error;
 
     // 2) FINISHED: DA_DONG trong khoảng tu→den
-    // [v12-fix] ADMINBH: lấy HẾT phiên (pagination), QLBH thường: limit 1000
-    const isAdminBH = SESSION && (SESSION.vaiTro === 'ADMINBH' || SESSION.vaiTro === 'ADMIN');
+    // [v12-fix] ADMIN: lấy HẾT phiên (pagination), QLBH thường: limit 1000
+    const isAdminBH = SESSION && (SESSION.vaiTro === 'ADMIN');
     const FIN_SELECT = 'id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ngay, stt_trong_ngay, stt_toan_cuc, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_quan_tam_text, sp_da_mua_text, ghi_chu';
 
     let finRes;
@@ -10397,7 +10397,7 @@ function bhQlOpenDetail(idPhien) {
   // [v11.7+ fix] Show nút xóa cho QLBH/ADMIN/QLBH theo KV
   const delBtn = document.getElementById('bh-md-detail-delete');
   const closeBtn = document.getElementById('bh-md-detail-close');
-  const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'ADMINBH' || String(SESSION.vaiTro || '').startsWith('QLBH'));
+  const isQLBH = SESSION && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || String(SESSION.vaiTro || '').startsWith('QLBH'));
   if (delBtn) delBtn.style.display = isQLBH ? '' : 'none';
   // [v12] Nút đóng phiên: ẩn ban đầu, chỉ show khi biết phiên DANG_MO
   if (closeBtn) closeBtn.style.display = 'none';
@@ -10464,7 +10464,7 @@ function bhQlOpenDetail(idPhien) {
     });
 }
 
-// [v12] QLBH/ADMINBH đóng phiên đang mở → KHONG_MUA
+// [v12] QLBH/ADMIN đóng phiên đang mở → KHONG_MUA
 async function bhQlDongPhien() {
   const idPhien = BH.qlCurrentDetailId;
   if (!idPhien) return;
@@ -10574,8 +10574,8 @@ async function bhQlLoadDashboard() {
   try {
     // [v12-P1] Query phiên trong khoảng → aggregate client-side
     const kvFilter = BH.qlFilterKV || '';
-    // [v12-fix] ADMINBH/ADMIN: xem toàn HT, bỏ qua bhKVList
-    const isAdminScope = SESSION && (SESSION.vaiTro === 'ADMINBH' || SESSION.vaiTro === 'ADMIN');
+    // [v12-fix] ADMIN: xem toàn HT, bỏ qua bhKVList
+    const isAdminScope = SESSION && (SESSION.vaiTro === 'ADMIN');
     let kvAllowed = null;
     try {
       if (!isAdminScope && SESSION && SESSION.bhKVList && SESSION.bhKVList.length) kvAllowed = SESSION.bhKVList;
@@ -10745,7 +10745,7 @@ const ADM2 = {
 
 // ─── Init ──────────────────────────────────────────────────
 function adm2InitPage() {
-  if (!SESSION || (SESSION.vaiTro !== 'ADMIN' && SESSION.vaiTro !== 'ADMINBH')) {
+  if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
     document.querySelector('#page-admin .adm2-wrap').innerHTML =
       '<div class="adm2-empty">Không có quyền truy cập.</div>';
     return;
@@ -11223,8 +11223,8 @@ async function adm2ActResetPw(loai, ma) {
 
 async function adm2ActSetRole(loai, ma, curRole) {
   const roles = loai === 'NV'
-    ? ['NV','QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB']
-    : ['QLNS','ADMIN','ADMINBH','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB'];
+    ? ['NV','QLNS','ADMIN','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB']
+    : ['QLNS','ADMIN','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB'];
   const newRole = await adm2Modal({ title:'Đổi vai trò ' + ma, sub:'Hiện tại: ' + curRole, type:'select', value: curRole,
     options: roles.map(r => ({ value:r, label:r })), okLabel:'Lưu' });
   if (!newRole || newRole === curRole) return;
