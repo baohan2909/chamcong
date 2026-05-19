@@ -8636,8 +8636,9 @@ async function bhLoadStatsToday() {
     // Convert sang format cũ
     const list = (rows || []).map(r => {
       let trangThai = 'Đã mua';
-      if (r.ket_qua === 'CHUA_MUA') trangThai = 'Chưa mua';
-      else if (r.ket_qua === 'TU_DONG') trangThai = 'Tự đóng';
+      if (r.ket_qua === 'CHUA_MUA')        trangThai = 'Chưa mua';
+      else if (r.ket_qua === 'TU_DONG')    trangThai = 'Tự đóng';
+      else if (r.ket_qua === 'ADMIN_DONG') trangThai = 'Admin đã đóng';
       const fmtTime = ts => {
         if (!ts) return '';
         try {
@@ -8670,7 +8671,7 @@ async function bhLoadStatsToday() {
     BH.historyToday = list;
     BH.statsToday = {
       bought:    list.filter(p => p.trangThai === 'Đã mua').length,
-      notBought: list.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length,
+      notBought: list.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng').length,
     };
     bhUpdateStats();
     if (BH.filterStatus !== 'selling' && BH.filterStatus !== undefined) {
@@ -8743,7 +8744,7 @@ function bhRenderSessions() {
     // Ẩn cards selling
     [...wrap.querySelectorAll('.bh-card')].forEach(c => c.remove());
     const hist = (BH.historyToday || []).filter(p =>
-      filter === 'bought' ? p.trangThai === 'Đã mua' : (p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng')
+      filter === 'bought' ? p.trangThai === 'Đã mua' : (p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng')
     );
     if (!hist.length) {
       if (empty) {
@@ -8826,8 +8827,10 @@ function bhBuildHistCardCh(p) {
       detail += (detail ? ' · ' : '') + bhCountSpQty(p.spDaMua) + ' SP';
     }
   } else {
-    cls = p.trangThai === 'Tự đóng' ? 'bh-hist-auto' : 'bh-hist-notbought';
-    label = p.trangThai === 'Tự đóng' ? 'Tự đóng' : 'Chưa mua';
+    cls = (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng') ? 'bh-hist-auto' : 'bh-hist-notbought';
+    label = p.trangThai === 'Tự đóng' ? 'Tự đóng'
+          : p.trangThai === 'Admin đã đóng' ? 'Admin đã đóng'
+          : 'Chưa mua';
     if (p.lyDo) detail = bhEscHtml(p.lyDo.length > 40 ? p.lyDo.slice(0,40)+'…' : p.lyDo);
   }
   card.innerHTML = `
@@ -10222,8 +10225,9 @@ async function bhQlLoadPhien() {
       return bhPad(Math.floor(totalSec / 60)) + ':' + bhPad(totalSec % 60);
     };
     const trangThaiText = ket_qua => {
-      if (ket_qua === 'CHUA_MUA') return 'Chưa mua';
-      if (ket_qua === 'TU_DONG')  return 'Tự đóng';
+      if (ket_qua === 'CHUA_MUA')   return 'Chưa mua';
+      if (ket_qua === 'TU_DONG')    return 'Tự đóng';
+      if (ket_qua === 'ADMIN_DONG') return 'Admin đã đóng';
       return 'Đã mua';
     };
 
@@ -10273,7 +10277,7 @@ async function bhQlLoadPhien() {
     const live = BH.qlLastLive;
     const fin = BH.qlLastFinished;
     const bought = fin.filter(p => p.trangThai === 'Đã mua').length;
-    const nbought = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng').length;
+    const nbought = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng').length;
     document.getElementById('bh-ql-stat-live').textContent = live.length;
     document.getElementById('bh-ql-stat-bought').textContent = bought;
     document.getElementById('bh-ql-stat-notbought').textContent = nbought;
@@ -10305,7 +10309,7 @@ function bhQlRenderHistory() {
   // Apply status filter
   const sf = BH.qlStatusFilter || 'all';
   if (sf === 'bought') fin = fin.filter(p => p.trangThai === 'Đã mua');
-  else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng');
+  else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng');
   // [v11.7+ fix] Filter q client-side - tìm theo CH/SP/NV
   const q = (BH.qlFilterQ || '').toLowerCase();
   if (q) {
@@ -10338,7 +10342,7 @@ function bhQlRenderHistory() {
     return;
   }
   histEl.innerHTML = fin.map(p => {
-    const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' ? 'auto' : 'notbought');
+    const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng' ? 'auto' : 'notbought');
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
@@ -10405,9 +10409,10 @@ function bhQlOpenDetail(idPhien) {
       const fmtTime = ts => { if(!ts)return ''; try{const d=new Date(ts);return bhPad(d.getHours())+':'+bhPad(d.getMinutes());}catch(e){return '';} };
       const fmtThoiLuong = m => { if(!m)return ''; const s=Math.round(m*60); return bhPad(Math.floor(s/60))+':'+bhPad(s%60); };
       let trangThai = 'Đã mua';
-      if (r.trang_thai === 'DANG_MO') trangThai = 'Đang bán';
-      else if (r.ket_qua === 'CHUA_MUA') trangThai = 'Chưa mua';
-      else if (r.ket_qua === 'TU_DONG') trangThai = 'Tự đóng';
+      if (r.trang_thai === 'DANG_MO')        trangThai = 'Đang bán';
+      else if (r.ket_qua === 'CHUA_MUA')     trangThai = 'Chưa mua';
+      else if (r.ket_qua === 'TU_DONG')      trangThai = 'Tự đóng';
+      else if (r.ket_qua === 'ADMIN_DONG')   trangThai = 'Admin đã đóng';
       const p = {
         idPhien: r.id, maCH: r.ma_ch, tenCH: r.ten_ch_snapshot || r.ma_ch, khuVuc: r.khu_vuc || '',
         maNV: r.ma_nv, tenNV: r.ten_nv_snapshot,
