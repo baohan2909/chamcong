@@ -1551,7 +1551,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.4</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v5.5</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2217,7 +2217,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v5.4</strong>
+      Phiên bản <strong style="color:#6B7280">v5.5</strong>
     </div>
   </div>
 
@@ -2437,7 +2437,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </button>
         <button class="adm2-tab" data-tab="phienbh" onclick="adm2SwitchTab('phienbh')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          <span>Phiên BH</span>
+          <span>Phiên bán hàng</span>
         </button>
         <button class="adm2-tab" data-tab="chamcong" onclick="adm2SwitchTab('chamcong')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -2486,15 +2486,32 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="adm2-pane" id="adm2-pane-phienbh">
         <div class="adm2-section-head">
           <div>
-            <div class="adm2-section-title">Phiên đang mở</div>
-            <div class="adm2-section-sub"><span id="adm2-phien-count">0</span> phiên · cập nhật mỗi 15s</div>
+            <div class="adm2-section-title">Phiên bán hàng</div>
+            <div class="adm2-section-sub">Giám sát phiên BH toàn hệ thống — giao diện như QLBH</div>
           </div>
-          <button class="adm2-btn adm2-btn-ghost adm2-btn-sm" onclick="adm2LoadPhienDangMo()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            <span>Làm mới</span>
+          <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2OpenQLBHView()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Mở giao diện giám sát</span>
           </button>
         </div>
-        <div id="adm2-phien-list" class="adm2-list" style="background:#fff;border:1px solid rgba(0,0,0,0.05);border-radius:14px;overflow:hidden;margin-bottom:14px"></div>
+
+        <div class="adm2-action-card" style="background:linear-gradient(135deg,#F0FDF4 0%,#ECFDF5 100%);border:1px solid #BBF7D0">
+          <div class="adm2-action-head">
+            <div class="adm2-action-icon" style="background:#DCFCE7;color:#16A34A">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            <div class="adm2-action-title">Giám sát bán hàng — Giao diện QLBH</div>
+          </div>
+          <div class="adm2-action-desc">
+            Xem live phiên đang bán với timer giây, lịch sử hôm nay, dashboard thống kê, lọc theo khu vực/CH, duyệt yêu cầu xóa — đầy đủ chức năng như tài khoản QLBH.
+          </div>
+          <div class="adm2-action-body">
+            <button class="adm2-btn adm2-btn-primary" onclick="adm2OpenQLBHView()" style="width:100%;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Mở giao diện giám sát phiên BH</span>
+            </button>
+          </div>
+        </div>
 
         <div class="adm2-action-card">
           <div class="adm2-action-head">
@@ -2503,7 +2520,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
             </div>
             <div class="adm2-action-title">Force đóng tất cả phiên đang mở</div>
           </div>
-          <div class="adm2-action-desc">Đóng toàn bộ phiên trên hệ thống — tính là "Không mua".</div>
+          <div class="adm2-action-desc">Đóng toàn bộ phiên trên hệ thống — tính là "Admin đã đóng".</div>
           <div class="adm2-action-body">
             <button class="adm2-btn adm2-btn-warn" onclick="adm2DongAllPhien()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -10764,7 +10781,7 @@ function adm2SwitchTab(tab) {
 
   if (tab === 'tongquan') { adm2LoadDashboard(); adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'taikhoan') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
-  if (tab === 'phienbh')  { adm2LoadPhienDangMo(); adm2StartPhienAutoRefresh(); }
+  if (tab === 'phienbh')  { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
 }
 
@@ -11317,6 +11334,15 @@ function adm2StartPhienAutoRefresh() {
 }
 function adm2StopPhienAutoRefresh() {
   if (ADM2.phienTimer) { clearInterval(ADM2.phienTimer); ADM2.phienTimer = null; }
+}
+
+// [v5.5] Mở giao diện giám sát BH (giống QLBH) cho ADMIN
+function adm2OpenQLBHView() {
+  if (typeof goToPage === 'function') {
+    goToPage('banhang');
+    // bhInitPage tự detect ADMIN → mở view QLBH
+    setTimeout(() => { try { bhInitPage(); } catch(e){} }, 50);
+  }
 }
 
 async function adm2DongAllPhien() {
