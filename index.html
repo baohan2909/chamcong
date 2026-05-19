@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v6.0</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v6.1</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2226,7 +2226,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v6.0</strong>
+      Phiên bản <strong style="color:#6B7280">v6.1</strong>
     </div>
   </div>
 
@@ -11082,33 +11082,213 @@ async function adm2DetailCanhBao(bodyEl) {
       .in('trang_thai', ['DA_GIAI_TRINH','CHUA_GIAI_TRINH']).order('created_at', { ascending:false }).limit(100);
     if (error) throw error;
     if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có cảnh báo nào</div>'; return; }
-    bodyEl.innerHTML = data.map(r => `
+    bodyEl.innerHTML = data.map(r => {
+      const isRequireFix = (r.loai_canh_bao === 'SAI CA' || r.loai_canh_bao === 'THIẾU CA');
+      const badge = isRequireFix
+        ? '<span style="display:inline-block;padding:2px 6px;background:#FEF3C7;color:#92400E;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px">CẦN SỬA GIỜ</span>'
+        : '';
+      return `
       <div class="adm2-row" id="adm2-cb-${r.id}">
         <div class="adm2-row-main">
-          <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · ${adm2Esc(r.loai_canh_bao || '')}</div>
+          <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · ${adm2Esc(r.loai_canh_bao || '')}${badge}</div>
           <div class="adm2-row-sub">${adm2Esc(r.ngay)} · ${adm2Esc(r.noi_dung || '')} ${r.giai_trinh ? '· GT: '+adm2Esc(r.giai_trinh) : ''}</div>
         </div>
-        <div class="adm2-row-actions">
-          <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2DuyetCanhBao('${r.id}')">Duyệt</button>
+        <div class="adm2-row-actions" style="display:flex;gap:6px">
+          <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2OpenSuaLog('${r.ma_nv}','${r.ngay}','${r.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Sửa lịch
+          </button>
+          <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2DuyetCanhBao('${r.id}','${r.loai_canh_bao}')">Duyệt</button>
         </div>
       </div>
-    `).join('');
+    `;}).join('');
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-async function adm2DuyetCanhBao(id) {
+async function adm2DuyetCanhBao(id, loaiCb) {
+  // SAI CA / THIẾU CA: bắt buộc sửa giờ trước
+  const requireFix = (loaiCb === 'SAI CA' || loaiCb === 'THIẾU CA');
+  if (requireFix) {
+    adm2Toast('Lỗi "' + loaiCb + '" cần sửa giờ chấm công trước khi duyệt. Bấm nút "Sửa lịch" để chỉnh.', 'error');
+    return;
+  }
   try {
-    const { error } = await supa.from('canh_bao').update({
-      trang_thai: 'DA_DUYET', nguoi_duyet: SESSION.ma, thoi_gian_duyet: new Date().toISOString()
-    }).eq('id', id);
-    if (error) throw error;
+    const data = await adm2Rpc('fn_admin_duyet_cb_sau_sua', {
+      p_admin: SESSION.ma, p_cb_id: id, p_da_sua_gio: false, p_ly_do: ''
+    });
+    if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
     const row = document.getElementById('adm2-cb-' + id);
     if (row) row.remove();
     adm2Toast('Đã duyệt', 'success');
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// Detail: phiên đang mở
+// ═══════════════════════════════════════════════════════════════
+// [v6.1] MODAL: SỬA LỊCH CHẤM CÔNG
+// ═══════════════════════════════════════════════════════════════
+let _suaLogState = { maNV: null, ngay: null, cbId: null, daSuaGio: false };
+
+async function adm2OpenSuaLog(maNV, ngay, cbId) {
+  _suaLogState = { maNV, ngay, cbId, daSuaGio: false };
+  let modal = document.getElementById('adm2-sua-log-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'adm2-sua-log-modal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:100;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:14px;max-width:680px;width:100%;margin:20px auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E5E7EB">
+          <div>
+            <div style="font-size:16px;font-weight:600;color:#111827" id="adm2-sua-log-title">Sửa lịch chấm công</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px" id="adm2-sua-log-sub">--</div>
+          </div>
+          <button class="adm2-btn adm2-btn-ghost" onclick="adm2CloseSuaLog()" style="padding:4px 8px">✕</button>
+        </div>
+        <div id="adm2-sua-log-body"><div class="adm2-empty">⏳ Đang tải...</div></div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  modal.style.display = 'flex';
+  document.getElementById('adm2-sua-log-sub').textContent = maNV + ' · ' + ngay;
+  await adm2LoadSuaLogBody();
+}
+
+function adm2CloseSuaLog() {
+  const m = document.getElementById('adm2-sua-log-modal');
+  if (m) m.style.display = 'none';
+}
+
+async function adm2LoadSuaLogBody() {
+  const body = document.getElementById('adm2-sua-log-body');
+  body.innerHTML = '<div class="adm2-empty">⏳ Đang tải...</div>';
+  try {
+    const d = await adm2Rpc('fn_admin_get_logs_ngay', { p_ma_nv: _suaLogState.maNV, p_ngay: _suaLogState.ngay });
+    const logs = (d && d.logs) || [];
+    const cbs  = (d && d.cb)   || [];
+    const LOAI_OPTIONS = ['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'];
+    const LOAI_TEXT = {'VAO_CA':'Vào ca','RA_GIUA_CA':'Ra giữa ca','VAO_GIUA_CA':'Vào giữa ca','RA_CA':'Ra ca'};
+
+    const logsHtml = logs.length === 0
+      ? '<div class="adm2-empty">Chưa có log chấm công nào trong ngày</div>'
+      : logs.map(l => `
+        <div class="adm2-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#F9FAFB;margin-bottom:8px;border-radius:8px;border:1px solid #E5E7EB">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:200px">
+              <div style="font-weight:600;font-size:13px">${l.loaiText} · ${l.gio}</div>
+              <div style="font-size:11px;color:#6B7280">${adm2Esc(l.tenCH || '')} · ${l.xacNhan} · ${l.soCB} CB</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <input type="time" id="sua-gio-${l.id}" value="${l.gio}" style="padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+              <select id="sua-loai-${l.id}" style="padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+                ${LOAI_OPTIONS.map(o => `<option value="${o}" ${o===l.loai?'selected':''}>${LOAI_TEXT[o]}</option>`).join('')}
+              </select>
+              <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
+              <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
+            </div>
+          </div>
+        </div>`).join('');
+
+    const cbsHtml = cbs.length === 0 ? '' : `
+      <div style="margin-top:16px;padding:10px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px">
+        <div style="font-size:12px;font-weight:600;color:#9A3412;margin-bottom:6px">Cảnh báo trong ngày:</div>
+        ${cbs.map(cb => `
+          <div style="font-size:12px;margin-bottom:4px">
+            <span style="color:${cb.trangThai==='DA_DUYET'?'#16A34A':cb.trangThai==='TU_CHOI'?'#DC2626':'#92400E'};font-weight:600">[${cb.trangThai}]</span>
+            ${adm2Esc(cb.loaiCB)} ${cb.giaiTrinh?'· GT: '+adm2Esc(cb.giaiTrinh):''}
+          </div>`).join('')}
+      </div>`;
+
+    body.innerHTML = `
+      ${logsHtml}
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #E5E7EB;flex-wrap:wrap">
+        <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2ThemLogPrompt()">+ Thêm log thiếu</button>
+        ${_suaLogState.cbId ? `
+        <button class="adm2-btn adm2-btn-primary" onclick="adm2DuyetCBSauSua()">
+          ✓ Tôi đã sửa xong - Duyệt CB
+        </button>` : ''}
+      </div>
+      ${cbsHtml}
+      <div style="margin-top:12px;font-size:11px;color:#9CA3AF">
+        Mọi thao tác sửa đều được ghi <code>audit_log</code> để truy vết.
+      </div>`;
+  } catch (e) {
+    body.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: ' + adm2Esc(e.message) + '</div>';
+  }
+}
+
+async function adm2SuaLog(id, ngay) {
+  const gio  = document.getElementById('sua-gio-' + id).value;
+  const loai = document.getElementById('sua-loai-' + id).value;
+  if (!gio) { adm2Toast('Cần nhập giờ', 'error'); return; }
+  // Build timestamp full
+  const thoiGian = ngay + 'T' + gio + ':00+07:00';
+  try {
+    const d = await adm2Rpc('fn_admin_sua_cham_cong', {
+      p_admin: SESSION.ma, p_id: id,
+      p_thoi_gian: thoiGian, p_loai: loai,
+      p_ma_ch: null, p_ly_do: 'Sửa từ form duyệt CB'
+    });
+    if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
+    _suaLogState.daSuaGio = true;
+    adm2Toast('Đã lưu', 'success');
+    adm2LoadSuaLogBody();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2XoaLog(id) {
+  if (!confirm('Xóa log này? (không hoàn tác được)')) return;
+  try {
+    const d = await adm2Rpc('fn_admin_xoa_cham_cong', { p_admin: SESSION.ma, p_id: id });
+    if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
+    _suaLogState.daSuaGio = true;
+    adm2Toast('Đã xóa log', 'success');
+    adm2LoadSuaLogBody();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2ThemLogPrompt() {
+  const gio = prompt('Nhập giờ (HH:MM):', '08:00');
+  if (!gio) return;
+  const loai = prompt('Loại (VAO_CA / RA_GIUA_CA / VAO_GIUA_CA / RA_CA):', 'VAO_CA');
+  if (!loai || !['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'].includes(loai.toUpperCase())) {
+    adm2Toast('Loại không hợp lệ', 'error'); return;
+  }
+  const maCH = prompt('Mã CH:', '');
+  if (!maCH) return;
+  const lyDo = prompt('Lý do bổ sung:', 'Bổ sung log thiếu') || '';
+  const thoiGian = _suaLogState.ngay + 'T' + gio + ':00+07:00';
+  try {
+    const d = await adm2Rpc('fn_admin_them_cham_cong', {
+      p_admin: SESSION.ma, p_ma_nv: _suaLogState.maNV,
+      p_ma_ch: maCH.toUpperCase(), p_thoi_gian: thoiGian,
+      p_loai: loai.toUpperCase(), p_ly_do: lyDo
+    });
+    if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
+    _suaLogState.daSuaGio = true;
+    adm2Toast('Đã thêm log', 'success');
+    adm2LoadSuaLogBody();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+async function adm2DuyetCBSauSua() {
+  if (!_suaLogState.cbId) return;
+  try {
+    const d = await adm2Rpc('fn_admin_duyet_cb_sau_sua', {
+      p_admin: SESSION.ma, p_cb_id: _suaLogState.cbId,
+      p_da_sua_gio: _suaLogState.daSuaGio,
+      p_ly_do: 'Duyệt sau khi sửa lịch'
+    });
+    if (d && d.success === false) {
+      adm2Toast(d.error || 'Lỗi', 'error');
+      return;
+    }
+    adm2Toast('✓ Đã duyệt cảnh báo', 'success');
+    adm2CloseSuaLog();
+    // Remove CB row khỏi list
+    const row = document.getElementById('adm2-cb-' + _suaLogState.cbId);
+    if (row) row.remove();
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
 async function adm2DetailPhienDangMo(bodyEl) {
   try {
     const { data, error } = await supa.from('phien_ban_hang')
