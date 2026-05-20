@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.7</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.8</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.7</strong>
+      Phiên bản <strong style="color:#6B7280">v8.8</strong>
     </div>
   </div>
 
@@ -6777,8 +6777,13 @@ function taiDonNghiPhep(){
         createdAt: d.createdAt
       });
     });
-    const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, danhSach: map[ngay] }));
-    _dnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
+    const theoDon = Object.keys(map).sort().reverse().map(ngay => ({
+      ngay,
+      danhSach: map[ngay],
+      soDon: map[ngay].length,
+      soChoDuyet: map[ngay].filter(x => x.trangThai === 'Chờ duyệt').length
+    }));
+    _dnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [], dsDon: ds };
     const cho=_dnpData.tongChoDuyet||0;
     const badge=document.getElementById('dnp-badge');
     if(badge){badge.textContent=cho>0?String(cho):'';badge.style.display=cho>0?'flex':'none';}
@@ -6806,19 +6811,9 @@ function renderDonNghiPhep(){
     const items=group.danhSach.map(don=>{
       const init=don.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const badgeCls=don.trangThai==='Đã duyệt'?'dnpb-da':don.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
-      const lyDo=don.ghiChuNV||'';
-      // Tách link ảnh từ ghi chú — format mới v9: "lý do | https://..."
-      let lyDoTxt=lyDo, linkAnh='';
-      const pipeIdx=lyDo.indexOf(' | ');
-      if(pipeIdx>=0){
-        lyDoTxt=lyDo.substring(0,pipeIdx).trim();
-        linkAnh=lyDo.substring(pipeIdx+3).trim();
-      } else {
-        // fallback format cũ: dòng bắt đầu bằng "Đơn:"
-        const lines2=lyDo.split('\n');
-        lyDoTxt=lines2.filter(l=>!l.startsWith('Đơn:')).join('\n').trim();
-        linkAnh=lines2.find(l=>l.startsWith('Đơn:'))?.replace('Đơn:','').trim()||'';
-      }
+      // [v8.8] Dùng lyDo + anhUrl trực tiếp từ RPC (đã trả riêng), KHÔNG parse pipe
+      const lyDoTxt = don.lyDo || '';
+      const linkAnh = don.anhUrl || '';
       const actionsHtml=don.trangThai==='Chờ duyệt'?`
         <div class="dnp-note-wrap" id="dnp-note-${don.maNV}-${don.ngay}">
           <textarea class="dnp-note-inp" id="dnp-note-inp-${don.maNV}-${don.ngay}" rows="2" placeholder="Ghi chú phản hồi (tuỳ chọn)..."></textarea>
@@ -6828,17 +6823,20 @@ function renderDonNghiPhep(){
           <button class="dnp-btn-no" onclick="duyetDonNP('${don.maNV}','${don.ngay}','${don.tuan||''}','Từ chối')">✗ Từ chối</button>
         </div>`:'';
       const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 ${don.ghiChuQLNS}</div>`:'';
+      const nguoiDuyetInfo = (don.trangThai!=='Chờ duyệt' && don.nguoiDuyet)
+        ? `<div style="font-size:11px;color:var(--text-m);margin-top:5px">👤 ${don.nguoiDuyet}</div>` : '';
       return `<div class="dnp-item" id="dnp-item-${don.maNV}-${don.ngay}">
         <div class="dnp-item-top">
           <div class="dnp-av">${init}</div>
           <div class="dnp-info">
             <div class="dnp-name">${don.tenNV}</div>
-            <div class="dnp-sub">${don.maNV} · ${don.tenCH||don.maCH||don.khuVuc}</div>
+            <div class="dnp-sub">${don.maNV} · ${don.tenCH||don.maCH||don.khuVuc||''}</div>
           </div>
           <span class="dnp-badge ${badgeCls}">${don.trangThai}</span>
         </div>
         ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
-        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đính kèm</div>`:''}
+        ${nguoiDuyetInfo}
         ${qlnsNote}
         ${actionsHtml}
       </div>`;
@@ -7738,7 +7736,12 @@ function taiDonNghiACC(){
           tuan: ''
         });
       });
-      const theoDon = Object.keys(map).sort().reverse().map(ngay => ({ ngay, danhSach: map[ngay] }));
+      const theoDon = Object.keys(map).sort().reverse().map(ngay => ({
+        ngay,
+        danhSach: map[ngay],
+        soDon: map[ngay].length,
+        soChoDuyet: map[ngay].filter(x => x.trangThai === 'Chờ duyệt').length
+      }));
       _accDnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
       _renderACCDnpQL();
     }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ '+((e&&e.message)||'Lỗi kết nối')+'</div>';});
@@ -7749,6 +7752,8 @@ function taiDonNghiACC(){
       if(error || !Array.isArray(arr)){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
       const theoDon = arr.map(d => ({
         ngay: d.ngayNghi,
+        soDon: 1,
+        soChoDuyet: d.trangThai === 'Chờ duyệt' ? 1 : 0,
         danhSach: [{
           id: d.id, maNV: SESSION.ma, tenNV: SESSION.ten,
           ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo,
@@ -7779,10 +7784,9 @@ function _renderACCDnpNV(tu,den){
     const ngayFmt=dow2[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
     const items=group.danhSach.map(don=>{
       const badgeCls=don.trangThai==='Đã duyệt'?'dnpb-da':don.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
-      const ghiChu=don.ghiChuNV||'';
-      const pipeIdx=ghiChu.indexOf(' | ');
-      let lyDoTxt=ghiChu, linkAnh='';
-      if(pipeIdx>=0){lyDoTxt=ghiChu.substring(0,pipeIdx).trim();linkAnh=ghiChu.substring(pipeIdx+3).trim();}
+      // [v8.8] Dùng lyDo + anhUrl trực tiếp từ RPC
+      const lyDoTxt = don.lyDo || '';
+      const linkAnh = don.anhUrl || '';
       const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
       return `<div class="dnp-item">
         <div class="dnp-item-top">
@@ -7793,7 +7797,7 @@ function _renderACCDnpNV(tu,den){
           <span class="dnp-badge ${badgeCls}">${don.trangThai}</span>
         </div>
         ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
-        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đã gửi</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đính kèm</div>`:''}
         ${qlnsNote}
       </div>`;
     }).join('');
@@ -7813,10 +7817,9 @@ function _renderACCDnpQL(){
     const items=group.danhSach.map(don=>{
       const init=don.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const badgeCls=don.trangThai==='Đã duyệt'?'dnpb-da':don.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
-      const lyDo=don.ghiChuNV||'';
-      let lyDoTxt=lyDo, linkAnh='';
-      const pipeIdx=lyDo.indexOf(' | ');
-      if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
+      // [v8.8] Dùng lyDo + anhUrl trực tiếp từ RPC
+      const lyDoTxt = don.lyDo || '';
+      const linkAnh = don.anhUrl || '';
       const btns=don.trangThai==='Chờ duyệt'
         ? `<div class="ns-duyet-wrap" style="margin-top:8px">
              <button class="ns-btn-ok" onclick="duyetDonNghiById('${don.id}','Đã duyệt')">✓ Duyệt</button>
@@ -7824,6 +7827,8 @@ function _renderACCDnpQL(){
            </div>`
         : '';
       const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
+      const nguoiDuyetInfo = (don.trangThai!=='Chờ duyệt' && don.nguoiDuyet)
+        ? `<div style="font-size:11px;color:var(--text-m);margin-top:5px">👤 ${don.nguoiDuyet}</div>` : '';
       return `<div class="dnp-item">
         <div class="dnp-item-top">
           <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
@@ -7834,7 +7839,8 @@ function _renderACCDnpQL(){
           <span class="dnp-badge ${badgeCls}">${don.trangThai}</span>
         </div>
         ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
-        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đính kèm</div>`:''}
+        ${nguoiDuyetInfo}
         ${qlnsNote}${btns}
       </div>`;
     }).join('');
