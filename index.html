@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.0</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.3</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2315,7 +2315,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v7.0</strong>
+      Phiên bản <strong style="color:#6B7280">v7.3</strong>
     </div>
   </div>
 
@@ -4174,54 +4174,60 @@ function doiThang(delta){
 }
 function taiGioCong(){
   if(!SESSION)return;
-  gcData=[]; // [v10.1 Yc #3] reset state cũ
+  gcData=[];
   const [y,m]=gcThang.split('-').map(Number);
   document.getElementById('thang-label').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
   ['gc-so-ngay','gc-tong-gio'].forEach(id=>document.getElementById(id).textContent='--');
-  // [v12-P2] Supabase RPC
-  supa.rpc('fn_get_tong_hop_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang })
+
+  // [v7.3] Dùng RPC mới fn_get_gio_cong_thang — trả từng ca theo CH
+  supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang })
   .then(({ data: d, error }) => {
     if (error || !d) {
       document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
       return;
     }
-    const arr = d.data || [];
-    // Convert sang format cũ (mỗi ngày 1 dòng)
-    gcData = arr.map(x => ({
-      ngay: x.ngay,
-      gioCaVao: x.gioCaVao || '',
-      gioCaRa: x.gioCaRa || '',
-      tongGioCong: x.tongGioCong != null ? Number(x.tongGioCong).toFixed(2) + 'h' : '',
-      soLanRa: x.soLanRa || 0,
-      trangThai: x.trangThai || 'OK',
-      ghiChu: '',
-    }));
-    // Tính số ngày công + tổng giờ
-    const soNgay = gcData.filter(x => x.gioCaVao).length;
-    const tongGio = arr.reduce((sum, x) => sum + (Number(x.tongGioCong) || 0), 0);
-    const tongGioGiay = Math.round(tongGio * 3600);
+    const cacCa = d.cacCa || [];
+    gcData = cacCa;
+    document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
+    const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
     const tgGio = Math.floor(tongGioGiay / 3600);
     const tgPhut = Math.floor((tongGioGiay % 3600) / 60);
-    document.getElementById('gc-so-ngay').textContent = soNgay;
     document.getElementById('gc-tong-gio').textContent = tgGio + 'g ' + String(tgPhut).padStart(2,'0') + 'p';
     _renderGioCongTable();
   })
   .catch(()=>{document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
+
 function _renderGioCongTable(){
   if(!gcData.length){
     document.getElementById('gc-content').innerHTML='<div class="gc-empty">📭 Chưa có dữ liệu tháng này</div>';
     return;
   }
+  // [v7.3] Group theo ngày, mỗi ngày hiện các ca (CH)
+  const byNgay = {};
+  gcData.forEach(ca => {
+    if(!byNgay[ca.ngay]) byNgay[ca.ngay] = [];
+    byNgay[ca.ngay].push(ca);
+  });
+
   let rows='';
-  gcData.forEach(r=>{
-    const dt=new Date(r.ngay+'T00:00:00');
+  const ngayList = Object.keys(byNgay).sort();
+  ngayList.forEach(ngay => {
+    const dt=new Date(ngay+'T00:00:00');
     const thu=THU_VI[dt.getDay()];
     const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
-    const chName=r.cuaHang||'--';
-    const chShort=chName.length>14?chName.substring(0,13)+'…':chName;
-    rows+=`<tr><td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td><td class="gc-gio">${r.gioCaVao||'--'}</td><td class="gc-gio">${r.gioCaRa||'--'}</td><td class="gc-tong">${r.tongGioCong||'--'}</td><td style="font-size:11px;color:var(--text-m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td></tr>`;
+    const cas = byNgay[ngay];
+    cas.forEach((ca, idx) => {
+      const chName = ca.tenCH || ca.maCH || '--';
+      const chShort = chName.length > 14 ? chName.substring(0,13)+'…' : chName;
+      const gioCong = ca.gioCong != null ? Number(ca.gioCong).toFixed(2) + 'h' : '--';
+      const hopLeIcon = ca.hopLe ? '' : ' <span style="color:#DC2626;font-size:10px">⚠</span>';
+      const ngayCell = (idx === 0)
+        ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${cas.length>1?'<div style="font-size:9px;color:#6B7280">'+cas.length+' ca</div>':''}`
+        : '<div style="font-size:10px;color:#9CA3AF">↳</div>';
+      rows += `<tr><td>${ngayCell}</td><td class="gc-gio">${ca.gioVao||'--'}</td><td class="gc-gio">${ca.gioRa||'--'}</td><td class="gc-tong">${gioCong}${hopLeIcon}</td><td style="font-size:11px;color:var(--text-m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td></tr>`;
+    });
   });
   const soNgay=document.getElementById('gc-so-ngay').textContent;
   const tongGio=document.getElementById('gc-tong-gio').textContent;
