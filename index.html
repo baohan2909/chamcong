@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v6.1</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.0</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1628,9 +1628,89 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- [v11.6 Item 5] Ghi chú giờ đây BẮT BUỘC luôn hiển thị, bất kể chọn lý do gì -->
       <div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:500">Vui lòng mô tả chi tiết (bắt buộc, tối thiểu 10 ký tự)</div>
       <textarea class="gt-input" id="gt-input" rows="3" placeholder="VD: Tôi đi nộp tiền ngân hàng theo yêu cầu QL nên không đến CH chấm công..." oninput="checkGtFormState()"></textarea>
+
+      <!-- [v7.0] PHẦN SỬA CH / LOẠI CA — chỉ hiện cho lỗi tương ứng -->
+      <div id="gt-sua-wrap" style="display:none;margin-top:12px;padding:12px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px">
+        <div style="font-size:12px;font-weight:600;color:#9A3412;margin-bottom:8px">
+          ⚠️ Cần khắc phục lỗi
+        </div>
+        <div id="gt-sua-info" style="font-size:11px;color:#92400E;margin-bottom:8px"></div>
+
+        <!-- Đổi CH (lỗi SAI VỊ TRÍ / SAI CỬA HÀNG) -->
+        <div id="gt-sua-ch-wrap" style="display:none;margin-bottom:10px">
+          <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng đúng:</label>
+          <select id="gt-sua-ch" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;background:#fff">
+            <option value="">— Chọn cửa hàng đúng —</option>
+          </select>
+          <div id="gt-sua-ch-info" style="font-size:11px;color:#6B7280;margin-top:4px"></div>
+        </div>
+
+        <!-- Đổi loại ca (lỗi SAI CA) -->
+        <div id="gt-sua-loai-wrap" style="display:none">
+          <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Loại ca đúng:</label>
+          <select id="gt-sua-loai" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;background:#fff">
+            <option value="">— Chọn loại ca đúng —</option>
+            <option value="VAO_CA">Vào ca</option>
+            <option value="RA_GIUA_CA">Ra giữa ca</option>
+            <option value="VAO_GIUA_CA">Vào giữa ca</option>
+            <option value="RA_CA">Ra ca</option>
+          </select>
+        </div>
+
+        <div id="gt-quota-info" style="font-size:10px;color:#6B7280;margin-top:8px"></div>
+      </div>
+
       <div class="gt-err" id="gt-err"></div>
       <button class="gt-btn" id="gt-btn" onclick="guiGiaiTrinh()" disabled>GỬI GIẢI TRÌNH</button>
       <!-- [v11.6 Item 5] Bỏ "Bỏ qua" để bắt buộc giải trình -->
+    </div>
+  </div>
+</div>
+
+<!-- [v7.0] MODAL XIN BỔ SUNG CA -->
+<div id="bsc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2200;align-items:flex-end;justify-content:center" onclick="if(event.target===this)dongModalBoSungCa()">
+  <div style="background:#fff;border-radius:16px 16px 0 0;max-width:480px;width:100%;padding:18px;max-height:90vh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:#D1D5DB;border-radius:2px;margin:0 auto 12px"></div>
+    <div style="font-size:16px;font-weight:600;color:#111827;margin-bottom:4px">⏱ Xin bổ sung ca thiếu</div>
+    <div style="font-size:12px;color:#6B7280;margin-bottom:12px">
+      Áp dụng khi bạn quên chấm hoặc chấm thiếu trong ngày.<br>
+      <strong style="color:#EA580C">Chỉ trong ngày + trước 22h + tối đa 3 lần/tháng</strong>
+    </div>
+    <div id="bsc-quota" style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:8px;border-radius:6px;margin-bottom:12px">Đang tải quota...</div>
+
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Giờ chấm</label>
+      <input type="time" id="bsc-gio" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px">
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Loại ca</label>
+      <select id="bsc-loai" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#fff">
+        <option value="">— Chọn loại ca —</option>
+        <option value="VAO_CA">Vào ca</option>
+        <option value="RA_GIUA_CA">Ra giữa ca</option>
+        <option value="VAO_GIUA_CA">Vào giữa ca</option>
+        <option value="RA_CA">Ra ca</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng</label>
+      <select id="bsc-ch" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#fff">
+        <option value="">— Chọn cửa hàng —</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Lý do (bắt buộc, ≥10 ký tự)</label>
+      <textarea id="bsc-lydo" rows="3" placeholder="VD: Đầu giờ máy hết pin, không chấm được. Vào ca thực tế lúc 08:00." style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;resize:none"></textarea>
+    </div>
+
+    <div id="bsc-err" style="display:none;color:#DC2626;font-size:12px;margin-bottom:8px;padding:8px;background:#FEF2F2;border-radius:6px"></div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="dongModalBoSungCa()" style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:500;font-size:14px;cursor:pointer">Hủy</button>
+      <button id="bsc-btn-gui" onclick="guiBoSungCa()" style="flex:2;padding:12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Gửi yêu cầu</button>
     </div>
   </div>
 </div>
@@ -2203,6 +2283,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-label">Lịch ca hệ thống</div>
         <div class="menu-arrow">›</div>
       </div>
+      <!-- [v7.0] Xin bổ sung ca — chỉ NV (không hiện cho QLNS/ADMIN/CH) -->
+      <div class="menu-item" id="menu-bosung-ca" onclick="moModalBoSungCa()" style="display:none">
+        <div class="menu-icon" style="background:#FFF7ED">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="menu-label">Xin bổ sung ca</div>
+        <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-bosung-quota">--</span>
+        <div class="menu-arrow">›</div>
+      </div>
       <!-- [v5.6] Phiên bán hàng — cho ADMIN/QLBH/CUA_HANG -->
       <div class="menu-item" id="menu-banhang" onclick="goToPage('banhang')" style="display:none">
         <div class="menu-icon" style="background:#ECFDF5">
@@ -2226,7 +2315,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v6.1</strong>
+      Phiên bản <strong style="color:#6B7280">v7.0</strong>
     </div>
   </div>
 
@@ -3355,6 +3444,23 @@ function khoiDongApp(){
   const isQLBH= SESSION.vaiTro==='QLBH' || String(SESSION.vaiTro||'').startsWith('QLBH');
   // [v5.2] Admin tab cho ADMIN
   const isAdminAll = SESSION.vaiTro==='ADMIN';
+
+  // [v7.0] Menu "Xin bổ sung ca" — chỉ NV thường
+  const isNV = !isQL && !isCH && !isQLBH && !isAdminAll;
+  if (isNV) {
+    const mb = document.getElementById('menu-bosung-ca');
+    if (mb) {
+      mb.style.display = '';
+      // Load quota hiển thị
+      try {
+        supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
+          if (!data) return;
+          const lbl = document.getElementById('menu-bosung-quota');
+          if (lbl) lbl.textContent = 'Còn ' + (data.quota_bo_sung_con || 0) + '/3';
+        });
+      } catch (e) {}
+    }
+  }
   if (isAdminAll) {
     const nA = document.getElementById('nav-admin');
     if (nA) nA.style.display='';
@@ -4010,7 +4116,11 @@ function renderLog(){
         btn='<button class="log-gt-btn lgt-da" disabled>Đã giải trình</button>';
       } else {
         const allCbIds = cbCho.filter(cb=>!cb.daGiaiTrinh && !cb.giaiTrinh).map(cb=>cb.cbId).join(',');
-        btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhNhieuCB('${allCbIds}','${l.ngay||''}','${l.ccId||''}')">Giải trình</button>`;
+        // [v7.0] truyền loaiCB + cbId đầu tiên để modal biết hiện UI sửa CH/loại ca
+        const firstCb = cbCho.find(cb=>!cb.daGiaiTrinh && !cb.giaiTrinh) || cbCho[0];
+        const cbType = firstCb ? (firstCb.loiType || '') : '';
+        const cbId1  = firstCb ? firstCb.cbId : '';
+        btn=`<button class="log-gt-btn lgt-chua" onclick="moGiaiTrinhNhieuCB('${allCbIds}','${l.ngay||''}','${l.ccId||''}','${cbType}','${cbId1}')">Giải trình</button>`;
       }
       errRows=`<div class="log-item-err"><span class="log-err-txt">${loiDisplay}: ${ghiChuShow}</span>${btn}</div>`;
     } else if(logStatus === 'TUCHOI'){
@@ -4036,11 +4146,21 @@ function moGiaiTrinhTuLog(ngay){
   document.getElementById('gt-timer').style.display='none';
 }
 
+// [v7.0] State cho phần NV sửa CH/loại ca
+let _gtCbId = '';
+let _gtLoiType = '';   // 'gps' | 'ca' | 'thieu' | ''
+let _gtCcMaCH = '';    // mã CH của log gốc
+
 // [v12-FIX] Giải trình tất cả CB cùng lúc — dùng chung 1 modal
-function moGiaiTrinhNhieuCB(cbIdsStr, ngay, ccId){
+// [v7.0] Thêm tham số loaiCB + cbId để show UI sửa tương ứng
+function moGiaiTrinhNhieuCB(cbIdsStr, ngay, ccId, loiType, cbId){
   _gtCcId = ccId || '';
+  _gtCbId = cbId || '';
+  _gtLoiType = loiType || '';
   openGiaiTrinh('⚠️ Giải trình chấm công', 'Vui lòng chọn lý do để QLNS xem xét.', ngay);
   document.getElementById('gt-timer').style.display='none';
+  // [v7.0] Hiện UI sửa CH / loại ca nếu là lỗi GPS/SAI CH/SAI CA
+  _gtSetupSuaUI();
 }
 
 // ─── GIỜ CÔNG (NV) ──────────────────────────────────────────
@@ -4383,43 +4503,135 @@ function checkGtFormState(){
   btn.style.opacity = ok ? '1' : '0.5';
 }
 
+// [v7.0] Setup UI sửa CH/loại ca trong modal giải trình
+async function _gtSetupSuaUI() {
+  const wrap     = document.getElementById('gt-sua-wrap');
+  const info     = document.getElementById('gt-sua-info');
+  const chWrap   = document.getElementById('gt-sua-ch-wrap');
+  const loaiWrap = document.getElementById('gt-sua-loai-wrap');
+  const quotaInfo= document.getElementById('gt-quota-info');
+  if (!wrap) return;
+  // Reset
+  wrap.style.display = 'none';
+  chWrap.style.display = 'none';
+  loaiWrap.style.display = 'none';
+
+  if (!_gtLoiType) return;
+
+  // Check quota trước
+  try {
+    const q = await supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma }).then(r => r.data);
+    if (q) {
+      if (q.da_dong_bang) {
+        info.textContent = '⛔ Tài khoản đã bị đóng băng do vượt quota. Chỉ có thể giải trình bằng text, không sửa CH/loại ca.';
+        wrap.style.display = 'block';
+        return;
+      }
+      quotaInfo.textContent = `Quota sửa giải trình tháng này: còn ${q.quota_sua_cb_con}/3 lần`;
+    }
+  } catch (e) {}
+
+  if (_gtLoiType === 'gps') {
+    info.textContent = 'Bạn chấm sai vị trí. Nếu chấm nhầm CH khác, hãy chọn lại CH đúng bên dưới. Khoảng cách mới sẽ được tính lại.';
+    chWrap.style.display = '';
+    await _gtLoadCHOptions();
+    wrap.style.display = 'block';
+  } else if (_gtLoiType === 'ca') {
+    info.textContent = 'Bạn chấm sai loại ca. Vui lòng chọn loại ca đúng bên dưới.';
+    loaiWrap.style.display = '';
+    wrap.style.display = 'block';
+  } else if (_gtLoiType === 'thieu') {
+    info.textContent = 'Bạn bị thiếu ca. Đây là tình huống đặc biệt — chỉ giải trình bằng text. Nếu cần bổ sung ca, vào tab Tài khoản → "Xin bổ sung ca".';
+    wrap.style.display = 'block';
+  }
+}
+
+async function _gtLoadCHOptions() {
+  const sel = document.getElementById('gt-sua-ch');
+  if (!sel) return;
+  // Đã load rồi thì bỏ qua
+  if (sel.options.length > 1) return;
+  try {
+    const { data } = await supa.from('cua_hang')
+      .select('ma_ch, ten_ch, khu_vuc')
+      .eq('trang_thai', 'ĐANG HOẠT ĐỘNG')
+      .order('khu_vuc').order('ten_ch');
+    if (!data) return;
+    let lastKV = '';
+    data.forEach(ch => {
+      if (ch.khu_vuc !== lastKV) {
+        const og = document.createElement('optgroup');
+        og.label = ch.khu_vuc || 'Khác';
+        sel.appendChild(og);
+        lastKV = ch.khu_vuc;
+      }
+      const opt = document.createElement('option');
+      opt.value = ch.ma_ch;
+      opt.textContent = ch.ma_ch + ' · ' + ch.ten_ch;
+      sel.lastElementChild.appendChild(opt);
+    });
+  } catch (e) { console.error('Load CH error', e); }
+}
+
 function guiGiaiTrinh(){
   const inp=document.getElementById('gt-input');
   const noteVal = (inp.value || '').trim();
-  // [v11.6 Item 5] Validate ghi chú bắt buộc
   if(!gtLyDo){
     const err=document.getElementById('gt-err');err.textContent='Vui lòng chọn 1 lý do.';err.style.display='block';return;
   }
   if(noteVal.length < 10){
     const err=document.getElementById('gt-err');err.textContent='Ghi chú bắt buộc, tối thiểu 10 ký tự.';err.style.display='block';return;
   }
-  // [v11.6 Item 5] Gửi cả lý do chọn + ghi chú chi tiết
-  // Format: "<lý do chính>: <chi tiết>"
   const lyDoGui = gtLyDo === noteVal ? noteVal : `${gtLyDo}: ${noteVal}`;
   const btn=document.getElementById('gt-btn');
   btn.disabled=true;btn.textContent='Đang gửi...';
   document.getElementById('gt-err').style.display='none';
-  // [v12-FIX] Gửi 1 lần — server update CHỈ CB thuộc lần chấm này
-  supa.rpc('fn_gui_giai_trinh', {
-    p_ma_nv: SESSION.ma,
-    p_ngay: gtNgay,
-    p_ly_do: lyDoGui,
-    p_cb_id: null,
-    p_loai_cb: null,
-    p_gio: null,
-    p_cc_id: _gtCcId || null
-  }).then(({ data: res, error }) => {
+
+  // [v7.0] Nếu NV chọn sửa CH hoặc loại ca → gọi fn_nv_sua_cham_cong_giai_trinh
+  const maChMoi = (document.getElementById('gt-sua-ch') && document.getElementById('gt-sua-ch').value) || '';
+  const loaiMoi = (document.getElementById('gt-sua-loai') && document.getElementById('gt-sua-loai').value) || '';
+  const coSua = (maChMoi || loaiMoi) && _gtCbId;
+
+  const submitDone = (res, error) => {
     btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';
     if(!error && res && res.success){
       clearInterval(_gtTimerInterval);
       closeGiaiTrinh();
-      showToast('✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.','ok');
+      let msg = '✓ Đã gửi giải trình. QLNS sẽ xem xét sớm.';
+      if (res.khoang_cach_moi != null) {
+        msg = `✓ Đã gửi. Khoảng cách mới: ${res.khoang_cach_moi}m. ${res.khoang_cach_moi > 100 ? '⚠ Vẫn xa CH, đã báo QLNS.' : '✓ Trong phạm vi.'}`;
+      }
+      showToast(msg,'ok');
       taiLichSu();
       startCountdown(30);
     } else {
-      const err=document.getElementById('gt-err');err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';err.style.display='block';
+      const err=document.getElementById('gt-err');
+      err.textContent=(res&&res.error)||(error&&error.message)||'Lỗi gửi giải trình.';
+      err.style.display='block';
     }
-  }).catch(()=>{btn.disabled=false;btn.textContent='GỬI GIẢI TRÌNH';});
+  };
+
+  if (coSua) {
+    supa.rpc('fn_nv_sua_cham_cong_giai_trinh', {
+      p_ma_nv: SESSION.ma,
+      p_cb_id: _gtCbId,
+      p_giai_trinh: lyDoGui,
+      p_ma_ch_moi: maChMoi || null,
+      p_loai_moi: loaiMoi || null
+    }).then(({ data, error }) => submitDone(data, error))
+      .catch(() => submitDone(null, { message: 'Lỗi kết nối' }));
+  } else {
+    supa.rpc('fn_gui_giai_trinh', {
+      p_ma_nv: SESSION.ma,
+      p_ngay: gtNgay,
+      p_ly_do: lyDoGui,
+      p_cb_id: null,
+      p_loai_cb: null,
+      p_gio: null,
+      p_cc_id: _gtCcId || null
+    }).then(({ data: res, error }) => submitDone(res, error))
+      .catch(() => submitDone(null, { message: 'Lỗi kết nối' }));
+  }
 }
 
 
@@ -6937,6 +7149,121 @@ function _renderDashAlerts(alerts){
 // ═══════════════════════════════════════════════════════════
 let _accDnpRange='tatca'; // [v10 FIX #6] default 'Tất cả'
 let _accDnpData=null;
+
+// [v7.0] MODAL: Xin bổ sung ca
+async function moModalBoSungCa(){
+  const m = document.getElementById('bsc-modal');
+  if (!m) return;
+  // Reset
+  document.getElementById('bsc-gio').value = '';
+  document.getElementById('bsc-loai').value = '';
+  document.getElementById('bsc-lydo').value = '';
+  document.getElementById('bsc-err').style.display = 'none';
+
+  // Check 22h
+  const nowH = new Date().getHours();
+  if (nowH >= 22) {
+    document.getElementById('bsc-err').textContent = '⛔ Đã quá 22h. Chức năng bổ sung ca đã đóng cho hôm nay. Vui lòng liên hệ QLNS.';
+    document.getElementById('bsc-err').style.display = 'block';
+  }
+
+  // Load quota
+  try {
+    const { data } = await supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma });
+    const el = document.getElementById('bsc-quota');
+    if (data && el) {
+      if (data.quota_bo_sung_con <= 0) {
+        el.innerHTML = '⛔ <strong>Đã hết quota bổ sung ca tháng này (3/3 lần)</strong>. Vui lòng liên hệ QLNS để được sửa thủ công.';
+        el.style.background = '#FEF2F2';
+        el.style.color = '#991B1B';
+      } else {
+        el.innerHTML = `Quota tháng ${data.thang}: <strong>còn ${data.quota_bo_sung_con}/3 lần</strong>`;
+      }
+    }
+  } catch (e) {}
+
+  // Load CH list (chỉ load 1 lần)
+  const selCH = document.getElementById('bsc-ch');
+  if (selCH && selCH.options.length <= 1) {
+    try {
+      const { data } = await supa.from('cua_hang')
+        .select('ma_ch, ten_ch, khu_vuc')
+        .eq('trang_thai', 'ĐANG HOẠT ĐỘNG')
+        .order('khu_vuc').order('ten_ch');
+      if (data) {
+        let lastKV = '';
+        data.forEach(ch => {
+          if (ch.khu_vuc !== lastKV) {
+            const og = document.createElement('optgroup');
+            og.label = ch.khu_vuc || 'Khác';
+            selCH.appendChild(og);
+            lastKV = ch.khu_vuc;
+          }
+          const opt = document.createElement('option');
+          opt.value = ch.ma_ch;
+          opt.textContent = ch.ma_ch + ' · ' + ch.ten_ch;
+          selCH.lastElementChild.appendChild(opt);
+        });
+      }
+    } catch (e) {}
+  }
+
+  // Set default CH = CH mặc định của NV
+  if (selCH && SESSION.cuaHangMa && !selCH.value) {
+    selCH.value = SESSION.cuaHangMa;
+  }
+
+  m.style.display = 'flex';
+}
+
+function dongModalBoSungCa(){
+  document.getElementById('bsc-modal').style.display = 'none';
+}
+
+async function guiBoSungCa(){
+  const gio  = document.getElementById('bsc-gio').value;
+  const loai = document.getElementById('bsc-loai').value;
+  const maCH = document.getElementById('bsc-ch').value;
+  const lyDo = (document.getElementById('bsc-lydo').value || '').trim();
+  const errEl = document.getElementById('bsc-err');
+  errEl.style.display = 'none';
+
+  if (!gio)  { errEl.textContent = 'Vui lòng nhập giờ chấm.'; errEl.style.display='block'; return; }
+  if (!loai) { errEl.textContent = 'Vui lòng chọn loại ca.'; errEl.style.display='block'; return; }
+  if (!maCH) { errEl.textContent = 'Vui lòng chọn cửa hàng.'; errEl.style.display='block'; return; }
+  if (lyDo.length < 10) { errEl.textContent = 'Lý do tối thiểu 10 ký tự.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('bsc-btn-gui');
+  btn.disabled = true; btn.textContent = 'Đang gửi...';
+  try {
+    const today = new Date().toISOString().substring(0,10);
+    const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
+      p_ma_nv: SESSION.ma,
+      p_ngay: today,
+      p_gio: gio,
+      p_loai: loai,
+      p_ma_ch: maCH,
+      p_ly_do: lyDo
+    });
+    if (error) throw error;
+    if (data && data.success === false) {
+      errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
+      errEl.style.display = 'block';
+    } else {
+      dongModalBoSungCa();
+      showToast(`✓ Đã gửi yêu cầu bổ sung. QLNS sẽ xem xét. Quota còn ${data.quota_con_lai}/3.`, 'ok');
+      // Update menu quota label
+      const lbl = document.getElementById('menu-bosung-quota');
+      if (lbl && data.quota_con_lai != null) lbl.textContent = 'Còn ' + data.quota_con_lai + '/3';
+      taiLichSu();
+    }
+  } catch (e) {
+    errEl.textContent = e.message || 'Lỗi kết nối';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Gửi yêu cầu';
+  }
+}
 
 function moDonNghiPhep(){
   if(!SESSION)return;
