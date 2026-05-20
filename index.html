@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.1</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.2</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2122,6 +2122,35 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
+  <!-- [v8.2] MODAL CHI TIẾT GIỜ CÔNG NV (Admin/QLNS drill-down) -->
+  <div id="gcql-detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.3)">
+      <!-- Header modal -->
+      <div style="background:var(--green);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div>
+          <div style="font-size:11px;opacity:0.85;font-weight:500">Chi tiết giờ công · <span id="gcql-detail-thang">--</span></div>
+          <div id="gcql-detail-title" style="font-size:15px;font-weight:700;margin-top:2px">--</div>
+        </div>
+        <button onclick="_closeGioCongChiTiet()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <!-- KPI -->
+      <div style="display:flex;gap:8px;padding:12px 16px;background:#FAFAFA;flex-shrink:0">
+        <div style="flex:1;background:#fff;border-radius:10px;padding:8px;text-align:center;border:1px solid #E5E7EB">
+          <div id="gcql-detail-so-ngay" style="font-size:18px;font-weight:700;color:var(--green)">--</div>
+          <div style="font-size:10px;color:#6B7280;margin-top:2px">Ngày công</div>
+        </div>
+        <div style="flex:1;background:#fff;border-radius:10px;padding:8px;text-align:center;border:1px solid #E5E7EB">
+          <div id="gcql-detail-tong-gio" style="font-size:18px;font-weight:700;color:var(--green)">--</div>
+          <div style="font-size:10px;color:#6B7280;margin-top:2px">Tổng giờ</div>
+        </div>
+      </div>
+      <!-- Content (re-uses _renderGioCongTable output) -->
+      <div id="gcql-detail-content" style="flex:1;overflow-y:auto;padding:0">
+        <div class="gc-empty">⏳ Đang tải...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- PAGE: NHÂN SỰ (QLNS/ADMIN) -->
   <div class="page" id="page-nhansu">
     <!-- [v10 Yc #2] TAB CON ĐƯA LÊN TRÊN CÙNG: Nhân sự / Đơn nghỉ phép -->
@@ -2379,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.1</strong>
+      Phiên bản <strong style="color:#6B7280">v8.2</strong>
     </div>
   </div>
 
@@ -4284,6 +4313,57 @@ function taiGioCong(){
   .catch(()=>{document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
 
+// [v8.2] Helper: render badge trạng thái CB/bổ sung ca
+function _gcBadgeTrangThai(p) {
+  // Ưu tiên: nếu có cb_trang_thai (cảnh báo) → hiển thị status của CB
+  // Nếu THIEU_VAO/THIEU_RA + có bs_trang_thai → hiển thị status xin bổ sung ca
+  // Nếu THIEU_VAO/THIEU_RA + KHÔNG có bs → "Chưa xin bổ sung"
+  // Trường hợp DA_DUYET mà vẫn 0g (vì khác CH...) → ghi rõ "không cộng giờ"
+
+  const cb = p.cb_trang_thai;
+  const bs = p.bs_trang_thai;
+  const isThieu = p.lyDo === 'THIEU_VAO' || p.lyDo === 'THIEU_RA';
+  const STYLE_BASE = 'display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;margin-top:3px;line-height:1.3;white-space:nowrap;';
+
+  // Map trạng thái → style + text
+  const renderBadge = (text, type) => {
+    let bg, color;
+    if (type === 'wait')      { bg = 'var(--amber-lt)';  color = 'var(--amber)'; }
+    else if (type === 'ok')   { bg = 'var(--green-lt)';  color = 'var(--green)'; }
+    else if (type === 'fail') { bg = 'var(--red-lt)';    color = 'var(--red)'; }
+    else                      { bg = 'var(--gray-lt)';   color = 'var(--text-m)'; }
+    return `<div style="${STYLE_BASE}background:${bg};color:${color}">${text}</div>`;
+  };
+
+  // ─── Ưu tiên 1: Có CB → hiển thị trạng thái CB ───
+  if (cb) {
+    if (cb === 'DA_DUYET') {
+      // Đã duyệt — nhưng nếu vẫn 0g (khác CH, thiếu ra...) thì ghi rõ
+      if (!p.hopLe) return renderBadge('✓ Đã duyệt (không cộng giờ)', 'ok');
+      return renderBadge('✓ Đã duyệt', 'ok');
+    }
+    if (cb === 'TU_CHOI') {
+      const ly = p.cb_ly_do_tu_choi ? ` – ${p.cb_ly_do_tu_choi.substring(0, 30)}${p.cb_ly_do_tu_choi.length > 30 ? '…' : ''}` : '';
+      return renderBadge(`✕ Bị từ chối${ly}`, 'fail');
+    }
+    if (cb === 'DA_GIAI_TRINH') return renderBadge('⏳ Chờ duyệt', 'wait');
+    if (cb === 'CHUA_GIAI_TRINH') return renderBadge('• Chưa giải trình', 'none');
+  }
+
+  // ─── Ưu tiên 2: Thiếu Vào/Ra → kiểm tra đơn xin bổ sung ───
+  if (isThieu) {
+    if (bs === 'DA_DUYET')      return renderBadge('✓ Đã duyệt bổ sung', 'ok');
+    if (bs === 'TU_CHOI') {
+      const ly = p.bs_ly_do_tu_choi ? ` – ${p.bs_ly_do_tu_choi.substring(0, 30)}${p.bs_ly_do_tu_choi.length > 30 ? '…' : ''}` : '';
+      return renderBadge(`✕ Bị từ chối${ly}`, 'fail');
+    }
+    if (bs === 'CHO_DUYET' || bs === 'DA_GIAI_TRINH') return renderBadge('⏳ Chờ duyệt bổ sung', 'wait');
+    return renderBadge('• Chưa xin bổ sung', 'none');
+  }
+
+  return '';
+}
+
 function _renderGioCongTable(){
   if(!gcData.length){
     document.getElementById('gc-content').innerHTML='<div class="gc-empty">📭 Chưa có dữ liệu tháng này</div>';
@@ -4323,6 +4403,8 @@ function _renderGioCongTable(){
       }
 
       const warnTxt = p.lyDo ? `<div style="font-size:9px;color:#DC2626;line-height:1.2;margin-top:2px">${LY_DO_MAP[p.lyDo]||p.lyDo}</div>` : '';
+      // [v8.2] Badge trạng thái xử lý (CB / bổ sung ca)
+      const ttBadge = _gcBadgeTrangThai(p);
       const ngayCell = (idx === 0)
         ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${caps.length>1?'<div style="font-size:9px;color:#6B7280">'+caps.length+' cặp</div>':''}`
         : '<div style="font-size:10px;color:#9CA3AF">↳</div>';
@@ -4333,7 +4415,7 @@ function _renderGioCongTable(){
         <td>${ngayCell}</td>
         <td class="gc-gio">${p.gioVao||'--'}</td>
         <td class="gc-gio">${p.gioRa||'--'}</td>
-        <td class="gc-tong">${gioCongStr}${warnTxt}</td>
+        <td class="gc-tong">${gioCongStr}${warnTxt}${ttBadge}</td>
         <td style="font-size:11px;color:var(--text-m);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td>
       </tr>`;
     });
@@ -4491,12 +4573,82 @@ function renderGioCongQL(){
     const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
     const chShort=r.cuaHang.length>12?r.cuaHang.substring(0,11)+'…':r.cuaHang;
     const nvShort=r.tenNV.length>12?r.tenNV.substring(0,11)+'…':r.tenNV;
-    rows+=`<tr><td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td>
+    // [v8.2] Click row → mở modal chi tiết PAIR + trạng thái xử lý
+    const esTen = (r.tenNV||'').replace(/'/g,"\\'");
+    rows+=`<tr onclick="_openGioCongChiTiet('${r.maNV}','${esTen}','${r.ngay}')" style="cursor:pointer" title="Xem chi tiết cặp PAIR + trạng thái xử lý">
+      <td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td>
       <td style="font-size:11px;color:var(--text-m)">${r.maNV}<br>${nvShort}</td>
       <td style="font-size:11px;color:var(--text-m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px">${chShort}</td>
       <td class="gc-tong">${r.tongGioCong||'--'}</td></tr>`;
   });
   document.getElementById('gcql-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Cửa hàng</th><th>Tổng giờ</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// [v8.2] DRILL-DOWN — Admin/QLNS click vào row NV → mở modal chi tiết
+// Tái dụng _renderGioCongTable bằng cách set tạm gcData = data của NV được chọn.
+// ════════════════════════════════════════════════════════════════
+let _gcSaveBackup = null;  // Backup gcData khi vào modal
+let _gcSaveSoNgay = null;
+let _gcSaveTongGio = null;
+
+function _openGioCongChiTiet(maNV, tenNV, ngayClick){
+  // Lấy tháng từ ngày click (ngayClick = 'YYYY-MM-DD')
+  const thang = ngayClick.substring(0, 7);
+  const modal = document.getElementById('gcql-detail-modal');
+  if (!modal) return;
+  document.getElementById('gcql-detail-title').textContent = tenNV + ' (' + maNV + ')';
+  document.getElementById('gcql-detail-thang').textContent = thang;
+  document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty">⏳ Đang tải...</div>';
+  document.getElementById('gcql-detail-so-ngay').textContent = '--';
+  document.getElementById('gcql-detail-tong-gio').textContent = '--';
+  modal.style.display = 'flex';
+
+  supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: maNV, p_thang: thang })
+  .then(({ data: d, error }) => {
+    if (error || !d) {
+      document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
+      return;
+    }
+    // Tính tổng & số ngày
+    const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
+    const tgGio = Math.floor(tongGioGiay / 3600);
+    const tgPhut = Math.floor((tongGioGiay % 3600) / 60);
+    document.getElementById('gcql-detail-so-ngay').textContent = d.soNgay || 0;
+    document.getElementById('gcql-detail-tong-gio').textContent = tgGio + 'g ' + String(tgPhut).padStart(2,'0') + 'p';
+
+    // Tái dụng _renderGioCongTable: backup state hiện tại, render vào element tạm, copy HTML qua
+    _gcSaveBackup = gcData;
+    _gcSaveSoNgay = document.getElementById('gc-so-ngay').textContent;
+    _gcSaveTongGio = document.getElementById('gc-tong-gio').textContent;
+    gcData = d.cacCap || [];
+
+    // Render tạm vào element 'gc-content' (của NV), sau đó copy sang modal
+    const gcContent = document.getElementById('gc-content');
+    const saveHtml = gcContent ? gcContent.innerHTML : '';
+    document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
+    document.getElementById('gc-tong-gio').textContent = tgGio + 'g ' + String(tgPhut).padStart(2,'0') + 'p';
+
+    _renderGioCongTable();
+
+    // Copy HTML vừa render sang modal
+    document.getElementById('gcql-detail-content').innerHTML = gcContent.innerHTML;
+
+    // Restore state cho view NV
+    gcContent.innerHTML = saveHtml;
+    gcData = _gcSaveBackup;
+    document.getElementById('gc-so-ngay').textContent = _gcSaveSoNgay;
+    document.getElementById('gc-tong-gio').textContent = _gcSaveTongGio;
+    _gcSaveBackup = null;
+  })
+  .catch(()=>{
+    document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
+  });
+}
+
+function _closeGioCongChiTiet(){
+  const modal = document.getElementById('gcql-detail-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 // ─── TÀI KHOẢN ──────────────────────────────────────────────
