@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.3</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.4</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2315,7 +2315,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v7.3</strong>
+      Phiên bản <strong style="color:#6B7280">v7.4</strong>
     </div>
   </div>
 
@@ -4221,7 +4221,13 @@ function _renderGioCongTable(){
     cas.forEach((ca, idx) => {
       const chName = ca.tenCH || ca.maCH || '--';
       const chShort = chName.length > 14 ? chName.substring(0,13)+'…' : chName;
-      const gioCong = ca.gioCong != null ? Number(ca.gioCong).toFixed(2) + 'h' : '--';
+      const gioCong = (() => {
+        if (ca.gioCong == null) return '--';
+        const giay = Math.round(Number(ca.gioCong) * 3600);
+        const h = Math.floor(giay / 3600);
+        const mPad = String(Math.floor((giay % 3600) / 60)).padStart(2,'0');
+        return h + 'g ' + mPad + 'p';
+      })();
       const hopLeIcon = ca.hopLe ? '' : ' <span style="color:#DC2626;font-size:10px">⚠</span>';
       const ngayCell = (idx === 0)
         ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${cas.length>1?'<div style="font-size:9px;color:#6B7280">'+cas.length+' ca</div>':''}`
