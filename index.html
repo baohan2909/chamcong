@@ -4302,6 +4302,13 @@ function taiGioCong(){
       document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
       return;
     }
+    // [v8.2] Supabase đôi khi trả jsonb dưới dạng string → parse nếu cần
+    if (typeof d === 'string') {
+      try { d = JSON.parse(d); } catch(e) {
+        document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi parse dữ liệu.</div>';
+        return;
+      }
+    }
     gcData = d.cacCap || [];
     document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
     const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
@@ -4609,6 +4616,13 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
     if (error || !d) {
       document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
       return;
+    }
+    // [v8.2] Parse string nếu cần
+    if (typeof d === 'string') {
+      try { d = JSON.parse(d); } catch(e) {
+        document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty" style="color:var(--red)">Lỗi parse dữ liệu.</div>';
+        return;
+      }
     }
     // Tính tổng & số ngày
     const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
