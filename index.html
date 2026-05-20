@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v7.4</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.0</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2315,7 +2315,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v7.4</strong>
+      Phiên bản <strong style="color:#6B7280">v8.0</strong>
     </div>
   </div>
 
@@ -4180,15 +4180,14 @@ function taiGioCong(){
   document.getElementById('gc-content').innerHTML='<div class="gc-empty">⏳ Đang tải dữ liệu...</div>';
   ['gc-so-ngay','gc-tong-gio'].forEach(id=>document.getElementById(id).textContent='--');
 
-  // [v7.3] Dùng RPC mới fn_get_gio_cong_thang — trả từng ca theo CH
+  // [v8.0] RPC trả từng CẶP PAIR (VAO-RA)
   supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang })
   .then(({ data: d, error }) => {
     if (error || !d) {
       document.getElementById('gc-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
       return;
     }
-    const cacCa = d.cacCa || [];
-    gcData = cacCa;
+    gcData = d.cacCap || [];
     document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
     const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
     const tgGio = Math.floor(tongGioGiay / 3600);
@@ -4204,41 +4203,59 @@ function _renderGioCongTable(){
     document.getElementById('gc-content').innerHTML='<div class="gc-empty">📭 Chưa có dữ liệu tháng này</div>';
     return;
   }
-  // [v7.3] Group theo ngày, mỗi ngày hiện các ca (CH)
   const byNgay = {};
-  gcData.forEach(ca => {
-    if(!byNgay[ca.ngay]) byNgay[ca.ngay] = [];
-    byNgay[ca.ngay].push(ca);
-  });
+  gcData.forEach(p => { if(!byNgay[p.ngay]) byNgay[p.ngay]=[]; byNgay[p.ngay].push(p); });
+
+  const LY_DO_MAP = {
+    'KHAC_CH':     '⚠ Khác CH',
+    'CO_CANH_BAO': '⚠ Có cảnh báo',
+    'THIEU_RA':    '⚠ Thiếu Ra',
+    'THIEU_VAO':   '⚠ Thiếu Vào'
+  };
 
   let rows='';
-  const ngayList = Object.keys(byNgay).sort();
-  ngayList.forEach(ngay => {
+  Object.keys(byNgay).sort().forEach(ngay => {
     const dt=new Date(ngay+'T00:00:00');
     const thu=THU_VI[dt.getDay()];
     const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
-    const cas = byNgay[ngay];
-    cas.forEach((ca, idx) => {
-      const chName = ca.tenCH || ca.maCH || '--';
-      const chShort = chName.length > 14 ? chName.substring(0,13)+'…' : chName;
-      const gioCong = (() => {
-        if (ca.gioCong == null) return '--';
-        const giay = Math.round(Number(ca.gioCong) * 3600);
+    const caps = byNgay[ngay];
+    caps.forEach((p, idx) => {
+      const tenVao = p.tenCHVao || p.maCHVao || '';
+      const tenRa  = p.tenCHRa  || p.maCHRa  || '';
+      // Hiện cả 2 CH nếu khác nhau (để NV thấy ngay lỗi)
+      const chDisplay = (tenVao && tenRa && p.maCHVao !== p.maCHRa)
+        ? tenVao + ' → ' + tenRa
+        : (tenVao || tenRa || '--');
+      const chShort = chDisplay.length > 22 ? chDisplay.substring(0,21)+'…' : chDisplay;
+
+      let gioCongStr = '--';
+      if (p.gioCong != null) {
+        const giay = Math.round(Number(p.gioCong) * 3600);
         const h = Math.floor(giay / 3600);
         const mPad = String(Math.floor((giay % 3600) / 60)).padStart(2,'0');
-        return h + 'g ' + mPad + 'p';
-      })();
-      const hopLeIcon = ca.hopLe ? '' : ' <span style="color:#DC2626;font-size:10px">⚠</span>';
+        gioCongStr = h + 'g ' + mPad + 'p';
+      }
+
+      const warnTxt = p.lyDo ? `<div style="font-size:9px;color:#DC2626;line-height:1.2;margin-top:2px">${LY_DO_MAP[p.lyDo]||p.lyDo}</div>` : '';
       const ngayCell = (idx === 0)
-        ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${cas.length>1?'<div style="font-size:9px;color:#6B7280">'+cas.length+' ca</div>':''}`
+        ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${caps.length>1?'<div style="font-size:9px;color:#6B7280">'+caps.length+' cặp</div>':''}`
         : '<div style="font-size:10px;color:#9CA3AF">↳</div>';
-      rows += `<tr><td>${ngayCell}</td><td class="gc-gio">${ca.gioVao||'--'}</td><td class="gc-gio">${ca.gioRa||'--'}</td><td class="gc-tong">${gioCong}${hopLeIcon}</td><td style="font-size:11px;color:var(--text-m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td></tr>`;
+
+      const cellStyle = p.hopLe ? '' : 'background:#FEF2F2';
+
+      rows += `<tr style="${cellStyle}">
+        <td>${ngayCell}</td>
+        <td class="gc-gio">${p.gioVao||'--'}</td>
+        <td class="gc-gio">${p.gioRa||'--'}</td>
+        <td class="gc-tong">${gioCongStr}${warnTxt}</td>
+        <td style="font-size:11px;color:var(--text-m);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td>
+      </tr>`;
     });
   });
   const soNgay=document.getElementById('gc-so-ngay').textContent;
   const tongGio=document.getElementById('gc-tong-gio').textContent;
   rows+=`<tr class="gc-total"><td colspan="3" style="font-size:11px">Tổng (${soNgay} ngày)</td><td class="gc-tong">${tongGio}</td><td></td></tr>`;
-  document.getElementById('gc-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Vào ca</th><th>Ra ca</th><th>Tổng</th><th>Cửa hàng</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('gc-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Vào</th><th>Ra</th><th>Giờ công</th><th>Cửa hàng</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function renderGioCong(){
   if(!gcData.length){
