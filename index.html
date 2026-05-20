@@ -4566,12 +4566,15 @@ function renderGioCongQL(){
     return;
   }
   const nvSet=new Set(filtered.map(r=>r.maNV));
-  // [FIX v10 #1] Server trả trangThai = 'ĐỦ CA' | 'CHƯA RA CA' | 'CÓ LỖI'.
-  // Trước đây v9 filter 'HOÀN THÀNH' → không bao giờ match → KPI luôn = 0.
+  // [v8.3] Server trả trangThai = 'ĐỦ CA' | 'CÓ LỖI'.
   const _isValid = tt => tt==='ĐỦ CA' || tt==='HOÀN THÀNH';
   const ngayDone=new Set(filtered.filter(r=>_isValid(r.trangThai)).map(r=>r.maNV+'_'+r.ngay));
+  // [v8.3] Backend trả sẵn tongPhut (int) — ưu tiên dùng. Fallback parseGioCong cho format cũ.
   let tongPhut=0;
-  filtered.forEach(r=>{if(_isValid(r.trangThai))tongPhut+=parseGioCong(r.tongGioCong);});
+  filtered.forEach(r=>{
+    if (r.tongPhut != null) tongPhut += Number(r.tongPhut)||0;
+    else if(_isValid(r.trangThai)) tongPhut += parseGioCong(r.tongGioCong);
+  });
   document.getElementById('gcql-nv').textContent=nvSet.size;
   document.getElementById('gcql-ngay').textContent=ngayDone.size;
   document.getElementById('gcql-gio').textContent=fmtPhut(tongPhut);
@@ -4581,15 +4584,17 @@ function renderGioCongQL(){
     const dt=new Date(r.ngay+'T00:00:00');
     const thu=THU_VI[dt.getDay()];
     const ngFmt=pad(dt.getDate())+'/'+pad(dt.getMonth()+1);
-    const chShort=r.cuaHang.length>12?r.cuaHang.substring(0,11)+'…':r.cuaHang;
-    const nvShort=r.tenNV.length>12?r.tenNV.substring(0,11)+'…':r.tenNV;
-    // [v8.2] Click row → mở modal chi tiết PAIR + trạng thái xử lý
+    // [v8.3] Click row → mở modal chi tiết PAIR + trạng thái xử lý
     const esTen = (r.tenNV||'').replace(/'/g,"\\'");
+    // [v8.3] Badge trạng thái có lỗi
+    const ttBadge = (r.trangThai === 'CÓ LỖI')
+      ? `<div style="display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;margin-top:3px;background:var(--red-lt);color:var(--red);white-space:nowrap">⚠ Có ${r.soCapLoi||''} lỗi</div>`
+      : '';
     rows+=`<tr onclick="_openGioCongChiTiet('${r.maNV}','${esTen}','${r.ngay}')" style="cursor:pointer" title="Xem chi tiết cặp PAIR + trạng thái xử lý">
       <td><div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div></td>
-      <td style="font-size:11px;color:var(--text-m)">${r.maNV}<br>${nvShort}</td>
-      <td style="font-size:11px;color:var(--text-m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px">${chShort}</td>
-      <td class="gc-tong">${r.tongGioCong||'--'}</td></tr>`;
+      <td style="font-size:12px;color:var(--text)"><div style="font-weight:600">${r.tenNV||''}</div><div style="font-size:10px;color:var(--text-m);margin-top:1px">${r.maNV}</div></td>
+      <td style="font-size:12px;color:var(--text-m);word-break:break-word">${r.cuaHang||'--'}</td>
+      <td class="gc-tong">${r.tongGioCong||'--'}${ttBadge}</td></tr>`;
   });
   document.getElementById('gcql-content').innerHTML=`<table class="gc-table"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Cửa hàng</th><th>Tổng giờ</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
