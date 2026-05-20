@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.0</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.1</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1637,11 +1637,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div id="gt-sua-info" style="font-size:11px;color:#92400E;margin-bottom:8px"></div>
 
         <!-- Đổi CH (lỗi SAI VỊ TRÍ / SAI CỬA HÀNG) -->
-        <div id="gt-sua-ch-wrap" style="display:none;margin-bottom:10px">
-          <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng đúng:</label>
-          <select id="gt-sua-ch" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;background:#fff">
-            <option value="">— Chọn cửa hàng đúng —</option>
-          </select>
+        <div id="gt-sua-ch-wrap" style="display:none;margin-bottom:10px;position:relative">
+          <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng đúng (gõ để tìm):</label>
+          <input type="text" id="gt-sua-ch-input" autocomplete="off" placeholder="Gõ tên hoặc mã CH..." 
+            style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;background:#fff"
+            oninput="_gtFilterCH(this.value)" onfocus="_gtFilterCH(this.value)" onblur="setTimeout(()=>{document.getElementById('gt-sua-ch-list').style.display='none'},200)">
+          <input type="hidden" id="gt-sua-ch" value="">
+          <div id="gt-sua-ch-list" style="display:none;position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid #D1D5DB;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:240px;overflow-y:auto;z-index:50;margin-top:2px"></div>
           <div id="gt-sua-ch-info" style="font-size:11px;color:#6B7280;margin-top:4px"></div>
         </div>
 
@@ -2129,6 +2131,68 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         Đơn nghỉ phép
         <span class="ns-subtab-badge" id="dnp-badge" style="display:none"></span>
       </button>
+      <!-- [v8.1] Lịch sử duyệt -->
+      <button class="ns-subtab" id="nssub-lichsu" onclick="setNSSubTab('lichsu')">
+        Lịch sử duyệt
+      </button>
+    </div>
+
+    <!-- SUB PANEL: Lịch sử duyệt [v8.1] -->
+    <div id="ns-sub-lichsu" style="display:none;padding:10px 14px">
+      <!-- Filters -->
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Từ ngày</label>
+          <input type="date" id="lsd-tu" class="gcql-date-inp" onchange="taiLichSuDuyet()">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Đến ngày</label>
+          <input type="date" id="lsd-den" class="gcql-date-inp" onchange="taiLichSuDuyet()">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Trạng thái</label>
+          <select id="lsd-trangthai" onchange="taiLichSuDuyet()" style="width:100%;padding:6px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;background:#fff">
+            <option value="">Tất cả</option>
+            <option value="DA_DUYET">Đã duyệt</option>
+            <option value="TU_CHOI">Từ chối</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Loại CB</label>
+          <select id="lsd-loaicb" onchange="taiLichSuDuyet()" style="width:100%;padding:6px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;background:#fff">
+            <option value="">Tất cả</option>
+            <option value="SAI VỊ TRÍ">Sai vị trí</option>
+            <option value="SAI CỬA HÀNG">Sai cửa hàng</option>
+            <option value="SAI CA">Sai ca</option>
+            <option value="THIẾU CA">Thiếu ca</option>
+            <option value="BỔ SUNG CA">Bổ sung ca</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Tìm tên/mã NV/giải trình</label>
+          <input type="text" id="lsd-q" placeholder="Gõ để tìm..." oninput="_debLichSuDuyet()" 
+            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+        <div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:#0F172A" id="lsd-stat-tong">--</div>
+          <div style="font-size:10px;color:#6B7280">Tổng</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:#16A34A" id="lsd-stat-duyet">--</div>
+          <div style="font-size:10px;color:#6B7280">Đã duyệt</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:#DC2626" id="lsd-stat-tuchoi">--</div>
+          <div style="font-size:10px;color:#6B7280">Từ chối</div>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div id="lsd-list"><div class="ns-empty">⏳ Đang tải...</div></div>
     </div>
 
     <!-- SUB PANEL: Nhân sự -->
@@ -2315,7 +2379,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.0</strong>
+      Phiên bản <strong style="color:#6B7280">v8.1</strong>
     </div>
   </div>
 
@@ -2662,6 +2726,23 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
             <button class="adm2-btn adm2-btn-primary" onclick="adm2DuyetAllCanhBao()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Duyệt tất cả</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- [v8.1] Lịch sử duyệt - Link sang tab Nhân sự -->
+        <div class="adm2-action-card">
+          <div class="adm2-action-head">
+            <div class="adm2-action-icon" style="background:#EEF2FF;color:#4F46E5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div class="adm2-action-title">Lịch sử duyệt cảnh báo</div>
+          </div>
+          <div class="adm2-action-desc">Xem toàn bộ giải trình đã duyệt/từ chối, có bộ lọc & sắp xếp.</div>
+          <div class="adm2-action-body">
+            <button class="adm2-btn adm2-btn-secondary" onclick="adm2OpenLichSuDuyet()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Mở Lịch sử duyệt</span>
             </button>
           </div>
         </div>
@@ -3979,7 +4060,12 @@ function _doSubmitFinal(){
       if(res.coLoiThuTu) subParts.push('Chấm công không đúng trình tự ca');
       const sub = (subParts.length ? subParts.join('. ') + '. ' : '') + 'Vui lòng giải trình để quản lý duyệt.';
       _gtCcId = res.id || ''; // cham_cong_id vừa tạo
+      // [v8.1] Set loại lỗi để modal hiện UI sửa CH/loại ca ngay
+      _gtLoiType = res.coLoiGPS ? 'gps' : (res.coLoiThuTu ? 'ca' : '');
+      // Lấy id cảnh báo đầu tiên (BE trả về trong res.canhBao)
+      _gtCbId = (res.canhBao && res.canhBao.length > 0) ? (res.canhBao[0].id || res.canhBao[0].cbId || '') : '';
       openGiaiTrinh(title, sub, res.ngayChamCong || ngayCham, res.id);
+      _gtSetupSuaUI();
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
@@ -4500,6 +4586,8 @@ function startGtTimer(giay){
 function skipGiaiTrinh(){
   clearInterval(_gtTimerInterval);
   closeGiaiTrinh();
+  // [v8.1] Reload lịch sử để hiển thị đúng trạng thái (đừng hiện ✓ Hợp lệ nhầm)
+  if (typeof taiLichSu === 'function') taiLichSu();
   startCountdown(30);
 }
 
@@ -4575,31 +4663,53 @@ async function _gtSetupSuaUI() {
   }
 }
 
+// [v8.1] Cache danh sách CH cho autocomplete
+let _gtAllCH = [];
+
 async function _gtLoadCHOptions() {
-  const sel = document.getElementById('gt-sua-ch');
-  if (!sel) return;
-  // Đã load rồi thì bỏ qua
-  if (sel.options.length > 1) return;
+  if (_gtAllCH.length > 0) return; // đã cache rồi
   try {
     const { data } = await supa.from('cua_hang')
       .select('ma_ch, ten_ch, khu_vuc')
       .eq('trang_thai', 'ĐANG HOẠT ĐỘNG')
       .order('khu_vuc').order('ten_ch');
-    if (!data) return;
-    let lastKV = '';
-    data.forEach(ch => {
-      if (ch.khu_vuc !== lastKV) {
-        const og = document.createElement('optgroup');
-        og.label = ch.khu_vuc || 'Khác';
-        sel.appendChild(og);
-        lastKV = ch.khu_vuc;
-      }
-      const opt = document.createElement('option');
-      opt.value = ch.ma_ch;
-      opt.textContent = ch.ma_ch + ' · ' + ch.ten_ch;
-      sel.lastElementChild.appendChild(opt);
-    });
+    if (data) _gtAllCH = data;
   } catch (e) { console.error('Load CH error', e); }
+}
+
+// [v8.1] Filter CH theo input - hiển thị dropdown gợi ý
+function _gtFilterCH(q) {
+  const list = document.getElementById('gt-sua-ch-list');
+  if (!list) return;
+  q = (q || '').trim().toLowerCase();
+  if (!_gtAllCH.length) { list.style.display = 'none'; return; }
+  const filtered = q
+    ? _gtAllCH.filter(ch => 
+        (ch.ma_ch || '').toLowerCase().includes(q) ||
+        (ch.ten_ch || '').toLowerCase().includes(q) ||
+        (ch.khu_vuc || '').toLowerCase().includes(q)
+      ).slice(0, 30)
+    : _gtAllCH.slice(0, 30);
+  if (!filtered.length) {
+    list.innerHTML = '<div style="padding:10px;color:#9CA3AF;font-size:12px;text-align:center">Không tìm thấy CH phù hợp</div>';
+    list.style.display = 'block';
+    return;
+  }
+  list.innerHTML = filtered.map(ch => `
+    <div onclick="_gtPickCH('${ch.ma_ch}','${(ch.ten_ch||'').replace(/'/g,"\\'")}','${(ch.khu_vuc||'').replace(/'/g,"\\'")}')" 
+         style="padding:8px 10px;cursor:pointer;border-bottom:1px solid #F3F4F6;font-size:13px" 
+         onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='#fff'">
+      <div style="font-weight:500;color:#111827">${ch.ma_ch} · ${ch.ten_ch || ''}</div>
+      <div style="font-size:11px;color:#6B7280">${ch.khu_vuc || ''}</div>
+    </div>`).join('');
+  list.style.display = 'block';
+}
+
+function _gtPickCH(maCh, tenCh, khuVuc) {
+  document.getElementById('gt-sua-ch-input').value = maCh + ' · ' + tenCh;
+  document.getElementById('gt-sua-ch').value = maCh;
+  document.getElementById('gt-sua-ch-list').style.display = 'none';
+  document.getElementById('gt-sua-ch-info').textContent = '✓ Đã chọn: ' + tenCh + ' (' + (khuVuc||'') + ')';
 }
 
 function guiGiaiTrinh(){
@@ -6371,9 +6481,90 @@ function setNSSubTab(tab){
   _nsSubTab=tab;
   document.getElementById('nssub-nhansu').classList.toggle('active',tab==='nhansu');
   document.getElementById('nssub-donnghi').classList.toggle('active',tab==='donnghi');
+  const elLS = document.getElementById('nssub-lichsu');
+  if (elLS) elLS.classList.toggle('active',tab==='lichsu');
   document.getElementById('ns-sub-nhansu').style.display=tab==='nhansu'?'':'none';
   document.getElementById('ns-sub-donnghi').style.display=tab==='donnghi'?'':'none';
+  const elLSPanel = document.getElementById('ns-sub-lichsu');
+  if (elLSPanel) elLSPanel.style.display=tab==='lichsu'?'':'none';
   if(tab==='donnghi')taiDonNghiPhep();
+  if(tab==='lichsu') taiLichSuDuyet();
+}
+
+// [v8.1] LỊCH SỬ DUYỆT
+let _lsdDeb;
+function _debLichSuDuyet(){
+  clearTimeout(_lsdDeb);
+  _lsdDeb = setTimeout(taiLichSuDuyet, 350);
+}
+
+async function taiLichSuDuyet(){
+  const listEl = document.getElementById('lsd-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+
+  const today = new Date().toISOString().substring(0,10);
+  const ago30 = new Date(Date.now() - 30*86400000).toISOString().substring(0,10);
+  const tu  = document.getElementById('lsd-tu').value || ago30;
+  const den = document.getElementById('lsd-den').value || today;
+  const tt  = document.getElementById('lsd-trangthai').value || null;
+  const loai = document.getElementById('lsd-loaicb').value || null;
+  const q   = (document.getElementById('lsd-q').value || '').trim() || null;
+
+  if (!document.getElementById('lsd-tu').value)  document.getElementById('lsd-tu').value = tu;
+  if (!document.getElementById('lsd-den').value) document.getElementById('lsd-den').value = den;
+
+  try {
+    const { data, error } = await supa.rpc('fn_get_lich_su_duyet', {
+      p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: null,
+      p_nguoi_duyet: null, p_loai_cb: loai, p_trang_thai: tt, p_q: q, p_limit: 200
+    });
+    if (error || !data) { listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải.</div>'; return; }
+
+    const list  = data.list || [];
+    const stats = data.stats || {};
+    document.getElementById('lsd-stat-tong').textContent   = stats.tong || 0;
+    document.getElementById('lsd-stat-duyet').textContent  = stats.duyet || 0;
+    document.getElementById('lsd-stat-tuchoi').textContent = stats.tuChoi || 0;
+
+    if (!list.length) {
+      listEl.innerHTML = '<div class="ns-empty">📭 Không có lịch sử duyệt phù hợp.</div>';
+      return;
+    }
+
+    listEl.innerHTML = list.map(r => {
+      const ngayParts = (r.ngay||'').split('-');
+      const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
+      const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
+      const gioDuyet = dtDuyet ? (pad(dtDuyet.getDate())+'/'+pad(dtDuyet.getMonth()+1)+' '+pad(dtDuyet.getHours())+':'+pad(dtDuyet.getMinutes())) : '';
+      const ttBadge = r.trangThai === 'DA_DUYET'
+        ? '<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">✓ DUYỆT</span>'
+        : '<span style="background:#FEE2E2;color:#DC2626;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">✗ TỪ CHỐI</span>';
+      return `
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:#0F172A">${escHtml(r.tenNV||r.maNV)}</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:1px">
+              ${escHtml(r.loaiCB||'')} · ${ngayFmt} ${r.gioCham||''} · ${escHtml(r.tenCH||'')}
+            </div>
+          </div>
+          ${ttBadge}
+        </div>
+        ${r.giaiTrinh ? `<div style="font-size:11px;color:#374151;margin-top:6px;padding:6px 8px;background:#F9FAFB;border-radius:6px;line-height:1.4">💬 ${escHtml(r.giaiTrinh)}</div>` : ''}
+        <div style="font-size:10px;color:#9CA3AF;margin-top:6px;display:flex;justify-content:space-between">
+          <span>Người duyệt: <strong>${escHtml(r.nguoiDuyet||'?')}</strong></span>
+          <span>${gioDuyet}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+escHtml(e.message)+'</div>';
+  }
+}
+
+function escHtml(s) {
+  return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // Nạp danh sách đơn nghỉ phép
@@ -11892,6 +12083,16 @@ function adm2OpenQLBHView() {
     goToPage('banhang');
     // bhInitPage tự detect ADMIN → mở view QLBH
     setTimeout(() => { try { bhInitPage(); } catch(e){} }, 50);
+  }
+}
+
+// [v8.1] Mở tab Nhân sự > Lịch sử duyệt
+function adm2OpenLichSuDuyet() {
+  if (typeof goToPage === 'function') {
+    goToPage('nhansu');
+    setTimeout(() => {
+      try { setNSSubTab('lichsu'); } catch(e){}
+    }, 100);
   }
 }
 
