@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.2</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.3</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.2</strong>
+      Phiên bản <strong style="color:#6B7280">v8.3</strong>
     </div>
   </div>
 
@@ -4321,11 +4321,10 @@ function taiGioCong(){
 }
 
 // [v8.2] Helper: render badge trạng thái CB/bổ sung ca
+// CHỈ render khi cặp KHÔNG hợp lệ (có lyDo). Cặp OK không cần badge.
 function _gcBadgeTrangThai(p) {
-  // Ưu tiên: nếu có cb_trang_thai (cảnh báo) → hiển thị status của CB
-  // Nếu THIEU_VAO/THIEU_RA + có bs_trang_thai → hiển thị status xin bổ sung ca
-  // Nếu THIEU_VAO/THIEU_RA + KHÔNG có bs → "Chưa xin bổ sung"
-  // Trường hợp DA_DUYET mà vẫn 0g (vì khác CH...) → ghi rõ "không cộng giờ"
+  // Cặp hợp lệ + không có lyDo → không cần badge (đỡ rối)
+  if (p.hopLe && !p.lyDo) return '';
 
   const cb = p.cb_trang_thai;
   const bs = p.bs_trang_thai;
@@ -4395,11 +4394,15 @@ function _renderGioCongTable(){
     caps.forEach((p, idx) => {
       const tenVao = p.tenCHVao || p.maCHVao || '';
       const tenRa  = p.tenCHRa  || p.maCHRa  || '';
-      // Hiện cả 2 CH nếu khác nhau (để NV thấy ngay lỗi)
-      const chDisplay = (tenVao && tenRa && p.maCHVao !== p.maCHRa)
-        ? tenVao + ' → ' + tenRa
-        : (tenVao || tenRa || '--');
-      const chShort = chDisplay.length > 22 ? chDisplay.substring(0,21)+'…' : chDisplay;
+      // [v8.2 - hotfix] Hiện cả 2 CH nếu khác nhau, xuống dòng cho dễ đọc, KHÔNG cắt cụt
+      const khacCH = (tenVao && tenRa && p.maCHVao !== p.maCHRa);
+      let chHtml;
+      if (khacCH) {
+        chHtml = `<div style="line-height:1.4">${tenVao} →</div><div style="line-height:1.4">${tenRa}</div>`;
+      } else {
+        const ten = tenVao || tenRa || '--';
+        chHtml = `<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ten}</div>`;
+      }
 
       let gioCongStr = '--';
       if (p.gioCong != null) {
@@ -4423,7 +4426,7 @@ function _renderGioCongTable(){
         <td class="gc-gio">${p.gioVao||'--'}</td>
         <td class="gc-gio">${p.gioRa||'--'}</td>
         <td class="gc-tong">${gioCongStr}${warnTxt}${ttBadge}</td>
-        <td style="font-size:11px;color:var(--text-m);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${chShort}</td>
+        <td style="font-size:11px;color:var(--text-m);max-width:140px;word-break:break-word">${chHtml}</td>
       </tr>`;
     });
   });
