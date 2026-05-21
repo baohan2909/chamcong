@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.8</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.9</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.8</strong>
+      Phiên bản <strong style="color:#6B7280">v8.9</strong>
     </div>
   </div>
 
@@ -6430,7 +6430,9 @@ function guiLichCa(){
       btn.disabled=false;btn.textContent='Gửi lịch tuần';
       return;
     }
-    showToast('✓ Đã gửi ' + (res.count || 0) + ' ngày','ok');
+    // [v8.9] Toast dùng so_ngay (số ngày duy nhất) thay vì count (số slot)
+    const soNgay = res.so_ngay || res.count || 0;
+    showToast('✓ Đã gửi lịch ' + soNgay + ' ngày','ok');
     taiLichCa();
   })().catch(()=>{showToast('Lỗi kết nối.','err');btn.disabled=false;btn.textContent='Gửi lịch tuần';});
 }
