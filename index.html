@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.3</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.4</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.3</strong>
+      Phiên bản <strong style="color:#6B7280">v9.4</strong>
     </div>
   </div>
 
@@ -6503,7 +6503,16 @@ function taiLichCaQL(){
         trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
+    // [v9.4] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
+    const _nghiPhepKey = new Set();
+    (lcRes.data||[]).forEach(r => {
+      if ((r.loai || r.ca_lam) === 'Nghỉ phép') {
+        _nghiPhepKey.add(r.ma_nv + '|' + r.ngay);
+      }
+    });
     (dnRes.data||[]).forEach(dn => {
+      // Skip nếu đã có row Nghỉ phép cùng NV + ngày trong lich_ca
+      if (_nghiPhepKey.has(dn.ma_nv + '|' + dn.ngay_nghi)) return;
       const nv = nvMap[dn.ma_nv] || {};
       const effectiveMaCH = dn.ma_ch || nv.ma_ch_mac_dinh || '—';
       const ch = chMap[effectiveMaCH] || chMap[dn.ma_ch] || {};
@@ -9622,7 +9631,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.3] Lock per-phien + global để chống double-click + race condition
+  // [v9.4] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -9651,7 +9660,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.3] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.4] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -9927,7 +9936,7 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
   }
 }
 
-// [v9.3] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+// [v9.4] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
 async function bhYCXoaTuModal(phienId) {
   const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
     title: 'Yêu cầu xóa phiên tự đóng',
