@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.1</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.2</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.1</strong>
+      Phiên bản <strong style="color:#6B7280">v9.2</strong>
     </div>
   </div>
 
@@ -9622,43 +9622,61 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  const s = BH.sessions.find(x => x.idPhien === idPhien);
-  if (!s) return;
-  if (s.xinXoa) {
-    bhShowToast('Phiên này đã có yêu cầu xóa rồi', null);
+  // [v9.2] Lock per-phien + global để chống double-click + race condition
+  if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
+    console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
   }
-  if (String(idPhien).startsWith('temp_') || s.syncing) {
-    bhShowToast('Phiên đang đồng bộ, vui lòng đợi...', null);
-    return;
-  }
+  window._bhYCXoaLock = window._bhYCXoaLock || {};
+  window._bhYCXoaLock[idPhien] = Date.now();
+  // Auto-clear lock sau 10s (phòng treo)
+  setTimeout(() => { try { delete window._bhYCXoaLock[idPhien]; } catch(e){} }, 10000);
 
-  const ok = await appConfirm('Gửi yêu cầu xóa phiên này lên QLBH? Phiên vẫn chạy đến khi QLBH xác nhận xóa.', {
-    title: 'Yêu cầu xóa phiên #' + s.num,
-    okLabel: 'Gửi yêu cầu',
-    danger: false
-  });
-  if (!ok) return;
-
-  // Optimistic UI: đánh dấu xinXoa ngay
-  s.xinXoa = { co: true, ts: new Date().toISOString(), maNguoi: SESSION.ma || SESSION.cuaHangMa, lyDo: '' };
-  bhRenderSessions();
-  bhShowToast('✓ Đã gửi yêu cầu xóa - chờ QLBH', 'success');
-
-  // [v12-P1] Gửi server ngầm qua Supabase RPC
   try {
-    const { data: d, error } = await supa.rpc('fn_bh_yc_xoa_phien', {
-      p_phien_id: idPhien,
-      p_ma_nguoi_yc: SESSION.ma || SESSION.cuaHangMa,
-      p_ly_do: '',
-    });
-    if (error || !(d && d.success)) {
-      s.xinXoa = null;
-      bhRenderSessions();
-      bhShowToast('Lỗi: ' + ((d && d.error) || (error && error.message) || 'Không gửi được yêu cầu'), null);
+    const s = BH.sessions.find(x => x.idPhien === idPhien);
+    if (!s) return;
+    if (s.xinXoa) {
+      bhShowToast('Phiên này đã có yêu cầu xóa rồi', null);
+      return;
     }
-  } catch(e) {
-    console.error('[BH YC Xóa] Network error:', e);
+    if (String(idPhien).startsWith('temp_') || s.syncing) {
+      bhShowToast('Phiên đang đồng bộ, vui lòng đợi...', null);
+      return;
+    }
+
+    const ok = await appConfirm('Gửi yêu cầu xóa phiên này lên QLBH? Phiên vẫn chạy đến khi QLBH xác nhận xóa.', {
+      title: 'Yêu cầu xóa phiên #' + s.num,
+      okLabel: 'Gửi yêu cầu',
+      danger: false
+    });
+    if (!ok) return;
+
+    // [v9.2] Re-check sau khi user confirm (đề phòng race condition)
+    const s2 = BH.sessions.find(x => x.idPhien === idPhien);
+    if (!s2 || s2.xinXoa) return;
+
+    // Optimistic UI: đánh dấu xinXoa ngay
+    s2.xinXoa = { co: true, ts: new Date().toISOString(), maNguoi: SESSION.ma || SESSION.cuaHangMa, lyDo: '' };
+    bhRenderSessions();
+    bhShowToast('✓ Đã gửi yêu cầu xóa - chờ QLBH', 'success');
+
+    try {
+      const { data: d, error } = await supa.rpc('fn_bh_yc_xoa_phien', {
+        p_phien_id: idPhien,
+        p_ma_nguoi_yc: SESSION.ma || SESSION.cuaHangMa,
+        p_ly_do: '',
+      });
+      if (error || !(d && d.success)) {
+        s2.xinXoa = null;
+        bhRenderSessions();
+        bhShowToast('Lỗi: ' + ((d && d.error) || (error && error.message) || 'Không gửi được yêu cầu'), null);
+      }
+    } catch(e) {
+      console.error('[BH YC Xóa] Network error:', e);
+    }
+  } finally {
+    // Clear lock sau khi xong (cả success/fail)
+    delete window._bhYCXoaLock[idPhien];
   }
 }
 
