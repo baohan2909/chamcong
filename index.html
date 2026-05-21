@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.5</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.6</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.5</strong>
+      Phiên bản <strong style="color:#6B7280">v9.6</strong>
     </div>
   </div>
 
@@ -6478,7 +6478,7 @@ function taiLichCaQL(){
   const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
   const thuHai = new Date(ms);
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
-  // [v9.5] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
+  // [v9.6] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
@@ -6505,7 +6505,7 @@ function taiLichCaQL(){
         trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
-    // [v9.5] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
+    // [v9.6] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
     const _nghiPhepKey = new Set();
     (lcRes.data||[]).forEach(r => {
       if ((r.loai || r.ca_lam) === 'Nghỉ phép') {
@@ -6563,7 +6563,7 @@ function renderLCQL(){
   const dow=['CN','T2','T3','T4','T5','T6','T7'];
   const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
   const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
-  // [v9.5] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
+  // [v9.6] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
   const _dr=d=>{
     const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
     const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
@@ -9055,13 +9055,16 @@ function bhSearchSpLocal(query, limit) {
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
   }
 
-  // 2) Prefix match maCu/sku
+  // 2) Prefix match maCu/sku/barcode
   if (results.length < limit) {
-    const keysMa = Object.keys(BH.spIndex.byMaCu);
-    for (let i = 0; i < keysMa.length && results.length < limit; i++) {
-      if (keysMa[i].indexOf(query) === 0) {
-        const idx = BH.spIndex.byMaCu[keysMa[i]];
-        if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
+    const indices = [BH.spIndex.byMaCu, BH.spIndex.bySku, BH.spIndex.byBarcode];
+    for (let j = 0; j < indices.length && results.length < limit; j++) {
+      const keys = Object.keys(indices[j]);
+      for (let i = 0; i < keys.length && results.length < limit; i++) {
+        if (keys[i].indexOf(query) === 0) {
+          const idx = indices[j][keys[i]];
+          if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
+        }
       }
     }
   }
@@ -9638,7 +9641,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.5] Lock per-phien + global để chống double-click + race condition
+  // [v9.6] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -9667,7 +9670,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.5] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.6] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -9943,7 +9946,7 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
   }
 }
 
-// [v9.5] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+// [v9.6] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
 async function bhYCXoaTuModal(phienId) {
   const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
     title: 'Yêu cầu xóa phiên tự đóng',
