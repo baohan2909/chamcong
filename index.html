@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.0</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.1</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.0</strong>
+      Phiên bản <strong style="color:#6B7280">v9.1</strong>
     </div>
   </div>
 
@@ -9677,19 +9677,11 @@ async function bhHuyYeuCauXoa(idPhien) {
 }
 
 function bhRenderCardContent(card, s) {
-  // [v9.0] Freeze elapsedMs nếu đã gửi YC xóa
-  let elapsedMs;
-  if (s.xinXoa && s.xinXoa.ts) {
-    let frozenMs;
-    try { frozenMs = new Date(s.xinXoa.ts).getTime(); } catch(e) { frozenMs = Date.now(); }
-    elapsedMs = frozenMs - s.startMs;
-  } else {
-    elapsedMs = Date.now() - s.startMs;
-  }
+  const elapsedMs = Date.now() - s.startMs;
   const elapsed = Math.floor(elapsedMs / 1000);
   const tc = elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : '');
   const timeLabel = new Date(s.startMs).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-  // [v9.0] Khi xinXoa → lock toàn bộ tương tác phiên
+  // [v9.0c] Khi xinXoa → lock tương tác. Đồng hồ vẫn chạy.
   const locked = !!s.xinXoa;
 
   // [v11.1 BH-06] Closing state
@@ -9796,21 +9788,14 @@ function bhTickTimers() {
     const el = document.querySelector('[data-timer="' + s.idPhien + '"]');
     if (!el) return;
 
-    // [v9.0] Khi phiên đã gửi YC xóa → freeze thời gian tại thời điểm gửi YC
-    let elapsedMs;
-    if (s.xinXoa && s.xinXoa.ts) {
-      let frozenMs;
-      try { frozenMs = new Date(s.xinXoa.ts).getTime(); } catch(e) { frozenMs = Date.now(); }
-      elapsedMs = frozenMs - s.startMs;
-    } else {
-      elapsedMs = Date.now() - s.startMs;
-    }
+    // [v9.0c] Đồng hồ LUÔN đếm thật. Không freeze.
+    const elapsedMs = Date.now() - s.startMs;
     const elapsed = Math.floor(elapsedMs / 1000);
     el.textContent = bhFormatTimeCs(elapsedMs);
     el.className = 'bh-timer' + (elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : ''));
 
-    // [v9.0] Auto-close khi đủ 60 phút (chỉ với phiên CHƯA gửi YC xóa)
-    if (!s.xinXoa && elapsed >= 3600 && !s._autoClosing) {
+    // Auto-close 60p (kể cả khi đã gửi YC xóa - vẫn auto close)
+    if (elapsed >= 3600 && !s._autoClosing && !s.xinXoa) {
       s._autoClosing = true;
       bhAutoClosePhien(s);
     }
