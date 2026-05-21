@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.2</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.3</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.2</strong>
+      Phiên bản <strong style="color:#6B7280">v9.3</strong>
     </div>
   </div>
 
@@ -9622,7 +9622,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.2] Lock per-phien + global để chống double-click + race condition
+  // [v9.3] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -9651,7 +9651,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.2] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.3] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -9895,7 +9895,8 @@ function bhMoModalDienKetQua(phienId) {
       <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
         <button onclick="bhDienKetQuaPhien('${phienId}','MUA')" style="background:var(--green);color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">✓ Khách đã mua</button>
         <button onclick="bhDienKetQuaPhien('${phienId}','CHUA_MUA')" style="background:#fff;color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">✗ Khách chưa mua</button>
-        <button onclick="document.getElementById('bh-dien-kq-modal').remove()" style="background:transparent;color:var(--text-m);border:none;padding:10px;font-size:12px;cursor:pointer;margin-top:4px">Huỷ</button>
+        <button onclick="bhYCXoaTuModal('${phienId}')" style="background:#FFF7ED;color:#9A3412;border:1px solid #FDBA74;border-radius:10px;padding:11px;font-size:12px;font-weight:600;cursor:pointer;margin-top:4px">🗑 Gửi yêu cầu xóa phiên này</button>
+        <button onclick="document.getElementById('bh-dien-kq-modal').remove()" style="background:transparent;color:var(--text-m);border:none;padding:8px;font-size:12px;cursor:pointer">Huỷ</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -9920,6 +9921,32 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
     }
     document.getElementById('bh-dien-kq-modal')?.remove();
     bhShowToast('✓ Đã ghi nhận kết quả', 'success');
+    try { bhLoadStatsToday && bhLoadStatsToday(); } catch(e){}
+  } catch(e) {
+    bhShowToast('Lỗi kết nối', null);
+  }
+}
+
+// [v9.3] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+async function bhYCXoaTuModal(phienId) {
+  const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
+    title: 'Yêu cầu xóa phiên tự đóng',
+    okLabel: 'Gửi yêu cầu',
+    danger: false
+  });
+  if (!ok) return;
+  try {
+    const { data: d, error } = await supa.rpc('fn_bh_yc_xoa_phien', {
+      p_phien_id: phienId,
+      p_ma_nguoi_yc: SESSION.ma || SESSION.cuaHangMa,
+      p_ly_do: 'Phiên tự đóng quá 60 phút',
+    });
+    if (error || !(d && d.success)) {
+      bhShowToast('Lỗi: ' + ((d && d.error) || (error && error.message) || 'Không gửi được'), null);
+      return;
+    }
+    document.getElementById('bh-dien-kq-modal')?.remove();
+    bhShowToast('✓ Đã gửi yêu cầu xóa - chờ QLBH', 'success');
     try { bhLoadStatsToday && bhLoadStatsToday(); } catch(e){}
   } catch(e) {
     bhShowToast('Lỗi kết nối', null);
