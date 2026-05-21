@@ -1552,7 +1552,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v8.9</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.0</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2408,7 +2408,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v8.9</strong>
+      Phiên bản <strong style="color:#6B7280">v9.0</strong>
     </div>
   </div>
 
@@ -9677,10 +9677,20 @@ async function bhHuyYeuCauXoa(idPhien) {
 }
 
 function bhRenderCardContent(card, s) {
-  const elapsedMs = Date.now() - s.startMs;
+  // [v9.0] Freeze elapsedMs nếu đã gửi YC xóa
+  let elapsedMs;
+  if (s.xinXoa && s.xinXoa.ts) {
+    let frozenMs;
+    try { frozenMs = new Date(s.xinXoa.ts).getTime(); } catch(e) { frozenMs = Date.now(); }
+    elapsedMs = frozenMs - s.startMs;
+  } else {
+    elapsedMs = Date.now() - s.startMs;
+  }
   const elapsed = Math.floor(elapsedMs / 1000);
   const tc = elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : '');
   const timeLabel = new Date(s.startMs).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  // [v9.0] Khi xinXoa → lock toàn bộ tương tác phiên
+  const locked = !!s.xinXoa;
 
   // [v11.1 BH-06] Closing state
   const isClosing = s.status === 'closing';
@@ -9715,7 +9725,8 @@ function bhRenderCardContent(card, s) {
       </div>`;
     }).join('');
   }
-  const addBtnHtml = `<div class="bh-card-add-sp" onclick="bhOpenSpModal('${s.idPhien}')">
+  // [v9.0] Khi locked → bỏ nút thêm SP, NV row không click được, buttons disable
+  const addBtnHtml = locked ? '' : `<div class="bh-card-add-sp" onclick="bhOpenSpModal('${s.idPhien}')">
     <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     ${s.products.length > 0 ? 'Thêm sản phẩm' : 'Thêm sản phẩm khách quan tâm'}
   </div>`;
@@ -9739,16 +9750,18 @@ function bhRenderCardContent(card, s) {
       <div class="bh-timer${tc}" data-timer="${s.idPhien}">${bhFormatTimeCs(elapsedMs)}</div>
     </div>
     <!-- [v11.7 BH-3] Chip Nhân viên trực phiên (nằm trên SP) -->
-    <div class="bh-card-nv-row" onclick="bhOpenSessionNVModal('${s.idPhien}')">
+    <div class="bh-card-nv-row" ${locked ? 'style="opacity:0.5;pointer-events:none"' : `onclick="bhOpenSessionNVModal('${s.idPhien}')"`}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      ${s.nv ? `<span class="bh-card-nv-name"><strong>${bhEscHtml(s.nv.ma)}</strong> · ${bhEscHtml(s.nv.ten)}</span><span class="bh-card-nv-edit">đổi</span>` : '<span class="bh-card-nv-empty">Chọn nhân viên tư vấn (tùy chọn)</span>'}
+      ${s.nv ? `<span class="bh-card-nv-name"><strong>${bhEscHtml(s.nv.ma)}</strong> · ${bhEscHtml(s.nv.ten)}</span>${locked ? '' : '<span class="bh-card-nv-edit">đổi</span>'}` : '<span class="bh-card-nv-empty">Chọn nhân viên tư vấn (tùy chọn)</span>'}
     </div>
     <div class="bh-chips-label">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
       Sản phẩm khách quan tâm
     </div>
     <div class="bh-card-sp-list">${spListHtml}${addBtnHtml}</div>
-    <div class="bh-actions">
+    ${locked
+      ? `<div style="background:#FFF7ED;border:1px dashed #FDBA74;border-radius:8px;padding:10px;text-align:center;font-size:12px;color:#9A3412;line-height:1.5;margin-top:4px">🔒 Phiên đang chờ xóa<br><span style="font-size:11px;color:#C2410C">Đã khóa thao tác. Hủy yêu cầu xóa để tiếp tục bán.</span></div>`
+      : `<div class="bh-actions">
       <button class="bh-btn bh-btn-secondary" onclick="bhOpenNotBoughtModal('${s.idPhien}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Chưa mua
@@ -9757,7 +9770,8 @@ function bhRenderCardContent(card, s) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Đã mua
       </button>
-    </div>
+    </div>`
+    }
     <!-- [v11.8] Link nhỏ yêu cầu xóa / hủy yêu cầu -->
     <div class="bh-card-yc-row">
       ${s.xinXoa
@@ -9781,11 +9795,132 @@ function bhTickTimers() {
     if (s.status !== 'selling') return;
     const el = document.querySelector('[data-timer="' + s.idPhien + '"]');
     if (!el) return;
-    const elapsedMs = Date.now() - s.startMs;
+
+    // [v9.0] Khi phiên đã gửi YC xóa → freeze thời gian tại thời điểm gửi YC
+    let elapsedMs;
+    if (s.xinXoa && s.xinXoa.ts) {
+      let frozenMs;
+      try { frozenMs = new Date(s.xinXoa.ts).getTime(); } catch(e) { frozenMs = Date.now(); }
+      elapsedMs = frozenMs - s.startMs;
+    } else {
+      elapsedMs = Date.now() - s.startMs;
+    }
     const elapsed = Math.floor(elapsedMs / 1000);
     el.textContent = bhFormatTimeCs(elapsedMs);
     el.className = 'bh-timer' + (elapsed >= 3600 ? ' danger' : (elapsed >= 1200 ? ' warn' : ''));
+
+    // [v9.0] Auto-close khi đủ 60 phút (chỉ với phiên CHƯA gửi YC xóa)
+    if (!s.xinXoa && elapsed >= 3600 && !s._autoClosing) {
+      s._autoClosing = true;
+      bhAutoClosePhien(s);
+    }
   });
+}
+
+// [v9.0] Tự động đóng phiên khi đủ 60p
+async function bhAutoClosePhien(s) {
+  try {
+    const { data: res } = await supa.rpc('fn_bh_auto_dong_phien', { p_phien_id: s.idPhien });
+    if (res && res.success) {
+      s.status = 'finished';
+      s.ketQua = 'TU_DONG';
+      bhShowToast('⏰ Phiên #' + s.num + ' đã tự đóng (quá 60 phút). Vui lòng điền kết quả.', null);
+      bhRenderSessions();
+      bhUpdateStats();
+      // Reload lịch sử để phiên hiện trong list "cần điền"
+      try { bhLoadStatsToday && bhLoadStatsToday(); } catch(e){}
+    }
+  } catch(e) {
+    console.warn('[BH] Auto-close error:', e);
+    s._autoClosing = false; // cho phép retry
+  }
+}
+
+// [v9.0] Modal hướng dẫn khi bị chặn mở phiên mới vì còn phiên tự đóng chưa điền
+function bhShowPhienCanDienModal(soPhien) {
+  // Tìm các phiên trong historyToday có ketQua = 'Tự đóng' chưa được xử lý
+  const phienCanDien = (BH.historyToday || []).filter(p => p.trangThai === 'Tự đóng');
+  let listHtml = '';
+  if (phienCanDien.length) {
+    listHtml = phienCanDien.map(p => `
+      <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#9A3412">Phiên #${p.stt} · ${p.gioBD} → ${p.gioKT}</div>
+          <div style="font-size:11px;color:#C2410C;margin-top:2px">Đã quá 60 phút, tự đóng</div>
+        </div>
+        <button onclick="bhMoModalDienKetQua('${p.idPhien}')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Điền kết quả</button>
+      </div>
+    `).join('');
+  } else {
+    listHtml = '<div style="text-align:center;color:var(--text-m);font-size:12px;padding:14px">Không tải được danh sách phiên cần xử lý.</div>';
+  }
+  // Show modal
+  const modal = document.createElement('div');
+  modal.id = 'bh-can-dien-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:16px 18px;border-bottom:1px solid #F3F4F6">
+        <div style="font-size:15px;font-weight:700;color:#9A3412">⏰ Còn ${soPhien} phiên chưa điền kết quả</div>
+        <div style="font-size:12px;color:var(--text-m);margin-top:4px;line-height:1.5">Phải điền kết quả (Mua/Chưa mua) hoặc gửi yêu cầu xóa cho phiên cũ trước khi mở phiên mới.</div>
+      </div>
+      <div style="padding:14px 18px;overflow-y:auto">${listHtml}</div>
+      <div style="padding:12px 18px;border-top:1px solid #F3F4F6;text-align:right">
+        <button onclick="document.getElementById('bh-can-dien-modal').remove()" style="background:#E5E7EB;color:var(--text);border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer">Đóng</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+// [v9.0] Mở modal điền kết quả cho phiên tự đóng
+function bhMoModalDienKetQua(phienId) {
+  const p = (BH.historyToday || []).find(x => x.idPhien === phienId);
+  if (!p) { bhShowToast('Không tìm thấy phiên', null); return; }
+  // Đóng modal cha nếu đang mở
+  const cur = document.getElementById('bh-can-dien-modal');
+  if (cur) cur.remove();
+  // Mở modal nhỏ chọn Mua / Chưa mua
+  const modal = document.createElement('div');
+  modal.id = 'bh-dien-kq-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:400px;overflow:hidden">
+      <div style="padding:16px 18px;border-bottom:1px solid #F3F4F6">
+        <div style="font-size:15px;font-weight:700">Điền kết quả phiên #${p.stt}</div>
+        <div style="font-size:12px;color:var(--text-m);margin-top:3px">${p.gioBD} → ${p.gioKT}</div>
+      </div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+        <button onclick="bhDienKetQuaPhien('${phienId}','MUA')" style="background:var(--green);color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">✓ Khách đã mua</button>
+        <button onclick="bhDienKetQuaPhien('${phienId}','CHUA_MUA')" style="background:#fff;color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">✗ Khách chưa mua</button>
+        <button onclick="document.getElementById('bh-dien-kq-modal').remove()" style="background:transparent;color:var(--text-m);border:none;padding:10px;font-size:12px;cursor:pointer;margin-top:4px">Huỷ</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+// [v9.0] Gọi RPC cập nhật kết quả phiên đã tự đóng
+async function bhDienKetQuaPhien(phienId, ketQua) {
+  let lyDo = null;
+  if (ketQua === 'CHUA_MUA') {
+    lyDo = prompt('Lý do khách chưa mua (tuỳ chọn):') || null;
+  }
+  try {
+    const { data: res, error } = await supa.rpc('fn_bh_capnhat_ket_qua_sau_tu_dong', {
+      p_phien_id: phienId,
+      p_ma_nguoi_cap_nhat: SESSION.ma,
+      p_ket_qua: ketQua,
+      p_ly_do_khong_mua: lyDo,
+    });
+    if (error || !res || !res.success) {
+      bhShowToast('Lỗi: ' + ((res && res.error) || (error && error.message) || 'Không cập nhật được'), null);
+      return;
+    }
+    document.getElementById('bh-dien-kq-modal')?.remove();
+    bhShowToast('✓ Đã ghi nhận kết quả', 'success');
+    try { bhLoadStatsToday && bhLoadStatsToday(); } catch(e){}
+  } catch(e) {
+    bhShowToast('Lỗi kết nối', null);
+  }
 }
 
 // [v11.7 fix centi] Dùng requestAnimationFrame cho centi mượt thay setInterval
@@ -9909,7 +10044,12 @@ async function bhBatDauPhien(e) {
       BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
       bhRenderSessions();
       console.error('[BH] Tạo phiên thất bại:', d);
-      bhShowToast('Lỗi: ' + (d.error || 'Không tạo được phiên'), null);
+      // [v9.0] Nếu bị chặn vì còn phiên cần điền kết quả → mở modal hướng dẫn
+      if (d.block_reason === 'PHIEN_CAN_DIEN') {
+        bhShowPhienCanDienModal(d.so_phien_can_dien || 1);
+      } else {
+        bhShowToast('Lỗi: ' + (d.error || 'Không tạo được phiên'), null);
+      }
     }
   } catch(e) {
     BH.sessions = BH.sessions.filter(s => s.idPhien !== tempId);
