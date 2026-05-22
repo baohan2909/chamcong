@@ -7039,16 +7039,15 @@ async function duyetTatCaDonNghiNS(action){
   document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('dnp-bulk-bar');
   if(bulkBar) bulkBar.style.opacity='.5';
-  // [v12-P3] Supabase RPC - cần lookup UUIDs từ ma_nv+ngay
+  // [v9.8] Dùng trực tiếp id có sẵn từ items (không cần lookup lại vì it.ngay = undefined)
+  const ids = items.map(it => it.id).filter(Boolean);
+  if (!ids.length) {
+    if(bulkBar) bulkBar.style.opacity='1';
+    document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
+    showToast('Không tìm thấy đơn để duyệt.','err');
+    return;
+  }
   (async () => {
-    // Lookup IDs
-    const ids = [];
-    for (const it of items) {
-      const { data: dn } = await supa.from('don_nghi')
-        .select('id').eq('ma_nv', it.maNV).eq('ngay_nghi', it.ngay)
-        .limit(1).maybeSingle();
-      if (dn) ids.push(dn.id);
-    }
     const { data: res, error } = await supa.rpc('fn_duyet_batch', {
       p_loai: 'DON_NGHI',
       p_quyet_dinh: qd,
@@ -7064,12 +7063,15 @@ async function duyetTatCaDonNghiNS(action){
       _silentUpdateAccBadges();
     } else {
       document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
-      showToast((res&&res.error)||(error&&error.message)||'Lỗi batch.','err');
+      const errMsg = (res&&(res.error||res.errors))||(error&&error.message)||'Lỗi batch.';
+      showToast(String(errMsg).substring(0,200),'err');
+      console.error('[duyet batch] err:', { res, error });
     }
-  })().catch(()=>{
+  })().catch((e)=>{
+    console.error('[duyet batch] catch', e);
     if(bulkBar) bulkBar.style.opacity='1';
     document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
-    showToast('Lỗi kết nối.','err');
+    showToast('Lỗi kết nối: ' + (e.message||''),'err');
   });
 }
 
