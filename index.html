@@ -1116,11 +1116,11 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border:1px solid rgba(15,23,42,0.06);
   position:relative;
 }
-/* [v9.25] Top 1-3: ô tròn chất liệu kim loại 3D, icon góc không có nền tròn */
+/* [v9.26] Top 1-3: ô tròn ánh kim 3D đậm như podium full modal */
 .bxh-mini-row.rank-1 .bxh-mini-rank,
 .bxh-mini-row.rank-2 .bxh-mini-rank,
 .bxh-mini-row.rank-3 .bxh-mini-rank {
-  width:38px; height:38px; font-size:14.5px;
+  width:42px; height:42px; font-size:16px;
   font-weight:800;
 }
 .bxh-mini-rank-icon {
@@ -1130,71 +1130,77 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 }
 .bxh-mini-row.rank-1 .bxh-mini-rank {
   background:
-    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 32%),
-    radial-gradient(circle at 70% 85%, rgba(140,80,0,0.4) 0%, transparent 40%),
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 38%),
+    radial-gradient(circle at 75% 88%, rgba(120,70,5,0.55) 0%, transparent 45%),
     conic-gradient(from 220deg at 50% 50%, 
-      #B8860B 0deg, 
-      #FFD700 60deg, 
-      #FFF8DC 120deg, 
-      #FFD700 180deg, 
-      #DAA520 240deg, 
-      #8B6914 300deg, 
-      #B8860B 360deg);
+      #8B6914 0deg, 
+      #B8860B 45deg,
+      #FFD700 90deg, 
+      #FFF8DC 135deg, 
+      #FFE38C 180deg, 
+      #DAA520 235deg, 
+      #8B6914 295deg, 
+      #6B4F0E 340deg,
+      #8B6914 360deg);
   color:#3D2A05; border-color:transparent;
   box-shadow:
-    0 5px 14px rgba(184,134,11,0.55),
-    0 2px 4px rgba(0,0,0,0.18),
-    inset 0 1.5px 1px rgba(255,255,255,0.7),
-    inset 0 -2px 3px rgba(101,67,33,0.4);
+    0 6px 18px rgba(184,134,11,0.65),
+    0 2px 5px rgba(0,0,0,0.22),
+    inset 0 2px 1.5px rgba(255,255,255,0.85),
+    inset 0 -2.5px 4px rgba(101,67,33,0.5);
   text-shadow:
-    0 1px 1px rgba(255,255,255,0.55),
-    0 -1px 1px rgba(101,67,33,0.45);
+    0 1px 1px rgba(255,255,255,0.7),
+    0 -1px 1px rgba(101,67,33,0.55);
 }
 .bxh-mini-row.rank-1 .bxh-mini-rank-icon { color:#FFD700; filter:drop-shadow(0 1px 3px rgba(184,134,11,0.6)); }
 .bxh-mini-row.rank-2 .bxh-mini-rank {
   background:
-    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 32%),
-    radial-gradient(circle at 70% 85%, rgba(50,55,65,0.35) 0%, transparent 40%),
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 38%),
+    radial-gradient(circle at 75% 88%, rgba(30,40,55,0.5) 0%, transparent 45%),
     conic-gradient(from 220deg at 50% 50%, 
-      #6B7280 0deg, 
-      #CBD5E1 60deg, 
-      #F8FAFC 120deg, 
-      #CBD5E1 180deg, 
-      #94A3B8 240deg, 
-      #475569 300deg, 
-      #6B7280 360deg);
+      #475569 0deg, 
+      #6B7280 45deg,
+      #CBD5E1 90deg, 
+      #F8FAFC 135deg, 
+      #E2E8F0 180deg, 
+      #94A3B8 235deg, 
+      #475569 295deg, 
+      #334155 340deg,
+      #475569 360deg);
   color:#1E293B; border-color:transparent;
   box-shadow:
-    0 5px 13px rgba(71,85,105,0.5),
-    0 2px 4px rgba(0,0,0,0.15),
-    inset 0 1.5px 1px rgba(255,255,255,0.8),
-    inset 0 -2px 3px rgba(30,41,59,0.35);
+    0 6px 17px rgba(71,85,105,0.6),
+    0 2px 5px rgba(0,0,0,0.2),
+    inset 0 2px 1.5px rgba(255,255,255,0.95),
+    inset 0 -2.5px 4px rgba(30,41,59,0.45);
   text-shadow:
-    0 1px 1px rgba(255,255,255,0.7),
-    0 -1px 1px rgba(30,41,59,0.3);
+    0 1px 1px rgba(255,255,255,0.85),
+    0 -1px 1px rgba(30,41,59,0.4);
 }
 .bxh-mini-row.rank-2 .bxh-mini-rank-icon { color:#CBD5E1; filter:drop-shadow(0 1px 3px rgba(71,85,105,0.5)); }
 .bxh-mini-row.rank-3 .bxh-mini-rank {
   background:
-    radial-gradient(circle at 30% 22%, rgba(255,228,196,0.85) 0%, rgba(255,255,255,0) 32%),
-    radial-gradient(circle at 70% 85%, rgba(74,36,16,0.4) 0%, transparent 40%),
+    radial-gradient(circle at 28% 20%, rgba(255,235,205,0.95) 0%, rgba(255,255,255,0) 38%),
+    radial-gradient(circle at 75% 88%, rgba(50,22,8,0.55) 0%, transparent 45%),
     conic-gradient(from 220deg at 50% 50%, 
-      #8B4513 0deg, 
-      #CD7F32 60deg, 
-      #F5C896 120deg, 
-      #CD7F32 180deg, 
-      #A0522D 240deg, 
-      #654321 300deg, 
-      #8B4513 360deg);
+      #654321 0deg, 
+      #8B4513 45deg,
+      #CD7F32 90deg, 
+      #F5C896 135deg, 
+      #E8A876 180deg, 
+      #A0522D 235deg, 
+      #654321 295deg, 
+      #4A2410 340deg,
+      #654321 360deg);
   color:#3D1E08; border-color:transparent;
   box-shadow:
-    0 5px 13px rgba(139,69,19,0.5),
-    0 2px 4px rgba(0,0,0,0.15),
-    inset 0 1.5px 1px rgba(255,228,196,0.6),
-    inset 0 -2px 3px rgba(61,30,8,0.4);
+    0 6px 17px rgba(139,69,19,0.6),
+    0 2px 5px rgba(0,0,0,0.2),
+    inset 0 2px 1.5px rgba(255,228,196,0.75),
+    inset 0 -2.5px 4px rgba(61,30,8,0.5);
   text-shadow:
-    0 1px 1px rgba(255,228,196,0.5),
-    0 -1px 1px rgba(61,30,8,0.35);
+    0 1px 1px rgba(255,228,196,0.65),
+    0 -1px 1px rgba(61,30,8,0.45);
 }
 .bxh-mini-row.rank-3 .bxh-mini-rank-icon { color:#F5C896; filter:drop-shadow(0 1px 3px rgba(139,69,19,0.6)); }
 .bxh-mini-row.rank-4 .bxh-mini-rank { background:linear-gradient(135deg, #FCA5A5, #EF4444); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(239,68,68,0.3); }
@@ -2370,7 +2376,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.25</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.26</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
