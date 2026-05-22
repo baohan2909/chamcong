@@ -940,7 +940,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-stat.active-filter { box-shadow:inset 0 0 0 2px #1D9E75, 0 2px 8px rgba(29,158,117,0.25); }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.27] BẢNG XẾP HẠNG — Light Luxury Style */
+/* [v9.28] BẢNG XẾP HẠNG — Light Luxury Style */
 /* ════════════════════════════════════════════════════════════ */
 :root {
   --bxh-gold: #C9A227;
@@ -1063,7 +1063,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border-color:rgba(160,103,62,0.4);
   box-shadow:inset 4px 0 0 var(--bxh-bronze), 0 1px 6px rgba(160,103,62,0.1);
 }
-/* [v9.27] Rank 4-10: gradient ngược — 4=đỏ → 10=tím */
+/* [v9.28] Rank 4-10: gradient ngược — 4=đỏ → 10=tím */
 .bxh-mini-row.rank-4 {
   background:linear-gradient(90deg, #FEF2F2 0%, #FEF8F8 50%, #FFFFFF 100%);
   border-color:rgba(239,68,68,0.18);
@@ -1116,7 +1116,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border:1px solid rgba(15,23,42,0.06);
   position:relative;
 }
-/* [v9.27] Top 1-3: ô tròn 48px để gradient kim loại có chỗ "thở" 3D rõ */
+/* [v9.28] Top 1-3: ô tròn 48px để gradient kim loại có chỗ "thở" 3D rõ */
 .bxh-mini-row.rank-1 .bxh-mini-rank,
 .bxh-mini-row.rank-2 .bxh-mini-rank,
 .bxh-mini-row.rank-3 .bxh-mini-rank {
@@ -1129,41 +1129,38 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));
 }
 .bxh-mini-row.rank-1 .bxh-mini-rank {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6) 0%, transparent 35%),
-    linear-gradient(135deg, #8C6A12 0%, #D4AF37 35%, #FFE38C 55%, #C9A227 75%, #8C6A12 100%);
-  color:#5C4408; border-color:transparent;
+  background:#FBBF24;
+  color:#78350F;
+  border:2.5px solid #FCD34D;
   box-shadow:
-    0 6px 18px rgba(212,175,55,0.55),
-    inset 0 1px 1px rgba(255,255,255,0.5),
-    inset 0 -2px 4px rgba(92,68,8,0.4);
-  text-shadow:0 1px 1px rgba(255,255,255,0.5), 0 -1px 1px rgba(92,68,8,0.35);
+    0 0 0 1px #B45309,
+    0 0 16px rgba(251,191,36,0.55),
+    0 4px 12px rgba(180,83,9,0.35);
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);
 }
-.bxh-mini-row.rank-1 .bxh-mini-rank-icon { color:#FFD700; filter:drop-shadow(0 1px 3px rgba(184,134,11,0.6)); }
+.bxh-mini-row.rank-1 .bxh-mini-rank-icon { color:#FCD34D; filter:drop-shadow(0 1px 2px rgba(120,53,15,0.5)); }
 .bxh-mini-row.rank-2 .bxh-mini-rank {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.7) 0%, transparent 35%),
-    linear-gradient(135deg, #6B7280 0%, #9CA3AF 35%, #E5E7EB 55%, #B0B6C0 75%, #6B7280 100%);
-  color:#374151; border-color:transparent;
+  background:#94A3B8;
+  color:#1E293B;
+  border:2.5px solid #CBD5E1;
   box-shadow:
-    0 5px 16px rgba(192,192,192,0.5),
-    inset 0 1px 1px rgba(255,255,255,0.6),
-    inset 0 -2px 4px rgba(55,65,81,0.35);
-  text-shadow:0 1px 1px rgba(255,255,255,0.6), 0 -1px 1px rgba(55,65,81,0.3);
+    0 0 0 1px #475569,
+    0 0 16px rgba(148,163,184,0.5),
+    0 4px 12px rgba(71,85,105,0.3);
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);
 }
-.bxh-mini-row.rank-2 .bxh-mini-rank-icon { color:#CBD5E1; filter:drop-shadow(0 1px 3px rgba(71,85,105,0.5)); }
+.bxh-mini-row.rank-2 .bxh-mini-rank-icon { color:#CBD5E1; filter:drop-shadow(0 1px 2px rgba(30,41,59,0.5)); }
 .bxh-mini-row.rank-3 .bxh-mini-rank {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,228,196,0.6) 0%, transparent 35%),
-    linear-gradient(135deg, #6E3A1A 0%, #A0673E 35%, #E8A876 55%, #9C5E33 75%, #6E3A1A 100%);
-  color:#4A2410; border-color:transparent;
+  background:#C2410C;
+  color:#FFF7ED;
+  border:2.5px solid #FB923C;
   box-shadow:
-    0 5px 16px rgba(205,127,50,0.5),
-    inset 0 1px 1px rgba(255,228,196,0.5),
-    inset 0 -2px 4px rgba(74,36,16,0.4);
-  text-shadow:0 1px 1px rgba(255,228,196,0.5), 0 -1px 1px rgba(74,36,16,0.3);
+    0 0 0 1px #7C2D12,
+    0 0 16px rgba(194,65,12,0.5),
+    0 4px 12px rgba(124,45,18,0.35);
+  text-shadow:0 1px 0 rgba(0,0,0,0.25);
 }
-.bxh-mini-row.rank-3 .bxh-mini-rank-icon { color:#E8A876; filter:drop-shadow(0 1px 3px rgba(139,69,19,0.55)); }
+.bxh-mini-row.rank-3 .bxh-mini-rank-icon { color:#FDBA74; filter:drop-shadow(0 1px 2px rgba(124,45,18,0.5)); }
 .bxh-mini-row.rank-4 .bxh-mini-rank { background:linear-gradient(135deg, #FCA5A5, #EF4444); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(239,68,68,0.3); }
 .bxh-mini-row.rank-5 .bxh-mini-rank { background:linear-gradient(135deg, #FCD34D, #F59E0B); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(245,158,11,0.3); }
 .bxh-mini-row.rank-6 .bxh-mini-rank { background:linear-gradient(135deg, #BEF264, #84CC16); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(132,204,22,0.3); }
@@ -1242,7 +1239,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bxh-mini-change.up { background:rgba(16,185,129,0.1); color:#059669; }
 .bxh-mini-change.down { background:rgba(239,68,68,0.1); color:#DC2626; }
 .bxh-mini-change.same { background:rgba(100,116,139,0.06); color:var(--bxh-text-l); }
-/* [v9.27] NEW badge: hồng nhạt, chữ mảnh, không tia chớp */
+/* [v9.28] NEW badge: hồng nhạt, chữ mảnh, không tia chớp */
 .bxh-mini-change.new { 
   background:#FDF2F8; color:#DB2777;
   font-weight:500; letter-spacing:0.5px;
@@ -1271,7 +1268,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   text-align:center; padding:24px 16px; color:var(--bxh-text-l); font-size:12px;
 }
 
-/* ─── MODAL FULL — Dark Luxury Premium [v9.27] ─── */
+/* ─── MODAL FULL — Dark Luxury Premium [v9.28] ─── */
 #bxh-modal {
   position:fixed; inset:0; background:rgba(2,6,23,0.7); z-index:2300;
   display:none; align-items:flex-start; justify-content:center;
@@ -1606,10 +1603,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.27] Avatar icon theo rank + LIVE badge + Marquee */
+/* [v9.28] Avatar icon theo rank + LIVE badge + Marquee */
 /* ════════════════════════════════════════════════════════════ */
 
-/* [v9.27] Avatar removed: top 1-3 icon đã gộp vào ô số, top 4-10 không có icon */
+/* [v9.28] Avatar removed: top 1-3 icon đã gộp vào ô số, top 4-10 không có icon */
 
 /* Khoảng cách điểm so với người trên */
 .bxh-gap {
@@ -2337,7 +2334,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.27</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.28</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2578,7 +2575,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.27] Modal đơn nghỉ phép đột xuất -->
+  <!-- [v9.28] Modal đơn nghỉ phép đột xuất -->
   <div id="dx-modal" onclick="if(event.target===this)closeNghiDotXuatModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
     <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -2612,7 +2609,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.27] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
+  <!-- [v9.28] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
   <div id="bxh-modal" onclick="if(event.target===this)bxhCloseModal()">
     <div class="bxh-modal-box">
       <div class="bxh-modal-head">
@@ -2707,7 +2704,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <span id="lc-meta-txt" style="font-size:11px;color:var(--text-m)"></span>
         </div>
       </div>
-      <!-- [v9.27] Banner tuần hiện tại — nút tạo đơn nghỉ đột xuất -->
+      <!-- [v9.28] Banner tuần hiện tại — nút tạo đơn nghỉ đột xuất -->
       <div id="lc-dot-xuat-banner" style="display:none;margin:0 14px 10px;padding:12px;background:linear-gradient(135deg,#FFF7ED,#FED7AA);border-radius:10px;border-left:4px solid #EA580C">
         <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:6px">📌 Đơn nghỉ phép đột xuất</div>
         <div style="font-size:11px;color:#7C2D12;line-height:1.5;margin-bottom:10px">Tuần hiện tại không cho đổi ca. Nếu cần nghỉ đột xuất (bệnh, việc gấp), bấm nút bên dưới.</div>
@@ -3272,7 +3269,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.27</strong>
+      Phiên bản <strong style="color:#6B7280">v9.28</strong>
     </div>
   </div>
 
@@ -3665,7 +3662,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.27] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
+      <!-- [v9.28] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
       <div id="bxh-mini" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -3734,7 +3731,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.27] BẢNG XẾP HẠNG MINI cho QLBH -->
+      <!-- [v9.28] BẢNG XẾP HẠNG MINI cho QLBH -->
       <div id="bxh-mini-ql" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -6223,7 +6220,7 @@ function renderNhanSu(){
     el.innerHTML = bulkHtml + cbShow.map(cb=>{
       const initials=cb.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const daDaGT=!!cb.giaiTrinh;
-      // [v9.27] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
+      // [v9.28] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
       const isRequireFix = (cb.loaiCB === 'SAI CA' || cb.loaiCB === 'THIẾU CA');
       const badgeFix = isRequireFix
         ? '<span style="display:inline-block;padding:2px 6px;background:#FEF3C7;color:#92400E;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px">CẦN SỬA GIỜ</span>'
@@ -6682,7 +6679,7 @@ function taiLichCa(){
   supa.rpc('fn_get_lich_ca', { p_ma_nv: SESSION.ma, p_tuan: lcTuan })
   .then(({ data: res, error }) => {
     if(error || !res){document.getElementById('lc-week').innerHTML='<div class="ns-empty">❌ Lỗi tải. Thử lại.</div>';return;}
-    // [v9.27] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
+    // [v9.28] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
     // Backward compat: nếu có res.lichCa cũ thì dùng, nếu không thì dùng res.lich
     const slots = res.lich || res.lichCa || [];
     // Group theo ngày
@@ -6708,7 +6705,7 @@ function taiLichCa(){
         slots: map[ngayStr] || []
       });
     }
-    // [v9.27] conHan + trangThaiTuan + guiKhan từ backend
+    // [v9.28] conHan + trangThaiTuan + guiKhan từ backend
     const conHan = res.conHan != null ? res.conHan : (function(){
       const today = new Date(); today.setHours(0,0,0,0);
       const cn = new Date(res.chuNhat || res.ngayCuoi);
@@ -6765,10 +6762,10 @@ function renderLichCa(data){
   const guiKhan = !!data.guiKhan;
   const hanEl=document.getElementById('lc-han-badge');
   const metaEl=document.getElementById('lc-meta-txt');
-  // [v9.27] Show/hide banner đơn nghỉ đột xuất
+  // [v9.28] Show/hide banner đơn nghỉ đột xuất
   const dxBanner = document.getElementById('lc-dot-xuat-banner');
   if(dxBanner) dxBanner.style.display = (tt === 'HIEN_TAI') ? '' : 'none';
-  // [v9.27] Banner theo loại tuần
+  // [v9.28] Banner theo loại tuần
   if(tt === 'DA_QUA'){
     hanEl.textContent='Tuần đã qua'; hanEl.className='lc-han-badge lc-han-het';
     metaEl.textContent='Không thể gửi/sửa lịch tuần này';
@@ -7261,8 +7258,8 @@ function guiLichCa(){
   const btn=document.getElementById('lc-btn-send');
   if(!SESSION||!lcTuan||btn.disabled)return;
 
-  // [v9.27] Chặn gửi tuần đã qua / tuần hiện tại
-  // [v9.27] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
+  // [v9.28] Chặn gửi tuần đã qua / tuần hiện tại
+  // [v9.28] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
   if(lcData){
     // Kiểm tra có phải toàn nghỉ phép không
     const toanNghi = Object.keys(lcEdit).every(k=>{
@@ -7283,7 +7280,7 @@ function guiLichCa(){
     }
   }
   
-  // [v9.27] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
+  // [v9.28] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
   let lyDoGap = '';
   if(lcData && lcData.guiKhan){
     lyDoGap = prompt('Đã quá hạn Thứ 7. Vui lòng nhập LÝ DO GẤP để QLNS xem xét:\n\n(VD: Nghỉ bệnh đột xuất, đổi ca khẩn cấp, gia đình có việc...)');
@@ -7401,7 +7398,7 @@ function guiLichCa(){
       btn.disabled=false;btn.textContent='Gửi lịch tuần';
       return;
     }
-    // [v9.27] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
+    // [v9.28] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
     const distinctNgay = new Set(lichCaArr.map(x => x.ngay).filter(Boolean));
     const soNgay = res.so_ngay || distinctNgay.size;
     showToast('✓ Đã gửi lịch ' + soNgay + ' ngày','ok');
@@ -7410,7 +7407,7 @@ function guiLichCa(){
 }
 
 // ═════════════════════════════════════════════════════════════
-// [v9.27] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
+// [v9.28] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
 // ═════════════════════════════════════════════════════════════
 let _dxState = { ngayChon: new Set(), anhB64: '' };
 
@@ -7611,7 +7608,7 @@ function taiLichCaQL(){
   const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
   const thuHai = new Date(ms);
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
-  // [v9.27] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
+  // [v9.28] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
@@ -7638,7 +7635,7 @@ function taiLichCaQL(){
         trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
-    // [v9.27] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
+    // [v9.28] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
     const _nghiPhepKey = new Set();
     (lcRes.data||[]).forEach(r => {
       if ((r.loai || r.ca_lam) === 'Nghỉ phép') {
@@ -7696,7 +7693,7 @@ function renderLCQL(){
   const dow=['CN','T2','T3','T4','T5','T6','T7'];
   const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
   const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
-  // [v9.27] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
+  // [v9.28] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
   const _dr=d=>{
     const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
     const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
@@ -7711,7 +7708,7 @@ function renderLCQL(){
   } else if(lcqlMode==='ch'){
     const g={};filtered.forEach(d=>{if(!g[d.maCH])g[d.maCH]={ten:d.tenCH,kv:d.khuVuc,nvs:{},allDays:[]};if(!g[d.maCH].nvs[d.maNV])g[d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.maCH].nvs[d.maNV].days.push(d);g[d.maCH].allDays.push(d);});
     Object.keys(g).sort().forEach(ck=>{const ci=g[ck];const nks=Object.keys(ci.nvs).sort();
-      // [v9.27] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
+      // [v9.28] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
       const chBodyId = 'ch-body-' + ck.replace(/[^A-Za-z0-9]/g,'');
       // ── View 1: theo NV ──
       let nvHtml = '';
@@ -7754,7 +7751,7 @@ function toggleAccKV(kv){
   _accOpenCH='';
   renderLCQL();
 }
-// [v9.27] Switch view "Theo NV" / "Theo ngày" trong mode CH
+// [v9.28] Switch view "Theo NV" / "Theo ngày" trong mode CH
 function lcqlCHViewSwitch(chBodyId, view, btn){
   document.getElementById(chBodyId+'-nv').style.display = (view==='nv') ? '' : 'none';
   document.getElementById(chBodyId+'-day').style.display = (view==='day') ? '' : 'none';
@@ -7906,7 +7903,7 @@ async function taiLichSuDuyet(){
     document.getElementById('lsd-stat-tong').textContent   = stats.tong || 0;
     document.getElementById('lsd-stat-duyet').textContent  = stats.duyet || 0;
     document.getElementById('lsd-stat-tuchoi').textContent = stats.tuChoi || 0;
-    // [v9.27] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
+    // [v9.28] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
     const choEl = document.getElementById('lsd-stat-chodet');
     if (choEl) {
       const choCount = (stats.choDuyet != null) ? stats.choDuyet : list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
@@ -7923,7 +7920,7 @@ async function taiLichSuDuyet(){
       const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
       const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
       const gioDuyet = dtDuyet ? (pad(dtDuyet.getDate())+'/'+pad(dtDuyet.getMonth()+1)+' '+pad(dtDuyet.getHours())+':'+pad(dtDuyet.getMinutes())) : '';
-      // [v9.27] Badge theo trạng thái
+      // [v9.28] Badge theo trạng thái
       let ttBadge;
       if (r.trangThai === 'DA_DUYET') {
         ttBadge = '<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">✓ DUYỆT</span>';
@@ -8172,7 +8169,7 @@ async function duyetTatCaDonNghiNS(action){
   document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('dnp-bulk-bar');
   if(bulkBar) bulkBar.style.opacity='.5';
-  // [v9.27] Dùng trực tiếp id có sẵn từ items (không cần lookup lại vì it.ngay = undefined)
+  // [v9.28] Dùng trực tiếp id có sẵn từ items (không cần lookup lại vì it.ngay = undefined)
   const ids = items.map(it => it.id).filter(Boolean);
   if (!ids.length) {
     if(bulkBar) bulkBar.style.opacity='1';
@@ -10222,7 +10219,7 @@ function bhBuildSpCacheAndIndex(list) {
     byMaCu: {},        // exact match maCu → index
     bySku: {},         // exact match sku
     byBarcode: {},     // exact match barcode
-    byMaThamChieu: {}, // [v9.27] exact match mã tham chiếu (MC001-XM21)
+    byMaThamChieu: {}, // [v9.28] exact match mã tham chiếu (MC001-XM21)
     tokens: [],        // [[token, idx], ...] để partial match nhanh
   };
   list.forEach((sp, idx) => {
@@ -10267,7 +10264,7 @@ function bhSearchSpLocal(query, limit) {
     const idx = BH.spIndex.byBarcode[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
   }
-  // [v9.27] Exact match mã tham chiếu (MC001-XM21)
+  // [v9.28] Exact match mã tham chiếu (MC001-XM21)
   if (BH.spIndex.byMaThamChieu && BH.spIndex.byMaThamChieu[query] !== undefined) {
     const idx = BH.spIndex.byMaThamChieu[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
@@ -10325,9 +10322,9 @@ function bhInitPage() {
   // Load SP data (async, không block UI)
   bhLoadSpData();
 
-  // [v9.27] Load bảng xếp hạng (mọi role đều xem được)
+  // [v9.28] Load bảng xếp hạng (mọi role đều xem được)
   bxhLoad();
-  // [v9.27] Auto refresh ngầm mỗi 30s — không reload page, chỉ update riêng BXH
+  // [v9.28] Auto refresh ngầm mỗi 30s — không reload page, chỉ update riêng BXH
   bxhStartAutoRefresh();
 
   if (isCH) {
@@ -10345,7 +10342,7 @@ function bhInitPage() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// [v9.27] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
+// [v9.28] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
 // ═══════════════════════════════════════════════════════════════════
 let BXH = {
   data: { NGAY: [], TUAN: [], THANG: [] },
@@ -10380,7 +10377,7 @@ async function bxhLoad(force) {
       .order('xep_hang');
     if (error) throw error;
     
-    // [v9.27] Detect đã có data trước đó để biết có flash hay không
+    // [v9.28] Detect đã có data trước đó để biết có flash hay không
     const hadPrevData = BXH.data.NGAY.length > 0;
     const prevUpdatedAt = BXH.updatedAt;
     
@@ -10397,17 +10394,17 @@ async function bxhLoad(force) {
       BXH.prevRanks = prev;
     } catch(e) { BXH.prevRanks = {}; }
     
-    // [v9.27] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
+    // [v9.28] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
     if (hadPrevData) {
       bxhCheckMyRankImproved(BXH.data.NGAY);
     }
     
-    // [v9.27] Flag để animation chỉ chạy 1 lần khi data mới đến, không phải mỗi render
+    // [v9.28] Flag để animation chỉ chạy 1 lần khi data mới đến, không phải mỗi render
     BXH._justUpdated = !!(hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt);
     bxhRenderMini();
     BXH._justUpdated = false;
     
-    // [v9.27] Flash khi vừa có update mới (updatedAt thay đổi)
+    // [v9.28] Flash khi vừa có update mới (updatedAt thay đổi)
     if (hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt) {
       bxhFlashUpdate();
     }
@@ -10424,7 +10421,7 @@ async function bxhLoad(force) {
   }
 }
 
-// [v9.27] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
+// [v9.28] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
 // Nhịp 5 phút (Apps Script cron) → app nhận event → fetch 1 lần
 // Tiết kiệm 90% bandwidth so với polling 30s
 function bxhStartRealtime() {
@@ -10490,7 +10487,7 @@ function _bxhRankChangeHtml(loai, maNV, currentRank) {
   return `<span class="bxh-mini-change down">${BXH_ARROW_DOWN}${Math.abs(diff)}</span>`;
 }
 
-// [v9.27] SVG icon corner: 1=crown, 2=star, 3=medal — size lớn hơn cho ô 48px
+// [v9.28] SVG icon corner: 1=crown, 2=star, 3=medal — size lớn hơn cho ô 48px
 const BXH_RANK_ICON = {
   1: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>',
   2: '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
@@ -10519,7 +10516,7 @@ function bxhRenderMini() {
     const prevRank = BXH.prevRanks[prevKey];
     let animClass = '';
     let isNew = false;
-    // [v9.27] Chỉ animate khi vừa có data mới (updatedAt thay đổi), không animate mỗi render
+    // [v9.28] Chỉ animate khi vừa có data mới (updatedAt thay đổi), không animate mỗi render
     if (BXH._justUpdated) {
       if (prevRank !== undefined && prevRank !== e.xep_hang) {
         animClass = (prevRank - e.xep_hang > 0) ? 'anim-up' : 'anim-down';
@@ -10562,7 +10559,7 @@ function bxhRenderMini() {
   } catch(e) {}
 }
 
-// [v9.27] Flash banner + LIVE badge khi vừa cập nhật
+// [v9.28] Flash banner + LIVE badge khi vừa cập nhật
 function bxhFlashUpdate() {
   ['bxh-mini', 'bxh-mini-ql'].forEach(id => {
     const el = document.getElementById(id);
@@ -10586,7 +10583,7 @@ function bxhFlashUpdate() {
   });
 }
 
-// [v9.27] Confetti khi tôi tăng hạng
+// [v9.28] Confetti khi tôi tăng hạng
 function bxhConfetti() {
   let container = document.getElementById('bxh-confetti');
   if (!container) {
@@ -10607,7 +10604,7 @@ function bxhConfetti() {
   }
 }
 
-// [v9.27] Check tôi có tăng hạng không → confetti
+// [v9.28] Check tôi có tăng hạng không → confetti
 function bxhCheckMyRankImproved(top) {
   if (!SESSION || !SESSION.ma) return;
   const meCode = String(SESSION.ma).toUpperCase();
@@ -10625,7 +10622,7 @@ function bxhCheckMyRankImproved(top) {
   }
 }
 
-// [v9.27] Marquee — sinh tự động từ data
+// [v9.28] Marquee — sinh tự động từ data
 function bxhUpdateMarquee() {
   const top = BXH.data.NGAY || [];
   if (top.length < 3) return;
@@ -11006,7 +11003,7 @@ function bhStartRealtimeSubCH() {
           bhLoadPhienDangBan({ silent: true });
         }, 300);
       })
-      // [v9.27] Channel phụ chỉ nghe DELETE (không filter, vì payload.old của DELETE có thể bị strip)
+      // [v9.28] Channel phụ chỉ nghe DELETE (không filter, vì payload.old của DELETE có thể bị strip)
       // Bất cứ phiên nào bị xóa trong DB → reload phiên của CH này
       .on('postgres_changes', {
         event: 'DELETE', schema: 'public', table: 'phien_ban_hang'
@@ -11336,7 +11333,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.27] Lock per-phien + global để chống double-click + race condition
+  // [v9.28] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -11365,7 +11362,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.27] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.28] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -11641,7 +11638,7 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
   }
 }
 
-// [v9.27] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+// [v9.28] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
 async function bhYCXoaTuModal(phienId) {
   const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
     title: 'Yêu cầu xóa phiên tự đóng',
@@ -13691,7 +13688,7 @@ async function adm2DetailCCHomNay(bodyEl) {
 }
 
 // Detail: cảnh báo chưa duyệt
-// [v9.27] State filter cho admin detail
+// [v9.28] State filter cho admin detail
 let _adm2CbFilter = 'CHO_DUYET'; // CHO_DUYET | DA_DUYET | TU_CHOI | ALL
 let _adm2DnFilter = 'CHO_DUYET';
 
@@ -13776,7 +13773,7 @@ async function adm2LoadCBList(){
   } catch (e) { el.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.27] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
+// [v9.28] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
 async function adm2RevertCanhBao(id){
   if(!confirm('Đặt lại cảnh báo này về trạng thái Chờ duyệt?')) return;
   try {
@@ -13803,7 +13800,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
     });
     if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
     adm2Toast('Đã duyệt', 'success');
-    // [v9.27] Reload list để cập nhật trạng thái
+    // [v9.28] Reload list để cập nhật trạng thái
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -13813,7 +13810,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.27] Admin Từ chối cảnh báo (kèm modal nhập lý do)
+// [v9.28] Admin Từ chối cảnh báo (kèm modal nhập lý do)
 async function adm2TuChoiCanhBao(id) {
   const lyDo = prompt('Lý do từ chối (bắt buộc):');
   if (!lyDo || !lyDo.trim()) { adm2Toast('Cần nhập lý do từ chối', 'error'); return; }
@@ -13826,7 +13823,7 @@ async function adm2TuChoiCanhBao(id) {
     }).eq('id', id);
     if (error) throw error;
     adm2Toast('Đã từ chối', 'success');
-    // [v9.27] Reload
+    // [v9.28] Reload
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -13960,7 +13957,7 @@ async function adm2SuaLog(id, ngay) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.27] Load datalist CH 1 lần cho dropdown gợi ý CH
+// [v9.28] Load datalist CH 1 lần cho dropdown gợi ý CH
 async function adm2EnsureChDatalist() {
   if (document.getElementById('adm2-ch-datalist')) return;
   try {
@@ -14118,7 +14115,7 @@ async function adm2DongPhien(id) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// Detail: phiên hôm nay - [v9.27] mini view giống BH + toàn quyền tuỳ chỉnh
+// Detail: phiên hôm nay - [v9.28] mini view giống BH + toàn quyền tuỳ chỉnh
 async function adm2DetailPhienHomNay(bodyEl) {
   await adm2RenderPhienHomNay(bodyEl);
 }
@@ -14167,7 +14164,7 @@ async function adm2RenderPhienHomNay(bodyEl){
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.27] Sửa phiên (toàn quyền)
+// [v9.28] Sửa phiên (toàn quyền)
 async function adm2EditPhien(id){
   try {
     const { data: p, error } = await supa.from('phien_ban_hang').select('*').eq('id', id).single();
@@ -14413,7 +14410,7 @@ async function adm2SearchAcc() {
   const kw = document.getElementById('adm2-acc-kw').value.trim();
   const loai = document.getElementById('adm2-acc-loai').value;
   const el = document.getElementById('adm2-acc-list');
-  // [v9.27] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
+  // [v9.28] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
   el.innerHTML = '<div class="adm2-empty">Đang tải...</div>';
   try {
     const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword: kw || '', p_loai: loai, p_limit: kw ? 100 : 200 });
