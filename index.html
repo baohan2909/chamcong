@@ -940,7 +940,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-stat.active-filter { box-shadow:inset 0 0 0 2px #1D9E75, 0 2px 8px rgba(29,158,117,0.25); }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.19] BẢNG XẾP HẠNG — Light Luxury Style */
+/* [v9.20] BẢNG XẾP HẠNG — Light Luxury Style */
 /* ════════════════════════════════════════════════════════════ */
 :root {
   --bxh-gold: #C9A227;
@@ -991,7 +991,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   transition:transform .2s, box-shadow .2s, border-color .2s;
 }
 .bxh-mini:hover {
-  transform:translateY(-2px);
   box-shadow:
     0 4px 24px rgba(201,162,39,0.18),
     0 12px 40px rgba(15,23,42,0.06);
@@ -1033,17 +1032,17 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   display:flex; flex-direction:column; gap:5px;
 }
 .bxh-mini-row {
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:11px;
   padding:8px 11px; border-radius:9px;
   background:linear-gradient(90deg, #FFFFFF 0%, #FBFCFE 100%);
   border:1px solid #E8ECF1;
-  transition:all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:border-color .2s, box-shadow .2s;
   position:relative;
   box-shadow:0 1px 0 rgba(15,23,42,0.02);
 }
 .bxh-mini-row:hover {
-  border-color:rgba(201,162,39,0.3);
-  box-shadow:0 2px 8px rgba(15,23,42,0.05);
+  border-color:rgba(201,162,39,0.35);
+  box-shadow:0 2px 10px rgba(15,23,42,0.06);
 }
 .bxh-mini-row.rank-1 {
   background:
@@ -1064,7 +1063,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border-color:rgba(160,103,62,0.4);
   box-shadow:inset 4px 0 0 var(--bxh-bronze), 0 1px 6px rgba(160,103,62,0.1);
 }
-/* [v9.19] Rank 4-10: gradient theo dải để có cảm giác giảm dần đẹp */
+/* [v9.20] Rank 4-10: gradient theo dải để có cảm giác giảm dần đẹp */
 .bxh-mini-row.rank-4 {
   background:linear-gradient(90deg, #F0F4FF 0%, #F8FAFF 50%, #FFFFFF 100%);
   border-color:rgba(99,102,241,0.18);
@@ -1106,31 +1105,47 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   box-shadow:inset 4px 0 0 #6366F1, 0 2px 10px rgba(99,102,241,0.15) !important;
 }
 .bxh-mini-rank {
-  width:24px; height:24px; border-radius:7px; flex-shrink:0;
+  width:28px; height:28px; border-radius:8px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   font-family:var(--bxh-num-font);
-  font-size:12px; font-weight:800;
+  font-size:12.5px; font-weight:800;
   font-variant-numeric:tabular-nums;
   font-feature-settings:'tnum' 1, 'ss01' 1;
   background:#F1F5F9; color:#475569;
   letter-spacing:0.2px;
   border:1px solid rgba(15,23,42,0.06);
+  position:relative;
+}
+/* [v9.20] Top 1-3: ô số thứ tự gộp icon vinh danh ở góc */
+.bxh-mini-row.rank-1 .bxh-mini-rank,
+.bxh-mini-row.rank-2 .bxh-mini-rank,
+.bxh-mini-row.rank-3 .bxh-mini-rank {
+  width:34px; height:34px; font-size:13.5px;
+}
+.bxh-mini-rank-icon {
+  position:absolute; top:-4px; right:-4px;
+  width:14px; height:14px; border-radius:50%;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 3px rgba(15,23,42,0.15);
 }
 .bxh-mini-row.rank-1 .bxh-mini-rank {
   background:linear-gradient(135deg, var(--bxh-gold), #B8901F);
   color:#fff; border-color:transparent;
-  box-shadow:0 2px 6px rgba(201,162,39,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:0 3px 8px rgba(201,162,39,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
 }
+.bxh-mini-row.rank-1 .bxh-mini-rank-icon { color:var(--bxh-gold); }
 .bxh-mini-row.rank-2 .bxh-mini-rank {
   background:linear-gradient(135deg, var(--bxh-silver), #6E7A93);
   color:#fff; border-color:transparent;
-  box-shadow:0 2px 5px rgba(142,154,175,0.4);
+  box-shadow:0 3px 7px rgba(142,154,175,0.45);
 }
+.bxh-mini-row.rank-2 .bxh-mini-rank-icon { color:var(--bxh-silver); }
 .bxh-mini-row.rank-3 .bxh-mini-rank {
   background:linear-gradient(135deg, var(--bxh-bronze), #835339);
   color:#fff; border-color:transparent;
-  box-shadow:0 2px 5px rgba(160,103,62,0.4);
+  box-shadow:0 3px 7px rgba(160,103,62,0.45);
 }
+.bxh-mini-row.rank-3 .bxh-mini-rank-icon { color:var(--bxh-bronze); }
 .bxh-mini-row.rank-4 .bxh-mini-rank { background:linear-gradient(135deg, #818CF8, #6366F1); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(99,102,241,0.3); }
 .bxh-mini-row.rank-5 .bxh-mini-rank { background:linear-gradient(135deg, #93C5FD, #60A5FA); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(96,165,250,0.3); }
 .bxh-mini-row.rank-6 .bxh-mini-rank { background:linear-gradient(135deg, #67E8F9, #06B6D4); color:#fff; border-color:transparent; box-shadow:0 1px 4px rgba(6,182,212,0.3); }
@@ -1183,7 +1198,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   letter-spacing:0.2px;
   -webkit-font-smoothing:antialiased;
 }
-.bxh-mini-row.rank-1 .bxh-mini-diem { color:var(--bxh-gold); font-size:15.5px; font-weight:800; }
+.bxh-mini-row.rank-1 .bxh-mini-diem { 
+  color:var(--bxh-gold); font-size:15.5px; font-weight:700;
+  letter-spacing:0.5px;
+}
 .bxh-mini-row.rank-2 .bxh-mini-diem { color:var(--bxh-silver); font-weight:700; }
 .bxh-mini-row.rank-3 .bxh-mini-diem { color:var(--bxh-bronze); font-weight:700; }
 .bxh-mini-row.rank-4 .bxh-mini-diem { color:#4F46E5; }
@@ -1454,37 +1472,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bxh-rank-change.new { background:rgba(99,102,241,0.1); color:#4F46E5; }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.19] Avatar icon theo rank + LIVE badge + Marquee */
+/* [v9.20] Avatar icon theo rank + LIVE badge + Marquee */
 /* ════════════════════════════════════════════════════════════ */
 
-/* Avatar/icon vòng tròn cạnh tên */
-.bxh-avatar {
-  width:28px; height:28px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  background:#F1F5F9; color:#94A3B8;
-}
-.bxh-mini-row.rank-1 .bxh-avatar {
-  background:linear-gradient(135deg, var(--bxh-gold-soft), var(--bxh-gold));
-  color:#fff;
-  box-shadow:0 2px 8px rgba(201,162,39,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
-}
-.bxh-mini-row.rank-2 .bxh-avatar {
-  background:linear-gradient(135deg, var(--bxh-silver-soft), var(--bxh-silver));
-  color:#fff;
-  box-shadow:0 2px 6px rgba(142,154,175,0.35);
-}
-.bxh-mini-row.rank-3 .bxh-avatar {
-  background:linear-gradient(135deg, var(--bxh-bronze-soft), var(--bxh-bronze));
-  color:#fff;
-  box-shadow:0 2px 6px rgba(160,103,62,0.3);
-}
-.bxh-mini-row.rank-4 .bxh-avatar { background:linear-gradient(135deg, #C7D2FE, #818CF8); color:#fff; box-shadow:0 1px 4px rgba(99,102,241,0.3); }
-.bxh-mini-row.rank-5 .bxh-avatar { background:linear-gradient(135deg, #BFDBFE, #93C5FD); color:#fff; box-shadow:0 1px 4px rgba(96,165,250,0.3); }
-.bxh-mini-row.rank-6 .bxh-avatar { background:linear-gradient(135deg, #A5F3FC, #67E8F9); color:#fff; box-shadow:0 1px 4px rgba(6,182,212,0.3); }
-.bxh-mini-row.rank-7 .bxh-avatar { background:linear-gradient(135deg, #A7F3D0, #6EE7B7); color:#fff; box-shadow:0 1px 4px rgba(16,185,129,0.3); }
-.bxh-mini-row.rank-8 .bxh-avatar { background:linear-gradient(135deg, #D9F99D, #BEF264); color:#fff; box-shadow:0 1px 4px rgba(132,204,22,0.3); }
-.bxh-mini-row.rank-9 .bxh-avatar { background:linear-gradient(135deg, #FDE68A, #FCD34D); color:#fff; box-shadow:0 1px 4px rgba(245,158,11,0.3); }
-.bxh-mini-row.rank-10 .bxh-avatar { background:linear-gradient(135deg, #FECACA, #FCA5A5); color:#fff; box-shadow:0 1px 4px rgba(239,68,68,0.3); }
+/* [v9.20] Avatar removed: top 1-3 icon đã gộp vào ô số, top 4-10 không có icon */
 
 /* Khoảng cách điểm so với người trên */
 .bxh-gap {
@@ -2212,7 +2203,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.19</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.20</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2453,7 +2444,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.19] Modal đơn nghỉ phép đột xuất -->
+  <!-- [v9.20] Modal đơn nghỉ phép đột xuất -->
   <div id="dx-modal" onclick="if(event.target===this)closeNghiDotXuatModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
     <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -2487,7 +2478,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.19] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
+  <!-- [v9.20] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
   <div id="bxh-modal" onclick="if(event.target===this)bxhCloseModal()">
     <div class="bxh-modal-box">
       <div class="bxh-modal-head">
@@ -2582,7 +2573,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <span id="lc-meta-txt" style="font-size:11px;color:var(--text-m)"></span>
         </div>
       </div>
-      <!-- [v9.19] Banner tuần hiện tại — nút tạo đơn nghỉ đột xuất -->
+      <!-- [v9.20] Banner tuần hiện tại — nút tạo đơn nghỉ đột xuất -->
       <div id="lc-dot-xuat-banner" style="display:none;margin:0 14px 10px;padding:12px;background:linear-gradient(135deg,#FFF7ED,#FED7AA);border-radius:10px;border-left:4px solid #EA580C">
         <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:6px">📌 Đơn nghỉ phép đột xuất</div>
         <div style="font-size:11px;color:#7C2D12;line-height:1.5;margin-bottom:10px">Tuần hiện tại không cho đổi ca. Nếu cần nghỉ đột xuất (bệnh, việc gấp), bấm nút bên dưới.</div>
@@ -3147,7 +3138,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
     <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:11px">
-      Phiên bản <strong style="color:#6B7280">v9.19</strong>
+      Phiên bản <strong style="color:#6B7280">v9.20</strong>
     </div>
   </div>
 
@@ -3540,7 +3531,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.19] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
+      <!-- [v9.20] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
       <div id="bxh-mini" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -3606,7 +3597,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.19] BẢNG XẾP HẠNG MINI cho QLBH -->
+      <!-- [v9.20] BẢNG XẾP HẠNG MINI cho QLBH -->
       <div id="bxh-mini-ql" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -6092,7 +6083,7 @@ function renderNhanSu(){
     el.innerHTML = bulkHtml + cbShow.map(cb=>{
       const initials=cb.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const daDaGT=!!cb.giaiTrinh;
-      // [v9.19] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
+      // [v9.20] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
       const isRequireFix = (cb.loaiCB === 'SAI CA' || cb.loaiCB === 'THIẾU CA');
       const badgeFix = isRequireFix
         ? '<span style="display:inline-block;padding:2px 6px;background:#FEF3C7;color:#92400E;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px">CẦN SỬA GIỜ</span>'
@@ -6551,7 +6542,7 @@ function taiLichCa(){
   supa.rpc('fn_get_lich_ca', { p_ma_nv: SESSION.ma, p_tuan: lcTuan })
   .then(({ data: res, error }) => {
     if(error || !res){document.getElementById('lc-week').innerHTML='<div class="ns-empty">❌ Lỗi tải. Thử lại.</div>';return;}
-    // [v9.19] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
+    // [v9.20] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
     // Backward compat: nếu có res.lichCa cũ thì dùng, nếu không thì dùng res.lich
     const slots = res.lich || res.lichCa || [];
     // Group theo ngày
@@ -6577,7 +6568,7 @@ function taiLichCa(){
         slots: map[ngayStr] || []
       });
     }
-    // [v9.19] conHan + trangThaiTuan + guiKhan từ backend
+    // [v9.20] conHan + trangThaiTuan + guiKhan từ backend
     const conHan = res.conHan != null ? res.conHan : (function(){
       const today = new Date(); today.setHours(0,0,0,0);
       const cn = new Date(res.chuNhat || res.ngayCuoi);
@@ -6634,10 +6625,10 @@ function renderLichCa(data){
   const guiKhan = !!data.guiKhan;
   const hanEl=document.getElementById('lc-han-badge');
   const metaEl=document.getElementById('lc-meta-txt');
-  // [v9.19] Show/hide banner đơn nghỉ đột xuất
+  // [v9.20] Show/hide banner đơn nghỉ đột xuất
   const dxBanner = document.getElementById('lc-dot-xuat-banner');
   if(dxBanner) dxBanner.style.display = (tt === 'HIEN_TAI') ? '' : 'none';
-  // [v9.19] Banner theo loại tuần
+  // [v9.20] Banner theo loại tuần
   if(tt === 'DA_QUA'){
     hanEl.textContent='Tuần đã qua'; hanEl.className='lc-han-badge lc-han-het';
     metaEl.textContent='Không thể gửi/sửa lịch tuần này';
@@ -7130,8 +7121,8 @@ function guiLichCa(){
   const btn=document.getElementById('lc-btn-send');
   if(!SESSION||!lcTuan||btn.disabled)return;
 
-  // [v9.19] Chặn gửi tuần đã qua / tuần hiện tại
-  // [v9.19] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
+  // [v9.20] Chặn gửi tuần đã qua / tuần hiện tại
+  // [v9.20] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
   if(lcData){
     // Kiểm tra có phải toàn nghỉ phép không
     const toanNghi = Object.keys(lcEdit).every(k=>{
@@ -7152,7 +7143,7 @@ function guiLichCa(){
     }
   }
   
-  // [v9.19] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
+  // [v9.20] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
   let lyDoGap = '';
   if(lcData && lcData.guiKhan){
     lyDoGap = prompt('Đã quá hạn Thứ 7. Vui lòng nhập LÝ DO GẤP để QLNS xem xét:\n\n(VD: Nghỉ bệnh đột xuất, đổi ca khẩn cấp, gia đình có việc...)');
@@ -7270,7 +7261,7 @@ function guiLichCa(){
       btn.disabled=false;btn.textContent='Gửi lịch tuần';
       return;
     }
-    // [v9.19] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
+    // [v9.20] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
     const distinctNgay = new Set(lichCaArr.map(x => x.ngay).filter(Boolean));
     const soNgay = res.so_ngay || distinctNgay.size;
     showToast('✓ Đã gửi lịch ' + soNgay + ' ngày','ok');
@@ -7279,7 +7270,7 @@ function guiLichCa(){
 }
 
 // ═════════════════════════════════════════════════════════════
-// [v9.19] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
+// [v9.20] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
 // ═════════════════════════════════════════════════════════════
 let _dxState = { ngayChon: new Set(), anhB64: '' };
 
@@ -7480,7 +7471,7 @@ function taiLichCaQL(){
   const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
   const thuHai = new Date(ms);
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
-  // [v9.19] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
+  // [v9.20] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
@@ -7507,7 +7498,7 @@ function taiLichCaQL(){
         trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
-    // [v9.19] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
+    // [v9.20] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
     const _nghiPhepKey = new Set();
     (lcRes.data||[]).forEach(r => {
       if ((r.loai || r.ca_lam) === 'Nghỉ phép') {
@@ -7565,7 +7556,7 @@ function renderLCQL(){
   const dow=['CN','T2','T3','T4','T5','T6','T7'];
   const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
   const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
-  // [v9.19] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
+  // [v9.20] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
   const _dr=d=>{
     const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
     const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
@@ -7580,7 +7571,7 @@ function renderLCQL(){
   } else if(lcqlMode==='ch'){
     const g={};filtered.forEach(d=>{if(!g[d.maCH])g[d.maCH]={ten:d.tenCH,kv:d.khuVuc,nvs:{},allDays:[]};if(!g[d.maCH].nvs[d.maNV])g[d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.maCH].nvs[d.maNV].days.push(d);g[d.maCH].allDays.push(d);});
     Object.keys(g).sort().forEach(ck=>{const ci=g[ck];const nks=Object.keys(ci.nvs).sort();
-      // [v9.19] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
+      // [v9.20] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
       const chBodyId = 'ch-body-' + ck.replace(/[^A-Za-z0-9]/g,'');
       // ── View 1: theo NV ──
       let nvHtml = '';
@@ -7623,7 +7614,7 @@ function toggleAccKV(kv){
   _accOpenCH='';
   renderLCQL();
 }
-// [v9.19] Switch view "Theo NV" / "Theo ngày" trong mode CH
+// [v9.20] Switch view "Theo NV" / "Theo ngày" trong mode CH
 function lcqlCHViewSwitch(chBodyId, view, btn){
   document.getElementById(chBodyId+'-nv').style.display = (view==='nv') ? '' : 'none';
   document.getElementById(chBodyId+'-day').style.display = (view==='day') ? '' : 'none';
@@ -7775,7 +7766,7 @@ async function taiLichSuDuyet(){
     document.getElementById('lsd-stat-tong').textContent   = stats.tong || 0;
     document.getElementById('lsd-stat-duyet').textContent  = stats.duyet || 0;
     document.getElementById('lsd-stat-tuchoi').textContent = stats.tuChoi || 0;
-    // [v9.19] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
+    // [v9.20] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
     const choEl = document.getElementById('lsd-stat-chodet');
     if (choEl) {
       const choCount = (stats.choDuyet != null) ? stats.choDuyet : list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
@@ -7792,7 +7783,7 @@ async function taiLichSuDuyet(){
       const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
       const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
       const gioDuyet = dtDuyet ? (pad(dtDuyet.getDate())+'/'+pad(dtDuyet.getMonth()+1)+' '+pad(dtDuyet.getHours())+':'+pad(dtDuyet.getMinutes())) : '';
-      // [v9.19] Badge theo trạng thái
+      // [v9.20] Badge theo trạng thái
       let ttBadge;
       if (r.trangThai === 'DA_DUYET') {
         ttBadge = '<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">✓ DUYỆT</span>';
@@ -8041,7 +8032,7 @@ async function duyetTatCaDonNghiNS(action){
   document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('dnp-bulk-bar');
   if(bulkBar) bulkBar.style.opacity='.5';
-  // [v9.19] Dùng trực tiếp id có sẵn từ items (không cần lookup lại vì it.ngay = undefined)
+  // [v9.20] Dùng trực tiếp id có sẵn từ items (không cần lookup lại vì it.ngay = undefined)
   const ids = items.map(it => it.id).filter(Boolean);
   if (!ids.length) {
     if(bulkBar) bulkBar.style.opacity='1';
@@ -10091,7 +10082,7 @@ function bhBuildSpCacheAndIndex(list) {
     byMaCu: {},        // exact match maCu → index
     bySku: {},         // exact match sku
     byBarcode: {},     // exact match barcode
-    byMaThamChieu: {}, // [v9.19] exact match mã tham chiếu (MC001-XM21)
+    byMaThamChieu: {}, // [v9.20] exact match mã tham chiếu (MC001-XM21)
     tokens: [],        // [[token, idx], ...] để partial match nhanh
   };
   list.forEach((sp, idx) => {
@@ -10136,7 +10127,7 @@ function bhSearchSpLocal(query, limit) {
     const idx = BH.spIndex.byBarcode[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
   }
-  // [v9.19] Exact match mã tham chiếu (MC001-XM21)
+  // [v9.20] Exact match mã tham chiếu (MC001-XM21)
   if (BH.spIndex.byMaThamChieu && BH.spIndex.byMaThamChieu[query] !== undefined) {
     const idx = BH.spIndex.byMaThamChieu[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
@@ -10194,9 +10185,9 @@ function bhInitPage() {
   // Load SP data (async, không block UI)
   bhLoadSpData();
 
-  // [v9.19] Load bảng xếp hạng (mọi role đều xem được)
+  // [v9.20] Load bảng xếp hạng (mọi role đều xem được)
   bxhLoad();
-  // [v9.19] Auto refresh ngầm mỗi 30s — không reload page, chỉ update riêng BXH
+  // [v9.20] Auto refresh ngầm mỗi 30s — không reload page, chỉ update riêng BXH
   bxhStartAutoRefresh();
 
   if (isCH) {
@@ -10214,7 +10205,7 @@ function bhInitPage() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// [v9.19] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
+// [v9.20] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
 // ═══════════════════════════════════════════════════════════════════
 let BXH = {
   data: { NGAY: [], TUAN: [], THANG: [] },
@@ -10249,7 +10240,7 @@ async function bxhLoad(force) {
       .order('xep_hang');
     if (error) throw error;
     
-    // [v9.19] Detect đã có data trước đó để biết có flash hay không
+    // [v9.20] Detect đã có data trước đó để biết có flash hay không
     const hadPrevData = BXH.data.NGAY.length > 0;
     const prevUpdatedAt = BXH.updatedAt;
     
@@ -10266,14 +10257,17 @@ async function bxhLoad(force) {
       BXH.prevRanks = prev;
     } catch(e) { BXH.prevRanks = {}; }
     
-    // [v9.19] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
+    // [v9.20] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
     if (hadPrevData) {
       bxhCheckMyRankImproved(BXH.data.NGAY);
     }
     
+    // [v9.20] Flag để animation chỉ chạy 1 lần khi data mới đến, không phải mỗi render
+    BXH._justUpdated = !!(hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt);
     bxhRenderMini();
+    BXH._justUpdated = false;
     
-    // [v9.19] Flash khi vừa có update mới (updatedAt thay đổi)
+    // [v9.20] Flash khi vừa có update mới (updatedAt thay đổi)
     if (hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt) {
       bxhFlashUpdate();
     }
@@ -10290,7 +10284,7 @@ async function bxhLoad(force) {
   }
 }
 
-// [v9.19] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
+// [v9.20] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
 // Nhịp 5 phút (Apps Script cron) → app nhận event → fetch 1 lần
 // Tiết kiệm 90% bandwidth so với polling 30s
 function bxhStartRealtime() {
@@ -10356,16 +10350,16 @@ function _bxhRankChangeHtml(loai, maNV, currentRank) {
   return `<span class="bxh-mini-change down">${BXH_ARROW_DOWN}${Math.abs(diff)}</span>`;
 }
 
-// [v9.19] SVG icon avatar theo rank
-const BXH_AVATAR = {
-  1: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>',
-  2: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-  3: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
-  default: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+// [v9.20] SVG icon nhỏ gắn trong góc ô số (chỉ top 1-3)
+const BXH_RANK_ICON = {
+  1: '<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>',
+  2: '<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  3: '<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="6"/></svg>'
 };
 
-function _bxhAvatarHtml(rank) {
-  return `<div class="bxh-avatar">${BXH_AVATAR[rank] || BXH_AVATAR.default}</div>`;
+function _bxhRankIconCornerHtml(rank) {
+  if (rank > 3) return '';
+  return `<div class="bxh-mini-rank-icon">${BXH_RANK_ICON[rank]}</div>`;
 }
 
 function bxhRenderMini() {
@@ -10385,11 +10379,14 @@ function bxhRenderMini() {
     const prevRank = BXH.prevRanks[prevKey];
     let animClass = '';
     let isNew = false;
-    if (prevRank !== undefined && prevRank !== e.xep_hang) {
-      animClass = (prevRank - e.xep_hang > 0) ? 'anim-up' : 'anim-down';
-    } else if (prevRank === undefined) {
-      animClass = 'anim-new';
-      isNew = true;
+    // [v9.20] Chỉ animate khi vừa có data mới (updatedAt thay đổi), không animate mỗi render
+    if (BXH._justUpdated) {
+      if (prevRank !== undefined && prevRank !== e.xep_hang) {
+        animClass = (prevRank - e.xep_hang > 0) ? 'anim-up' : 'anim-down';
+      } else if (prevRank === undefined) {
+        animClass = 'anim-new';
+        isNew = true;
+      }
     }
     
     // Khoảng cách điểm so với người trên (chỉ hiện cho rank > 1)
@@ -10405,8 +10402,7 @@ function bxhRenderMini() {
     const meBadge = isMe ? '<span class="bxh-mini-me-badge">BẠN</span>' : '';
     return `
       <div class="bxh-mini-row rank-${e.xep_hang} ${isMe ? 'is-me' : ''} ${animClass} ${isNew ? 'is-new-top' : ''}" data-ma-nv="${bxhEsc(e.ma_nv)}">
-        <div class="bxh-mini-rank">${e.xep_hang}</div>
-        ${_bxhAvatarHtml(e.xep_hang)}
+        <div class="bxh-mini-rank">${e.xep_hang}${_bxhRankIconCornerHtml(e.xep_hang)}</div>
         <div class="bxh-mini-info">
           <div class="bxh-mini-name">${bxhEsc(e.ten_nv || e.ma_nv)}${meBadge}</div>
           <div class="bxh-mini-ch">${bxhEsc(e.ten_ch || '—')}${gapHtml}</div>
@@ -10426,7 +10422,7 @@ function bxhRenderMini() {
   } catch(e) {}
 }
 
-// [v9.19] Flash banner + LIVE badge khi vừa cập nhật
+// [v9.20] Flash banner + LIVE badge khi vừa cập nhật
 function bxhFlashUpdate() {
   ['bxh-mini', 'bxh-mini-ql'].forEach(id => {
     const el = document.getElementById(id);
@@ -10450,7 +10446,7 @@ function bxhFlashUpdate() {
   });
 }
 
-// [v9.19] Confetti khi tôi tăng hạng
+// [v9.20] Confetti khi tôi tăng hạng
 function bxhConfetti() {
   let container = document.getElementById('bxh-confetti');
   if (!container) {
@@ -10471,7 +10467,7 @@ function bxhConfetti() {
   }
 }
 
-// [v9.19] Check tôi có tăng hạng không → confetti
+// [v9.20] Check tôi có tăng hạng không → confetti
 function bxhCheckMyRankImproved(top) {
   if (!SESSION || !SESSION.ma) return;
   const meCode = String(SESSION.ma).toUpperCase();
@@ -10489,7 +10485,7 @@ function bxhCheckMyRankImproved(top) {
   }
 }
 
-// [v9.19] Marquee — sinh tự động từ data
+// [v9.20] Marquee — sinh tự động từ data
 function bxhUpdateMarquee() {
   const top = BXH.data.NGAY || [];
   if (top.length < 3) return;
@@ -10870,6 +10866,17 @@ function bhStartRealtimeSubCH() {
           bhLoadPhienDangBan({ silent: true });
         }, 300);
       })
+      // [v9.20] Channel phụ chỉ nghe DELETE (không filter, vì payload.old của DELETE có thể bị strip)
+      // Bất cứ phiên nào bị xóa trong DB → reload phiên của CH này
+      .on('postgres_changes', {
+        event: 'DELETE', schema: 'public', table: 'phien_ban_hang'
+      }, (payload) => {
+        // Filter client-side bằng payload.old (nếu có ma_ch) hoặc reload luôn cho chắc
+        const matches = !payload.old || !payload.old.ma_ch || payload.old.ma_ch === SESSION.cuaHangMa;
+        if (matches && currentPage === 'banhang') {
+          bhLoadPhienDangBan({ silent: true });
+        }
+      })
       .subscribe((status) => {
         console.log('[BH RT CH]', status);
       });
@@ -11189,7 +11196,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.19] Lock per-phien + global để chống double-click + race condition
+  // [v9.20] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -11218,7 +11225,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.19] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.20] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -11494,7 +11501,7 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
   }
 }
 
-// [v9.19] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+// [v9.20] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
 async function bhYCXoaTuModal(phienId) {
   const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
     title: 'Yêu cầu xóa phiên tự đóng',
@@ -13544,7 +13551,7 @@ async function adm2DetailCCHomNay(bodyEl) {
 }
 
 // Detail: cảnh báo chưa duyệt
-// [v9.19] State filter cho admin detail
+// [v9.20] State filter cho admin detail
 let _adm2CbFilter = 'CHO_DUYET'; // CHO_DUYET | DA_DUYET | TU_CHOI | ALL
 let _adm2DnFilter = 'CHO_DUYET';
 
@@ -13629,7 +13636,7 @@ async function adm2LoadCBList(){
   } catch (e) { el.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.19] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
+// [v9.20] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
 async function adm2RevertCanhBao(id){
   if(!confirm('Đặt lại cảnh báo này về trạng thái Chờ duyệt?')) return;
   try {
@@ -13656,7 +13663,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
     });
     if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
     adm2Toast('Đã duyệt', 'success');
-    // [v9.19] Reload list để cập nhật trạng thái
+    // [v9.20] Reload list để cập nhật trạng thái
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -13666,7 +13673,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.19] Admin Từ chối cảnh báo (kèm modal nhập lý do)
+// [v9.20] Admin Từ chối cảnh báo (kèm modal nhập lý do)
 async function adm2TuChoiCanhBao(id) {
   const lyDo = prompt('Lý do từ chối (bắt buộc):');
   if (!lyDo || !lyDo.trim()) { adm2Toast('Cần nhập lý do từ chối', 'error'); return; }
@@ -13679,7 +13686,7 @@ async function adm2TuChoiCanhBao(id) {
     }).eq('id', id);
     if (error) throw error;
     adm2Toast('Đã từ chối', 'success');
-    // [v9.19] Reload
+    // [v9.20] Reload
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -13813,7 +13820,7 @@ async function adm2SuaLog(id, ngay) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.19] Load datalist CH 1 lần cho dropdown gợi ý CH
+// [v9.20] Load datalist CH 1 lần cho dropdown gợi ý CH
 async function adm2EnsureChDatalist() {
   if (document.getElementById('adm2-ch-datalist')) return;
   try {
@@ -13971,7 +13978,7 @@ async function adm2DongPhien(id) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// Detail: phiên hôm nay - [v9.19] mini view giống BH + toàn quyền tuỳ chỉnh
+// Detail: phiên hôm nay - [v9.20] mini view giống BH + toàn quyền tuỳ chỉnh
 async function adm2DetailPhienHomNay(bodyEl) {
   await adm2RenderPhienHomNay(bodyEl);
 }
@@ -14020,7 +14027,7 @@ async function adm2RenderPhienHomNay(bodyEl){
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.19] Sửa phiên (toàn quyền)
+// [v9.20] Sửa phiên (toàn quyền)
 async function adm2EditPhien(id){
   try {
     const { data: p, error } = await supa.from('phien_ban_hang').select('*').eq('id', id).single();
@@ -14266,7 +14273,7 @@ async function adm2SearchAcc() {
   const kw = document.getElementById('adm2-acc-kw').value.trim();
   const loai = document.getElementById('adm2-acc-loai').value;
   const el = document.getElementById('adm2-acc-list');
-  // [v9.19] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
+  // [v9.20] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
   el.innerHTML = '<div class="adm2-empty">Đang tải...</div>';
   try {
     const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword: kw || '', p_loai: loai, p_limit: kw ? 100 : 200 });
