@@ -71,7 +71,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .header-bell-badge { position:absolute; top:2px; right:2px; min-width:18px; height:18px; padding:0 4px; border-radius:9px; background:#EF4444; color:white; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; border:2px solid var(--green,#1D9E75); }
 
 /* [v11.5 TB-02] Notification panel */
-/* ─── NOTIF PANEL — iOS bottom sheet style [v9.44] ─────────────────────── */
+/* ─── NOTIF PANEL — iOS bottom sheet style [v9.45] ─────────────────────── */
 .notif-panel-bd {
   position:fixed; inset:0;
   background:rgba(15, 23, 42, 0.5);
@@ -463,8 +463,22 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gcql-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 14px 0; }
 
 /* TÀI KHOẢN */
-.acc-top    { margin:14px 14px 0; background:white; border-radius:16px; padding:24px 16px; text-align:center; box-shadow:var(--shadow); }
-.acc-avatar { width:72px; height:72px; border-radius:50%; background:white; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--green); font-weight:700; margin:0 auto 12px; }
+.acc-top    { margin:14px 14px 0; background:white; border-radius:16px; padding:24px 16px; text-align:center; box-shadow:var(--shadow); position:relative; }
+.acc-avatar { width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,#10B981,#0F6E56); border:3px solid #fff; box-shadow:0 4px 12px rgba(15,110,86,0.25); display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; font-weight:700; margin:0 auto 12px; position:relative; overflow:hidden; cursor:pointer; transition:transform .2s; }
+.acc-avatar:hover, .acc-avatar:active { transform:scale(1.03); }
+.acc-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.acc-avatar-cam {
+  position:absolute; right:0; bottom:0; width:30px; height:30px; border-radius:50%; 
+  background:var(--green,#0F6E56); border:2.5px solid #fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  pointer-events:none;
+}
+.acc-avatar-controls { display:flex; justify-content:center; gap:6px; margin-top:-6px; margin-bottom:8px; }
+.acc-avatar-btn { background:#F1F5F9; color:#475569; border:none; padding:5px 11px; border-radius:14px; font-size:11px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s; display:inline-flex; align-items:center; gap:4px; }
+.acc-avatar-btn:hover, .acc-avatar-btn:active { background:#E2E8F0; }
+.acc-avatar-btn svg { width:11px; height:11px; }
+.acc-avatar-btn.danger { color:#9F1239; }
 .acc-name   { font-size:17px; font-weight:700; }
 .acc-ma     { font-size:13px; color:var(--text-m); margin-top:3px; }
 .acc-vaitro { display:inline-block; margin-top:8px; font-size:11px; font-weight:700; padding:3px 12px; border-radius:99px; background:var(--purple-lt); color:#26215C; }
@@ -1076,7 +1090,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bh-stat.active-filter { box-shadow:inset 0 0 0 2px #1D9E75, 0 2px 8px rgba(29,158,117,0.25); }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.44] BẢNG XẾP HẠNG — Light Luxury Style */
+/* [v9.45] BẢNG XẾP HẠNG — Light Luxury Style */
 /* ════════════════════════════════════════════════════════════ */
 :root {
   --bxh-gold: #C9A227;
@@ -1171,7 +1185,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border-color:rgba(201,162,39,0.35);
   box-shadow:0 2px 10px rgba(15,23,42,0.06);
 }
-/* [v9.44] Top 1-3 rows: tone vàng/bạc/đồng cũ */
+/* [v9.45] Top 1-3 rows: tone vàng/bạc/đồng cũ */
 .bxh-mini-row.rank-1 {
   background:
     linear-gradient(180deg, #FFFCEB 0%, #FFF6D1 100%);
@@ -1196,7 +1210,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     inset 4px 0 0 var(--bxh-bronze),
     0 2px 8px rgba(160,103,62,0.1);
 }
-/* [v9.44] Rank 4-10: gradient ngược — 4=đỏ → 10=tím */
+/* [v9.45] Rank 4-10: gradient ngược — 4=đỏ → 10=tím */
 .bxh-mini-row.rank-4 {
   background:linear-gradient(90deg, #FEF2F2 0%, #FEF8F8 50%, #FFFFFF 100%);
   border-color:rgba(239,68,68,0.18);
@@ -1249,7 +1263,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   border:1px solid rgba(15,23,42,0.06);
   position:relative;
 }
-/* [v9.44] Top 1-3: ô tròn solid, bóng đổ nhẹ, font dày nhưng sắc nét */
+/* [v9.45] Top 1-3: ô tròn solid, bóng đổ nhẹ, font dày nhưng sắc nét */
 .bxh-mini-row.rank-1 .bxh-mini-rank,
 .bxh-mini-row.rank-2 .bxh-mini-rank,
 .bxh-mini-row.rank-3 .bxh-mini-rank {
@@ -1371,7 +1385,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bxh-mini-change.up { background:rgba(16,185,129,0.1); color:#059669; }
 .bxh-mini-change.down { background:rgba(239,68,68,0.1); color:#DC2626; }
 .bxh-mini-change.same { background:rgba(100,116,139,0.06); color:var(--bxh-text-l); }
-/* [v9.44] NEW badge: hồng nhạt, chữ mảnh, không tia chớp */
+/* [v9.45] NEW badge: hồng nhạt, chữ mảnh, không tia chớp */
 .bxh-mini-change.new { 
   background:#FDF2F8; color:#DB2777;
   font-weight:500; letter-spacing:0.5px;
@@ -1400,7 +1414,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   text-align:center; padding:24px 16px; color:var(--bxh-text-l); font-size:12px;
 }
 
-/* ─── MODAL FULL — Dark Luxury Premium [v9.44] ─── */
+/* ─── MODAL FULL — Dark Luxury Premium [v9.45] ─── */
 #bxh-modal {
   position:fixed; inset:0; background:rgba(2,6,23,0.7); z-index:2300;
   display:none; align-items:flex-start; justify-content:center;
@@ -1735,10 +1749,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 }
 
 /* ════════════════════════════════════════════════════════════ */
-/* [v9.44] LIVE badge + Confetti */
+/* [v9.45] LIVE badge + Confetti */
 /* ════════════════════════════════════════════════════════════ */
 
-/* [v9.44] Avatar removed: top 1-3 icon đã gộp vào ô số, top 4-10 không có icon */
+/* [v9.45] Avatar removed: top 1-3 icon đã gộp vào ô số, top 4-10 không có icon */
 
 /* Khoảng cách điểm so với người trên */
 .bxh-gap {
@@ -2418,7 +2432,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.44</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.45</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2659,7 +2673,59 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.44] Modal đơn nghỉ phép đột xuất -->
+  <!-- [v9.45] Modal XIN ĐỔI LỊCH — Multi-day, hỗ trợ cả tuần hiện tại và tuần sau -->
+  <div id="xdl-modal" onclick="if(event.target===this)closeXinDoiLichModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
+    <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column">
+      <!-- Header -->
+      <div style="padding:18px 18px 12px;border-bottom:1px solid #F1F5F9;flex-shrink:0">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+          <div style="display:flex;align-items:start;gap:10px;flex:1">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FFF7ED,#FED7AA);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#0F172A;letter-spacing:-0.2px">Xin đổi lịch</div>
+              <div style="font-size:11.5px;color:#64748B;margin-top:2px" id="xdl-tuan-label">Chọn ngày + ca mới · QLNS sẽ duyệt</div>
+            </div>
+          </div>
+          <button onclick="closeXinDoiLichModal()" style="background:#F1F5F9;border:none;width:30px;height:30px;border-radius:50%;color:#64748B;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Body — scroll -->
+      <div style="padding:14px 18px;overflow-y:auto;flex:1">
+        <!-- Danh sách ngày + chọn ca -->
+        <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày cần đổi <span style="color:#DC2626">*</span></div>
+        <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+        <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ chọn được từ hôm nay trở đi.</div>
+        
+        <!-- Lý do -->
+        <div style="margin-bottom:8px">
+          <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do <span style="color:#DC2626">*</span></label>
+          <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
+            style="width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s"
+            onfocus="this.style.borderColor='#EA580C'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+          <div style="font-size:11px;color:#94A3B8;margin-top:4px">Lý do càng rõ, QLNS càng duyệt nhanh.</div>
+        </div>
+      </div>
+      
+      <!-- Footer fixed -->
+      <div style="padding:12px 18px;border-top:1px solid #F1F5F9;display:flex;gap:8px;flex-shrink:0;background:#FAFBFC">
+        <button onclick="closeXinDoiLichModal()" style="flex:1;padding:11px;background:#fff;color:#475569;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent">Hủy</button>
+        <button id="xdl-submit-btn" onclick="submitXinDoiLich()" style="flex:2;padding:11px;background:#EA580C;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Gửi yêu cầu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [v9.45] Modal đơn nghỉ phép đột xuất (giữ làm fallback) -->
   <div id="dx-modal" onclick="if(event.target===this)closeNghiDotXuatModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
     <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -2693,7 +2759,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v9.44] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
+  <!-- [v9.45] MODAL BẢNG XẾP HẠNG FULL — Light Luxury -->
   <div id="bxh-modal" onclick="if(event.target===this)bxhCloseModal()">
     <div class="bxh-modal-box">
       <div class="bxh-modal-head">
@@ -2788,13 +2854,28 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <span id="lc-meta-txt" style="font-size:11px;color:var(--text-m)"></span>
         </div>
       </div>
-      <!-- [v9.44] Banner tuần hiện tại — nút tạo đơn nghỉ đột xuất -->
-      <div id="lc-dot-xuat-banner" style="display:none;margin:0 14px 10px;padding:12px;background:linear-gradient(135deg,#FFF7ED,#FED7AA);border-radius:10px;border-left:4px solid #EA580C">
-        <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:6px">📌 Đơn nghỉ phép đột xuất</div>
-        <div style="font-size:11px;color:#7C2D12;line-height:1.5;margin-bottom:10px">Tuần hiện tại không cho đổi ca. Nếu cần nghỉ đột xuất (bệnh, việc gấp), bấm nút bên dưới.</div>
-        <button onclick="openNghiDotXuatModal()" style="width:100%;padding:10px;background:#EA580C;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
-          ✚ Tạo đơn nghỉ phép đột xuất
-        </button>
+      <!-- [v9.45] Banner "XIN ĐỔI LỊCH" — thay banner đơn nghỉ phép đột xuất cũ -->
+      <div id="lc-xdl-banner" style="display:none;margin:0 14px 10px;padding:12px 14px;background:linear-gradient(135deg,#FFF7ED,#FED7AA);border-radius:12px;border-left:4px solid #EA580C">
+        <div style="display:flex;align-items:start;gap:10px;margin-bottom:8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <div style="flex:1">
+            <div style="font-size:13.5px;font-weight:700;color:#9A3412;letter-spacing:-0.1px">Xin đổi lịch</div>
+            <div style="font-size:11.5px;color:#7C2D12;line-height:1.5;margin-top:3px">Đổi ca, điều động, xin nghỉ đột xuất — đề nghị sẽ chờ QLNS duyệt.</div>
+          </div>
+        </div>
+        <div id="lc-xdl-pending-info" style="display:none;font-size:11.5px;color:#7C2D12;background:rgba(234,88,12,0.08);padding:6px 10px;border-radius:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="openXinDoiLichModal()" style="flex:1;padding:10px;background:#EA580C;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent" id="lc-xdl-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Gửi yêu cầu đổi lịch
+          </button>
+          <button onclick="huyDeNghiDoiLich()" id="lc-xdl-cancel-btn" style="display:none;padding:10px 14px;background:#fff;color:#9A3412;border:1.5px solid #FED7AA;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer">
+            Hủy đề nghị
+          </button>
+        </div>
       </div>
       <div class="lc-progress" id="lc-progress"></div>
       <div class="lc-week" id="lc-week">
@@ -3256,7 +3337,26 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <!-- PAGE: TÀI KHOẢN -->
   <div class="page" id="page-taikhoan">
     <div class="acc-top">
-      <div class="acc-avatar" id="acc-avatar">?</div>
+      <!-- [v9.45] Avatar có thể bấm để đổi ảnh -->
+      <div class="acc-avatar" id="acc-avatar" onclick="chonAnhAvatar()" title="Bấm để đổi ảnh">
+        <span id="acc-avatar-letters">?</span>
+        <div class="acc-avatar-cam">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Controls: nút Xóa ảnh (chỉ hiện khi có avatar) -->
+      <div class="acc-avatar-controls" id="acc-avatar-controls" style="display:none">
+        <button class="acc-avatar-btn danger" onclick="xoaAvatar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Xóa ảnh
+        </button>
+      </div>
+      <!-- File input ẩn -->
+      <input type="file" id="acc-avatar-file" accept="image/jpeg,image/png,image/webp,image/heic" style="display:none" onchange="onAvatarFileChange(this)">
+      
       <div class="acc-name"   id="acc-name">--</div>
       <div class="acc-ma"     id="acc-ma">--</div>
       <div class="acc-vaitro" id="acc-vaitro" style="display:none">--</div>
@@ -3352,12 +3452,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
-    <!-- Phiên bản + Kiểm tra cập nhật [v9.44] -->
+    <!-- Phiên bản + Kiểm tra cập nhật [v9.45] -->
     <div style="padding:16px 14px 24px">
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.44 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.45 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -3755,7 +3855,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.44] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
+      <!-- [v9.45] BẢNG XẾP HẠNG MINI — Light Luxury, 10 rows, LIVE badge -->
       <div id="bxh-mini" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -3824,7 +3924,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.44] BẢNG XẾP HẠNG MINI cho QLBH -->
+      <!-- [v9.45] BẢNG XẾP HẠNG MINI cho QLBH -->
       <div id="bxh-mini-ql" class="bxh-mini" onclick="bxhOpenModal()">
         <div class="bxh-mini-header">
           <div class="bxh-mini-title">
@@ -4436,7 +4536,10 @@ function doLogin(){
     btn.disabled=false;btn.textContent='ĐĂNG NHẬP';
     if(error){showLoginErr(error.message||'Lỗi máy chủ.');return;}
     if(!res || !res.success){showLoginErr((res&&res.error)||'Đăng nhập thất bại.');return;}
-    SESSION=res.nhanVien;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
+    SESSION=res.nhanVien;
+    // [v9.45] Fetch avatar URL sau login (không block UI)
+    _fetchAvatarUrl();
+    sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
   }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
 }
 function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
@@ -4455,7 +4558,7 @@ async function doLogout(){
 }
 window.addEventListener('load',()=>{
   const s=sessionStorage.getItem('session_cc');
-  if(s){try{SESSION=JSON.parse(s);khoiDongApp();}catch(e){sessionStorage.removeItem('session_cc');}}
+  if(s){try{SESSION=JSON.parse(s);_fetchAvatarUrl();khoiDongApp();}catch(e){sessionStorage.removeItem('session_cc');}}
   // [v12-P3] Ẩn bottom-nav khi bàn phím hiện (iOS/Android)
   _setupKeyboardHandler();
 });
@@ -5664,11 +5767,41 @@ function _closeGioCongChiTiet(){
   if (modal) modal.style.display = 'none';
 }
 
+// [v9.45] AVATAR: Fetch URL từ DB (chạy ngầm sau login/reload)
+async function _fetchAvatarUrl() {
+  if (!SESSION || !SESSION.ma) return;
+  try {
+    const { data, error } = await supa
+      .from('nhan_vien')
+      .select('avatar_url')
+      .eq('ma_nv', SESSION.ma)
+      .maybeSingle();
+    
+    if (error || !data) return;
+    
+    if (data.avatar_url !== SESSION.avatarUrl) {
+      SESSION.avatarUrl = data.avatar_url;
+      sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
+      // Re-render UI nếu đang ở tab Tài khoản
+      if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
+        renderTaiKhoan();
+      }
+      // Update header avatar nếu có
+      if (typeof _renderHeaderAvatar === 'function') _renderHeaderAvatar();
+    }
+  } catch (e) {
+    console.warn('[Avatar] Fetch lỗi (bỏ qua):', e.message);
+  }
+}
+
 // ─── TÀI KHOẢN ──────────────────────────────────────────────
 function renderTaiKhoan(){
   if(!SESSION)return;
   const init=SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
-  document.getElementById('acc-avatar').textContent=init;
+  
+  // [v9.45] Render avatar — nếu có URL thì hiện ảnh, không thì hiện chữ cái
+  _renderAvatarUI(SESSION.avatarUrl, init);
+  
   document.getElementById('acc-name').textContent=SESSION.ten;
   document.getElementById('acc-ma').textContent=SESSION.ma+' · '+SESSION.cuaHangTen;
   const vt=SESSION.vaiTro;
@@ -5676,6 +5809,249 @@ function renderTaiKhoan(){
     const el=document.getElementById('acc-vaitro');
     el.textContent=vt==='ADMIN'?'👑 Admin':'🛡️ Quản lý nhân sự';
     el.style.display='inline-block';
+  }
+}
+
+// [v9.45] Helper render avatar UI dùng chung
+function _renderAvatarUI(avatarUrl, initialsText) {
+  const avatarEl = document.getElementById('acc-avatar');
+  const lettersEl = document.getElementById('acc-avatar-letters');
+  const controlsEl = document.getElementById('acc-avatar-controls');
+  if (!avatarEl) return;
+  
+  // Xóa img cũ nếu có
+  const oldImg = avatarEl.querySelector('img');
+  if (oldImg) oldImg.remove();
+  
+  if (avatarUrl && /^https?:\/\//i.test(avatarUrl)) {
+    // Có URL → hiện ảnh
+    const img = document.createElement('img');
+    img.src = avatarUrl;
+    img.alt = 'Avatar';
+    img.onerror = function() {
+      // Lỗi load → fallback về chữ cái
+      this.remove();
+      if (lettersEl) {
+        lettersEl.style.display = '';
+        lettersEl.textContent = initialsText || '?';
+      }
+    };
+    img.onload = function() {
+      if (lettersEl) lettersEl.style.display = 'none';
+    };
+    avatarEl.insertBefore(img, avatarEl.firstChild);
+    if (lettersEl) lettersEl.style.display = 'none';
+    if (controlsEl) controlsEl.style.display = '';
+  } else {
+    // Không có URL → chữ cái
+    if (lettersEl) {
+      lettersEl.style.display = '';
+      lettersEl.textContent = initialsText || '?';
+    }
+    if (controlsEl) controlsEl.style.display = 'none';
+  }
+}
+
+// [v9.45] AVATAR: Chọn ảnh từ máy
+function chonAnhAvatar() {
+  if (!SESSION) return;
+  const input = document.getElementById('acc-avatar-file');
+  if (input) input.click();
+}
+
+// [v9.45] AVATAR: Xử lý khi user chọn file
+async function onAvatarFileChange(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  
+  // Validate kiểu file
+  if (!/^image\/(jpeg|jpg|png|webp|heic)$/i.test(file.type)) {
+    showToast('Chỉ chấp nhận ảnh JPG/PNG/WEBP/HEIC.', 'err');
+    input.value = '';
+    return;
+  }
+  
+  // Validate size 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Ảnh quá lớn (tối đa 5MB).', 'err');
+    input.value = '';
+    return;
+  }
+  
+  const ok = await appConfirm(
+    'Đổi ảnh đại diện mới?',
+    { title: 'Đổi ảnh đại diện', okLabel: 'Đổi ảnh' }
+  );
+  if (!ok) {
+    input.value = '';
+    return;
+  }
+  
+  // Hiển thị loading state
+  const avatarEl = document.getElementById('acc-avatar');
+  const oldOpacity = avatarEl.style.opacity;
+  avatarEl.style.opacity = '0.5';
+  showToast('Đang xử lý ảnh...', 'ok');
+  
+  try {
+    // Resize ảnh phía client → giữ chất lượng tốt
+    const resizedBlob = await _resizeImageForAvatar(file);
+    
+    // Upload lên Supabase Storage
+    const fileName = SESSION.ma + '_' + Date.now() + '.jpg';
+    const filePath = SESSION.ma + '/' + fileName;
+    
+    const { data: uploadData, error: uploadErr } = await supa.storage
+      .from('avatars')
+      .upload(filePath, resizedBlob, {
+        contentType: 'image/jpeg',
+        upsert: false,
+        cacheControl: '3600'
+      });
+    
+    if (uploadErr) throw uploadErr;
+    
+    // Lấy public URL
+    const { data: urlData } = supa.storage.from('avatars').getPublicUrl(filePath);
+    const publicUrl = urlData.publicUrl;
+    
+    // Cập nhật DB qua RPC
+    const { data: res, error: rpcErr } = await supa.rpc('fn_update_avatar', {
+      p_ma_nv: SESSION.ma,
+      p_avatar_url: publicUrl
+    });
+    
+    if (rpcErr || !res || !res.success) {
+      throw new Error((res && res.error) || (rpcErr && rpcErr.message) || 'Lỗi DB');
+    }
+    
+    // Xóa file avatar cũ trong storage (nếu có)
+    if (res.old_url) {
+      _deleteOldAvatar(res.old_url);
+    }
+    
+    // Update SESSION
+    SESSION.avatarUrl = publicUrl;
+    try { 
+      localStorage.setItem('nonson_session', JSON.stringify(SESSION)); 
+    } catch(e) {}
+    
+    // Re-render UI
+    const init = SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+    _renderAvatarUI(publicUrl, init);
+    
+    // Update header avatar nếu có
+    if (typeof _renderHeaderAvatar === 'function') _renderHeaderAvatar();
+    
+    showToast('✓ Đã đổi ảnh đại diện', 'ok');
+  } catch (e) {
+    console.error('[Avatar] Lỗi:', e);
+    showToast('Lỗi upload: ' + (e.message || ''), 'err');
+  } finally {
+    avatarEl.style.opacity = oldOpacity || '1';
+    input.value = '';
+  }
+}
+
+// [v9.45] Resize ảnh phía client trước khi upload — giữ chất lượng cao
+function _resizeImageForAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        try {
+          // Target: 600x600 max, giữ aspect ratio, crop center thành vuông
+          const TARGET_SIZE = 600;
+          const canvas = document.createElement('canvas');
+          canvas.width = TARGET_SIZE;
+          canvas.height = TARGET_SIZE;
+          const ctx = canvas.getContext('2d');
+          
+          // Crop center thành vuông
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          
+          // Draw vào canvas
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, TARGET_SIZE, TARGET_SIZE);
+          
+          // Export JPEG quality 0.92 → chất lượng cao, file ~80-150KB
+          canvas.toBlob(blob => {
+            if (blob) resolve(blob);
+            else reject(new Error('Không tạo được blob'));
+          }, 'image/jpeg', 0.92);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error('Không đọc được ảnh'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Không đọc được file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// [v9.45] Xóa avatar cũ trong storage (cleanup)
+async function _deleteOldAvatar(oldUrl) {
+  if (!oldUrl) return;
+  try {
+    // Extract path từ URL: .../avatars/{ma_nv}/{filename}
+    const match = oldUrl.match(/\/avatars\/(.+?)(\?|$)/);
+    if (!match || !match[1]) return;
+    const path = decodeURIComponent(match[1]);
+    await supa.storage.from('avatars').remove([path]);
+    console.log('[Avatar] Đã xóa file cũ:', path);
+  } catch (e) {
+    console.warn('[Avatar] Không xóa được file cũ:', e.message);
+  }
+}
+
+// [v9.45] AVATAR: Xóa ảnh đại diện
+async function xoaAvatar() {
+  if (!SESSION || !SESSION.avatarUrl) return;
+  
+  const ok = await appConfirm(
+    'Xóa ảnh đại diện hiện tại? Avatar sẽ trở về dạng chữ cái viết tắt.',
+    { title: 'Xóa ảnh đại diện', okLabel: 'Xóa', danger: true }
+  );
+  if (!ok) return;
+  
+  const avatarEl = document.getElementById('acc-avatar');
+  avatarEl.style.opacity = '0.5';
+  
+  try {
+    const oldUrl = SESSION.avatarUrl;
+    
+    // Update DB (set null)
+    const { data: res, error: rpcErr } = await supa.rpc('fn_update_avatar', {
+      p_ma_nv: SESSION.ma,
+      p_avatar_url: null
+    });
+    
+    if (rpcErr || !res || !res.success) {
+      throw new Error((rpcErr && rpcErr.message) || 'Lỗi DB');
+    }
+    
+    // Xóa file storage
+    if (oldUrl) _deleteOldAvatar(oldUrl);
+    
+    // Update SESSION
+    SESSION.avatarUrl = null;
+    try { localStorage.setItem('nonson_session', JSON.stringify(SESSION)); } catch(e) {}
+    
+    // Re-render
+    const init = SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+    _renderAvatarUI(null, init);
+    if (typeof _renderHeaderAvatar === 'function') _renderHeaderAvatar();
+    
+    showToast('✓ Đã xóa ảnh đại diện', 'ok');
+  } catch (e) {
+    console.error('[Avatar xóa] Lỗi:', e);
+    showToast('Lỗi: ' + (e.message || ''), 'err');
+  } finally {
+    avatarEl.style.opacity = '1';
   }
 }
 
@@ -6313,7 +6689,7 @@ function renderNhanSu(){
     el.innerHTML = bulkHtml + cbShow.map(cb=>{
       const initials=cb.tenNV.split(' ').slice(-2).map(w=>w[0]||'').join('').toUpperCase();
       const daDaGT=!!cb.giaiTrinh;
-      // [v9.44] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
+      // [v9.45] Hiển thị đầy đủ thông tin giống Admin cảnh báo chưa duyệt
       const isRequireFix = (cb.loaiCB === 'SAI CA' || cb.loaiCB === 'THIẾU CA');
       const badgeFix = isRequireFix
         ? '<span style="display:inline-block;padding:2px 6px;background:#FEF3C7;color:#92400E;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px">CẦN SỬA GIỜ</span>'
@@ -7010,7 +7386,7 @@ function _hideBusy(){
     }
   };
   
-  // [v9.44] Manual check update — gọi từ nút "Kiểm tra" ở tab Tài khoản
+  // [v9.45] Manual check update — gọi từ nút "Kiểm tra" ở tab Tài khoản
   window.pwaManualCheckUpdate = async function() {
     const btn = document.getElementById('btn-check-update');
     if (!btn) return;
@@ -7212,7 +7588,7 @@ function taiLichCa(){
   supa.rpc('fn_get_lich_ca', { p_ma_nv: SESSION.ma, p_tuan: lcTuan })
   .then(({ data: res, error }) => {
     if(error || !res){document.getElementById('lc-week').innerHTML='<div class="ns-empty">❌ Lỗi tải. Thử lại.</div>';return;}
-    // [v9.44] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
+    // [v9.45] Backend mới: trả lich (mảng phẳng), conHan, trangThaiTuan, guiKhan, thuHai, chuNhat
     // Backward compat: nếu có res.lichCa cũ thì dùng, nếu không thì dùng res.lich
     const slots = res.lich || res.lichCa || [];
     // Group theo ngày
@@ -7238,7 +7614,7 @@ function taiLichCa(){
         slots: map[ngayStr] || []
       });
     }
-    // [v9.44] conHan + trangThaiTuan + guiKhan từ backend
+    // [v9.45] conHan + trangThaiTuan + guiKhan từ backend
     const conHan = res.conHan != null ? res.conHan : (function(){
       const today = new Date(); today.setHours(0,0,0,0);
       const cn = new Date(res.chuNhat || res.ngayCuoi);
@@ -7295,10 +7671,41 @@ function renderLichCa(data){
   const guiKhan = !!data.guiKhan;
   const hanEl=document.getElementById('lc-han-badge');
   const metaEl=document.getElementById('lc-meta-txt');
-  // [v9.44] Show/hide banner đơn nghỉ đột xuất
-  const dxBanner = document.getElementById('lc-dot-xuat-banner');
-  if(dxBanner) dxBanner.style.display = (tt === 'HIEN_TAI') ? '' : 'none';
-  // [v9.44] Banner theo loại tuần
+  // [v9.45] Show/hide banner XIN ĐỔI LỊCH — cho cả tuần hiện tại và tuần sau (đã gửi)
+  const xdlBanner = document.getElementById('lc-xdl-banner');
+  if(xdlBanner) {
+    // Hiện khi: tuần là HIEN_TAI HOẶC TUAN_SAU mà đã có ca DA_GUI/DA_DUYET (đã chốt lịch rồi)
+    let showBanner = false;
+    if (tt === 'HIEN_TAI') {
+      showBanner = true;
+    } else if (tt === 'TUAN_SAU' || tt === 'TUAN_XA') {
+      // Check có ca nào đã DA_GUI hoặc DA_DUYET không
+      const hasChot = (data.lich || []).some(l => 
+        l.trangThai === 'DA_GUI' || l.trangThai === 'DA_DUYET' || l.trangThai === 'CHO_DUYET_THAY_THE'
+      );
+      showBanner = hasChot;
+    }
+    xdlBanner.style.display = showBanner ? '' : 'none';
+    
+    // Check đề nghị đang chờ duyệt
+    if (showBanner) {
+      const pendingChanges = (data.lich || []).filter(l => 
+        l.trangThai === 'CHO_DUYET' && 
+        l.ghiChuNV && l.ghiChuNV.indexOf('[XIN ĐỔI LỊCH]') >= 0
+      );
+      const pendingInfo = document.getElementById('lc-xdl-pending-info');
+      const cancelBtn = document.getElementById('lc-xdl-cancel-btn');
+      if (pendingChanges.length > 0) {
+        pendingInfo.innerHTML = `<strong>Đang chờ duyệt:</strong> ${pendingChanges.length} ngày đổi lịch`;
+        pendingInfo.style.display = '';
+        cancelBtn.style.display = '';
+      } else {
+        pendingInfo.style.display = 'none';
+        cancelBtn.style.display = 'none';
+      }
+    }
+  }
+  // [v9.45] Banner theo loại tuần
   if(tt === 'DA_QUA'){
     hanEl.textContent='Tuần đã qua'; hanEl.className='lc-han-badge lc-han-het';
     metaEl.textContent='Không thể gửi/sửa lịch tuần này';
@@ -7791,8 +8198,8 @@ function guiLichCa(){
   const btn=document.getElementById('lc-btn-send');
   if(!SESSION||!lcTuan||btn.disabled)return;
 
-  // [v9.44] Chặn gửi tuần đã qua / tuần hiện tại
-  // [v9.44] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
+  // [v9.45] Chặn gửi tuần đã qua / tuần hiện tại
+  // [v9.45] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
   if(lcData){
     // Kiểm tra có phải toàn nghỉ phép không
     const toanNghi = Object.keys(lcEdit).every(k=>{
@@ -7813,7 +8220,7 @@ function guiLichCa(){
     }
   }
   
-  // [v9.44] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
+  // [v9.45] Nếu quá hạn T7 nhưng vẫn cho gửi tuần sau → hỏi lý do gấp
   let lyDoGap = '';
   if(lcData && lcData.guiKhan){
     lyDoGap = prompt('Đã quá hạn Thứ 7. Vui lòng nhập LÝ DO GẤP để QLNS xem xét:\n\n(VD: Nghỉ bệnh đột xuất, đổi ca khẩn cấp, gia đình có việc...)');
@@ -7931,7 +8338,7 @@ function guiLichCa(){
       btn.disabled=false;btn.textContent='Gửi lịch tuần';
       return;
     }
-    // [v9.44] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
+    // [v9.45] Đếm distinct ngày từ FE để tránh fallback sai (so_ngay đúng, count = số slot)
     const distinctNgay = new Set(lichCaArr.map(x => x.ngay).filter(Boolean));
     const soNgay = res.so_ngay || distinctNgay.size;
     showToast('✓ Đã gửi lịch ' + soNgay + ' ngày','ok');
@@ -7940,9 +8347,279 @@ function guiLichCa(){
 }
 
 // ═════════════════════════════════════════════════════════════
-// [v9.44] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
+// [v9.45] MODAL ĐƠN NGHỈ PHÉP ĐỘT XUẤT (tuần hiện tại)
 // ═════════════════════════════════════════════════════════════
 let _dxState = { ngayChon: new Set(), anhB64: '' };
+
+// ════════════════════════════════════════════════════════════════════════
+// [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
+// ════════════════════════════════════════════════════════════════════════
+let _xdlState = { ngayChon: {} };  // { '2026-05-25': { ngay, loai, ca_lam, ma_ch, ten_ch, gio_bat_dau, gio_ket_thuc } }
+
+function openXinDoiLichModal() {
+  if (!SESSION) return;
+  if (!lcData) {
+    showToast('Lịch chưa tải xong.', 'err');
+    return;
+  }
+  
+  // Reset state
+  _xdlState.ngayChon = {};
+  document.getElementById('xdl-lydo').value = '';
+  
+  // Set title theo tuần
+  const titleEl = document.getElementById('xdl-tuan-label');
+  if (titleEl) {
+    if (lcData.trangThaiTuan === 'HIEN_TAI') {
+      titleEl.textContent = 'Tuần hiện tại · QLNS sẽ duyệt';
+    } else if (lcData.trangThaiTuan === 'TUAN_SAU') {
+      titleEl.textContent = 'Tuần sau (đã chốt) · QLNS sẽ duyệt';
+    } else {
+      titleEl.textContent = 'Đổi ca · QLNS sẽ duyệt';
+    }
+  }
+  
+  // Render danh sách ngày trong tuần — chỉ những ngày từ hôm nay trở đi
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = _toDateStr(today);
+  
+  // Lấy 7 ngày trong tuần từ lcData.thuHai → chuNhat
+  const thuHai = new Date(lcData.thuHai + 'T00:00:00');
+  const ngayList = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(thuHai);
+    d.setDate(d.getDate() + i);
+    const dStr = _toDateStr(d);
+    if (dStr < todayStr) continue;  // skip ngày đã qua
+    ngayList.push({ ngay: dStr, dow: d.getDay() });
+  }
+  
+  if (ngayList.length === 0) {
+    showToast('Không còn ngày nào trong tuần để đổi.', 'err');
+    return;
+  }
+  
+  // Render từng ngày
+  const dowLbl = ['CN','T2','T3','T4','T5','T6','T7'];
+  const html = ngayList.map(item => {
+    const d = new Date(item.ngay + 'T00:00:00');
+    const dowStr = dowLbl[d.getDay()];
+    const dayStr = pad(d.getDate()) + '/' + pad(d.getMonth()+1);
+    
+    // Tìm ca hiện tại trong lcData.lich
+    const caHienTai = (lcData.lich || []).find(l => 
+      l.ngay === item.ngay && 
+      (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
+    );
+    let caCuStr = 'Chưa có ca';
+    if (caHienTai) {
+      if (caHienTai.loai === 'Nghỉ phép') {
+        caCuStr = 'Nghỉ phép';
+      } else {
+        const caLam = caHienTai.caLam || caHienTai.ca_lam || '';
+        const tenCh = caHienTai.tenCh || caHienTai.ten_ch_snapshot || '';
+        caCuStr = caLam + (tenCh ? ' · ' + tenCh : '');
+      }
+    }
+    
+    return `
+      <div style="border:1.5px solid #E2E8F0;border-radius:10px;padding:10px 12px" id="xdl-day-${item.ngay}">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <input type="checkbox" onchange="toggleXDLDay('${item.ngay}', this.checked)" style="width:18px;height:18px;accent-color:#EA580C;cursor:pointer">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:#0F172A">${dowStr}, ${dayStr}</div>
+            <div style="font-size:11px;color:#64748B;margin-top:1px">Hiện tại: ${caCuStr}</div>
+          </div>
+        </label>
+        <div id="xdl-day-detail-${item.ngay}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #E2E8F0">
+          <div style="font-size:11.5px;font-weight:600;color:#475569;margin-bottom:6px">Đổi thành:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Sáng" onclick="selectXDLLoai('${item.ngay}','Đi làm','Sáng')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Sáng</button>
+            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Chiều" onclick="selectXDLLoai('${item.ngay}','Đi làm','Chiều')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Chiều</button>
+            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Cả ngày" onclick="selectXDLLoai('${item.ngay}','Đi làm','Cả ngày')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Cả ngày</button>
+            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Nghỉ phép" data-ca="" onclick="selectXDLLoai('${item.ngay}','Nghỉ phép','')" style="padding:7px 12px;border:1.5px solid #FECACA;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#9F1239;cursor:pointer">Nghỉ phép</button>
+          </div>
+          <div id="xdl-ch-picker-${item.ngay}" style="display:none;margin-top:8px">
+            <div style="font-size:11.5px;font-weight:600;color:#475569;margin-bottom:4px">Cửa hàng:</div>
+            <input type="text" id="xdl-ch-${item.ngay}" placeholder="Để trống = cửa hàng mặc định"
+              oninput="updateXDLCH('${item.ngay}', this.value)"
+              style="width:100%;padding:7px 10px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:12px;outline:none">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('xdl-days-list').innerHTML = html;
+  document.getElementById('xdl-modal').style.display = 'flex';
+}
+
+function _toDateStr(d) {
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+
+function closeXinDoiLichModal() {
+  document.getElementById('xdl-modal').style.display = 'none';
+}
+
+function toggleXDLDay(ngay, checked) {
+  const detailEl = document.getElementById('xdl-day-detail-' + ngay);
+  if (checked) {
+    detailEl.style.display = '';
+    if (!_xdlState.ngayChon[ngay]) {
+      _xdlState.ngayChon[ngay] = { ngay: ngay, loai: null, ca_lam: null };
+    }
+  } else {
+    detailEl.style.display = 'none';
+    delete _xdlState.ngayChon[ngay];
+  }
+}
+
+function selectXDLLoai(ngay, loai, ca_lam) {
+  if (!_xdlState.ngayChon[ngay]) {
+    _xdlState.ngayChon[ngay] = { ngay: ngay };
+  }
+  _xdlState.ngayChon[ngay].loai = loai;
+  _xdlState.ngayChon[ngay].ca_lam = ca_lam || '';
+  
+  // Reset border tất cả button của ngày này
+  document.querySelectorAll(`button.xdl-loai-btn[data-ngay="${ngay}"]`).forEach(btn => {
+    btn.style.background = '#fff';
+    btn.style.borderColor = loai === 'Nghỉ phép' ? '#FECACA' : '#E2E8F0';
+    btn.style.color = loai === 'Nghỉ phép' ? '#9F1239' : '#475569';
+  });
+  
+  // Highlight button được chọn
+  const selectedBtn = document.querySelector(`button.xdl-loai-btn[data-ngay="${ngay}"][data-loai="${loai}"][data-ca="${ca_lam || ''}"]`);
+  if (selectedBtn) {
+    if (loai === 'Nghỉ phép') {
+      selectedBtn.style.background = '#FEE2E2';
+      selectedBtn.style.borderColor = '#DC2626';
+      selectedBtn.style.color = '#991B1B';
+    } else {
+      selectedBtn.style.background = '#FED7AA';
+      selectedBtn.style.borderColor = '#EA580C';
+      selectedBtn.style.color = '#9A3412';
+    }
+  }
+  
+  // Show/hide picker cửa hàng (chỉ "Đi làm" mới cần)
+  const chPicker = document.getElementById('xdl-ch-picker-' + ngay);
+  if (chPicker) {
+    chPicker.style.display = loai === 'Đi làm' ? '' : 'none';
+  }
+}
+
+function updateXDLCH(ngay, value) {
+  if (!_xdlState.ngayChon[ngay]) return;
+  _xdlState.ngayChon[ngay].ten_ch = value.trim() || null;
+}
+
+async function submitXinDoiLich() {
+  if (!SESSION || !lcData) return;
+  
+  // Validate
+  const ngayList = Object.values(_xdlState.ngayChon);
+  if (ngayList.length === 0) {
+    showToast('Chưa chọn ngày nào.', 'err');
+    return;
+  }
+  
+  // Check tất cả ngày đã chọn loại ca
+  const thieuLoai = ngayList.filter(item => !item.loai);
+  if (thieuLoai.length > 0) {
+    showToast('Có ' + thieuLoai.length + ' ngày chưa chọn ca mới.', 'err');
+    return;
+  }
+  
+  const lyDo = document.getElementById('xdl-lydo').value.trim();
+  if (!lyDo) {
+    showToast('Vui lòng ghi lý do.', 'err');
+    return;
+  }
+  if (lyDo.length < 5) {
+    showToast('Lý do quá ngắn (≥5 ký tự).', 'err');
+    return;
+  }
+  
+  const btn = document.getElementById('xdl-submit-btn');
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  btn.innerHTML = '<span>Đang gửi...</span>';
+  
+  try {
+    // Build payload thay_doi
+    const thayDoi = ngayList.map(item => ({
+      ngay: item.ngay,
+      loai: item.loai,
+      ca_lam: item.ca_lam || null,
+      ma_ch: null,  // backend sẽ lookup từ ten_ch nếu cần
+      ten_ch: item.ten_ch || null,
+      gio_bat_dau: null,
+      gio_ket_thuc: null
+    }));
+    
+    const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
+      p_ma_nv: SESSION.ma,
+      p_ten_nv: SESSION.hoTen || SESSION.tenNV || SESSION.ma,
+      p_tuan: lcData.tuanNam || lcData.tuan,
+      p_thay_doi: thayDoi,
+      p_ly_do: lyDo
+    });
+    
+    if (error || !res || !res.success) {
+      showToast((res && res.error) || (error && error.message) || 'Lỗi gửi.', 'err');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Gửi yêu cầu';
+      return;
+    }
+    
+    showToast('✓ Đã gửi yêu cầu đổi ' + res.so_thay_doi + ' ngày. Chờ QLNS duyệt.', 'ok');
+    closeXinDoiLichModal();
+    
+    // Reload lịch
+    if (typeof taiLichCa === 'function') taiLichCa();
+  } catch (e) {
+    console.error('[XDL] Lỗi:', e);
+    showToast('Lỗi kết nối: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Gửi yêu cầu';
+  }
+}
+
+async function huyDeNghiDoiLich() {
+  if (!SESSION || !lcData) return;
+  
+  const ok = await appConfirm(
+    'Hủy tất cả đề nghị đổi lịch tuần này đang chờ duyệt?',
+    { title: 'Hủy đề nghị', okLabel: 'Hủy đề nghị', danger: true }
+  );
+  if (!ok) return;
+  
+  try {
+    const { data: res, error } = await supa.rpc('fn_huy_de_nghi_doi_lich', {
+      p_ma_nv: SESSION.ma,
+      p_tuan: lcData.tuanNam || lcData.tuan
+    });
+    
+    if (error || !res || !res.success) {
+      showToast((error && error.message) || 'Lỗi hủy.', 'err');
+      return;
+    }
+    
+    showToast('✓ Đã hủy ' + res.so_huy + ' đề nghị.', 'ok');
+    if (typeof taiLichCa === 'function') taiLichCa();
+  } catch (e) {
+    console.error('[XDL HUY] Lỗi:', e);
+    showToast('Lỗi kết nối.', 'err');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// END XIN ĐỔI LỊCH
+// ════════════════════════════════════════════════════════════════════════
 
 function openNghiDotXuatModal(){
   if(!SESSION) return;
@@ -8141,7 +8818,7 @@ function taiLichCaQL(){
   const ms = jan4.getTime() + ((1 - (jan4.getDay() || 7)) + (week - 1) * 7) * 86400000;
   const thuHai = new Date(ms);
   const chuNhat = new Date(thuHai.getTime() + 6*86400000);
-  // [v9.44] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
+  // [v9.45] Build yyyy-mm-dd theo local (không dùng toISOString vì lệch timezone)
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
@@ -8168,7 +8845,7 @@ function taiLichCaQL(){
         trangThai: r.trang_thai || 'DA_GUI', ghiChu: r.ghi_chu_nv || ''
       });
     });
-    // [v9.44] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
+    // [v9.45] Build set "đã có Nghỉ phép trong lich_ca" để skip don_nghi trùng
     const _nghiPhepKey = new Set();
     (lcRes.data||[]).forEach(r => {
       if ((r.loai || r.ca_lam) === 'Nghỉ phép') {
@@ -8226,7 +8903,7 @@ function renderLCQL(){
   const dow=['CN','T2','T3','T4','T5','T6','T7'];
   const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
   const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
-  // [v9.44] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
+  // [v9.45] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
   const _dr=d=>{
     const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
     const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
@@ -8241,7 +8918,7 @@ function renderLCQL(){
   } else if(lcqlMode==='ch'){
     const g={};filtered.forEach(d=>{if(!g[d.maCH])g[d.maCH]={ten:d.tenCH,kv:d.khuVuc,nvs:{},allDays:[]};if(!g[d.maCH].nvs[d.maNV])g[d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.maCH].nvs[d.maNV].days.push(d);g[d.maCH].allDays.push(d);});
     Object.keys(g).sort().forEach(ck=>{const ci=g[ck];const nks=Object.keys(ci.nvs).sort();
-      // [v9.44] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
+      // [v9.45] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
       const chBodyId = 'ch-body-' + ck.replace(/[^A-Za-z0-9]/g,'');
       // ── View 1: theo NV ──
       let nvHtml = '';
@@ -8284,7 +8961,7 @@ function toggleAccKV(kv){
   _accOpenCH='';
   renderLCQL();
 }
-// [v9.44] Switch view "Theo NV" / "Theo ngày" trong mode CH
+// [v9.45] Switch view "Theo NV" / "Theo ngày" trong mode CH
 function lcqlCHViewSwitch(chBodyId, view, btn){
   document.getElementById(chBodyId+'-nv').style.display = (view==='nv') ? '' : 'none';
   document.getElementById(chBodyId+'-day').style.display = (view==='day') ? '' : 'none';
@@ -8436,7 +9113,7 @@ async function taiLichSuDuyet(){
     document.getElementById('lsd-stat-tong').textContent   = stats.tong || 0;
     document.getElementById('lsd-stat-duyet').textContent  = stats.duyet || 0;
     document.getElementById('lsd-stat-tuchoi').textContent = stats.tuChoi || 0;
-    // [v9.44] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
+    // [v9.45] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
     const choEl = document.getElementById('lsd-stat-chodet');
     if (choEl) {
       const choCount = (stats.choDuyet != null) ? stats.choDuyet : list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
@@ -8453,7 +9130,7 @@ async function taiLichSuDuyet(){
       const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
       const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
       const gioDuyet = dtDuyet ? (pad(dtDuyet.getDate())+'/'+pad(dtDuyet.getMonth()+1)+' '+pad(dtDuyet.getHours())+':'+pad(dtDuyet.getMinutes())) : '';
-      // [v9.44] Badge theo trạng thái
+      // [v9.45] Badge theo trạng thái
       let ttBadge;
       if (r.trangThai === 'DA_DUYET') {
         ttBadge = '<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">✓ DUYỆT</span>';
@@ -8651,7 +9328,7 @@ async function duyetTatCaCBNS(action){
     const row=document.getElementById('cb-row-'+cb.cbRowIdx);
     if(row) row.classList.add('duyet-processing');
   });
-  // [v9.44 BUG-FIX] Chỉ gửi UUID hợp lệ. Field id thật: cb.id (mới) HOẶC cb.cbRowIdx (legacy nếu là UUID)
+  // [v9.45 BUG-FIX] Chỉ gửi UUID hợp lệ. Field id thật: cb.id (mới) HOẶC cb.cbRowIdx (legacy nếu là UUID)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const cbIds = daGT
     .map(cb => cb.id || cb.cbRowIdx)
@@ -8683,7 +9360,7 @@ async function duyetTatCaCBNS(action){
     p_ghi_chu_qlns: null
   }).then(({ data: res, error }) => {
     if(!error && res && res.success){
-      // [v9.44 BUG-FIX] Kiểm tra count thực tế — cảnh báo nếu mismatch
+      // [v9.45 BUG-FIX] Kiểm tra count thực tế — cảnh báo nếu mismatch
       const actualCount = res.count || 0;
       const expectedCount = cbIds.length;
       let msg = `✓ Đã ${verb} ${actualCount}/${expectedCount} cảnh báo.`;
@@ -8734,7 +9411,7 @@ async function duyetTatCaDonNghiNS(action){
   document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.add('duyet-processing'));
   const bulkBar=document.getElementById('dnp-bulk-bar');
   if(bulkBar) bulkBar.style.opacity='.5';
-  // [v9.44 BUG-FIX] Validate UUID format
+  // [v9.45 BUG-FIX] Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const ids = items.map(it => it.id).filter(id => id && uuidRegex.test(String(id)));
   
@@ -8756,7 +9433,7 @@ async function duyetTatCaDonNghiNS(action){
     });
     if(bulkBar) bulkBar.style.opacity='1';
     if(!error && res && res.success){
-      // [v9.44 BUG-FIX] Check count thực vs expected
+      // [v9.45 BUG-FIX] Check count thực vs expected
       const actualCount = res.count || 0;
       let msg = `✓ Đã ${verb} ${actualCount}/${ids.length} đơn.`;
       let toastType = 'ok';
@@ -8884,7 +9561,7 @@ function taiDonNghiCuaToi(){
   .then(({ data: arr, error }) => {
     if(error || !Array.isArray(arr)){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
     
-    // [v9.44 BUG-FIX] Group by ngày → tạo cấu trúc theoDon mà renderDonNghiCuaToi cần
+    // [v9.45 BUG-FIX] Group by ngày → tạo cấu trúc theoDon mà renderDonNghiCuaToi cần
     // Adapt sang format cũ: { ngay, loai, ghiChuNV (lyDo|anhUrl), trangThai, ghiChuQLNS, tenCH, maCH }
     const danhSachFlat = arr.map(d => ({
       ngay: d.ngayNghi,
@@ -9716,6 +10393,70 @@ function duyetDonNghiById(dnId, qd){
   }).catch(()=>showToast('⚠ Mất kết nối','warn'));
 }
 
+// [v9.45] Duyệt đề nghị XIN ĐỔI LỊCH (cập nhật lich_ca, trigger trg_after_duyet_lich_ca tự xử lý ca cũ)
+async function duyetDoiLichById(lcId, qd) {
+  let ghiChu = '';
+  if (qd === 'Từ chối') {
+    ghiChu = prompt('Lý do từ chối yêu cầu này?');
+    if (!ghiChu) return;
+  }
+  
+  // Fade out
+  const itemEl = document.querySelector(`[data-dnitem="${lcId}"]`);
+  if (itemEl) {
+    itemEl.style.transition = 'opacity .25s, max-height .25s, margin .25s';
+    itemEl.style.opacity = '0';
+    itemEl.style.maxHeight = '0';
+    itemEl.style.margin = '0';
+    setTimeout(() => { try { itemEl.remove(); } catch(e) {} }, 260);
+  }
+  
+  // Update local
+  if (_ycData) {
+    _ycData.donNghi = (_ycData.donNghi || []).filter(d => d.id !== lcId);
+    const cnt = document.getElementById('yc-bulk-count');
+    if (cnt) cnt.textContent = (_ycData.donNghi || []).length;
+    if (!(_ycData.donNghi || []).length) {
+      const bar = document.getElementById('yc-bulk-bar');
+      if (bar) bar.style.display = 'none';
+    }
+    _updateYCDayCounts();
+    const remainDN = (_ycData.donNghi || []).length;
+    const remainGT = (_ycData.giaiTrinh || []).length;
+    const dnBadge = document.getElementById('yc-dn-badge');
+    if (dnBadge) { dnBadge.textContent = remainDN > 0 ? String(remainDN) : ''; dnBadge.style.display = remainDN > 0 ? 'flex' : 'none'; }
+    const accBadge = document.getElementById('acc-duyetyc-badge');
+    if (accBadge) { const t = remainDN + remainGT; accBadge.textContent = t > 0 ? String(t) : ''; accBadge.style.display = t > 0 ? 'flex' : 'none'; }
+  }
+  
+  showToast(qd === 'Đã duyệt' ? '✓ Đã duyệt yêu cầu đổi lịch' : '✗ Đã từ chối', 'ok');
+  
+  // Update lich_ca trực tiếp — trigger trg_after_duyet_lich_ca sẽ tự xử lý ca cũ
+  try {
+    const newStatus = qd === 'Đã duyệt' ? 'DA_DUYET' : 'TU_CHOI';
+    const updates = { 
+      trang_thai: newStatus,
+      nguoi_duyet: SESSION.ma
+    };
+    if (ghiChu) updates.ghi_chu_qlns = ghiChu;
+    
+    const { error } = await supa
+      .from('lich_ca')
+      .update(updates)
+      .eq('id', lcId);
+    
+    if (error) {
+      console.error('[Duyệt XDL] Lỗi:', error);
+      showToast('⚠ Lỗi cập nhật: ' + error.message, 'warn');
+      return;
+    }
+    _silentUpdateAccBadges();
+  } catch (e) {
+    console.error('[Duyệt XDL] Catch:', e);
+    showToast('⚠ Mất kết nối', 'warn');
+  }
+}
+
 // Hàm duyệt đơn — dùng chung cho cả QLNS page Nhân sự và page Duyệt YC
 // [v11.6 Item 1] Fire-and-forget: fade out NGAY, server xử lý ngầm
 function duyetDonNghi(maNV,ngay,tuan,qd,ghiChuQLNS,fromACC){
@@ -9841,28 +10582,109 @@ function filterYCLocal(){
   _renderYC(q.trim().toLowerCase());
 }
 
+// [v9.45] Fetch các đề nghị XIN ĐỔI LỊCH (lich_ca CHO_DUYET có tag [XIN ĐỔI LỊCH])
+async function _fetchYeuCauDoiLich(tu, den, ttFilter) {
+  try {
+    // Map filter trạng thái sang enum lich_ca
+    let ttArr = ['CHO_DUYET'];  // default chỉ chờ duyệt
+    if (ttFilter === 'DA_DUYET') ttArr = ['DA_DUYET'];
+    else if (ttFilter === 'TU_CHOI') ttArr = ['TU_CHOI'];
+    else if (ttFilter === 'TAT_CA') ttArr = ['CHO_DUYET','DA_DUYET','TU_CHOI','DA_HUY'];
+    
+    let query = supa
+      .from('lich_ca')
+      .select('*')
+      .like('ghi_chu_nv', '%[XIN ĐỔI LỊCH]%')
+      .in('trang_thai', ttArr)
+      .order('ngay', { ascending: false });
+    
+    if (tu) query = query.gte('ngay', tu);
+    if (den) query = query.lte('ngay', den);
+    
+    const { data, error } = await query;
+    if (error) {
+      console.warn('[XDL fetch] Lỗi:', error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    console.warn('[XDL fetch] Catch:', e);
+    return [];
+  }
+}
+
 function taiDuyetYC(){
   const content=document.getElementById('yc-content');
   content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
   const [tu,den]=_getYCRange();
   const ttFilter = (document.getElementById('yc-filter-tt')||{}).value || null;
   // [v12-FIX] Truyền filter trạng thái
-  supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den, p_trang_thai: ttFilter || null })
-  .then(({ data: res, error }) => {
+  // [v9.45] Parallel: fetch yêu cầu + fetch đề nghị XIN ĐỔI LỊCH
+  Promise.all([
+    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den, p_trang_thai: ttFilter || null }),
+    _fetchYeuCauDoiLich(tu, den, ttFilter)
+  ])
+  .then(([ycRes, doiLichArr]) => {
+    const { data: res, error } = ycRes;
     if(error || !res){content.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
-    // Adapt: RPC trả {giaiTrinh:[], donNghi:[]} → format Apps Script là {duyetYC:{donNghi, giaiTrinh, soDonNghi, soGiaiTrinh}}
+    
+    // [v9.45] Convert lich_ca XIN ĐỔI LỊCH thành format giống donNghi để inject vào UI
+    const doiLichItems = (doiLichArr || []).map(lc => {
+      // Parse lý do (loại bỏ prefix [XIN ĐỔI LỊCH])
+      let lyDoTxt = lc.ghi_chu_nv || '';
+      lyDoTxt = lyDoTxt.replace('[XIN ĐỔI LỊCH]', '').trim();
+      
+      // Mô tả ca cũ → ca mới
+      const caCu = lc._ca_cu || '';
+      const caMoi = lc.loai === 'Nghỉ phép' 
+        ? 'Nghỉ phép' 
+        : (lc.ca_lam || 'Đi làm') + (lc.ten_ch_snapshot ? ' · ' + lc.ten_ch_snapshot : '');
+      
+      return {
+        id: lc.id, 
+        maNV: lc.ma_nv, 
+        tenNV: lc.ten_nv_snapshot || lc.ma_nv,
+        cuaHang: lc.ten_ch_snapshot || '',
+        khuVuc: lc._khu_vuc || '',
+        ngay: lc.ngay, 
+        loaiNghi: 'Yêu cầu đổi lịch',  // Phân biệt với đơn nghỉ thường
+        lyDo: lyDoTxt,
+        anhUrl: '',
+        trangThai: lc.trang_thai || 'CHO_DUYET',
+        nguoiDuyet: '',
+        ghiChuQLNS: lc.ghi_chu_qlns || '',
+        ghiChuNV: lyDoTxt,
+        maCH: lc.ma_ch || '',
+        tenCH: lc.ten_ch_snapshot || '',
+        createdAt: lc.created_at,
+        tuan: lc.tuan_nam || '',
+        _isXinDoiLich: true,  // Flag để render badge cam
+        _caCu: caCu,
+        _caMoi: caMoi,
+        _loaiCaMoi: lc.loai,
+        _caLamMoi: lc.ca_lam
+      };
+    });
+    
+    // Adapt
     _ycData = {
-      donNghi: (res.donNghi || []).map(d => ({
-        id: d.id, maNV: d.maNV, tenNV: d.tenNV, cuaHang: d.cuaHang,
-        khuVuc: d.khuVuc || '',
-        ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo, anhUrl: d.anhUrl,
-        trangThai: d.trangThai || 'CHO_DUYET',
-        nguoiDuyet: d.nguoiDuyet || '',
-        ghiChuQLNS: d.ghiChuQLNS || '',
-        ghiChuNV: d.lyDo || '',
-        maCH: '', tenCH: d.cuaHang || '',
-        createdAt: d.createdAt, tuan: ''
-      })),
+      donNghi: [
+        // Đề nghị XIN ĐỔI LỊCH lên đầu (cam, ưu tiên)
+        ...doiLichItems,
+        // Đơn nghỉ phép thường
+        ...(res.donNghi || []).map(d => ({
+          id: d.id, maNV: d.maNV, tenNV: d.tenNV, cuaHang: d.cuaHang,
+          khuVuc: d.khuVuc || '',
+          ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo, anhUrl: d.anhUrl,
+          trangThai: d.trangThai || 'CHO_DUYET',
+          nguoiDuyet: d.nguoiDuyet || '',
+          ghiChuQLNS: d.ghiChuQLNS || '',
+          ghiChuNV: d.lyDo || '',
+          maCH: '', tenCH: d.cuaHang || '',
+          createdAt: d.createdAt, tuan: '',
+          _isXinDoiLich: false
+        }))
+      ],
       giaiTrinh: (res.giaiTrinh || []).map(g => ({
         cbId: g.cbId, maNV: g.maNV, tenNV: g.tenNV, cuaHang: g.cuaHang,
         khuVuc: g.khuVuc || '',
@@ -9872,7 +10694,7 @@ function taiDuyetYC(){
         nguoiDuyet: g.nguoiDuyet || '',
         thoiGianGiaiTrinh: g.thoiGianGiaiTrinh
       })),
-      soDonNghi: (res.donNghi || []).length,
+      soDonNghi: doiLichItems.length + (res.donNghi || []).length,
       soGiaiTrinh: (res.giaiTrinh || []).length
     };
     const sDN=_ycData.soDonNghi||0;
@@ -9941,7 +10763,8 @@ function _renderYC(filterQ){
         let lyDoTxt=lyDo, linkAnh='';
         const pipeIdx=lyDo.indexOf(' | ');
         if(pipeIdx>=0){lyDoTxt=lyDo.substring(0,pipeIdx).trim();linkAnh=lyDo.substring(pipeIdx+3).trim();}
-        return `<div class="dnp-item" data-dnitem="${d.id||d.maNV+'_'+d.ngay}">
+        return `<div class="dnp-item ${d._isXinDoiLich?'xdl-item':''}" data-dnitem="${d.id||d.maNV+'_'+d.ngay}"${d._isXinDoiLich?' style="border-left:3px solid #EA580C;background:linear-gradient(to right,#FFF7ED 0%,#FFFFFF 50%)"':''}>
+          ${d._isXinDoiLich ? `<div style="display:inline-flex;align-items:center;gap:5px;background:#EA580C;color:#fff;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:6px;letter-spacing:0.2px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>YÊU CẦU ĐỔI LỊCH</div>` : ''}
           <div class="dnp-item-top">
             <div class="ns-avatar ns-av-chua" style="width:32px;height:32px;font-size:11px">${init}</div>
             <div class="dnp-info" style="flex:1;margin-left:10px">
@@ -9950,11 +10773,12 @@ function _renderYC(filterQ){
             </div>
             <span class="dnp-badge ${d.trangThai==='DA_DUYET'?'dnpb-dd':d.trangThai==='TU_CHOI'?'dnpb-tc':'dnpb-cho'}">${d.trangThai==='DA_DUYET'?'Đã duyệt':d.trangThai==='TU_CHOI'?'Từ chối':'Chờ duyệt'}</span>
           </div>
+          ${d._isXinDoiLich && d._caMoi ? `<div style="margin-top:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #FED7AA;font-size:12px"><div style="color:#9A3412;font-weight:600;font-size:11px;margin-bottom:3px">Đổi thành:</div><div style="color:#7C2D12">${d._caMoi}</div></div>` : ''}
           ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
           ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
           ${d.trangThai==='CHO_DUYET'?`<div class="ns-duyet-wrap" style="margin-top:8px">
-            <button class="ns-btn-ok" onclick="duyetDonNghiById('${d.id}','Đã duyệt')">✓ Duyệt</button>
-            <button class="ns-btn-no" onclick="duyetDonNghiById('${d.id}','Từ chối')">✗ Từ chối</button>
+            <button class="ns-btn-ok" onclick="${d._isXinDoiLich?`duyetDoiLichById('${d.id}','Đã duyệt')`:`duyetDonNghiById('${d.id}','Đã duyệt')`}">✓ Duyệt</button>
+            <button class="ns-btn-no" onclick="${d._isXinDoiLich?`duyetDoiLichById('${d.id}','Từ chối')`:`duyetDonNghiById('${d.id}','Từ chối')`}">✗ Từ chối</button>
           </div>`:(d.nguoiDuyet?`<div style="font-size:11px;color:var(--text-m);margin-top:6px">Duyệt bởi: ${d.nguoiDuyet}${d.ghiChuQLNS?' · '+d.ghiChuQLNS:''}</div>`:'')}
         </div>`;
       }).join('');
@@ -10289,7 +11113,7 @@ function closeNotifPanel() {
   document.getElementById('notif-panel-bd').classList.remove('show');
 }
 
-// [v9.44] Drag-to-dismiss: kéo từ trên panel xuống để đóng (iOS style)
+// [v9.45] Drag-to-dismiss: kéo từ trên panel xuống để đóng (iOS style)
 (function() {
   let _startY = 0;
   let _currentY = 0;
@@ -10872,7 +11696,7 @@ function bhBuildSpCacheAndIndex(list) {
     byMaCu: {},        // exact match maCu → index
     bySku: {},         // exact match sku
     byBarcode: {},     // exact match barcode
-    byMaThamChieu: {}, // [v9.44] exact match mã tham chiếu (MC001-XM21)
+    byMaThamChieu: {}, // [v9.45] exact match mã tham chiếu (MC001-XM21)
     tokens: [],        // [[token, idx], ...] để partial match nhanh
   };
   list.forEach((sp, idx) => {
@@ -10917,7 +11741,7 @@ function bhSearchSpLocal(query, limit) {
     const idx = BH.spIndex.byBarcode[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
   }
-  // [v9.44] Exact match mã tham chiếu (MC001-XM21)
+  // [v9.45] Exact match mã tham chiếu (MC001-XM21)
   if (BH.spIndex.byMaThamChieu && BH.spIndex.byMaThamChieu[query] !== undefined) {
     const idx = BH.spIndex.byMaThamChieu[query];
     if (!matched.has(idx)) { matched.add(idx); results.push(BH.spList[idx]); }
@@ -10975,9 +11799,9 @@ function bhInitPage() {
   // Load SP data (async, không block UI)
   bhLoadSpData();
 
-  // [v9.44] Load bảng xếp hạng (mọi role đều xem được)
+  // [v9.45] Load bảng xếp hạng (mọi role đều xem được)
   bxhLoad();
-  // [v9.44] Realtime subscription cho BXH — Apps Script push → Supabase → realtime → app
+  // [v9.45] Realtime subscription cho BXH — Apps Script push → Supabase → realtime → app
   bxhStartRealtime();
 
   if (isCH) {
@@ -10995,7 +11819,7 @@ function bhInitPage() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// [v9.44] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
+// [v9.45] BẢNG XẾP HẠNG — Light Luxury, SVG icons, 10 rows mini
 // ═══════════════════════════════════════════════════════════════════
 let BXH = {
   data: { NGAY: [], TUAN: [], THANG: [] },
@@ -11030,7 +11854,7 @@ async function bxhLoad(force) {
       .order('xep_hang');
     if (error) throw error;
     
-    // [v9.44] Detect đã có data trước đó để biết có flash hay không
+    // [v9.45] Detect đã có data trước đó để biết có flash hay không
     const hadPrevData = BXH.data.NGAY.length > 0;
     const prevUpdatedAt = BXH.updatedAt;
     
@@ -11047,17 +11871,17 @@ async function bxhLoad(force) {
       BXH.prevRanks = prev;
     } catch(e) { BXH.prevRanks = {}; }
     
-    // [v9.44] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
+    // [v9.45] Check tôi tăng hạng → confetti (chỉ khi đã có data trước, không bắn lần đầu)
     if (hadPrevData) {
       bxhCheckMyRankImproved(BXH.data.NGAY);
     }
     
-    // [v9.44] Flag để animation chỉ chạy 1 lần khi data mới đến, không phải mỗi render
+    // [v9.45] Flag để animation chỉ chạy 1 lần khi data mới đến, không phải mỗi render
     BXH._justUpdated = !!(hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt);
     bxhRenderMini();
     BXH._justUpdated = false;
     
-    // [v9.44] Flash khi vừa có update mới (updatedAt thay đổi)
+    // [v9.45] Flash khi vừa có update mới (updatedAt thay đổi)
     if (hadPrevData && updatedAt && prevUpdatedAt && updatedAt !== prevUpdatedAt) {
       bxhFlashUpdate();
     }
@@ -11074,7 +11898,7 @@ async function bxhLoad(force) {
   }
 }
 
-// [v9.44] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
+// [v9.45] Subscribe Realtime: Supabase tự push khi Apps Script ghi data mới
 // Nhịp 5 phút (Apps Script cron) → app nhận event → fetch 1 lần
 // Tiết kiệm 90% bandwidth so với polling 30s
 function bxhStartRealtime() {
@@ -11136,7 +11960,7 @@ function _bxhRankChangeHtml(loai, maNV, currentRank) {
   return `<span class="bxh-mini-change down">${BXH_ARROW_DOWN}${Math.abs(diff)}</span>`;
 }
 
-// [v9.44] SVG icon corner: 1=crown, 2=star, 3=medal — size lớn hơn cho ô 48px
+// [v9.45] SVG icon corner: 1=crown, 2=star, 3=medal — size lớn hơn cho ô 48px
 const BXH_RANK_ICON = {
   1: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>',
   2: '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
@@ -11165,7 +11989,7 @@ function bxhRenderMini() {
     const prevRank = BXH.prevRanks[prevKey];
     let animClass = '';
     let isNew = false;
-    // [v9.44] Chỉ animate khi vừa có data mới (updatedAt thay đổi), không animate mỗi render
+    // [v9.45] Chỉ animate khi vừa có data mới (updatedAt thay đổi), không animate mỗi render
     if (BXH._justUpdated) {
       if (prevRank !== undefined && prevRank !== e.xep_hang) {
         animClass = (prevRank - e.xep_hang > 0) ? 'anim-up' : 'anim-down';
@@ -11208,7 +12032,7 @@ function bxhRenderMini() {
   } catch(e) {}
 }
 
-// [v9.44] Flash banner + LIVE badge khi vừa cập nhật
+// [v9.45] Flash banner + LIVE badge khi vừa cập nhật
 function bxhFlashUpdate() {
   ['bxh-mini', 'bxh-mini-ql'].forEach(id => {
     const el = document.getElementById(id);
@@ -11232,7 +12056,7 @@ function bxhFlashUpdate() {
   });
 }
 
-// [v9.44] Confetti khi tôi tăng hạng
+// [v9.45] Confetti khi tôi tăng hạng
 function bxhConfetti() {
   let container = document.getElementById('bxh-confetti');
   if (!container) {
@@ -11253,7 +12077,7 @@ function bxhConfetti() {
   }
 }
 
-// [v9.44] Check tôi có tăng hạng không → confetti
+// [v9.45] Check tôi có tăng hạng không → confetti
 function bxhCheckMyRankImproved(top) {
   if (!SESSION || !SESSION.ma) return;
   const meCode = String(SESSION.ma).toUpperCase();
@@ -11557,7 +12381,7 @@ function bhStartRealtimeSubCH() {
           bhLoadPhienDangBan({ silent: true });
         }, 300);
       })
-      // [v9.44] Channel phụ chỉ nghe DELETE (không filter, vì payload.old của DELETE có thể bị strip)
+      // [v9.45] Channel phụ chỉ nghe DELETE (không filter, vì payload.old của DELETE có thể bị strip)
       // Bất cứ phiên nào bị xóa trong DB → reload phiên của CH này
       .on('postgres_changes', {
         event: 'DELETE', schema: 'public', table: 'phien_ban_hang'
@@ -11887,7 +12711,7 @@ function bhBuildHistCardCh(p) {
 
 // [v11.8] CH: Yêu cầu xóa phiên (gửi YC, không xóa)
 async function bhYeuCauXoaPhien(idPhien) {
-  // [v9.44] Lock per-phien + global để chống double-click + race condition
+  // [v9.45] Lock per-phien + global để chống double-click + race condition
   if (window._bhYCXoaLock && window._bhYCXoaLock[idPhien]) {
     console.log('[YC Xóa] Đã có request đang xử lý cho phiên', idPhien);
     return;
@@ -11916,7 +12740,7 @@ async function bhYeuCauXoaPhien(idPhien) {
     });
     if (!ok) return;
 
-    // [v9.44] Re-check sau khi user confirm (đề phòng race condition)
+    // [v9.45] Re-check sau khi user confirm (đề phòng race condition)
     const s2 = BH.sessions.find(x => x.idPhien === idPhien);
     if (!s2 || s2.xinXoa) return;
 
@@ -12192,7 +13016,7 @@ async function bhDienKetQuaPhien(phienId, ketQua) {
   }
 }
 
-// [v9.44] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
+// [v9.45] Gửi YC xóa cho phiên tự đóng (từ modal điền kết quả)
 async function bhYCXoaTuModal(phienId) {
   const ok = await appConfirm('Gửi yêu cầu xóa phiên #' + (phienId.slice(-4)) + ' lên QLBH?', {
     title: 'Yêu cầu xóa phiên tự đóng',
@@ -14242,7 +15066,7 @@ async function adm2DetailCCHomNay(bodyEl) {
 }
 
 // Detail: cảnh báo chưa duyệt
-// [v9.44] State filter cho admin detail
+// [v9.45] State filter cho admin detail
 let _adm2CbFilter = 'CHO_DUYET'; // CHO_DUYET | DA_DUYET | TU_CHOI | ALL
 let _adm2DnFilter = 'CHO_DUYET';
 
@@ -14327,7 +15151,7 @@ async function adm2LoadCBList(){
   } catch (e) { el.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.44] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
+// [v9.45] Đặt lại trạng thái Chờ duyệt cho CB đã DA_DUYET/TU_CHOI
 async function adm2RevertCanhBao(id){
   if(!confirm('Đặt lại cảnh báo này về trạng thái Chờ duyệt?')) return;
   try {
@@ -14354,7 +15178,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
     });
     if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
     adm2Toast('Đã duyệt', 'success');
-    // [v9.44] Reload list để cập nhật trạng thái
+    // [v9.45] Reload list để cập nhật trạng thái
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -14364,7 +15188,7 @@ async function adm2DuyetCanhBao(id, loaiCb) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.44] Admin Từ chối cảnh báo (kèm modal nhập lý do)
+// [v9.45] Admin Từ chối cảnh báo (kèm modal nhập lý do)
 async function adm2TuChoiCanhBao(id) {
   const lyDo = prompt('Lý do từ chối (bắt buộc):');
   if (!lyDo || !lyDo.trim()) { adm2Toast('Cần nhập lý do từ chối', 'error'); return; }
@@ -14377,7 +15201,7 @@ async function adm2TuChoiCanhBao(id) {
     }).eq('id', id);
     if (error) throw error;
     adm2Toast('Đã từ chối', 'success');
-    // [v9.44] Reload
+    // [v9.45] Reload
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
     } else {
@@ -14511,7 +15335,7 @@ async function adm2SuaLog(id, ngay) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// [v9.44] Load datalist CH 1 lần cho dropdown gợi ý CH
+// [v9.45] Load datalist CH 1 lần cho dropdown gợi ý CH
 async function adm2EnsureChDatalist() {
   if (document.getElementById('adm2-ch-datalist')) return;
   try {
@@ -14669,7 +15493,7 @@ async function adm2DongPhien(id) {
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
 
-// Detail: phiên hôm nay - [v9.44] mini view giống BH + toàn quyền tuỳ chỉnh
+// Detail: phiên hôm nay - [v9.45] mini view giống BH + toàn quyền tuỳ chỉnh
 async function adm2DetailPhienHomNay(bodyEl) {
   await adm2RenderPhienHomNay(bodyEl);
 }
@@ -14718,7 +15542,7 @@ async function adm2RenderPhienHomNay(bodyEl){
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v9.44] Sửa phiên (toàn quyền)
+// [v9.45] Sửa phiên (toàn quyền)
 async function adm2EditPhien(id){
   try {
     const { data: p, error } = await supa.from('phien_ban_hang').select('*').eq('id', id).single();
@@ -14964,7 +15788,7 @@ async function adm2SearchAcc() {
   const kw = document.getElementById('adm2-acc-kw').value.trim();
   const loai = document.getElementById('adm2-acc-loai').value;
   const el = document.getElementById('adm2-acc-list');
-  // [v9.44] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
+  // [v9.45] Khi kw rỗng → vẫn load tất cả (limit 200), search chỉ là lọc tiếp
   el.innerHTML = '<div class="adm2-empty">Đang tải...</div>';
   try {
     const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword: kw || '', p_loai: loai, p_limit: kw ? 100 : 200 });
