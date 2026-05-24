@@ -2725,6 +2725,61 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
+  <!-- [v9.45] AVATAR CROP MODAL -->
+  <div id="avatar-crop-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2300;display:none;align-items:center;justify-content:center;padding:0;flex-direction:column">
+    <div style="width:100%;max-width:500px;display:flex;flex-direction:column;height:100%;max-height:100vh">
+      <!-- Header -->
+      <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;color:#fff;background:rgba(0,0,0,0.4);flex-shrink:0">
+        <div>
+          <div style="font-size:15px;font-weight:700">Cắt ảnh đại diện</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px">Kéo khung để chọn vùng · góc dưới để thay đổi kích thước</div>
+        </div>
+        <button onclick="_cancelCrop()" style="background:rgba(255,255,255,0.15);border:none;width:30px;height:30px;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      
+      <!-- Container ảnh + khung crop -->
+      <div id="avatar-crop-container" style="flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none">
+        <img id="avatar-crop-img" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:block;pointer-events:none;user-select:none" draggable="false">
+        
+        <!-- Overlay tối (clip-path tạo lỗ vuông) -->
+        <div id="avatar-crop-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.55);pointer-events:none"></div>
+        
+        <!-- Khung crop -->
+        <div id="avatar-crop-box" 
+             onmousedown="_cropDragStart(event,'move')" 
+             ontouchstart="_cropDragStart(event,'move')"
+             style="position:absolute;border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.3);cursor:move;box-sizing:border-box">
+          <!-- Grid lines (rule of thirds) -->
+          <div style="position:absolute;inset:0;pointer-events:none">
+            <div style="position:absolute;left:33.33%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4)"></div>
+            <div style="position:absolute;left:66.67%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4)"></div>
+            <div style="position:absolute;top:33.33%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4)"></div>
+            <div style="position:absolute;top:66.67%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4)"></div>
+          </div>
+          <!-- Handle góc dưới phải để resize -->
+          <div onmousedown="_cropDragStart(event,'resize')" 
+               ontouchstart="_cropDragStart(event,'resize')"
+               style="position:absolute;right:-12px;bottom:-12px;width:24px;height:24px;background:#fff;border:3px solid #0F6E56;border-radius:50%;cursor:nwse-resize;box-shadow:0 2px 6px rgba(0,0,0,0.4);touch-action:none"></div>
+          <!-- Góc 4 chấm -->
+          <div style="position:absolute;left:-1px;top:-1px;width:14px;height:14px;border-top:3px solid #0F6E56;border-left:3px solid #0F6E56;pointer-events:none"></div>
+          <div style="position:absolute;right:-1px;top:-1px;width:14px;height:14px;border-top:3px solid #0F6E56;border-right:3px solid #0F6E56;pointer-events:none"></div>
+          <div style="position:absolute;left:-1px;bottom:-1px;width:14px;height:14px;border-bottom:3px solid #0F6E56;border-left:3px solid #0F6E56;pointer-events:none"></div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div style="padding:14px 18px;display:flex;gap:10px;background:rgba(0,0,0,0.4);flex-shrink:0;padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))">
+        <button onclick="_cancelCrop()" style="flex:1;padding:12px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent">Hủy</button>
+        <button id="avatar-crop-confirm-btn" onclick="_confirmCrop()" style="flex:2;padding:12px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Cắt và Upload
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- [v9.45] Modal đơn nghỉ phép đột xuất (giữ làm fallback) -->
   <div id="dx-modal" onclick="if(event.target===this)closeNghiDotXuatModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
     <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
@@ -5859,7 +5914,7 @@ function chonAnhAvatar() {
   if (input) input.click();
 }
 
-// [v9.45] AVATAR: Xử lý khi user chọn file
+// [v9.45] AVATAR: Xử lý khi user chọn file → mở modal crop
 async function onAvatarFileChange(input) {
   const file = input.files && input.files[0];
   if (!file) return;
@@ -5871,39 +5926,276 @@ async function onAvatarFileChange(input) {
     return;
   }
   
-  // Validate size 5MB
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('Ảnh quá lớn (tối đa 5MB).', 'err');
+  // Validate size 10MB (gốc, sau crop sẽ nhỏ hơn nhiều)
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Ảnh quá lớn (tối đa 10MB).', 'err');
     input.value = '';
     return;
   }
   
-  const ok = await appConfirm(
-    'Đổi ảnh đại diện mới?',
-    { title: 'Đổi ảnh đại diện', okLabel: 'Đổi ảnh' }
-  );
-  if (!ok) {
-    input.value = '';
-    return;
+  // Đọc file → mở modal crop
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _openCropModal(e.target.result);
+  };
+  reader.onerror = () => {
+    showToast('Không đọc được file ảnh.', 'err');
+  };
+  reader.readAsDataURL(file);
+  
+  input.value = ''; // Reset để chọn lại cùng file được
+}
+
+// [v9.45] Mở modal crop ảnh
+function _openCropModal(imgDataUrl) {
+  const modal = document.getElementById('avatar-crop-modal');
+  const img = document.getElementById('avatar-crop-img');
+  if (!modal || !img) return;
+  
+  // Reset state
+  _cropState = {
+    imgUrl: imgDataUrl,
+    imgNaturalW: 0,
+    imgNaturalH: 0,
+    containerW: 0,
+    containerH: 0,
+    cropX: 0,        // Tọa độ crop trong container (CSS pixel)
+    cropY: 0,
+    cropSize: 0,     // Kích thước hộp crop (CSS pixel)
+    dragMode: null,  // null | 'move' | 'resize'
+    dragStartX: 0,
+    dragStartY: 0,
+    dragStartCropX: 0,
+    dragStartCropY: 0,
+    dragStartCropSize: 0,
+  };
+  
+  img.src = imgDataUrl;
+  
+  img.onload = () => {
+    _cropState.imgNaturalW = img.naturalWidth;
+    _cropState.imgNaturalH = img.naturalHeight;
+    
+    // Setup khung crop sau khi DOM render xong
+    setTimeout(() => _setupCropBox(), 50);
+  };
+  
+  modal.style.display = 'flex';
+}
+
+// [v9.45] Setup khung crop ở giữa ảnh, kích thước = min(W,H) * 0.8
+function _setupCropBox() {
+  const container = document.getElementById('avatar-crop-container');
+  if (!container) return;
+  
+  const rect = container.getBoundingClientRect();
+  _cropState.containerW = rect.width;
+  _cropState.containerH = rect.height;
+  
+  const minSide = Math.min(rect.width, rect.height);
+  _cropState.cropSize = Math.floor(minSide * 0.8);
+  _cropState.cropX = (rect.width - _cropState.cropSize) / 2;
+  _cropState.cropY = (rect.height - _cropState.cropSize) / 2;
+  
+  _renderCropBox();
+}
+
+function _renderCropBox() {
+  const box = document.getElementById('avatar-crop-box');
+  const overlay = document.getElementById('avatar-crop-overlay');
+  if (!box) return;
+  
+  box.style.left = _cropState.cropX + 'px';
+  box.style.top = _cropState.cropY + 'px';
+  box.style.width = _cropState.cropSize + 'px';
+  box.style.height = _cropState.cropSize + 'px';
+  
+  // Dùng clip-path để tạo overlay tối với lỗ vuông giữa
+  if (overlay) {
+    const x1 = _cropState.cropX;
+    const y1 = _cropState.cropY;
+    const x2 = x1 + _cropState.cropSize;
+    const y2 = y1 + _cropState.cropSize;
+    overlay.style.clipPath = `polygon(
+      0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+      ${x1}px ${y1}px, ${x1}px ${y2}px, ${x2}px ${y2}px, ${x2}px ${y1}px, ${x1}px ${y1}px
+    )`;
+  }
+}
+
+let _cropState = {};
+
+// Drag start (mouse + touch)
+function _cropDragStart(e, mode) {
+  e.preventDefault();
+  e.stopPropagation();
+  const point = e.touches ? e.touches[0] : e;
+  _cropState.dragMode = mode;
+  _cropState.dragStartX = point.clientX;
+  _cropState.dragStartY = point.clientY;
+  _cropState.dragStartCropX = _cropState.cropX;
+  _cropState.dragStartCropY = _cropState.cropY;
+  _cropState.dragStartCropSize = _cropState.cropSize;
+  
+  document.addEventListener('mousemove', _cropDragMove);
+  document.addEventListener('mouseup', _cropDragEnd);
+  document.addEventListener('touchmove', _cropDragMove, { passive: false });
+  document.addEventListener('touchend', _cropDragEnd);
+}
+
+function _cropDragMove(e) {
+  if (!_cropState.dragMode) return;
+  e.preventDefault();
+  const point = e.touches ? e.touches[0] : e;
+  const dx = point.clientX - _cropState.dragStartX;
+  const dy = point.clientY - _cropState.dragStartY;
+  
+  if (_cropState.dragMode === 'move') {
+    // Di chuyển hộp crop, giới hạn trong container
+    let newX = _cropState.dragStartCropX + dx;
+    let newY = _cropState.dragStartCropY + dy;
+    newX = Math.max(0, Math.min(newX, _cropState.containerW - _cropState.cropSize));
+    newY = Math.max(0, Math.min(newY, _cropState.containerH - _cropState.cropSize));
+    _cropState.cropX = newX;
+    _cropState.cropY = newY;
+  } else if (_cropState.dragMode === 'resize') {
+    // Resize: chỉnh kích thước, neo góc trên-trái, giữ vuông
+    // Dùng max(dx, dy) để resize đều
+    const delta = Math.max(dx, dy);
+    let newSize = _cropState.dragStartCropSize + delta;
+    
+    // Min size = 80px
+    newSize = Math.max(80, newSize);
+    // Max size = giới hạn để không tràn container
+    const maxByRight = _cropState.containerW - _cropState.cropX;
+    const maxByBottom = _cropState.containerH - _cropState.cropY;
+    newSize = Math.min(newSize, maxByRight, maxByBottom);
+    
+    _cropState.cropSize = newSize;
   }
   
-  // Hiển thị loading state
-  const avatarEl = document.getElementById('acc-avatar');
-  const oldOpacity = avatarEl.style.opacity;
-  avatarEl.style.opacity = '0.5';
-  showToast('Đang xử lý ảnh...', 'ok');
+  _renderCropBox();
+}
+
+function _cropDragEnd() {
+  _cropState.dragMode = null;
+  document.removeEventListener('mousemove', _cropDragMove);
+  document.removeEventListener('mouseup', _cropDragEnd);
+  document.removeEventListener('touchmove', _cropDragMove);
+  document.removeEventListener('touchend', _cropDragEnd);
+}
+
+function _cancelCrop() {
+  document.getElementById('avatar-crop-modal').style.display = 'none';
+}
+
+// [v9.45] Crop ảnh + upload
+async function _confirmCrop() {
+  const modal = document.getElementById('avatar-crop-modal');
+  const img = document.getElementById('avatar-crop-img');
+  const confirmBtn = document.getElementById('avatar-crop-confirm-btn');
+  
+  if (!img || !_cropState.imgUrl) return;
+  
+  // Disable button
+  confirmBtn.disabled = true;
+  confirmBtn.style.opacity = '0.6';
+  confirmBtn.innerHTML = 'Đang xử lý...';
   
   try {
-    // Resize ảnh phía client → giữ chất lượng tốt
-    const resizedBlob = await _resizeImageForAvatar(file);
+    // Tính tỉ lệ: container hiển thị ảnh fit-contain
+    // → Tìm kích thước ảnh thực hiển thị trong container
+    const containerW = _cropState.containerW;
+    const containerH = _cropState.containerH;
+    const imgRatio = _cropState.imgNaturalW / _cropState.imgNaturalH;
+    const containerRatio = containerW / containerH;
     
-    // Upload lên Supabase Storage
+    let displayW, displayH, offsetX, offsetY;
+    if (imgRatio > containerRatio) {
+      // Ảnh rộng hơn container → fit theo width
+      displayW = containerW;
+      displayH = containerW / imgRatio;
+      offsetX = 0;
+      offsetY = (containerH - displayH) / 2;
+    } else {
+      // Ảnh cao hơn container → fit theo height
+      displayH = containerH;
+      displayW = containerH * imgRatio;
+      offsetX = (containerW - displayW) / 2;
+      offsetY = 0;
+    }
+    
+    // Tính tọa độ crop trên ảnh gốc (natural)
+    const scaleX = _cropState.imgNaturalW / displayW;
+    const scaleY = _cropState.imgNaturalH / displayH;
+    
+    const cropOnImageX = (_cropState.cropX - offsetX) * scaleX;
+    const cropOnImageY = (_cropState.cropY - offsetY) * scaleY;
+    const cropOnImageSize = _cropState.cropSize * scaleX;
+    
+    // Clamp lại nếu lệch ra ngoài
+    const safeX = Math.max(0, Math.min(cropOnImageX, _cropState.imgNaturalW - 1));
+    const safeY = Math.max(0, Math.min(cropOnImageY, _cropState.imgNaturalH - 1));
+    const maxSize = Math.min(
+      _cropState.imgNaturalW - safeX,
+      _cropState.imgNaturalH - safeY
+    );
+    const safeSize = Math.max(10, Math.min(cropOnImageSize, maxSize));
+    
+    // Render vào canvas 600x600
+    const TARGET_SIZE = 600;
+    const canvas = document.createElement('canvas');
+    canvas.width = TARGET_SIZE;
+    canvas.height = TARGET_SIZE;
+    const ctx = canvas.getContext('2d');
+    
+    // Load lại ảnh để đảm bảo decoded
+    const fullImg = new Image();
+    await new Promise((resolve, reject) => {
+      fullImg.onload = resolve;
+      fullImg.onerror = reject;
+      fullImg.src = _cropState.imgUrl;
+    });
+    
+    ctx.drawImage(fullImg, safeX, safeY, safeSize, safeSize, 0, 0, TARGET_SIZE, TARGET_SIZE);
+    
+    // Export blob
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(b => {
+        if (b) resolve(b);
+        else reject(new Error('Không tạo được blob'));
+      }, 'image/jpeg', 0.92);
+    });
+    
+    // Đóng modal
+    modal.style.display = 'none';
+    
+    // Upload
+    await _uploadAvatarBlob(blob);
+  } catch (e) {
+    console.error('[Crop] Lỗi:', e);
+    showToast('Lỗi xử lý ảnh: ' + (e.message || ''), 'err');
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '1';
+    confirmBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cắt và Upload';
+  }
+}
+
+// [v9.45] Upload blob đã crop lên Supabase
+async function _uploadAvatarBlob(blob) {
+  if (!SESSION) return;
+  
+  const avatarEl = document.getElementById('acc-avatar');
+  if (avatarEl) avatarEl.style.opacity = '0.5';
+  showToast('Đang upload ảnh...', 'ok');
+  
+  try {
     const fileName = SESSION.ma + '_' + Date.now() + '.jpg';
     const filePath = SESSION.ma + '/' + fileName;
     
     const { data: uploadData, error: uploadErr } = await supa.storage
       .from('avatars')
-      .upload(filePath, resizedBlob, {
+      .upload(filePath, blob, {
         contentType: 'image/jpeg',
         upsert: false,
         cacheControl: '3600'
@@ -5911,11 +6203,9 @@ async function onAvatarFileChange(input) {
     
     if (uploadErr) throw uploadErr;
     
-    // Lấy public URL
     const { data: urlData } = supa.storage.from('avatars').getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl;
     
-    // Cập nhật DB qua RPC
     const { data: res, error: rpcErr } = await supa.rpc('fn_update_avatar', {
       p_ma_nv: SESSION.ma,
       p_avatar_url: publicUrl
@@ -5925,35 +6215,30 @@ async function onAvatarFileChange(input) {
       throw new Error((res && res.error) || (rpcErr && rpcErr.message) || 'Lỗi DB');
     }
     
-    // Xóa file avatar cũ trong storage (nếu có)
     if (res.old_url) {
       _deleteOldAvatar(res.old_url);
     }
     
-    // Update SESSION
     SESSION.avatarUrl = publicUrl;
-    try { 
-      localStorage.setItem('nonson_session', JSON.stringify(SESSION)); 
+    try {
+      sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
     } catch(e) {}
     
-    // Re-render UI
     const init = SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
     _renderAvatarUI(publicUrl, init);
     
-    // Update header avatar nếu có
     if (typeof _renderHeaderAvatar === 'function') _renderHeaderAvatar();
     
     showToast('✓ Đã đổi ảnh đại diện', 'ok');
   } catch (e) {
-    console.error('[Avatar] Lỗi:', e);
+    console.error('[Avatar Upload] Lỗi:', e);
     showToast('Lỗi upload: ' + (e.message || ''), 'err');
   } finally {
-    avatarEl.style.opacity = oldOpacity || '1';
-    input.value = '';
+    if (avatarEl) avatarEl.style.opacity = '1';
   }
 }
 
-// [v9.45] Resize ảnh phía client trước khi upload — giữ chất lượng cao
+// [v9.45] Resize ảnh phía client (KHÔNG dùng nữa — giữ làm fallback nếu cần)
 function _resizeImageForAvatar(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -5961,22 +6246,15 @@ function _resizeImageForAvatar(file) {
       const img = new Image();
       img.onload = function() {
         try {
-          // Target: 600x600 max, giữ aspect ratio, crop center thành vuông
           const TARGET_SIZE = 600;
           const canvas = document.createElement('canvas');
           canvas.width = TARGET_SIZE;
           canvas.height = TARGET_SIZE;
           const ctx = canvas.getContext('2d');
-          
-          // Crop center thành vuông
           const minDim = Math.min(img.width, img.height);
           const sx = (img.width - minDim) / 2;
           const sy = (img.height - minDim) / 2;
-          
-          // Draw vào canvas
           ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, TARGET_SIZE, TARGET_SIZE);
-          
-          // Export JPEG quality 0.92 → chất lượng cao, file ~80-150KB
           canvas.toBlob(blob => {
             if (blob) resolve(blob);
             else reject(new Error('Không tạo được blob'));
