@@ -2432,7 +2432,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.51</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.52</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2674,23 +2674,6 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   </div>
 
   <!-- [v9.45] Modal XIN ĐỔI LỊCH — Multi-day, hỗ trợ cả tuần hiện tại và tuần sau -->
-  <!-- [v9.51] MODAL REVIEW ẢNH SELFIE — hiển thị ảnh lớn sau khi chụp để user kiểm tra và đảo chiều nếu cần -->
-  <div id="selfie-review-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:0">
-    <div style="position:absolute;top:0;left:0;right:0;padding:14px 18px;color:#fff;background:rgba(0,0,0,0.5);display:flex;justify-content:space-between;align-items:center;z-index:1">
-      <div>
-        <div style="font-size:15px;font-weight:700">Kiểm tra ảnh</div>
-        <div style="font-size:11.5px;color:rgba(255,255,255,0.7);margin-top:2px">Xem lại trước khi gửi · có thể đảo chiều nếu lật</div>
-      </div>
-      <button onclick="srClose()" style="background:rgba(255,255,255,0.15);border:none;width:32px;height:32px;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1">×</button>
-    </div>
-    <img id="sr-img" style="max-width:96%;max-height:72vh;object-fit:contain;border-radius:8px">
-    <div style="position:absolute;bottom:0;left:0;right:0;padding:16px;background:rgba(0,0,0,0.6);display:flex;gap:10px">
-      <button onclick="srRetake()" style="flex:1;padding:13px;background:#fff;color:#0F172A;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">📷 Chụp lại</button>
-      <button onclick="srToggleFlip()" id="sr-flip-btn" style="flex:1;padding:13px;background:#F59E0B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">⇆ Đảo chiều</button>
-      <button onclick="srConfirm()" style="flex:1.3;padding:13px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">✓ Dùng ảnh</button>
-    </div>
-  </div>
-
   <div id="xdl-modal" onclick="if(event.target===this)closeXinDoiLichModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
     <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column">
       <!-- Header -->
@@ -2716,12 +2699,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- [v9.51] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <!-- [v9.52] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
         <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
         <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
         <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.51) -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.52) -->
         <div style="margin-bottom:8px">
           <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
@@ -3524,29 +3507,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
-    <!-- [v9.51] Cài đặt ảnh selfie - default flip + nút Đảo chiều trực tiếp trong modal review -->
-    <div style="padding:0 14px 8px">
-      <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px">
-          <div style="min-width:0;flex:1">
-            <div style="font-size:13px;font-weight:600;color:#0F172A">Mặc định đảo chiều ảnh selfie</div>
-            <div style="font-size:11.5px;color:#94A3B8;margin-top:2px;line-height:1.45">Khi chụp xong sẽ hiển thị màn hình xem trước — bạn có thể bấm nút <b>Đảo chiều</b> ngay tại đó nếu thấy ảnh bị lật. Toggle này chỉ quyết định trạng thái mặc định khi mở màn hình xem trước.</div>
-          </div>
-          <label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0">
-            <input type="checkbox" id="cfg-mirror-selfie" onchange="setMirrorSelfie(this.checked)" style="opacity:0;width:0;height:0">
-            <span id="cfg-mirror-slider" style="position:absolute;cursor:pointer;inset:0;background:#CBD5E1;border-radius:26px;transition:.2s">
-              <span style="position:absolute;content:'';height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)" id="cfg-mirror-knob"></span>
-            </span>
-          </label>
-        </div>
-      </div>
-    </div>
     <!-- Phiên bản + Kiểm tra cập nhật [v9.45] -->
     <div style="padding:8px 14px 24px">
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.51 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.52 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4450,7 +4416,7 @@ let lastDay=new Date().getDate();
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
 
-// [v9.51] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+// [v9.52] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
 function _getMondayMidnight(d){
   const x = new Date(d);
   x.setHours(0,0,0,0);
@@ -4467,7 +4433,7 @@ function tick(){
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 
-  // [v9.51] Auto-logout vào 00:00 thứ Hai hàng tuần
+  // [v9.52] Auto-logout vào 00:00 thứ Hai hàng tuần
   // Nguyên tắc: nếu loginTime < thứ Hai 00:00 gần nhất ≤ now → logout
   if(SESSION){
     try {
@@ -4657,7 +4623,7 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    // [v9.51] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    // [v9.52] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
     try{
       localStorage.setItem('session_cc',JSON.stringify(SESSION));
       localStorage.setItem('session_login_ts', String(Date.now()));
@@ -4671,7 +4637,7 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  // [v9.51] Clear cả session + loginTime
+  // [v9.52] Clear cả session + loginTime
   SESSION=null;
   try{
     localStorage.removeItem('session_cc');
@@ -4687,7 +4653,7 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  // [v9.51] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  // [v9.52] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
   try{ s = localStorage.getItem('session_cc'); }catch(e){}
   if(!s){
@@ -5059,227 +5025,7 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
-// ════════════════════════════════════════════════════════════════════════
-// [v9.51] EXIF ORIENTATION FIX — chống ảnh bị lật/xoay sai sau khi chụp
-// Nguyên nhân: 1 số dòng máy (Samsung A-series, Xiaomi MIUI, iPhone cũ)
-// lưu ảnh raw + cờ EXIF Orientation. Browser load bằng <img> không apply
-// EXIF orientation → canvas vẽ ra bị xoay/mirror.
-// Giải pháp: đọc EXIF Orientation byte 0xFFE1, tự transform canvas.
-// ════════════════════════════════════════════════════════════════════════
-
-// [v9.51] User toggle "Lật gương ảnh selfie" — fix iOS không tôn trọng cài đặt camera
-// [v9.51+] iOS mặc định BẬT (vì đa số iPhone selfie bị mirror) — user tự tắt nếu thấy đúng
-function _getMirrorSelfie(){
-  try {
-    const v = localStorage.getItem('mirror_selfie');
-    if (v === '1') return true;
-    if (v === '0') return false;
-    // Chưa set: default theo platform — iOS bật, Android tắt
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    return isIOS;
-  } catch(e){ return false; }
-}
-function setMirrorSelfie(checked){
-  try { localStorage.setItem('mirror_selfie', checked ? '1' : '0'); } catch(e){}
-  _renderMirrorSelfieToggle();
-  showToast(checked ? '✓ Đã bật lật gương ảnh selfie' : '✓ Đã tắt lật gương ảnh selfie', 'ok');
-}
-function _renderMirrorSelfieToggle(){
-  const inp = document.getElementById('cfg-mirror-selfie');
-  const slider = document.getElementById('cfg-mirror-slider');
-  const knob = document.getElementById('cfg-mirror-knob');
-  if(!inp) return;
-  const on = _getMirrorSelfie();
-  inp.checked = on;
-  if(slider) slider.style.background = on ? '#EA580C' : '#CBD5E1';
-  if(knob) knob.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
-}
-// Render toggle khi vào tab Tài khoản
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(_renderMirrorSelfieToggle, 500);
-});
-
-// Đọc EXIF Orientation từ file JPEG (1..8). Trả 1 nếu không có EXIF.
-function _getExifOrientation(file){
-  return new Promise(resolve => {
-    if(!file || !/jpe?g/i.test(file.type || '')){ resolve(1); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const view = new DataView(e.target.result);
-        if(view.getUint16(0, false) !== 0xFFD8){ resolve(1); return; }
-        const length = view.byteLength;
-        let offset = 2;
-        while(offset < length){
-          if(offset + 2 > length) break;
-          const marker = view.getUint16(offset, false);
-          offset += 2;
-          if(marker === 0xFFE1){
-            if(offset + 8 > length) break;
-            if(view.getUint32(offset + 2, false) !== 0x45786966){ resolve(1); return; }
-            const little = view.getUint16(offset + 8, false) === 0x4949;
-            // Scan trong APP1 segment tìm tag 0x0112 (Orientation)
-            const segLen = view.getUint16(offset, false);
-            const scanEnd = Math.min(offset + segLen, length - 12);
-            for(let i = offset + 8; i < scanEnd; i++){
-              try {
-                const tag = view.getUint16(i, little);
-                if(tag === 0x0112){
-                  resolve(view.getUint16(i + 8, little));
-                  return;
-                }
-              } catch(_){}
-            }
-            resolve(1);
-            return;
-          } else if((marker & 0xFF00) !== 0xFF00){
-            break;
-          } else {
-            if(offset + 2 > length) break;
-            offset += view.getUint16(offset, false);
-          }
-        }
-        resolve(1);
-      } catch(err){
-        resolve(1);
-      }
-    };
-    reader.onerror = () => resolve(1);
-    // Chỉ đọc 256KB đầu (đủ cho EXIF header)
-    reader.readAsArrayBuffer(file.slice(0, 256 * 1024));
-  });
-}
-
-// [v9.51] Load file ảnh + browser tự xử EXIF orientation → trả về { canvas, ctx, width, height }
-// Dùng createImageBitmap với imageOrientation:'from-image' (Safari iOS 13.4+, Chrome, Firefox)
-// Fallback: dùng <img> thường (browser hiện đại đã auto-rotate <img> theo EXIF mặc định)
-async function _loadImageOriented(file, maxW){
-  let bitmap = null;
-  // Thử createImageBitmap (xử lý EXIF tự động bởi browser engine)
-  if (typeof createImageBitmap === 'function'){
-    try {
-      bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    } catch(e){
-      try { bitmap = await createImageBitmap(file); } catch(_){ bitmap = null; }
-    }
-  }
-  if (bitmap){
-    let outW = bitmap.width, outH = bitmap.height;
-    if (maxW && Math.max(outW, outH) > maxW){
-      const scale = maxW / Math.max(outW, outH);
-      outW = Math.round(outW * scale);
-      outH = Math.round(outH * scale);
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = outW;
-    canvas.height = outH;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0, outW, outH);
-    try { bitmap.close(); } catch(_){}
-    return { canvas, ctx, width: outW, height: outH, orientation: 1 };
-  }
-  // Fallback: <img> — Safari iOS 13.4+ và Chrome đã auto-rotate <img> mặc định
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let outW = img.naturalWidth || img.width;
-        let outH = img.naturalHeight || img.height;
-        if (maxW && Math.max(outW, outH) > maxW){
-          const scale = maxW / Math.max(outW, outH);
-          outW = Math.round(outW * scale);
-          outH = Math.round(outH * scale);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = outW;
-        canvas.height = outH;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, outW, outH);
-        resolve({ canvas, ctx, width: outW, height: outH, orientation: 1 });
-      };
-      img.onerror = () => reject(new Error('Không đọc được ảnh'));
-      img.src = e.target.result;
-    };
-    reader.onerror = () => reject(new Error('Không đọc được file'));
-    reader.readAsDataURL(file);
-  });
-}
-
-// [v9.51] State cho modal review ảnh selfie
-let _srState = {
-  baseCanvas: null,  // canvas đã orientation-corrected, CHƯA flip, CHƯA watermark
-  width: 0, height: 0,
-  flipped: false,    // user toggle bằng nút "Đảo chiều" trong modal
-};
-
-// Render preview vào modal — apply flip + watermark live
-function _srRenderPreview(){
-  if(!_srState.baseCanvas) return;
-  const w = _srState.width, h = _srState.height;
-  const out = document.createElement('canvas');
-  out.width = w; out.height = h;
-  const octx = out.getContext('2d');
-  if (_srState.flipped){
-    octx.translate(w, 0);
-    octx.scale(-1, 1);
-  }
-  octx.drawImage(_srState.baseCanvas, 0, 0);
-  octx.setTransform(1, 0, 0, 1, 0, 0);
-  // Watermark
-  const now=new Date();
-  const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
-  octx.font='13px monospace';octx.fillStyle='rgba(0,0,0,.45)';octx.fillRect(0,h-26,w,26);
-  octx.fillStyle='white';octx.fillText('📍 '+ts+'  '+(SESSION?SESSION.ma:''),8,h-9);
-  const dataUrl = out.toDataURL('image/jpeg',0.75);
-  const imgEl = document.getElementById('sr-img');
-  if (imgEl) imgEl.src = dataUrl;
-  // Lưu để dùng khi confirm
-  _srState._lastDataUrl = dataUrl;
-  // Update label nút flip
-  const btn = document.getElementById('sr-flip-btn');
-  if (btn) btn.textContent = _srState.flipped ? '⇆ Bỏ đảo chiều' : '⇆ Đảo chiều';
-}
-
-function srToggleFlip(){
-  _srState.flipped = !_srState.flipped;
-  // Lưu setting người dùng để lần sau auto-flip
-  try { localStorage.setItem('mirror_selfie', _srState.flipped ? '1' : '0'); } catch(e){}
-  _srRenderPreview();
-}
-
-function srClose(){
-  document.getElementById('selfie-review-modal').style.display = 'none';
-  _srState.baseCanvas = null;
-  _srState._lastDataUrl = null;
-}
-
-function srRetake(){
-  srClose();
-  // Mở lại camera
-  setTimeout(() => { if (typeof moCamera === 'function') moCamera(); }, 100);
-}
-
-function srConfirm(){
-  if (!_srState._lastDataUrl){ srClose(); return; }
-  state.selfieB64 = _srState._lastDataUrl;
-  state.selfieOk = true;
-  const preview=document.getElementById('selfie-preview');
-  if(preview){ preview.src=state.selfieB64; preview.style.display='block'; }
-  const icon = document.getElementById('selfie-icon');
-  if(icon) icon.style.display='none';
-  const btnEl = document.getElementById('selfie-btn');
-  if(btnEl) btnEl.className='selfie-btn done';
-  const txt = document.getElementById('selfie-text');
-  if(txt) txt.textContent='Ảnh đã chụp ✓';
-  const sub = document.getElementById('selfie-sub');
-  if(sub) sub.textContent='Bấm để chụp lại nếu cần';
-  srClose();
-  if (typeof updateSubmitBtn === 'function') updateSubmitBtn();
-}
-
-// Hàm cũ giữ làm fallback + mobile native camera
+// [v9.52] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
@@ -5295,26 +5041,6 @@ function xuLyAnhChup(input){
   // Ẩn lỗi cũ
   const errEl2 = document.getElementById('camera-err');
   if(errEl2) errEl2.style.display = 'none';
-
-  // [v9.51] Load ảnh + mở modal review để user kiểm tra/đảo chiều trước khi gửi
-  (async () => {
-    try {
-      const { canvas, width:w, height:h } = await _loadImageOriented(file, 800);
-      _srState.baseCanvas = canvas;
-      _srState.width = w;
-      _srState.height = h;
-      _srState.flipped = _getMirrorSelfie();  // theo setting hiện tại
-      _srRenderPreview();
-      document.getElementById('selfie-review-modal').style.display = 'flex';
-    } catch(err){
-      console.warn('[xuLyAnhChup] _loadImageOriented lỗi, fallback path cũ:', err.message);
-      _xuLyAnhChup_Fallback(file);
-    }
-  })();
-}
-
-// [v9.51] Fallback (logic cũ) khi _loadImageOriented lỗi — vẫn áp dụng mirror nếu cần
-function _xuLyAnhChup_Fallback(file){
   const reader=new FileReader();
   reader.onload=function(e){
     const img=new Image();
@@ -5323,16 +5049,7 @@ function _xuLyAnhChup_Fallback(file){
       if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
       else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
       const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-      const ctx=canvas.getContext('2d');
-      // [v9.51 hotfix] Mirror flip nếu user bật setting (mặc định bật trên iOS)
-      const mirror = _getMirrorSelfie();
-      if (mirror){
-        ctx.translate(w, 0);
-        ctx.scale(-1, 1);
-      }
-      ctx.drawImage(img,0,0,w,h);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      // Watermark vẽ sau khi reset transform → chiều đúng
+      const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
       const now=new Date();
       const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
       ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
@@ -6178,7 +5895,7 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      // [v9.51] Persist sang localStorage
+      // [v9.52] Persist sang localStorage
       try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
@@ -6208,8 +5925,6 @@ function renderTaiKhoan(){
     el.textContent=vt==='ADMIN'?'👑 Admin':'🛡️ Quản lý nhân sự';
     el.style.display='inline-block';
   }
-  // [v9.51] Render trạng thái toggle Lật gương selfie
-  try { _renderMirrorSelfieToggle(); } catch(e){}
 }
 
 // [v9.45] Helper render avatar UI dùng chung
@@ -6662,7 +6377,7 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    // [v9.51 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    // [v9.52 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
     try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
@@ -8599,36 +8314,24 @@ function setLCNghiLyDo(ngay, value){
 function xuLyAnhNghiLich(ngay, input){
   if(!input||!input.files||!input.files[0])return;
   const file=input.files[0];
-  // [v9.51] EXIF orientation fix
-  (async () => {
-    try {
-      const { canvas } = await _loadImageOriented(file, 900);
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=900;
+      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
       if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
       lcEdit[ngay].anhB64Moi=canvas.toDataURL('image/jpeg',0.78);
       _rerenderLCDay(ngay);
       setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
-    } catch(err){
-      console.warn('[xuLyAnhNghiLich] EXIF fix lỗi, fallback:', err.message);
-      const reader=new FileReader();
-      reader.onload=ev=>{
-        const img=new Image();
-        img.onload=()=>{
-          const MAX=900;
-          const scale=Math.min(1,MAX/Math.max(img.width,img.height));
-          const canvas=document.createElement('canvas');
-          canvas.width=Math.round(img.width*scale);
-          canvas.height=Math.round(img.height*scale);
-          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-          if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
-          lcEdit[ngay].anhB64Moi=canvas.toDataURL('image/jpeg',0.78);
-          _rerenderLCDay(ngay);
-          setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
-        };
-        img.src=ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  })();
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 // Thêm ca / cửa hàng khác trong cùng 1 ngày [FIX v9 #4]
@@ -8990,7 +8693,7 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
-// [v9.51] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// [v9.52] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
 // State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
 let _xdlEdit = {};
@@ -9018,7 +8721,7 @@ function openXinDoiLichModal() {
     }
   }
   
-  // [v9.51 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
+  // [v9.52 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
   const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
@@ -9035,7 +8738,7 @@ function openXinDoiLichModal() {
   
   // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
   ngayList.forEach(item => {
-    // [v9.51] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    // [v9.52] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
     const cacCa = (lcData.lich || []).filter(l =>
       l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
@@ -9410,7 +9113,7 @@ async function submitXinDoiLich() {
   try {
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      // [v9.51 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      // [v9.52 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
       p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
@@ -9425,7 +9128,7 @@ async function submitXinDoiLich() {
       return;
     }
     
-    // [v9.51 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    // [v9.52 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
     const soNgay = res.so_ngay_moi || ngayKeys.length;
     showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
@@ -9538,38 +9241,26 @@ function closeNghiDotXuatModal(){
 function onDXAnhChange(input){
   const file = input.files && input.files[0];
   if(!file) return;
-  // [v9.51] EXIF orientation fix
-  (async () => {
-    try {
-      const { canvas } = await _loadImageOriented(file, 1200);
+  // Compress: dùng cách giống ảnh chấm công nếu có sẵn
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 1200;
+      let w = img.width, h = img.height;
+      if(w > maxW){ h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       const b64 = canvas.toDataURL('image/jpeg', 0.85);
       _dxState.anhB64 = b64;
       const previewImg = document.getElementById('dx-anh-img');
       previewImg.src = b64;
       document.getElementById('dx-anh-preview').style.display = 'block';
-    } catch(err){
-      console.warn('[onDXAnhChange] EXIF fix lỗi, fallback:', err.message);
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxW = 1200;
-          let w = img.width, h = img.height;
-          if(w > maxW){ h = h * maxW / w; w = maxW; }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          const b64 = canvas.toDataURL('image/jpeg', 0.85);
-          _dxState.anhB64 = b64;
-          const previewImg = document.getElementById('dx-anh-img');
-          previewImg.src = b64;
-          document.getElementById('dx-anh-preview').style.display = 'block';
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  })();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 async function submitNghiDotXuat(){
@@ -10564,38 +10255,25 @@ function dongFormDonNghi(){
 function xuLyAnhDonNghi(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
-  // [v9.51] EXIF orientation fix
-  (async () => {
-    try {
-      const { canvas } = await _loadImageOriented(file, 900);
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=900;
+      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
       _dnAnhB64=canvas.toDataURL('image/jpeg',0.78);
       document.getElementById('dn-anh-ico').textContent='✅';
       document.getElementById('dn-anh-txt').textContent='Đã đính kèm đơn';
       document.getElementById('dn-anh-sub').textContent='Bấm để chụp lại';
       document.getElementById('dn-anh-btn').classList.add('done');
-    } catch(err){
-      console.warn('[xuLyAnhDonNghi] EXIF fix lỗi, fallback:', err.message);
-      const reader=new FileReader();
-      reader.onload=e=>{
-        const img=new Image();
-        img.onload=()=>{
-          const MAX=900;
-          const scale=Math.min(1,MAX/Math.max(img.width,img.height));
-          const canvas=document.createElement('canvas');
-          canvas.width=Math.round(img.width*scale);
-          canvas.height=Math.round(img.height*scale);
-          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-          _dnAnhB64=canvas.toDataURL('image/jpeg',0.78);
-          document.getElementById('dn-anh-ico').textContent='✅';
-          document.getElementById('dn-anh-txt').textContent='Đã đính kèm đơn';
-          document.getElementById('dn-anh-sub').textContent='Bấm để chụp lại';
-          document.getElementById('dn-anh-btn').classList.add('done');
-        };
-        img.src=e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  })();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function guiDonNghiMoi(){
@@ -13343,7 +13021,7 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
-        // [v9.51] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        // [v9.52] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
         localStorage.removeItem('session_cc');
         localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
