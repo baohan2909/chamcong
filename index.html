@@ -2432,7 +2432,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.47</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.48</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2699,14 +2699,14 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- Danh sách ngày + chọn ca -->
-        <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày cần đổi <span style="color:#DC2626">*</span></div>
-        <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
-        <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ chọn được từ hôm nay trở đi.</div>
+        <!-- [v9.48] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
+        <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+        <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.48) -->
         <div style="margin-bottom:8px">
-          <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do <span style="color:#DC2626">*</span></label>
+          <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
             style="width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s"
             onfocus="this.style.borderColor='#EA580C'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
@@ -3512,7 +3512,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.45 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.48 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4415,14 +4415,43 @@ let lastDay=new Date().getDate();
 
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
+
+// [v9.48] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+function _getMondayMidnight(d){
+  const x = new Date(d);
+  x.setHours(0,0,0,0);
+  // getDay(): 0=CN, 1=T2, ..., 6=T7
+  // Số ngày cần trừ để về T2
+  const day = x.getDay();
+  const diff = day === 0 ? 6 : (day - 1);  // CN → trừ 6, T2 → trừ 0
+  x.setDate(x.getDate() - diff);
+  return x.getTime();
+}
+
 function tick(){
   const d=new Date(),days=['CN','T2','T3','T4','T5','T6','T7'];
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
-  if(SESSION&&d.getDate()!==lastDay){
-    lastDay=d.getDate();
-    sessionStorage.removeItem('session_cc');SESSION=null;stopCamera();
-    alert('Đã sang ngày mới. Vui lòng đăng nhập lại.');location.reload();
+
+  // [v9.48] Auto-logout vào 00:00 thứ Hai hàng tuần
+  // Nguyên tắc: nếu loginTime < thứ Hai 00:00 gần nhất ≤ now → logout
+  if(SESSION){
+    try {
+      const loginTime = parseInt(localStorage.getItem('session_login_ts') || '0', 10);
+      if(loginTime > 0){
+        const mondayMidnight = _getMondayMidnight(d);
+        // Login trước thứ Hai 00:00 gần nhất → đã sang tuần mới → logout
+        if(loginTime < mondayMidnight){
+          localStorage.removeItem('session_cc');
+          localStorage.removeItem('session_login_ts');
+          SESSION=null;
+          try{ stopCamera(); }catch(e){}
+          alert('Đã sang tuần mới. Vui lòng đăng nhập lại.');
+          location.reload();
+          return;
+        }
+      }
+    } catch(e){}
   }
 }
 setInterval(tick,1000);tick();
@@ -4594,7 +4623,12 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    sessionStorage.setItem('session_cc',JSON.stringify(SESSION));khoiDongApp();
+    // [v9.48] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    try{
+      localStorage.setItem('session_cc',JSON.stringify(SESSION));
+      localStorage.setItem('session_login_ts', String(Date.now()));
+    }catch(e){}
+    khoiDongApp();
   }).catch(()=>{btn.disabled=false;btn.textContent='ĐĂNG NHẬP';showLoginErr('Lỗi kết nối.');});
 }
 function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
@@ -4603,7 +4637,14 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  SESSION=null;sessionStorage.removeItem('session_cc');stopCamera();
+  // [v9.48] Clear cả session + loginTime
+  SESSION=null;
+  try{
+    localStorage.removeItem('session_cc');
+    localStorage.removeItem('session_login_ts');
+    sessionStorage.removeItem('session_cc'); // dọn dẹp dữ liệu cũ
+  }catch(e){}
+  stopCamera();
   state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
   document.getElementById('main-app').style.display='none';
   document.getElementById('main-header').style.display='none';
@@ -4612,8 +4653,26 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  const s=sessionStorage.getItem('session_cc');
-  if(s){try{SESSION=JSON.parse(s);_fetchAvatarUrl();khoiDongApp();}catch(e){sessionStorage.removeItem('session_cc');}}
+  // [v9.48] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  let s = null;
+  try{ s = localStorage.getItem('session_cc'); }catch(e){}
+  if(!s){
+    // Migration: nếu user đang dùng phiên cũ (sessionStorage), kéo sang localStorage
+    try{
+      const old = sessionStorage.getItem('session_cc');
+      if(old){
+        localStorage.setItem('session_cc', old);
+        // Lần đầu chuyển: coi như mới login bây giờ để không bị logout ngay
+        if(!localStorage.getItem('session_login_ts')){
+          localStorage.setItem('session_login_ts', String(Date.now()));
+        }
+        s = old;
+      }
+    }catch(e){}
+  }
+  if(s){try{SESSION=JSON.parse(s);_fetchAvatarUrl();khoiDongApp();}catch(e){
+    try{ localStorage.removeItem('session_cc'); }catch(_){}
+  }}
   // [v12-P3] Ẩn bottom-nav khi bàn phím hiện (iOS/Android)
   _setupKeyboardHandler();
 });
@@ -4966,6 +5025,116 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// [v9.48] EXIF ORIENTATION FIX — chống ảnh bị lật/xoay sai sau khi chụp
+// Nguyên nhân: 1 số dòng máy (Samsung A-series, Xiaomi MIUI, iPhone cũ)
+// lưu ảnh raw + cờ EXIF Orientation. Browser load bằng <img> không apply
+// EXIF orientation → canvas vẽ ra bị xoay/mirror.
+// Giải pháp: đọc EXIF Orientation byte 0xFFE1, tự transform canvas.
+// ════════════════════════════════════════════════════════════════════════
+
+// Đọc EXIF Orientation từ file JPEG (1..8). Trả 1 nếu không có EXIF.
+function _getExifOrientation(file){
+  return new Promise(resolve => {
+    if(!file || !/jpe?g/i.test(file.type || '')){ resolve(1); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const view = new DataView(e.target.result);
+        if(view.getUint16(0, false) !== 0xFFD8){ resolve(1); return; }
+        const length = view.byteLength;
+        let offset = 2;
+        while(offset < length){
+          if(offset + 2 > length) break;
+          const marker = view.getUint16(offset, false);
+          offset += 2;
+          if(marker === 0xFFE1){
+            if(offset + 8 > length) break;
+            if(view.getUint32(offset + 2, false) !== 0x45786966){ resolve(1); return; }
+            const little = view.getUint16(offset + 8, false) === 0x4949;
+            // Scan trong APP1 segment tìm tag 0x0112 (Orientation)
+            const segLen = view.getUint16(offset, false);
+            const scanEnd = Math.min(offset + segLen, length - 12);
+            for(let i = offset + 8; i < scanEnd; i++){
+              try {
+                const tag = view.getUint16(i, little);
+                if(tag === 0x0112){
+                  resolve(view.getUint16(i + 8, little));
+                  return;
+                }
+              } catch(_){}
+            }
+            resolve(1);
+            return;
+          } else if((marker & 0xFF00) !== 0xFF00){
+            break;
+          } else {
+            if(offset + 2 > length) break;
+            offset += view.getUint16(offset, false);
+          }
+        }
+        resolve(1);
+      } catch(err){
+        resolve(1);
+      }
+    };
+    reader.onerror = () => resolve(1);
+    // Chỉ đọc 256KB đầu (đủ cho EXIF header)
+    reader.readAsArrayBuffer(file.slice(0, 256 * 1024));
+  });
+}
+
+// Load file ảnh + apply EXIF orientation → trả về { canvas, ctx, width, height }
+// Resize theo maxW (giữ tỉ lệ). ctx đã reset transform, sẵn sàng cho watermark.
+async function _loadImageOriented(file, maxW){
+  const orientation = await _getExifOrientation(file);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        // Orientation 5..8: ảnh bị xoay 90/270 → width/height hoán đổi sau khi xoay
+        const swapWH = orientation >= 5 && orientation <= 8;
+        let outW = swapWH ? h : w;
+        let outH = swapWH ? w : h;
+        // Resize
+        if(maxW && Math.max(outW, outH) > maxW){
+          const scale = maxW / Math.max(outW, outH);
+          outW = Math.round(outW * scale);
+          outH = Math.round(outH * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = outW;
+        canvas.height = outH;
+        const ctx = canvas.getContext('2d');
+        // Drawing dimensions trước khi transform
+        const drawW = swapWH ? outH : outW;
+        const drawH = swapWH ? outW : outH;
+        // Apply EXIF orientation transform
+        switch(orientation){
+          case 2: ctx.translate(outW, 0); ctx.scale(-1, 1); break;
+          case 3: ctx.translate(outW, outH); ctx.rotate(Math.PI); break;
+          case 4: ctx.translate(0, outH); ctx.scale(1, -1); break;
+          case 5: ctx.rotate(0.5 * Math.PI); ctx.scale(1, -1); break;
+          case 6: ctx.rotate(0.5 * Math.PI); ctx.translate(0, -outW); break;
+          case 7: ctx.rotate(0.5 * Math.PI); ctx.translate(outH, -outW); ctx.scale(-1, 1); break;
+          case 8: ctx.rotate(-0.5 * Math.PI); ctx.translate(-outH, 0); break;
+          default: break;
+        }
+        ctx.drawImage(img, 0, 0, drawW, drawH);
+        // Reset transform để watermark vẽ đúng tọa độ
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resolve({ canvas, ctx, width: outW, height: outH, orientation });
+      };
+      img.onerror = () => reject(new Error('Không đọc được ảnh'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Không đọc được file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // Hàm cũ giữ làm fallback + mobile native camera
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
@@ -4982,6 +5151,32 @@ function xuLyAnhChup(input){
   // Ẩn lỗi cũ
   const errEl2 = document.getElementById('camera-err');
   if(errEl2) errEl2.style.display = 'none';
+
+  // [v9.48] Dùng _loadImageOriented để fix ảnh bị xoay/lật do EXIF
+  (async () => {
+    try {
+      const { canvas, ctx, width:w, height:h } = await _loadImageOriented(file, 800);
+      const now=new Date();
+      const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+      ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
+      ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
+      state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
+      const preview=document.getElementById('selfie-preview');
+      preview.src=state.selfieB64;preview.style.display='block';
+      document.getElementById('selfie-icon').style.display='none';
+      document.getElementById('selfie-btn').className='selfie-btn done';
+      document.getElementById('selfie-text').textContent='Ảnh đã chụp ✓';
+      document.getElementById('selfie-sub').textContent='Bấm để chụp lại nếu cần';
+      updateSubmitBtn();
+    } catch(err){
+      console.warn('[xuLyAnhChup] EXIF fix lỗi, fallback path cũ:', err.message);
+      _xuLyAnhChup_Fallback(file);
+    }
+  })();
+}
+
+// [v9.48] Fallback (logic cũ) khi _loadImageOriented lỗi
+function _xuLyAnhChup_Fallback(file){
   const reader=new FileReader();
   reader.onload=function(e){
     const img=new Image();
@@ -5836,7 +6031,8 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
+      // [v9.48] Persist sang localStorage
+      try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
         renderTaiKhoan();
@@ -6221,7 +6417,7 @@ async function _uploadAvatarBlob(blob) {
     
     SESSION.avatarUrl = publicUrl;
     try {
-      sessionStorage.setItem('session_cc', JSON.stringify(SESSION));
+      localStorage.setItem('session_cc', JSON.stringify(SESSION));
     } catch(e) {}
     
     const init = SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
@@ -6317,7 +6513,8 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    try { localStorage.setItem('nonson_session', JSON.stringify(SESSION)); } catch(e) {}
+    // [v9.48 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
     const init = SESSION.ten.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
@@ -6360,7 +6557,8 @@ function doDoiMatKhau(){
     if(error){showPwMsg(error.message || 'Lỗi máy chủ','err');return;}
     if(!res || !res.success){showPwMsg((res && res.error) || 'Đổi mật khẩu thất bại','err');return;}
     showPwMsg('✓ Đổi mật khẩu thành công!','ok');
-    SESSION.laDatMacDinh=false;sessionStorage.setItem('session_cc',JSON.stringify(SESSION));
+    SESSION.laDatMacDinh=false;
+    try{ localStorage.setItem('session_cc',JSON.stringify(SESSION)); }catch(e){}
     document.getElementById('banner-pw').style.display='none';
     setTimeout(closePwModal,2000);
   }).catch(()=>{btn.disabled=false;btn.textContent='XÁC NHẬN ĐỔI MẬT KHẨU';showPwMsg('Lỗi kết nối.','err');});
@@ -8252,24 +8450,36 @@ function setLCNghiLyDo(ngay, value){
 function xuLyAnhNghiLich(ngay, input){
   if(!input||!input.files||!input.files[0])return;
   const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const img=new Image();
-    img.onload=()=>{
-      const MAX=900;
-      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.round(img.width*scale);
-      canvas.height=Math.round(img.height*scale);
-      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+  // [v9.48] EXIF orientation fix
+  (async () => {
+    try {
+      const { canvas } = await _loadImageOriented(file, 900);
       if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
       lcEdit[ngay].anhB64Moi=canvas.toDataURL('image/jpeg',0.78);
       _rerenderLCDay(ngay);
       setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
-    };
-    img.src=ev.target.result;
-  };
-  reader.readAsDataURL(file);
+    } catch(err){
+      console.warn('[xuLyAnhNghiLich] EXIF fix lỗi, fallback:', err.message);
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const img=new Image();
+        img.onload=()=>{
+          const MAX=900;
+          const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.round(img.width*scale);
+          canvas.height=Math.round(img.height*scale);
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          if(!lcEdit[ngay])lcEdit[ngay]={type:'nghi'};
+          lcEdit[ngay].anhB64Moi=canvas.toDataURL('image/jpeg',0.78);
+          _rerenderLCDay(ngay);
+          setTimeout(()=>{const el=document.getElementById('lced-'+ngay);if(el)el.classList.add('open');},10);
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  })();
 }
 
 // Thêm ca / cửa hàng khác trong cùng 1 ngày [FIX v9 #4]
@@ -8631,8 +8841,10 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
+// [v9.48] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
-let _xdlState = { ngayChon: {} };  // { '2026-05-25': { ngay, loai, ca_lam, ma_ch, ten_ch, gio_bat_dau, gio_ket_thuc } }
+let _xdlEdit = {};
 
 function openXinDoiLichModal() {
   if (!SESSION) return;
@@ -8642,7 +8854,7 @@ function openXinDoiLichModal() {
   }
   
   // Reset state
-  _xdlState.ngayChon = {};
+  _xdlEdit = {};
   document.getElementById('xdl-lydo').value = '';
   
   // Set title theo tuần
@@ -8657,18 +8869,16 @@ function openXinDoiLichModal() {
     }
   }
   
-  // Render danh sách ngày trong tuần — chỉ những ngày từ hôm nay trở đi
+  // Lấy 7 ngày trong tuần (chỉ từ hôm nay trở đi)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
-  
-  // Lấy 7 ngày trong tuần từ lcData.thuHai → chuNhat
   const thuHai = new Date(lcData.thuHai + 'T00:00:00');
   const ngayList = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(thuHai);
     d.setDate(d.getDate() + i);
     const dStr = _toDateStr(d);
-    if (dStr < todayStr) continue;  // skip ngày đã qua
+    if (dStr < todayStr) continue;
     ngayList.push({ ngay: dStr, dow: d.getDay() });
   }
   
@@ -8677,58 +8887,40 @@ function openXinDoiLichModal() {
     return;
   }
   
-  // Render từng ngày
-  const dowLbl = ['CN','T2','T3','T4','T5','T6','T7'];
-  const html = ngayList.map(item => {
-    const d = new Date(item.ngay + 'T00:00:00');
-    const dowStr = dowLbl[d.getDay()];
-    const dayStr = pad(d.getDate()) + '/' + pad(d.getMonth()+1);
-    
-    // Tìm ca hiện tại trong lcData.lich
-    const caHienTai = (lcData.lich || []).find(l => 
-      l.ngay === item.ngay && 
+  // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
+  ngayList.forEach(item => {
+    // [v9.48] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    const cacCa = (lcData.lich || []).filter(l =>
+      l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
     );
-    let caCuStr = 'Chưa có ca';
-    if (caHienTai) {
-      if (caHienTai.loai === 'Nghỉ phép') {
-        caCuStr = 'Nghỉ phép';
+    let snapshot = { enabled: false, type: 'work', slots: [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}] };
+    if (cacCa.length){
+      // Nếu bất kỳ slot nào là Nghỉ phép → snapshot type nghi
+      const hasNghi = cacCa.some(c => c.loai === 'Nghỉ phép');
+      if (hasNghi) {
+        snapshot = { enabled: false, type: 'nghi', slots: [] };
       } else {
-        const caLam = caHienTai.caLam || caHienTai.ca_lam || '';
-        const tenCh = caHienTai.tenCh || caHienTai.ten_ch_snapshot || '';
-        caCuStr = caLam + (tenCh ? ' · ' + tenCh : '');
+        snapshot = {
+          enabled: false, type: 'work',
+          slots: cacCa.map(c => ({
+            maCH: c.maCh || c.ma_ch || '',
+            tenCH: c.tenCh || c.ten_ch_snapshot || '',
+            gioBD: (c.gioBatDau || c.gio_bat_dau || '08:00').toString().slice(0,5),
+            gioKT: (c.gioKetThuc || c.gio_ket_thuc || '17:00').toString().slice(0,5),
+          }))
+        };
+        // Fallback nếu không có slot nào hợp lệ
+        if (!snapshot.slots.length){
+          snapshot.slots = [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
+        }
       }
     }
-    
-    return `
-      <div style="border:1.5px solid #E2E8F0;border-radius:10px;padding:10px 12px" id="xdl-day-${item.ngay}">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-          <input type="checkbox" onchange="toggleXDLDay('${item.ngay}', this.checked)" style="width:18px;height:18px;accent-color:#EA580C;cursor:pointer">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;color:#0F172A">${dowStr}, ${dayStr}</div>
-            <div style="font-size:11px;color:#64748B;margin-top:1px">Hiện tại: ${caCuStr}</div>
-          </div>
-        </label>
-        <div id="xdl-day-detail-${item.ngay}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #E2E8F0">
-          <div style="font-size:11.5px;font-weight:600;color:#475569;margin-bottom:6px">Đổi thành:</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Sáng" onclick="selectXDLLoai('${item.ngay}','Đi làm','Sáng')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Sáng</button>
-            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Chiều" onclick="selectXDLLoai('${item.ngay}','Đi làm','Chiều')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Chiều</button>
-            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Đi làm" data-ca="Cả ngày" onclick="selectXDLLoai('${item.ngay}','Đi làm','Cả ngày')" style="padding:7px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer">Cả ngày</button>
-            <button type="button" class="xdl-loai-btn" data-ngay="${item.ngay}" data-loai="Nghỉ phép" data-ca="" onclick="selectXDLLoai('${item.ngay}','Nghỉ phép','')" style="padding:7px 12px;border:1.5px solid #FECACA;background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:#9F1239;cursor:pointer">Nghỉ phép</button>
-          </div>
-          <div id="xdl-ch-picker-${item.ngay}" style="display:none;margin-top:8px">
-            <div style="font-size:11.5px;font-weight:600;color:#475569;margin-bottom:4px">Cửa hàng:</div>
-            <input type="text" id="xdl-ch-${item.ngay}" placeholder="Để trống = cửa hàng mặc định"
-              oninput="updateXDLCH('${item.ngay}', this.value)"
-              style="width:100%;padding:7px 10px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:12px;outline:none">
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+    _xdlEdit[item.ngay] = snapshot;
+  });
   
-  document.getElementById('xdl-days-list').innerHTML = html;
+  // Render danh sách
+  _renderXDLDaysList(ngayList);
   document.getElementById('xdl-modal').style.display = 'flex';
 }
 
@@ -8740,83 +8932,327 @@ function closeXinDoiLichModal() {
   document.getElementById('xdl-modal').style.display = 'none';
 }
 
-function toggleXDLDay(ngay, checked) {
-  const detailEl = document.getElementById('xdl-day-detail-' + ngay);
-  if (checked) {
-    detailEl.style.display = '';
-    if (!_xdlState.ngayChon[ngay]) {
-      _xdlState.ngayChon[ngay] = { ngay: ngay, loai: null, ca_lam: null };
+function _renderXDLDaysList(ngayList){
+  const dowLbl = ['CN','T2','T3','T4','T5','T6','T7'];
+  const html = ngayList.map(item => _renderXDLDayCard(item, dowLbl)).join('');
+  document.getElementById('xdl-days-list').innerHTML = html;
+}
+
+function _renderXDLDayCard(item, dowLbl){
+  const d = new Date(item.ngay + 'T00:00:00');
+  const dowStr = (dowLbl || ['CN','T2','T3','T4','T5','T6','T7'])[d.getDay()];
+  const dayStr = pad(d.getDate()) + '/' + pad(d.getMonth()+1);
+  const e = _xdlEdit[item.ngay] || {};
+  const enabled = !!e.enabled;
+  const type = e.type || 'work';
+  
+  // Ca hiện tại (info-only) — gộp nhiều ca trong ngày
+  const cacCaHt = (lcData?.lich || []).filter(l =>
+    l.ngay === item.ngay &&
+    (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
+  );
+  let caCuStr = 'Chưa có ca';
+  if (cacCaHt.length){
+    if (cacCaHt.some(c => c.loai === 'Nghỉ phép')){
+      caCuStr = 'Nghỉ phép';
+    } else if (cacCaHt.length === 1){
+      const c = cacCaHt[0];
+      const tenCh = c.tenCh || c.ten_ch_snapshot || '';
+      const gbd = (c.gioBatDau || c.gio_bat_dau || '').toString().slice(0,5);
+      const gkt = (c.gioKetThuc || c.gio_ket_thuc || '').toString().slice(0,5);
+      caCuStr = (tenCh || 'Đi làm') + (gbd ? ' · ' + gbd + (gkt ? '–' + gkt : '') : '');
+    } else {
+      caCuStr = cacCaHt.length + ' ca · ' + cacCaHt.map(c => c.tenCh || c.ten_ch_snapshot || '?').filter(Boolean).slice(0,2).join(', ') + (cacCaHt.length > 2 ? '...' : '');
+    }
+  }
+  
+  // Editor body — chỉ hiện khi enabled
+  let editor = '';
+  if (enabled){
+    if (type === 'work'){
+      const slots = e.slots || [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
+      editor = slots.map((s, idx) => `
+        <div style="border:1px solid #E2E8F0;border-radius:8px;padding:10px;margin-bottom:8px;background:#FAFBFC" data-ngay="${item.ngay}" data-idx="${idx}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:11.5px;font-weight:700;color:#475569">Ca ${idx+1}</span>
+            ${slots.length>1?`<button type="button" onclick="xdlXoaCa('${item.ngay}',${idx})" style="background:#FEE2E2;border:none;color:#DC2626;width:22px;height:22px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1">×</button>`:''}
+          </div>
+          <div style="position:relative;margin-bottom:6px">
+            <input type="text" id="xdl-ch-inp-${item.ngay}-${idx}"
+              placeholder="🔍 Nhập tên cửa hàng..." autocomplete="off"
+              value="${(s.tenCH||'').replace(/"/g,'&quot;')}"
+              oninput="xdlOnCHInput('${item.ngay}',${idx})"
+              onfocus="xdlShowCHSuggest('${item.ngay}',${idx})"
+              onblur="xdlHideCHSuggest('${item.ngay}',${idx})"
+              style="width:100%;padding:8px 10px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:12.5px;outline:none;box-sizing:border-box">
+            <div id="xdl-ch-sug-${item.ngay}-${idx}" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:7px;margin-top:2px;max-height:180px;overflow-y:auto;display:none;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+            <input type="time" id="xdl-time-bd-${item.ngay}-${idx}" value="${s.gioBD||'08:00'}" onchange="xdlSetGio('${item.ngay}',${idx},'bd',this.value)"
+              style="flex:1;padding:7px 8px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:12.5px;outline:none">
+            <span style="font-size:11px;color:#64748B">đến</span>
+            <input type="time" id="xdl-time-kt-${item.ngay}-${idx}" value="${s.gioKT||'17:00'}" onchange="xdlSetGio('${item.ngay}',${idx},'kt',this.value)"
+              style="flex:1;padding:7px 8px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:12.5px;outline:none">
+          </div>
+          <div style="font-size:10.5px;color:#64748B;margin-bottom:4px">Ca:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'07:30','15:30')" style="padding:4px 8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer">7:30-15:30</button>
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'08:00','14:00')" style="padding:4px 8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer">8:00-14:00</button>
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'13:30','21:30')" style="padding:4px 8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer">13:30-21:30</button>
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'14:00','22:00')" style="padding:4px 8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer">14:00-22:00</button>
+          </div>
+          <div style="font-size:10.5px;color:#64748B;margin-bottom:4px">Full:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'07:30','21:30')" style="padding:4px 8px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;border-radius:6px;font-size:11px;cursor:pointer">7:30-21:30</button>
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'07:30','22:00')" style="padding:4px 8px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;border-radius:6px;font-size:11px;cursor:pointer">7:30-22:00</button>
+            <button type="button" onclick="xdlPreset('${item.ngay}',${idx},'08:00','21:00')" style="padding:4px 8px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;border-radius:6px;font-size:11px;cursor:pointer">8:00-21:00</button>
+          </div>
+        </div>
+      `).join('');
+      editor += `<button type="button" onclick="xdlThemCa('${item.ngay}')" style="width:100%;padding:8px;background:#fff;border:1.5px dashed #CBD5E1;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">
+        + Thêm ca / cửa hàng khác
+      </button>`;
+    } else if (type === 'nghi'){
+      editor = `
+        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px">
+          <div style="font-size:12px;color:#991B1B;font-weight:600;margin-bottom:4px">📋 Nghỉ phép</div>
+          <div style="font-size:11.5px;color:#64748B;line-height:1.5">Bạn đang đề nghị đổi ngày này thành nghỉ phép. Lý do nhập ở cuối form.</div>
+        </div>`;
+    }
+  }
+  
+  // Header status badge
+  let badgeHtml = '';
+  if (enabled){
+    if (type === 'work'){
+      const cnt = (e.slots || []).filter(s => s.maCH || s.tenCH).length;
+      badgeHtml = `<span style="background:#FFEDD5;color:#9A3412;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700">${cnt} ca</span>`;
+    } else {
+      badgeHtml = `<span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700">Nghỉ phép</span>`;
+    }
+  }
+  
+  return `
+    <div style="border:${enabled?'1.5px solid #EA580C':'1.5px solid #E2E8F0'};border-radius:10px;background:${enabled?'#FFFBF7':'#fff'};transition:all .15s" id="xdl-day-${item.ngay}">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:11px 12px">
+        <input type="checkbox" ${enabled?'checked':''} onchange="xdlToggleDay('${item.ngay}', this.checked)"
+          style="width:18px;height:18px;accent-color:#EA580C;cursor:pointer;flex-shrink:0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#0F172A">${dowStr}, ${dayStr}</div>
+          <div style="font-size:11px;color:#64748B;margin-top:1px">Hiện tại: ${caCuStr}</div>
+        </div>
+        ${badgeHtml}
+      </label>
+      <div id="xdl-day-detail-${item.ngay}" style="display:${enabled?'block':'none'};padding:0 12px 12px;border-top:1px dashed #E2E8F0;padding-top:10px">
+        <!-- Type toggle: Đi làm vs Nghỉ phép -->
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button type="button" onclick="xdlSetType('${item.ngay}','work')"
+            style="flex:1;padding:7px;background:${type==='work'?'#FED7AA':'#fff'};color:${type==='work'?'#9A3412':'#475569'};border:1.5px solid ${type==='work'?'#EA580C':'#E2E8F0'};border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">
+            Đi làm
+          </button>
+          <button type="button" onclick="xdlSetType('${item.ngay}','nghi')"
+            style="flex:1;padding:7px;background:${type==='nghi'?'#FEE2E2':'#fff'};color:${type==='nghi'?'#991B1B':'#475569'};border:1.5px solid ${type==='nghi'?'#DC2626':'#E2E8F0'};border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">
+            Nghỉ phép
+          </button>
+        </div>
+        ${editor}
+      </div>
+    </div>
+  `;
+}
+
+function _rerenderXDLDay(ngay){
+  const oldEl = document.getElementById('xdl-day-' + ngay);
+  if (!oldEl) return;
+  const d = new Date(ngay + 'T00:00:00');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = _renderXDLDayCard({ ngay, dow: d.getDay() });
+  const newEl = tmp.firstElementChild;
+  oldEl.replaceWith(newEl);
+}
+
+function xdlToggleDay(ngay, checked){
+  if (!_xdlEdit[ngay]) _xdlEdit[ngay] = { enabled: false, type: 'work', slots: [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}] };
+  _xdlEdit[ngay].enabled = !!checked;
+  if (checked && !_xdlEdit[ngay].slots) _xdlEdit[ngay].slots = [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
+  _rerenderXDLDay(ngay);
+}
+
+function xdlSetType(ngay, type){
+  if (!_xdlEdit[ngay]) _xdlEdit[ngay] = { enabled: true, type: 'work', slots: [] };
+  _xdlEdit[ngay].type = type;
+  if (type === 'work' && (!_xdlEdit[ngay].slots || !_xdlEdit[ngay].slots.length)){
+    _xdlEdit[ngay].slots = [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
+  }
+  _rerenderXDLDay(ngay);
+}
+
+function xdlThemCa(ngay){
+  if (!_xdlEdit[ngay]) return;
+  if (!_xdlEdit[ngay].slots) _xdlEdit[ngay].slots = [];
+  const last = _xdlEdit[ngay].slots[_xdlEdit[ngay].slots.length - 1];
+  const gioBD = last && last.gioKT ? last.gioKT : '13:00';
+  _xdlEdit[ngay].slots.push({maCH:'',tenCH:'',gioBD,gioKT:'17:00'});
+  _rerenderXDLDay(ngay);
+}
+
+function xdlXoaCa(ngay, idx){
+  if (!_xdlEdit[ngay] || !_xdlEdit[ngay].slots) return;
+  _xdlEdit[ngay].slots.splice(idx, 1);
+  if (!_xdlEdit[ngay].slots.length) _xdlEdit[ngay].slots = [{maCH:'',tenCH:'',gioBD:'08:00',gioKT:'17:00'}];
+  _rerenderXDLDay(ngay);
+}
+
+function xdlSetGio(ngay, idx, field, value){
+  if (!_xdlEdit[ngay] || !_xdlEdit[ngay].slots || !_xdlEdit[ngay].slots[idx]) return;
+  if (field === 'bd') _xdlEdit[ngay].slots[idx].gioBD = value;
+  else _xdlEdit[ngay].slots[idx].gioKT = value;
+}
+
+function xdlPreset(ngay, idx, gioBD, gioKT){
+  if (!_xdlEdit[ngay] || !_xdlEdit[ngay].slots || !_xdlEdit[ngay].slots[idx]) return;
+  _xdlEdit[ngay].slots[idx].gioBD = gioBD;
+  _xdlEdit[ngay].slots[idx].gioKT = gioKT;
+  const bd = document.getElementById('xdl-time-bd-' + ngay + '-' + idx);
+  const kt = document.getElementById('xdl-time-kt-' + ngay + '-' + idx);
+  if (bd) bd.value = gioBD;
+  if (kt) kt.value = gioKT;
+}
+
+function xdlOnCHInput(ngay, idx){
+  const inp = document.getElementById('xdl-ch-inp-' + ngay + '-' + idx);
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (_xdlEdit[ngay] && _xdlEdit[ngay].slots && _xdlEdit[ngay].slots[idx]){
+    _xdlEdit[ngay].slots[idx].tenCH = val;
+    _xdlEdit[ngay].slots[idx].maCH = ''; // sẽ resolve khi pick suggest
+  }
+  xdlShowCHSuggest(ngay, idx);
+}
+
+function xdlShowCHSuggest(ngay, idx){
+  const inp = document.getElementById('xdl-ch-inp-' + ngay + '-' + idx);
+  const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
+  if (!inp || !sug) return;
+  const q = inp.value.trim().toLowerCase();
+  // CH_LIST là global, format: [{ma, ten}, ...]
+  let matched;
+  if (!q){
+    // Trống → gợi ý 5 CH hay làm (dùng cache _goiYCH_cache nếu có)
+    try { if (typeof _taiGoiYCH === 'function' && !_goiYCH_cache) _taiGoiYCH(); } catch(_){}
+    const goiY = (typeof _goiYCH_cache !== 'undefined' && _goiYCH_cache) ? _goiYCH_cache : [];
+    if (goiY.length){
+      matched = goiY.slice(0, 5).map(g => ({ ma: g.maCH, ten: g.tenCH }));
+    } else {
+      matched = (window.CH_LIST || []).slice(0, 5);
     }
   } else {
-    detailEl.style.display = 'none';
-    delete _xdlState.ngayChon[ngay];
+    matched = (window.CH_LIST || []).filter(ch =>
+      (ch.ma || '').toLowerCase().includes(q) || (ch.ten || '').toLowerCase().includes(q)
+    ).slice(0, 6);
   }
+  if (!matched.length){ sug.style.display = 'none'; return; }
+  sug.innerHTML = matched.map(ch =>
+    `<div onmousedown="event.preventDefault();xdlPickCH('${ngay}',${idx},'${(ch.ma||'').replace(/'/g,"\\'")}','${(ch.ten||'').replace(/'/g,"\\'")}')"
+       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${ch.ten || ''}</div>
+      <div style="font-size:10.5px;color:#64748B">${ch.ma || ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display = 'block';
 }
 
-function selectXDLLoai(ngay, loai, ca_lam) {
-  if (!_xdlState.ngayChon[ngay]) {
-    _xdlState.ngayChon[ngay] = { ngay: ngay };
-  }
-  _xdlState.ngayChon[ngay].loai = loai;
-  _xdlState.ngayChon[ngay].ca_lam = ca_lam || '';
-  
-  // Reset border tất cả button của ngày này
-  document.querySelectorAll(`button.xdl-loai-btn[data-ngay="${ngay}"]`).forEach(btn => {
-    btn.style.background = '#fff';
-    btn.style.borderColor = loai === 'Nghỉ phép' ? '#FECACA' : '#E2E8F0';
-    btn.style.color = loai === 'Nghỉ phép' ? '#9F1239' : '#475569';
-  });
-  
-  // Highlight button được chọn
-  const selectedBtn = document.querySelector(`button.xdl-loai-btn[data-ngay="${ngay}"][data-loai="${loai}"][data-ca="${ca_lam || ''}"]`);
-  if (selectedBtn) {
-    if (loai === 'Nghỉ phép') {
-      selectedBtn.style.background = '#FEE2E2';
-      selectedBtn.style.borderColor = '#DC2626';
-      selectedBtn.style.color = '#991B1B';
-    } else {
-      selectedBtn.style.background = '#FED7AA';
-      selectedBtn.style.borderColor = '#EA580C';
-      selectedBtn.style.color = '#9A3412';
-    }
-  }
-  
-  // Show/hide picker cửa hàng (chỉ "Đi làm" mới cần)
-  const chPicker = document.getElementById('xdl-ch-picker-' + ngay);
-  if (chPicker) {
-    chPicker.style.display = loai === 'Đi làm' ? '' : 'none';
-  }
+function xdlHideCHSuggest(ngay, idx){
+  setTimeout(() => {
+    const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
+    if (sug) sug.style.display = 'none';
+  }, 200);
 }
 
-function updateXDLCH(ngay, value) {
-  if (!_xdlState.ngayChon[ngay]) return;
-  _xdlState.ngayChon[ngay].ten_ch = value.trim() || null;
+function xdlPickCH(ngay, idx, maCH, tenCH){
+  if (!_xdlEdit[ngay] || !_xdlEdit[ngay].slots || !_xdlEdit[ngay].slots[idx]) return;
+  _xdlEdit[ngay].slots[idx].maCH = maCH;
+  _xdlEdit[ngay].slots[idx].tenCH = tenCH;
+  const inp = document.getElementById('xdl-ch-inp-' + ngay + '-' + idx);
+  if (inp) inp.value = tenCH;
+  const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
+  if (sug) sug.style.display = 'none';
 }
 
 async function submitXinDoiLich() {
   if (!SESSION || !lcData) return;
   
-  // Validate
-  const ngayList = Object.values(_xdlState.ngayChon);
-  if (ngayList.length === 0) {
+  // Build danh sách ngày đã chọn
+  const ngayKeys = Object.keys(_xdlEdit).filter(k => _xdlEdit[k] && _xdlEdit[k].enabled);
+  if (ngayKeys.length === 0) {
     showToast('Chưa chọn ngày nào.', 'err');
     return;
   }
   
-  // Check tất cả ngày đã chọn loại ca
-  const thieuLoai = ngayList.filter(item => !item.loai);
-  if (thieuLoai.length > 0) {
-    showToast('Có ' + thieuLoai.length + ' ngày chưa chọn ca mới.', 'err');
+  // Validate từng ngày
+  const thayDoi = [];
+  const errors = [];
+  for (const ngay of ngayKeys){
+    const e = _xdlEdit[ngay];
+    if (e.type === 'nghi'){
+      thayDoi.push({
+        ngay, loai: 'Nghỉ phép',
+        ca_lam: null, ma_ch: null, gio_bd: null, gio_kt: null,
+      });
+    } else {
+      // Đi làm: validate slots
+      const validSlots = (e.slots || []).filter(s => s.maCH || s.tenCH);
+      if (!validSlots.length){
+        errors.push(`Ngày ${ngay}: chưa nhập cửa hàng.`);
+        continue;
+      }
+      // Validate trùng giờ giữa các ca trong cùng ngày
+      if (validSlots.length >= 2){
+        const toMin = g => { const p = String(g||'').split(':').map(Number); return p[0]*60 + (p[1]||0); };
+        for (let i = 0; i < validSlots.length; i++){
+          for (let j = i+1; j < validSlots.length; j++){
+            const s1 = validSlots[i], s2 = validSlots[j];
+            const a1 = toMin(s1.gioBD), b1 = toMin(s1.gioKT);
+            const a2 = toMin(s2.gioBD), b2 = toMin(s2.gioKT);
+            if (Math.max(a1, a2) < Math.min(b1, b2)){
+              errors.push(`Ngày ${ngay}: 2 ca trùng giờ (${s1.gioBD}-${s1.gioKT} và ${s2.gioBD}-${s2.gioKT}).`);
+            }
+          }
+        }
+      }
+      // Push từng slot
+      validSlots.forEach(s => {
+        // Nếu user gõ tên CH nhưng chưa pick suggest → resolve từ CH_LIST
+        let maCH = s.maCH || '';
+        let tenCH = s.tenCH || '';
+        if (!maCH && tenCH && window.CH_LIST){
+          const match = window.CH_LIST.find(ch => (ch.ten || '').toLowerCase() === tenCH.toLowerCase());
+          if (match){ maCH = match.ma; tenCH = match.ten; }
+        }
+        thayDoi.push({
+          ngay, loai: 'Đi làm',
+          ca_lam: null,  // không dùng — đi làm theo giờ cụ thể
+          ma_ch: maCH || null,
+          gio_bd: s.gioBD || null,
+          gio_kt: s.gioKT || null,
+        });
+      });
+    }
+  }
+  
+  if (errors.length){
+    showToast(errors.join('\n'), 'err');
+    return;
+  }
+  if (!thayDoi.length){
+    showToast('Không có ca hợp lệ nào.', 'err');
     return;
   }
   
   const lyDo = document.getElementById('xdl-lydo').value.trim();
-  if (!lyDo) {
-    showToast('Vui lòng ghi lý do.', 'err');
-    return;
-  }
-  if (lyDo.length < 5) {
-    showToast('Lý do quá ngắn (≥5 ký tự).', 'err');
+  if (!lyDo || lyDo.length < 5) {
+    showToast('Lý do tối thiểu 5 ký tự.', 'err');
     return;
   }
   
@@ -8826,20 +9262,10 @@ async function submitXinDoiLich() {
   btn.innerHTML = '<span>Đang gửi...</span>';
   
   try {
-    // Build payload thay_doi
-    const thayDoi = ngayList.map(item => ({
-      ngay: item.ngay,
-      loai: item.loai,
-      ca_lam: item.ca_lam || null,
-      ma_ch: null,  // backend sẽ lookup từ ten_ch nếu cần
-      ten_ch: item.ten_ch || null,
-      gio_bat_dau: null,
-      gio_ket_thuc: null
-    }));
-    
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      p_ten_nv: SESSION.hoTen || SESSION.tenNV || SESSION.ma,
+      // [v9.48 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
       p_ly_do: lyDo
@@ -8853,10 +9279,10 @@ async function submitXinDoiLich() {
       return;
     }
     
-    showToast('✓ Đã gửi yêu cầu đổi ' + res.so_thay_doi + ' ngày. Chờ QLNS duyệt.', 'ok');
+    // [v9.48 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    const soNgay = res.so_ngay_moi || ngayKeys.length;
+    showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
-    
-    // Reload lịch
     if (typeof taiLichCa === 'function') taiLichCa();
   } catch (e) {
     console.error('[XDL] Lỗi:', e);
@@ -8866,6 +9292,7 @@ async function submitXinDoiLich() {
     btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Gửi yêu cầu';
   }
 }
+
 
 async function huyDeNghiDoiLich() {
   if (!SESSION || !lcData) return;
@@ -8965,26 +9392,38 @@ function closeNghiDotXuatModal(){
 function onDXAnhChange(input){
   const file = input.files && input.files[0];
   if(!file) return;
-  // Compress: dùng cách giống ảnh chấm công nếu có sẵn
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxW = 1200;
-      let w = img.width, h = img.height;
-      if(w > maxW){ h = h * maxW / w; w = maxW; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  // [v9.48] EXIF orientation fix
+  (async () => {
+    try {
+      const { canvas } = await _loadImageOriented(file, 1200);
       const b64 = canvas.toDataURL('image/jpeg', 0.85);
       _dxState.anhB64 = b64;
       const previewImg = document.getElementById('dx-anh-img');
       previewImg.src = b64;
       document.getElementById('dx-anh-preview').style.display = 'block';
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    } catch(err){
+      console.warn('[onDXAnhChange] EXIF fix lỗi, fallback:', err.message);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxW = 1200;
+          let w = img.width, h = img.height;
+          if(w > maxW){ h = h * maxW / w; w = maxW; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const b64 = canvas.toDataURL('image/jpeg', 0.85);
+          _dxState.anhB64 = b64;
+          const previewImg = document.getElementById('dx-anh-img');
+          previewImg.src = b64;
+          document.getElementById('dx-anh-preview').style.display = 'block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  })();
 }
 
 async function submitNghiDotXuat(){
@@ -9979,25 +10418,38 @@ function dongFormDonNghi(){
 function xuLyAnhDonNghi(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const MAX=900;
-      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.round(img.width*scale);
-      canvas.height=Math.round(img.height*scale);
-      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+  // [v9.48] EXIF orientation fix
+  (async () => {
+    try {
+      const { canvas } = await _loadImageOriented(file, 900);
       _dnAnhB64=canvas.toDataURL('image/jpeg',0.78);
       document.getElementById('dn-anh-ico').textContent='✅';
       document.getElementById('dn-anh-txt').textContent='Đã đính kèm đơn';
       document.getElementById('dn-anh-sub').textContent='Bấm để chụp lại';
       document.getElementById('dn-anh-btn').classList.add('done');
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
+    } catch(err){
+      console.warn('[xuLyAnhDonNghi] EXIF fix lỗi, fallback:', err.message);
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const img=new Image();
+        img.onload=()=>{
+          const MAX=900;
+          const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.round(img.width*scale);
+          canvas.height=Math.round(img.height*scale);
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          _dnAnhB64=canvas.toDataURL('image/jpeg',0.78);
+          document.getElementById('dn-anh-ico').textContent='✅';
+          document.getElementById('dn-anh-txt').textContent='Đã đính kèm đơn';
+          document.getElementById('dn-anh-sub').textContent='Bấm để chụp lại';
+          document.getElementById('dn-anh-btn').classList.add('done');
+        };
+        img.src=e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  })();
 }
 
 function guiDonNghiMoi(){
@@ -12745,6 +13197,9 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
+        // [v9.48] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        localStorage.removeItem('session_cc');
+        localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
         // Xóa cache local nhưng giữ queue (gửi lên ngày mai khi login)
         location.reload();
