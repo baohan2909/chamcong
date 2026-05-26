@@ -1,52 +1,129 @@
-{
-  "name": "Nón Sơn - Chấm công",
-  "short_name": "Chấm công",
-  "description": "Hệ thống chấm công, lịch ca và bán hàng Nón Sơn",
-  "id": "/chamcong/",
-  "start_url": "/chamcong/?source=pwa",
-  "scope": "/chamcong/",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
-  "orientation": "portrait",
-  "background_color": "#0F6E56",
-  "theme_color": "#0F6E56",
-  "lang": "vi",
-  "dir": "ltr",
-  "categories": ["business", "productivity"],
-  "icons": [
-    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
-    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
-    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
-    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
-    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "shortcuts": [
-    {
-      "name": "Chấm công",
-      "short_name": "Chấm công",
-      "description": "Vào / Ra ca nhanh",
-      "url": "/chamcong/?tab=giocong&source=shortcut",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Bán hàng",
-      "short_name": "Bán hàng",
-      "description": "Mở phiên bán hàng",
-      "url": "/chamcong/?tab=banhang&source=shortcut",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Lịch ca",
-      "short_name": "Lịch",
-      "description": "Xem và gửi lịch ca",
-      "url": "/chamcong/?tab=lich&source=shortcut",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+/**
+ * Nón Sơn — Service Worker
+ * Strategy:
+ *   - HTML (index.html, /) : NETWORK-FIRST (luôn lấy bản mới khi có mạng)
+ *   - Static assets (icons, manifest) : STALE-WHILE-REVALIDATE
+ *   - Supabase API : Never cached (always fresh)
+ *
+ * Update flow:
+ *   1. Đổi CACHE_VERSION khi update HTML
+ *   2. SW mới install ngầm
+ *   3. Postmessage cho app → app hiển thị banner "Có bản mới"
+ *   4. User bấm → skipWaiting + reload
+ */
+
+const CACHE_VERSION = 'nonson-v9.48';
+const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
+
+// Files cần precache cho offline (chỉ static assets)
+const PRECACHE_ASSETS = [
+  '/chamcong/',
+  '/chamcong/index.html',
+  '/chamcong/manifest.json',
+  '/chamcong/icons/icon-192.png',
+  '/chamcong/icons/icon-512.png',
+  '/chamcong/icons/apple-touch-icon.png'
+];
+
+// ─── INSTALL ──────────────────────────────────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE_ASSETS).catch(err => {
+        console.warn('[SW] Precache partial:', err);
+      }))
+  );
+});
+
+// ─── ACTIVATE — xóa cache cũ ──────────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME && k.startsWith('nonson-cache-'))
+            .map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+// ─── FETCH ────────────────────────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+  
+  // Chỉ handle GET
+  if (req.method !== 'GET') return;
+  
+  // Bỏ qua: Supabase API, GitHub raw, websocket, chrome-extension
+  if (url.hostname.includes('supabase.co') ||
+      url.hostname.includes('googleapis.com') ||
+      url.protocol === 'chrome-extension:' ||
+      url.protocol === 'ws:' || url.protocol === 'wss:') {
+    return;
+  }
+  
+  // HTML / navigation → NETWORK FIRST
+  if (req.mode === 'navigate' || 
+      (req.destination === 'document') ||
+      url.pathname.endsWith('.html') ||
+      url.pathname === '/chamcong/' ||
+      url.pathname === '/chamcong') {
+    event.respondWith(networkFirst(req));
+    return;
+  }
+  
+  // Static assets → STALE-WHILE-REVALIDATE
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|ttf|json)$/i)) {
+    event.respondWith(staleWhileRevalidate(req));
+    return;
+  }
+  
+  // Default: try cache, fallback network
+  event.respondWith(
+    caches.match(req).then(r => r || fetch(req))
+  );
+});
+
+// ─── Strategies ───────────────────────────────────────────────────────────
+async function networkFirst(req) {
+  try {
+    const fresh = await fetch(req);
+    if (fresh && fresh.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, fresh.clone());
     }
-  ],
-  "prefer_related_applications": false
+    return fresh;
+  } catch (err) {
+    const cached = await caches.match(req);
+    if (cached) return cached;
+    // Fallback: trả index.html cached nếu navigate fail
+    if (req.mode === 'navigate') {
+      const fallback = await caches.match('/chamcong/index.html');
+      if (fallback) return fallback;
+    }
+    throw err;
+  }
 }
+
+async function staleWhileRevalidate(req) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(req);
+  const fetchPromise = fetch(req).then(resp => {
+    if (resp && resp.status === 200) {
+      cache.put(req, resp.clone());
+    }
+    return resp;
+  }).catch(() => cached);
+  return cached || fetchPromise;
+}
+
+// ─── Message handler — cho phép app ra lệnh skipWaiting ────────────────
+self.addEventListener('message', event => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
+  if (event.data && event.data.action === 'getVersion') {
+    event.ports[0].postMessage({ version: CACHE_VERSION });
+  }
+});
