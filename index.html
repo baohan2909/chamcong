@@ -3507,8 +3507,25 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
+    <!-- [v9.48] Cài đặt ảnh selfie - chống lật gương -->
+    <div style="padding:0 14px 8px">
+      <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px">
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:600;color:#0F172A">Lật gương ảnh selfie</div>
+            <div style="font-size:11.5px;color:#94A3B8;margin-top:2px;line-height:1.45">Nếu ảnh chấm công bị lật ngược chiều, bật tùy chọn này để app tự lật lại trước khi gửi.</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="cfg-mirror-selfie" onchange="setMirrorSelfie(this.checked)" style="opacity:0;width:0;height:0">
+            <span id="cfg-mirror-slider" style="position:absolute;cursor:pointer;inset:0;background:#CBD5E1;border-radius:26px;transition:.2s">
+              <span style="position:absolute;content:'';height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)" id="cfg-mirror-knob"></span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
     <!-- Phiên bản + Kiểm tra cập nhật [v9.45] -->
-    <div style="padding:16px 14px 24px">
+    <div style="padding:8px 14px 24px">
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
@@ -5033,6 +5050,30 @@ async function moCameraLichNghi(ngay){
 // Giải pháp: đọc EXIF Orientation byte 0xFFE1, tự transform canvas.
 // ════════════════════════════════════════════════════════════════════════
 
+// [v9.48] User toggle "Lật gương ảnh selfie" — fix iOS không tôn trọng cài đặt camera
+function _getMirrorSelfie(){
+  try { return localStorage.getItem('mirror_selfie') === '1'; } catch(e){ return false; }
+}
+function setMirrorSelfie(checked){
+  try { localStorage.setItem('mirror_selfie', checked ? '1' : '0'); } catch(e){}
+  _renderMirrorSelfieToggle();
+  showToast(checked ? '✓ Đã bật lật gương ảnh selfie' : '✓ Đã tắt lật gương ảnh selfie', 'ok');
+}
+function _renderMirrorSelfieToggle(){
+  const inp = document.getElementById('cfg-mirror-selfie');
+  const slider = document.getElementById('cfg-mirror-slider');
+  const knob = document.getElementById('cfg-mirror-knob');
+  if(!inp) return;
+  const on = _getMirrorSelfie();
+  inp.checked = on;
+  if(slider) slider.style.background = on ? '#EA580C' : '#CBD5E1';
+  if(knob) knob.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+}
+// Render toggle khi vào tab Tài khoản
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(_renderMirrorSelfieToggle, 500);
+});
+
 // Đọc EXIF Orientation từ file JPEG (1..8). Trả 1 nếu không có EXIF.
 function _getExifOrientation(file){
   return new Promise(resolve => {
@@ -5156,11 +5197,29 @@ function xuLyAnhChup(input){
   (async () => {
     try {
       const { canvas, ctx, width:w, height:h } = await _loadImageOriented(file, 800);
-      const now=new Date();
-      const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
-      ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
-      ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
-      state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
+      // [v9.48] Mirror flip (selfie) nếu user bật setting "Lật gương ảnh selfie"
+      if (_getMirrorSelfie()){
+        const flipCanvas = document.createElement('canvas');
+        flipCanvas.width = w; flipCanvas.height = h;
+        const fctx = flipCanvas.getContext('2d');
+        fctx.translate(w, 0);
+        fctx.scale(-1, 1);
+        fctx.drawImage(canvas, 0, 0);
+        fctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Watermark vẽ trên flipCanvas (đã ở chiều đúng)
+        const now=new Date();
+        const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+        fctx.font='13px monospace';fctx.fillStyle='rgba(0,0,0,.45)';fctx.fillRect(0,h-26,w,26);
+        fctx.fillStyle='white';fctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
+        state.selfieB64=flipCanvas.toDataURL('image/jpeg',0.75);
+      } else {
+        const now=new Date();
+        const ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'  '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+        ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
+        ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
+        state.selfieB64=canvas.toDataURL('image/jpeg',0.75);
+      }
+      state.selfieOk=true;
       const preview=document.getElementById('selfie-preview');
       preview.src=state.selfieB64;preview.style.display='block';
       document.getElementById('selfie-icon').style.display='none';
@@ -6061,6 +6120,8 @@ function renderTaiKhoan(){
     el.textContent=vt==='ADMIN'?'👑 Admin':'🛡️ Quản lý nhân sự';
     el.style.display='inline-block';
   }
+  // [v9.48] Render trạng thái toggle Lật gương selfie
+  try { _renderMirrorSelfieToggle(); } catch(e){}
 }
 
 // [v9.45] Helper render avatar UI dùng chung
@@ -8869,17 +8930,14 @@ function openXinDoiLichModal() {
     }
   }
   
-  // Lấy 7 ngày trong tuần (chỉ từ hôm nay trở đi)
+  // [v9.48 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
-  const thuHai = new Date(lcData.thuHai + 'T00:00:00');
+  const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
   const ngayList = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(thuHai);
-    d.setDate(d.getDate() + i);
-    const dStr = _toDateStr(d);
-    if (dStr < todayStr) continue;
-    ngayList.push({ ngay: dStr, dow: d.getDay() });
+  for (const it of fullTuan) {
+    if (it.ngay < todayStr) continue;  // skip ngày đã qua
+    ngayList.push({ ngay: it.ngay });
   }
   
   if (ngayList.length === 0) {
