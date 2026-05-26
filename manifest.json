@@ -1,7 +1,7 @@
 {
   "name": "Nón Sơn - Chấm công",
   "short_name": "Chấm công",
-  "description": "Hệ thống chấm công, lịch ca và bán hàng Nón Sơn · v9.48",
+  "description": "Hệ thống chấm công, lịch ca và bán hàng Nón Sơn · v9.49",
   "id": "/chamcong/",
   "start_url": "/chamcong/?source=pwa",
   "scope": "/chamcong/",
