@@ -310,13 +310,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .gps-btn.success .gps-badge { background:var(--green-m); color:white; }
 .gps-btn.error    { background:var(--red-lt); border-color:#F7C1C1; }
 .gps-btn.error .gps-badge   { background:var(--red-lt); color:var(--red); border:1px solid #F09595; }
-/* [v9.69 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
+/* [v9.71 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
 .gps-btn.warn     { background:#FFF7ED; border-color:#FDBA74; }
 .gps-btn.warn .gps-icon  { background:#FED7AA; }
 .gps-btn.warn .gps-badge { background:#FED7AA; color:#9A3412; border:1px solid #FDBA74; }
 .gps-btn.warn .gps-label { color:#9A3412; }
 
-/* [v9.69] Lịch sử duyệt — Filter compact & responsive */
+/* [v9.71] Lịch sử duyệt — Filter compact & responsive */
 .lsd-grid {
   display:grid;
   grid-template-columns:repeat(4, 1fr);
@@ -324,7 +324,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 }
 @media (max-width:980px){ .lsd-grid{ grid-template-columns:repeat(3, 1fr); } }
 @media (max-width:720px){ .lsd-grid{ grid-template-columns:repeat(2, 1fr); } }
-@media (max-width:480px){ .lsd-grid{ grid-template-columns:1fr; } }
+/* [v9.71 YC#1] Mobile vẫn giữ 2 cột (gọn hơn 1 cột) */
+@media (max-width:380px){ .lsd-grid{ grid-template-columns:repeat(2, 1fr); gap:8px; } .lsd-inp{ font-size:12px; padding:6px 8px; } .lsd-lbl{ font-size:10px; } }
 .lsd-fld { display:flex; flex-direction:column; min-width:0; }
 .lsd-lbl {
   display:block; font-size:11px; color:#64748B;
@@ -376,7 +377,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .lsd-action-primary { background:#0F6E56; color:#fff; }
 .lsd-action-primary:hover { opacity:.9; }
 
-/* [v9.69] Card row lịch sử duyệt — gọn hơn */
+/* [v9.71] Card row lịch sử duyệt — gọn hơn */
 .lsd-card {
   background:#fff;
   border:1px solid #E5E7EB;
@@ -440,10 +441,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .lsd-btn-sua { background:#fff; color:#0369A1; border-color:#7DD3FC; }
 .lsd-btn-sua:hover { background:#F0F9FF; }
 
-/* [v9.69] Loading spinner */
+/* [v9.71] Loading spinner */
 @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
-/* [v9.69] Stats card clickable */
+/* [v9.71] Stats card clickable */
 .lsd-stat-card {
   background:#fff; border:1px solid #E5E7EB; border-radius:8px;
   padding:10px 8px; text-align:center; cursor:pointer;
@@ -772,7 +773,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-item    { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:0.5px solid var(--border); -webkit-tap-highlight-color:transparent; }
 .ns-item:last-child { border-bottom:none; }
 
-/* [v9.69 YC#4] PC: hiển thị grid 2 cột (tiết kiệm chiều ngang) */
+/* [v9.71 YC#4] PC: hiển thị grid 2 cột (tiết kiệm chiều ngang) */
 @media (min-width: 1024px){
   .ns-list { 
     display:grid; 
@@ -824,19 +825,22 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-btn-no   { flex:1; padding:7px; border-radius:8px; border:none; background:var(--red-lt); color:var(--red); font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .ns-empty    { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
 
-/* [v9.69 YC#6] Giờ công QL — group KV→CH→NV */
+/* [v9.71 YC#6] Giờ công QL — group KV→CH→NV */
 .gcql-kv-group { background:#fff; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:10px; overflow:hidden; }
-.gcql-kv-header { display:flex; align-items:center; gap:8px; padding:10px 14px; background:linear-gradient(135deg,#0F6E56,#10B981); color:#fff; font-weight:700; font-size:13px; }
+.gcql-kv-header { display:flex; align-items:center; gap:8px; padding:12px 14px; background:linear-gradient(135deg,#0F6E56,#10B981); color:#fff; font-weight:700; font-size:13px; transition:opacity .15s; }
+.gcql-kv-header:hover { opacity:.92; }
 .gcql-kv-name { flex:1; }
 .gcql-kv-meta { font-size:11px; font-weight:600; opacity:.9; }
-.gcql-ch-group { border-bottom:1px solid #F1F5F9; }
+.gcql-kv-body { background:#F8FAFC; }
+.gcql-ch-group { border-bottom:1px solid #E2E8F0; }
 .gcql-ch-group:last-child { border-bottom:none; }
-.gcql-ch-header { display:flex; align-items:center; gap:7px; padding:8px 14px; background:#F8FAFC; font-size:12px; font-weight:600; color:#334155; }
+.gcql-ch-header { display:flex; align-items:center; gap:7px; padding:9px 14px; background:#fff; font-size:12.5px; font-weight:600; color:#334155; transition:background .15s; }
+.gcql-ch-header:hover { background:#F1F5F9; }
 .gcql-ch-name { flex:1; }
 .gcql-ch-meta { font-size:11px; color:#64748B; font-weight:600; }
-.gcql-nv-list { padding:4px 0; }
-.gcql-nv-row { display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; transition:background .15s; -webkit-tap-highlight-color:transparent; }
-.gcql-nv-row:hover { background:#F1F5F9; }
+.gcql-nv-list { padding:4px 0; background:#FAFBFC; }
+.gcql-nv-row { display:flex; align-items:center; gap:10px; padding:8px 14px 8px 28px; cursor:pointer; transition:background .15s; -webkit-tap-highlight-color:transparent; }
+.gcql-nv-row:hover { background:#EFF6FF; }
 .gcql-nv-name { font-size:13px; font-weight:600; color:#0F172A; }
 .gcql-nv-sub { font-size:11px; color:#64748B; margin-top:1px; }
 .gcql-nv-gio { font-size:13px; font-weight:700; color:#0F6E56; flex-shrink:0; }
@@ -2625,7 +2629,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.69</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.71</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2753,7 +2757,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div id="bsc-quota" style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:8px;border-radius:6px;margin-bottom:12px">Đang tải quota...</div>
 
-    <!-- [v9.69 YC#2] Chọn ngày cho phép bổ sung -->
+    <!-- [v9.71 YC#2] Chọn ngày cho phép bổ sung -->
     <div style="margin-bottom:10px">
       <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Ngày cần bổ sung</label>
       <div style="display:flex;gap:6px">
@@ -2902,12 +2906,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- [v9.69] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <!-- [v9.71] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
         <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
         <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
         <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.69) -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.71) -->
         <div style="margin-bottom:8px">
           <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
@@ -3239,7 +3243,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <!-- [v9.69 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
+    <!-- [v9.71 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
     <div class="card card-ch-overflow" id="card-sale-target" style="margin-top:12px;display:none;border:1.5px solid #F59E0B;background:#FFFBEB">
       <div class="card-section" style="color:#92400E">🎯 CỬA HÀNG THỰC TẾ ĐANG SALE</div>
       <div class="ch-field">
@@ -3460,7 +3464,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
     <!-- SUB PANEL: Lịch sử duyệt [v8.1] -->
     <div id="ns-sub-lichsu" style="display:none;padding:10px 14px">
-      <!-- [v9.69] Filters — compact PC/tablet/mobile responsive -->
+      <!-- [v9.71] Filters — compact PC/tablet/mobile responsive -->
       <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px;margin-bottom:10px">
         <div class="lsd-grid">
           <div class="lsd-fld">
@@ -3529,7 +3533,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v9.69 YC#4] Stats — click filter -->
+      <!-- [v9.71 YC#4] Stats — click filter -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
         <div class="lsd-stat-card" id="lsd-stat-card-tong" onclick="lsdFilterByStatus('')">
           <div class="lsd-stat-num" style="color:#0F172A" id="lsd-stat-tong">--</div>
@@ -3666,17 +3670,23 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div class="acc-menu">
       <div class="menu-item" onclick="openPwModal()">
-        <div class="menu-icon mi-navy">🔐</div>
+        <div class="menu-icon" style="background:#EEF2FF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
         <div class="menu-label">Đổi mật khẩu</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="goToPage('chamcong')">
-        <div class="menu-icon mi-navy">⏱️</div>
+        <div class="menu-icon" style="background:#E0F2FE">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
         <div class="menu-label">Chấm công hôm nay</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="goToPage('bandochidung')">
-        <div class="menu-icon mi-navy">📍</div>
+        <div class="menu-icon" style="background:#FEF3C7">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
         <div class="menu-label">Bản đồ cửa hàng</div>
         <div class="menu-arrow">›</div>
       </div>
@@ -3713,7 +3723,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" id="menu-nhansu" onclick="goToPage('nhansu')" style="display:none">
-        <div class="menu-icon mi-purple">👥</div>
+        <div class="menu-icon" style="background:#F3E8FF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
         <div class="menu-label">Quản lý nhân sự</div>
         <div class="menu-arrow">›</div>
       </div>
@@ -3750,7 +3762,9 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="doLogout()">
-        <div class="menu-icon mi-red">🚪</div>
+        <div class="menu-icon" style="background:#FEE2E2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
         <div class="menu-label" style="color:var(--red)">Đăng xuất</div>
         <div class="menu-arrow" style="color:var(--red)">›</div>
       </div>
@@ -3760,7 +3774,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.69 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.71 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4666,7 +4680,7 @@ let lastDay=new Date().getDate();
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
 
-// [v9.69] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+// [v9.71] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
 function _getMondayMidnight(d){
   const x = new Date(d);
   x.setHours(0,0,0,0);
@@ -4683,7 +4697,7 @@ function tick(){
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 
-  // [v9.69] Auto-logout vào 00:00 thứ Hai hàng tuần
+  // [v9.71] Auto-logout vào 00:00 thứ Hai hàng tuần
   // Nguyên tắc: nếu loginTime < thứ Hai 00:00 gần nhất ≤ now → logout
   if(SESSION){
     try {
@@ -4873,9 +4887,9 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    // [v9.69 YC#7] Preload bulk avatars để render avatar nhanh ở các tab
+    // [v9.71 YC#7] Preload bulk avatars để render avatar nhanh ở các tab
     try { _loadAvatarBulk(); } catch(e){}
-    // [v9.69] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    // [v9.71] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
     try{
       localStorage.setItem('session_cc',JSON.stringify(SESSION));
       localStorage.setItem('session_login_ts', String(Date.now()));
@@ -4889,7 +4903,7 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  // [v9.69] Clear cả session + loginTime
+  // [v9.71] Clear cả session + loginTime
   SESSION=null;
   try{
     localStorage.removeItem('session_cc');
@@ -4905,7 +4919,7 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  // [v9.69] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  // [v9.71] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
   try{ s = localStorage.getItem('session_cc'); }catch(e){}
   if(!s){
@@ -5113,14 +5127,14 @@ function selectCH(ma,ten){
   document.getElementById('input-ch-display').value=ten||ma;
   document.getElementById('sel-cuahang').value=ma;
   document.getElementById('ch-suggest-list').style.display='none';
-  // [v9.69 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
+  // [v9.71 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
 // ════════════════════════════════════════════════════════════════════════
-// [v9.69 YC#8] ĐỘI SALE — chấm công với CH đích di động
+// [v9.71 YC#8] ĐỘI SALE — chấm công với CH đích di động
 // Quy ước: tên CH bắt đầu bằng "Đội SALE" hoặc "Doi SALE" (không dấu) = đội sale
 // Khi gửi: ghép tenCh = "Đội SALE 01 - Hai Bà Trưng"
 // ════════════════════════════════════════════════════════════════════════
@@ -5212,7 +5226,7 @@ function layViTri(){
       state.lng=pos.coords.longitude.toFixed(6);
       state.gpsAcc=Math.round(pos.coords.accuracy);
       state.gpsOk=true;
-      // [v9.69 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
+      // [v9.71 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
       const accVal = state.gpsAcc;
       const isWeak = accVal > 100;
       btn.className = isWeak ? 'gps-btn warn' : 'gps-btn success';
@@ -5364,7 +5378,7 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
-// [v9.69] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
+// [v9.71] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
@@ -5413,7 +5427,7 @@ function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
   if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
-  // [v9.69 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
+  // [v9.71 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
   const tenCHHien = document.getElementById('input-ch-display').value || '';
   if (_laDoiSale(tenCHHien)){
     const targetMa = document.getElementById('sel-sale-target').value;
@@ -5527,7 +5541,7 @@ function _doSubmitFinal(){
   state.submitted=true;
   let maCH=document.getElementById('sel-cuahang').value;
   const tenCHDisplay = document.getElementById('input-ch-display').value;
-  // [v9.69 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
+  // [v9.71 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
   //   Lưu tên Đội SALE gốc + đổi maCH sang CH thực tế.
   let _saleOriginMa = '';
   let _saleOriginTen = '';
@@ -5612,13 +5626,13 @@ function _doSubmitFinal(){
       } catch(e) { console.warn('[CC] upload ảnh lỗi:', e); }
     }
 
-    // [v9.69 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
+    // [v9.71 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
     //   → đính kèm Đội SALE gốc vào device_info để Sheet sync ghép tên đúng
     let _deviceInfo = navigator.userAgent.substring(0, 180);
     if (_saleOriginMa && _saleOriginTen){
       _deviceInfo = '[SALE_ORIGIN:' + _saleOriginMa + '|' + _saleOriginTen + '] ' + _deviceInfo;
     }
-    // [v9.69 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
+    // [v9.71 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
     if (state.gpsAcc && state.gpsAcc > 100){
       _deviceInfo = '[GPS_WEAK:' + state.gpsAcc + 'm] ' + _deviceInfo;
     }
@@ -6123,16 +6137,29 @@ function taiGioCongQL(){
   })
   .catch(()=>{document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
+// [v9.71 YC#3] State accordion giờ công QL
+let _gcqlExpandedKV = new Set();
+let _gcqlExpandedCH = new Set();
+
+function _gcqlToggleKV(kv){
+  if (_gcqlExpandedKV.has(kv)) _gcqlExpandedKV.delete(kv);
+  else _gcqlExpandedKV.add(kv);
+  renderGioCongQL();
+}
+function _gcqlToggleCH(key){
+  if (_gcqlExpandedCH.has(key)) _gcqlExpandedCH.delete(key);
+  else _gcqlExpandedCH.add(key);
+  renderGioCongQL();
+}
+
 function renderGioCongQL(){
   const q=(document.getElementById('gcql-search').value||'').trim().toLowerCase();
-  // [v9.69 YC#6] Ẩn NV chưa hoàn tất chấm công (CÓ LỖI = chưa duyệt giải trình → coi như chưa xong)
+  // [v9.71 YC#6] Ẩn NV chưa hoàn tất chấm công (CÓ LỖI = chưa duyệt giải trình → coi như chưa xong)
   const _isValid = tt => tt==='ĐỦ CA' || tt==='HOÀN THÀNH' || tt==='DUYET_KHONG_CONG';
   const filtered = gcDataQL.filter(r => {
-    // Search filter
     if (q && !(r.maNV.toLowerCase().includes(q) || r.tenNV.toLowerCase().includes(q) || r.cuaHang.toLowerCase().includes(q) || (r.khuVuc||'').toLowerCase().includes(q))) {
       return false;
     }
-    // Chỉ giữ NV đã hoàn tất quy trình chấm công (có ra ca)
     return _isValid(r.trangThai);
   });
   if(!filtered.length){
@@ -6147,76 +6174,120 @@ function renderGioCongQL(){
     if (r.tongPhut != null) tongPhut += Number(r.tongPhut) || 0;
     else tongPhut += parseGioCong(r.tongGioCong);
   });
-  // [v9.69 YC#6] Format số có dấu chấm phân cách
   const _fmtVN = (n) => Number(n).toLocaleString('vi-VN');
+  // [v9.71] fmtPhut → có dấu chấm
+  const _fmtPhutVN = (m) => {
+    const h = Math.floor(m / 60);
+    const p = m % 60;
+    return _fmtVN(h) + 'g ' + pad(p) + 'p';
+  };
   document.getElementById('gcql-nv').textContent   = _fmtVN(nvSet.size);
   document.getElementById('gcql-ngay').textContent = _fmtVN(ngayDone.size);
-  document.getElementById('gcql-gio').textContent  = fmtPhut(tongPhut);
+  document.getElementById('gcql-gio').textContent  = _fmtPhutVN(tongPhut);
 
-  // [v9.69 YC#6] Group: KV → CH → NV
-  const groups = {}; // KV → CH → maNV → {info, items[]}
+  // [v9.71 YC#3] Map khu vực thật về tên ngắn gọn (lowercase contains)
+  const _kvShort = (kv) => {
+    if (!kv) return 'Khác';
+    const k = kv.toLowerCase();
+    if (k.includes('hồ chí minh') || k.includes('ho chi minh') || k === 'hcm') return 'Hồ Chí Minh';
+    if (k.includes('hà nội') || k.includes('ha noi') || k === 'hn') return 'Hà Nội';
+    if (k.includes('miền bắc') || k.includes('mien bac') || k.includes('bắc trung') || k === 'mb') return 'Miền Bắc';
+    if (k.includes('miền trung') || k.includes('mien trung') || k.includes('trung tây nguyên') || k.includes('trung tay nguyen')) return 'Miền Trung';
+    if (k.includes('miền đông') || k.includes('mien dong') || k.includes('đông nam')) return 'Miền Đông';
+    if (k.includes('miền tây') || k.includes('mien tay') || k.includes('tây nam')) return 'Miền Tây';
+    return kv; // giữ nguyên nếu không khớp
+  };
+
+  // Build groups: KV (ngắn) → KV thực → CH → NV → items
+  const groups = {};
   filtered.forEach(r => {
-    const kv = r.khuVuc || 'Khác';
+    const kvFull = r.khuVuc || 'Khác';
+    const kv = _kvShort(kvFull);
     const ch = r.cuaHang || '--';
     const maNV = r.maNV;
-    if (!groups[kv]) groups[kv] = {};
-    if (!groups[kv][ch]) groups[kv][ch] = {};
-    if (!groups[kv][ch][maNV]) {
-      groups[kv][ch][maNV] = {
+    if (!groups[kv]) groups[kv] = { kvFullList: new Set(), chs: {} };
+    groups[kv].kvFullList.add(kvFull);
+    if (!groups[kv].chs[ch]) groups[kv].chs[ch] = {};
+    if (!groups[kv].chs[ch][maNV]) {
+      groups[kv].chs[ch][maNV] = {
         maNV, tenNV: r.tenNV || maNV,
         items: [], tongPhut: 0, soNgay: new Set()
       };
     }
-    const nv = groups[kv][ch][maNV];
+    const nv = groups[kv].chs[ch][maNV];
     nv.items.push(r);
     nv.soNgay.add(r.ngay);
     if (r.tongPhut != null) nv.tongPhut += Number(r.tongPhut) || 0;
     else nv.tongPhut += parseGioCong(r.tongGioCong);
   });
 
+  // Sort: 6 KV chính lên trước, sau đó "Khác"
+  const KV_ORDER = ['Hồ Chí Minh', 'Hà Nội', 'Miền Bắc', 'Miền Trung', 'Miền Đông', 'Miền Tây'];
+  const allKVs = Object.keys(groups);
+  const sortedKVs = [
+    ...KV_ORDER.filter(k => groups[k]),
+    ...allKVs.filter(k => !KV_ORDER.includes(k) && k !== 'Khác').sort(),
+    ...(groups['Khác'] ? ['Khác'] : [])
+  ];
+
   let html = '';
-  const kvList = Object.keys(groups).sort();
-  kvList.forEach(kv => {
-    const chList = Object.keys(groups[kv]).sort();
-    // Tính tổng giờ + số NV trong KV
-    let kvTongPhut = 0, kvSoNV = 0;
-    chList.forEach(ch => {
-      Object.values(groups[kv][ch]).forEach(nv => {
+  sortedKVs.forEach(kv => {
+    const chs = groups[kv].chs;
+    const chKeys = Object.keys(chs).sort();
+    let kvTongPhut = 0, kvSoNV = 0, kvSoCH = chKeys.length;
+    chKeys.forEach(ch => {
+      Object.values(chs[ch]).forEach(nv => {
         kvTongPhut += nv.tongPhut;
         kvSoNV++;
       });
     });
+    const isKVExpanded = _gcqlExpandedKV.has(kv);
+    const chevronKV = isKVExpanded
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
     html += `<div class="gcql-kv-group">
-      <div class="gcql-kv-header">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <div class="gcql-kv-header" onclick="_gcqlToggleKV('${kv.replace(/'/g,"\\'")}')" style="cursor:pointer">
         <span class="gcql-kv-name">${escHtml(kv)}</span>
-        <span class="gcql-kv-meta">${_fmtVN(kvSoNV)} NV · ${fmtPhut(kvTongPhut)}</span>
+        <span class="gcql-kv-meta">${_fmtVN(kvSoCH)} CH · ${_fmtVN(kvSoNV)} NV · ${_fmtPhutVN(kvTongPhut)}</span>
+        ${chevronKV}
       </div>`;
-    chList.forEach(ch => {
-      const nvList = Object.values(groups[kv][ch]).sort((a,b) => (a.tenNV||'').localeCompare(b.tenNV||'', 'vi'));
-      let chTongPhut = 0;
-      nvList.forEach(nv => chTongPhut += nv.tongPhut);
-      html += `<div class="gcql-ch-group">
-        <div class="gcql-ch-header">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span class="gcql-ch-name">${escHtml(ch)}</span>
-          <span class="gcql-ch-meta">${nvList.length} NV · ${fmtPhut(chTongPhut)}</span>
-        </div>
-        <div class="gcql-nv-list">`;
-      nvList.forEach(nv => {
-        const ngayClick = nv.items[0]?.ngay || '';
-        const esTen = (nv.tenNV || '').replace(/'/g,"\\'");
-        html += `<div class="gcql-nv-row" onclick="_openGioCongChiTiet('${nv.maNV}','${esTen}','${ngayClick}')">
-          ${_renderAvatar(nv.maNV, nv.tenNV, 32)}
-          <div style="flex:1;min-width:0">
-            <div class="gcql-nv-name">${escHtml(nv.tenNV)} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.maNV}</span></div>
-            <div class="gcql-nv-sub">${_fmtVN(nv.soNgay.size)} ngày làm việc</div>
-          </div>
-          <div class="gcql-nv-gio">${fmtPhut(nv.tongPhut)}</div>
-        </div>`;
+    if (isKVExpanded){
+      html += `<div class="gcql-kv-body">`;
+      chKeys.forEach(ch => {
+        const nvList = Object.values(chs[ch]).sort((a,b) => (a.tenNV||'').localeCompare(b.tenNV||'', 'vi'));
+        let chTongPhut = 0;
+        nvList.forEach(nv => chTongPhut += nv.tongPhut);
+        const chKey = kv + '::' + ch;
+        const isCHExpanded = _gcqlExpandedCH.has(chKey);
+        const chevronCH = isCHExpanded
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+        html += `<div class="gcql-ch-group">
+          <div class="gcql-ch-header" onclick="_gcqlToggleCH('${chKey.replace(/'/g,"\\'")}')" style="cursor:pointer">
+            <span class="gcql-ch-name">${escHtml(ch)}</span>
+            <span class="gcql-ch-meta">${nvList.length} NV · ${_fmtPhutVN(chTongPhut)}</span>
+            ${chevronCH}
+          </div>`;
+        if (isCHExpanded){
+          html += `<div class="gcql-nv-list">`;
+          nvList.forEach(nv => {
+            const ngayClick = nv.items[0]?.ngay || '';
+            const esTen = (nv.tenNV || '').replace(/'/g,"\\'");
+            html += `<div class="gcql-nv-row" onclick="_openGioCongChiTiet('${nv.maNV}','${esTen}','${ngayClick}')">
+              ${_renderAvatar(nv.maNV, nv.tenNV, 32)}
+              <div style="flex:1;min-width:0">
+                <div class="gcql-nv-name">${escHtml(nv.tenNV)} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.maNV}</span></div>
+                <div class="gcql-nv-sub">${_fmtVN(nv.soNgay.size)} ngày làm việc</div>
+              </div>
+              <div class="gcql-nv-gio">${_fmtPhutVN(nv.tongPhut)}</div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
       });
-      html += `</div></div>`;
-    });
+      html += `</div>`;
+    }
     html += `</div>`;
   });
   document.getElementById('gcql-content').innerHTML = html;
@@ -6310,7 +6381,7 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      // [v9.69] Persist sang localStorage
+      // [v9.71] Persist sang localStorage
       try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
@@ -6792,7 +6863,7 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    // [v9.69 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    // [v9.71 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
     try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
@@ -6895,7 +6966,7 @@ function closeGiaiTrinh(){
 function chonLyDo(el,lyDo){
   document.querySelectorAll('.gt-opt').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  // [v9.69 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
+  // [v9.71 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
   if(lyDo==='__khac__'){
     gtLyDo = 'Khác';
     document.getElementById('gt-input').focus();
@@ -7079,7 +7150,7 @@ function startNSPolling(){
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
     const [nsTu,nsDen]=_getNSRange();
-    // [v9.69 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+    // [v9.71 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
     const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
     // [v12-P2] Supabase RPC
     supa.rpc('fn_get_nhan_su_overview', {
@@ -7228,7 +7299,7 @@ function onNSSearch(){
 function escHtml(s){return String(s).replace(/'/g,"\\'")}
 
 // ════════════════════════════════════════════════════════════════════════
-// [v9.69 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
+// [v9.71 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
 // _renderAvatar(maNV, tenNV, sizePx, avatarUrl?) → HTML string
 // - Có avatarUrl → <img>
 // - Không có → <div> với chữ cái đầu họ tên + màu nền mặc định
@@ -7381,7 +7452,7 @@ function taiNhanSu(forceRefresh){
   // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
   const [nsTu,nsDen]=_getNSRange();
   const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
-  // [v9.69 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+  // [v9.71 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
   const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
   // [v12-P2] Supabase RPC thay nhansu
   supa.rpc('fn_get_nhan_su_overview', {
@@ -9158,7 +9229,7 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
-// [v9.69] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// [v9.71] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
 // State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
 let _xdlEdit = {};
@@ -9186,7 +9257,7 @@ function openXinDoiLichModal() {
     }
   }
   
-  // [v9.69 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
+  // [v9.71 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
   const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
@@ -9203,7 +9274,7 @@ function openXinDoiLichModal() {
   
   // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
   ngayList.forEach(item => {
-    // [v9.69] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    // [v9.71] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
     const cacCa = (lcData.lich || []).filter(l =>
       l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
@@ -9449,7 +9520,7 @@ function xdlShowCHSuggest(ngay, idx){
   const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
   if (!inp || !sug) return;
   const q = inp.value.trim().toLowerCase();
-  // [v9.69] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
+  // [v9.71] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
   const list = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
   let matched;
   if (!q){
@@ -9550,7 +9621,7 @@ async function submitXinDoiLich() {
         }
         thayDoi.push({
           ngay, loai: 'Đi làm',
-          // [v9.69 FIX] ca_lam NOT NULL trong DB → dùng "HH:MM-HH:MM" hoặc "Đi làm"
+          // [v9.71 FIX] ca_lam NOT NULL trong DB → dùng "HH:MM-HH:MM" hoặc "Đi làm"
           ca_lam: (s.gioBD && s.gioKT) ? (s.gioBD + '-' + s.gioKT) : 'Đi làm',
           ma_ch: maCH || null,
           gio_bd: s.gioBD || null,
@@ -9583,7 +9654,7 @@ async function submitXinDoiLich() {
   try {
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      // [v9.69 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      // [v9.71 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
       p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
@@ -9598,7 +9669,7 @@ async function submitXinDoiLich() {
       return;
     }
     
-    // [v9.69 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    // [v9.71 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
     const soNgay = res.so_ngay_moi || ngayKeys.length;
     showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
@@ -9921,35 +9992,63 @@ function setLCQLMode(mode){
 function renderLCQL(){
   const data = _lcqlAllData;
   const list = document.getElementById('lcql-list');
-  if(!data.length){ list.innerHTML='<div class="ns-empty">📋 Chưa có lịch ca / đơn nghỉ.</div>'; return; }
+  if(!data.length){ list.innerHTML='<div class="ns-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Chưa có lịch ca / đơn nghỉ.</div>'; return; }
   const q = ((document.getElementById('lcql-search')||{}).value||'').toLowerCase();
   const filtered = q ? data.filter(d => (d.tenNV||'').toLowerCase().includes(q)||(d.maNV||'').toLowerCase().includes(q)||(d.tenCH||'').toLowerCase().includes(q)||(d.maCH||'').toLowerCase().includes(q)||(d.khuVuc||'').toLowerCase().includes(q)) : data;
   const dow=['CN','T2','T3','T4','T5','T6','T7'];
   const _dl=d=>{const dt=new Date(d.ngay);return dow[dt.getDay()]+' '+d.ngay.substring(8)+'/'+d.ngay.substring(5,7);};
-  const _tt=d=>{const t=d.trangThai;const c=t==='DA_DUYET'?'color:var(--green-m)':t==='TU_CHOI'?'color:var(--red)':t==='CHO_DUYET'?'color:var(--amber)':'color:var(--text-m)';const x=t==='DA_DUYET'?'✓ Đã duyệt':t==='TU_CHOI'?'✗ Từ chối':t==='CHO_DUYET'?'⏳ Chờ duyệt':t==='DA_GUI'?'Đã gửi':'—';return `<span style="${c};font-weight:500;font-size:11px">${x}</span>`;};
-  // [v9.45] Grid 4 cột thẳng hàng: ngày+loại | CH | giờ | trạng thái
+  // SVG icons
+  const _icoCheck = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg>';
+  const _icoX     = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const _icoWait  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+  const _tt=d=>{
+    const t=d.trangThai;
+    if (t==='DA_DUYET') return `<span style="color:#0F6E56;font-weight:600;font-size:11px">${_icoCheck} Đã duyệt</span>`;
+    if (t==='TU_CHOI')  return `<span style="color:#DC2626;font-weight:600;font-size:11px">${_icoX} Từ chối</span>`;
+    if (t==='CHO_DUYET')return `<span style="color:#F59E0B;font-weight:600;font-size:11px">${_icoWait} Chờ duyệt</span>`;
+    if (t==='DA_GUI')   return `<span style="color:#64748B;font-weight:500;font-size:11px">Đã gửi</span>`;
+    return `<span style="color:#94A3B8;font-size:11px">—</span>`;
+  };
   const _dr=d=>{
     const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
     const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
-    return `<div style="display:grid;grid-template-columns:120px 1fr 95px 95px;gap:8px;padding:4px 0;font-size:11px;border-bottom:1px solid #f3f4f6;align-items:center"><span>${_dl(d)} · ${d.loai}</span><span style="color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tenCH}</span><span style="color:var(--text-m);text-align:right">${gio}</span><span style="text-align:right">${_tt(d)}</span></div>`;
+    return `<div style="display:grid;grid-template-columns:130px 1fr 95px 100px;gap:8px;padding:6px 10px;font-size:11.5px;border-bottom:1px solid #F1F5F9;align-items:center"><span style="color:#0F172A;font-weight:500">${_dl(d)} · <span style="color:#64748B;font-weight:400">${d.loai}</span></span><span style="color:#64748B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tenCH}</span><span style="color:#64748B;text-align:right;font-variant-numeric:tabular-nums">${gio}</span><span style="text-align:right">${_tt(d)}</span></div>`;
   };
   const _tog=`onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"`;
   const _togP=`onclick="this.parentElement.classList.toggle('open')"`;
-  let html='<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}</style>';
+  // SVG: location pin, store, user, calendar, chevron
+  const _icoKV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const _icoCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  const _icoNV = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  const _icoCal= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  let html='<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}.lcql-kv-group{border:1px solid #E5E7EB;border-radius:12px;background:#fff;margin-bottom:10px;overflow:hidden}</style>';
   if(lcqlMode==='kv'){
     const g={};filtered.forEach(d=>{if(!g[d.khuVuc])g[d.khuVuc]={};if(!g[d.khuVuc][d.maCH])g[d.khuVuc][d.maCH]={ten:d.tenCH,nvs:{}};if(!g[d.khuVuc][d.maCH].nvs[d.maNV])g[d.khuVuc][d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.khuVuc][d.maCH].nvs[d.maNV].days.push(d);});
-    Object.keys(g).sort().forEach(kv=>{const cks=Object.keys(g[kv]).sort();html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:12px 14px;background:var(--green-lt);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px"><span>📍 ${kv}</span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${cks.length} CH</span></div><div class="lcql-kv-body" style="display:none;padding-left:8px">`;cks.forEach(ck=>{const ci=g[kv][ck];const nks=Object.keys(ci.nvs).sort();html+=`<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600"><span>🏪 ${ci.ten} <span style="font-weight:400;color:var(--text-lt)">${ck}</span></span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${nks.length} NV</span></div><div style="display:none;padding-left:10px;margin-top:4px">`;nks.forEach(nk=>{const ni=ci.nvs[nk];html+=`<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px"><span>👤 ${ni.ten} <span style="color:var(--text-lt)">${nk}</span></span><span style="color:var(--text-m)">${ni.days.length} ngày</span></div><div style="display:none;padding:4px 10px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;});html+=`</div></div>`;});html+=`</div></div>`;});
+    Object.keys(g).sort().forEach(kv=>{
+      const cks=Object.keys(g[kv]).sort();
+      const totalNV = new Set();
+      cks.forEach(ck => Object.keys(g[kv][ck].nvs).forEach(nk => totalNV.add(nk)));
+      html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:14px 16px;background:linear-gradient(135deg,#0F6E56,#10B981);color:#fff;display:flex;align-items:center;gap:10px;font-weight:700;font-size:13.5px;transition:opacity .15s"><span style="display:inline-flex;width:14px;height:14px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span style="flex:1">${escHtml(kv)}</span><span style="font-size:11.5px;font-weight:600;opacity:.9">${cks.length} CH · ${totalNV.size} NV</span></div><div class="lcql-kv-body" style="display:none;padding:8px">`;
+      cks.forEach(ck=>{
+        const ci=g[kv][ck];
+        const nks=Object.keys(ci.nvs).sort();
+        html+=`<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;margin-bottom:6px;overflow:hidden"><div ${_tog} style="cursor:pointer;padding:9px 12px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0F172A">${_icoCH}<span style="flex:1">${escHtml(ci.ten)} <span style="font-weight:400;color:#94A3B8;font-size:11px">${escHtml(ck)}</span></span><span style="font-size:11px;font-weight:600;color:#64748B">${nks.length} NV</span></div><div style="display:none;padding:4px 8px 8px 8px;background:#fff">`;
+        nks.forEach(nk=>{
+          const ni=ci.nvs[nk];
+          html+=`<div style="margin-bottom:5px"><div ${_tog} style="cursor:pointer;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #E5E7EB;display:flex;align-items:center;gap:8px;font-size:12px">${_renderAvatar(nk, ni.ten, 26)}<span style="flex:1;color:#0F172A;font-weight:500">${escHtml(ni.ten)} <span style="color:#94A3B8;font-weight:400;font-size:11px">${escHtml(nk)}</span></span><span style="color:#64748B;font-size:11px;font-weight:600">${ni.days.length} ngày</span></div><div style="display:none;padding:4px 0 4px 4px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;
+        });
+        html+=`</div></div>`;
+      });
+      html+=`</div></div>`;
+    });
   } else if(lcqlMode==='ch'){
     const g={};filtered.forEach(d=>{if(!g[d.maCH])g[d.maCH]={ten:d.tenCH,kv:d.khuVuc,nvs:{},allDays:[]};if(!g[d.maCH].nvs[d.maNV])g[d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.maCH].nvs[d.maNV].days.push(d);g[d.maCH].allDays.push(d);});
     Object.keys(g).sort().forEach(ck=>{const ci=g[ck];const nks=Object.keys(ci.nvs).sort();
-      // [v9.45] Mỗi CH có 2 view: Theo NV (mặc định) và Theo ngày — switch bằng button
       const chBodyId = 'ch-body-' + ck.replace(/[^A-Za-z0-9]/g,'');
-      // ── View 1: theo NV ──
       let nvHtml = '';
       nks.forEach(nk=>{const ni=ci.nvs[nk];const _soNgay = new Set(ni.days.map(x=>x.ngay)).size;
-        nvHtml += `<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px"><span>👤 ${ni.ten} <span style="color:var(--text-lt)">${nk}</span></span><span style="color:var(--text-m)">${_soNgay} ngày</span></div><div style="display:none;padding:4px 10px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;
+        nvHtml += `<div style="margin-bottom:5px"><div ${_tog} style="cursor:pointer;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #E5E7EB;display:flex;align-items:center;gap:8px;font-size:12px">${_renderAvatar(nk, ni.ten, 26)}<span style="flex:1;color:#0F172A;font-weight:500">${escHtml(ni.ten)} <span style="color:#94A3B8;font-weight:400;font-size:11px">${escHtml(nk)}</span></span><span style="color:#64748B;font-size:11px;font-weight:600">${_soNgay} ngày</span></div><div style="display:none;padding:4px 0 4px 4px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;
       });
-      // ── View 2: theo ngày ──
       const ngayMap = {};
       ci.allDays.forEach(d=>{ if(!ngayMap[d.ngay]) ngayMap[d.ngay]=[]; ngayMap[d.ngay].push(d); });
       let dayHtml = '';
@@ -9957,17 +10056,16 @@ function renderLCQL(){
         const items = ngayMap[ng];
         const uniqueNV = new Set(items.map(x=>x.maNV)).size;
         const dt = new Date(ng); const dowLbl = dow[dt.getDay()];
-        dayHtml += `<div style="margin-bottom:6px"><div ${_tog} style="cursor:pointer;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px"><span>📅 <strong>${dowLbl} ${ng.substring(8)}/${ng.substring(5,7)}</strong></span><span style="color:var(--text-m)">${uniqueNV} NV · ${items.length} slot</span></div><div style="display:none;padding:4px 10px">${items.sort((a,b)=>(a.tenNV||'').localeCompare(b.tenNV||'','vi')).map(d=>{
+        dayHtml += `<div style="margin-bottom:5px"><div ${_tog} style="cursor:pointer;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #E5E7EB;display:flex;align-items:center;gap:8px;font-size:12px">${_icoCal}<span style="flex:1;color:#0F172A"><strong>${dowLbl} ${ng.substring(8)}/${ng.substring(5,7)}</strong></span><span style="color:#64748B;font-size:11px;font-weight:600">${uniqueNV} NV · ${items.length} slot</span></div><div style="display:none;padding:4px 0 4px 4px">${items.sort((a,b)=>(a.tenNV||'').localeCompare(b.tenNV||'','vi')).map(d=>{
           const tenCH = (d.loai === 'Nghỉ phép') ? '' : (d.tenCH || d.maCH || '');
           const gio = (d.loai === 'Nghỉ phép') ? '' : d.gio;
-          return `<div style="display:grid;grid-template-columns:160px 1fr 95px 95px;gap:8px;padding:4px 0;font-size:11px;border-bottom:1px solid #f3f4f6;align-items:center"><span>👤 ${d.tenNV} <span style="color:var(--text-lt);font-size:10px">${d.maNV}</span></span><span style="color:var(--text-m)">${d.loai}</span><span style="color:var(--text-m);text-align:right">${gio}</span><span style="text-align:right">${_tt(d)}</span></div>`;
+          return `<div style="display:grid;grid-template-columns:160px 1fr 95px 100px;gap:8px;padding:6px 10px;font-size:11.5px;border-bottom:1px solid #F1F5F9;align-items:center"><span style="color:#0F172A;font-weight:500">${escHtml(d.tenNV)} <span style="color:#94A3B8;font-weight:400;font-size:10.5px">${escHtml(d.maNV)}</span></span><span style="color:#64748B">${d.loai}</span><span style="color:#64748B;text-align:right;font-variant-numeric:tabular-nums">${gio}</span><span style="text-align:right">${_tt(d)}</span></div>`;
         }).join('')}</div></div>`;
       });
-      // ── Wrap ──
-      html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:10px 14px;background:#f8fafc;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px"><span>🏪 ${ci.ten} <span style="font-weight:400;color:var(--text-lt)">${ck}</span></span><span style="font-size:11px;font-weight:400;color:var(--text-m)">${ci.kv} · ${nks.length} NV</span></div><div class="lcql-kv-body" style="display:none;padding-left:8px">
-        <div style="display:flex;gap:4px;margin:6px 0 10px;font-size:11px">
-          <button onclick="lcqlCHViewSwitch('${chBodyId}','nv',this)" class="lcql-ch-view active" style="padding:4px 10px;border-radius:6px;border:1px solid var(--green-m);background:var(--green-m);color:white;cursor:pointer">👥 Theo NV</button>
-          <button onclick="lcqlCHViewSwitch('${chBodyId}','day',this)" class="lcql-ch-view" style="padding:4px 10px;border-radius:6px;border:1px solid #e5e7eb;background:white;cursor:pointer">📅 Theo ngày</button>
+      html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:12px 14px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:#0F172A">${_icoCH}<span style="flex:1">${escHtml(ci.ten)} <span style="font-weight:400;color:#94A3B8;font-size:11.5px">${escHtml(ck)}</span></span><span style="font-size:11px;font-weight:600;color:#64748B">${escHtml(ci.kv)} · ${nks.length} NV</span></div><div class="lcql-kv-body" style="display:none;padding:8px">
+        <div style="display:flex;gap:5px;margin-bottom:10px;font-size:11.5px">
+          <button onclick="lcqlCHViewSwitch('${chBodyId}','nv',this)" class="lcql-ch-view active" style="padding:6px 12px;border-radius:7px;border:1.5px solid #0F6E56;background:#0F6E56;color:#fff;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Theo NV</button>
+          <button onclick="lcqlCHViewSwitch('${chBodyId}','day',this)" class="lcql-ch-view" style="padding:6px 12px;border-radius:7px;border:1.5px solid #E5E7EB;background:#fff;color:#374151;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Theo ngày</button>
         </div>
         <div id="${chBodyId}-nv" class="lcql-ch-pane">${nvHtml}</div>
         <div id="${chBodyId}-day" class="lcql-ch-pane" style="display:none">${dayHtml}</div>
@@ -9975,9 +10073,12 @@ function renderLCQL(){
     });
   } else {
     const g={};filtered.forEach(d=>{if(!g[d.maNV])g[d.maNV]={ten:d.tenNV,ch:d.tenCH,maCH:d.maCH,kv:d.khuVuc,days:[]};g[d.maNV].days.push(d);});
-    Object.keys(g).sort((a,b)=>(g[a].ten||'').localeCompare(g[b].ten||'','vi')).forEach(nk=>{const ni=g[nk];const _soNgay = new Set(ni.days.map(x=>x.ngay)).size;html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:10px 14px;background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px"><span>👤 <strong>${ni.ten}</strong> <span style="color:var(--text-lt)">${nk}</span></span><span style="font-size:11px;color:var(--text-m)">${ni.ch} · ${_soNgay} ngày</span></div><div class="lcql-kv-body" style="display:none;padding:4px 14px">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;});
+    Object.keys(g).sort((a,b)=>(g[a].ten||'').localeCompare(g[b].ten||'','vi')).forEach(nk=>{
+      const ni=g[nk];const _soNgay = new Set(ni.days.map(x=>x.ngay)).size;
+      html+=`<div class="lcql-kv-group"><div ${_togP} style="cursor:pointer;padding:12px 14px;background:#fff;display:flex;align-items:center;gap:10px;font-size:13px">${_renderAvatar(nk, ni.ten, 32)}<span style="flex:1"><strong style="color:#0F172A">${escHtml(ni.ten)}</strong> <span style="color:#94A3B8;font-size:11.5px;font-weight:400">${escHtml(nk)}</span></span><span style="font-size:11px;color:#64748B;font-weight:600">${escHtml(ni.ch)} · ${_soNgay} ngày</span></div><div class="lcql-kv-body" style="display:none;padding:4px 8px 8px 8px;background:#F8FAFC">${ni.days.sort((a,b)=>a.ngay.localeCompare(b.ngay)).map(_dr).join('')}</div></div>`;
+    });
   }
-  list.innerHTML = html || '<div class="ns-empty">📋 Không tìm thấy.</div>';
+  list.innerHTML = html || '<div class="ns-empty">Không tìm thấy.</div>';
 }
 
 function toggleAccKV(kv){
@@ -10109,7 +10210,7 @@ function _debLichSuDuyet(){
   _lsdDeb = setTimeout(taiLichSuDuyet, 400);
 }
 
-// [v9.69 YC#4] Click card stats để filter theo trạng thái
+// [v9.71 YC#4] Click card stats để filter theo trạng thái
 function lsdFilterByStatus(status){
   const sel = document.getElementById('lsd-trangthai');
   if (sel) sel.value = status;
@@ -10136,7 +10237,7 @@ function _lsdUpdateActiveStat(currentStatus){
 async function taiLichSuDuyet(){
   const listEl = document.getElementById('lsd-list');
   if (!listEl) return;
-  // [v9.69] Smooth loading: không clear DOM, chỉ giảm opacity
+  // [v9.71] Smooth loading: không clear DOM, chỉ giảm opacity
   const isFirstLoad = !listEl.querySelector('.lsd-card');
   if (isFirstLoad) {
     listEl.innerHTML = '<div class="ns-empty" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:30px;color:#94A3B8;font-size:13px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg><span>Đang tải...</span></div>';
@@ -10152,7 +10253,7 @@ async function taiLichSuDuyet(){
   const tt  = document.getElementById('lsd-trangthai').value || null;
   const loai = document.getElementById('lsd-loaicb').value || null;
   const q   = (document.getElementById('lsd-q').value || '').trim();
-  // [v9.69 YC#1] Filter NV / CH / Người duyệt
+  // [v9.71 YC#1] Filter NV / CH / Người duyệt
   const maNV = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
   const maCH = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
   const maND = (document.getElementById('lsd-nd-ma') && document.getElementById('lsd-nd-ma').value) || null;
@@ -10173,20 +10274,20 @@ async function taiLichSuDuyet(){
 
     let list = data.list || [];
 
-    // [v9.69] Debug: log keys của 1 record để xác định field name
+    // [v9.71] Debug: log keys của 1 record để xác định field name
     if (list.length > 0 && !window._lsdDebugged){
       console.log('[LSD DEBUG] Sample record keys:', Object.keys(list[0]), list[0]);
       window._lsdDebugged = true;
     }
 
-    // [v9.69 YC#1] Filter CH client-side — thử nhiều variant field
+    // [v9.71 YC#1] Filter CH client-side — thử nhiều variant field
     if (maCH){
       list = list.filter(r => {
         const ch = r.maCh || r.maCH || r.ma_ch || r.maCuaHang || '';
         return ch === maCH;
       });
     }
-    // [v9.69 YC#1+3] Filter Q (giải trình + tên) client-side
+    // [v9.71 YC#1+3] Filter Q (giải trình + tên) client-side
     if (q){
       const qLower = q.toLowerCase();
       list = list.filter(r => {
@@ -10198,7 +10299,7 @@ async function taiLichSuDuyet(){
             || (r.tenCH || r.tenCh || r.ten_ch || '').toLowerCase().includes(qLower);
       });
     }
-    // [v9.69 YC#1] Sort client-side: mới → cũ (theo ngày + giờ)
+    // [v9.71 YC#1] Sort client-side: mới → cũ (theo ngày + giờ)
     list.sort((a, b) => {
       const dA = (a.ngay || '') + 'T' + (a.gioCham || '00:00');
       const dB = (b.ngay || '') + 'T' + (b.gioCham || '00:00');
@@ -10220,7 +10321,7 @@ async function taiLichSuDuyet(){
       const choCount = list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
       choEl.textContent = choCount;
     }
-    // [v9.69 YC#4] Highlight card đang được filter
+    // [v9.71 YC#4] Highlight card đang được filter
     _lsdUpdateActiveStat(tt);
 
     if (!list.length) {
@@ -10281,7 +10382,7 @@ async function taiLichSuDuyet(){
         ${actionBtn}
       </div>`;
     }).join('');
-    // [v9.69] Reset opacity sau khi render thành công
+    // [v9.71] Reset opacity sau khi render thành công
     listEl.style.opacity = '1';
   } catch(e) {
     listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+escHtml(e.message)+'</div>';
@@ -10294,7 +10395,7 @@ function escHtml(s) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// [v9.69 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
+// [v9.71 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
 // ════════════════════════════════════════════════════════════════════════
 
 // Cache danh sách NV để autocomplete (lazy load)
@@ -10302,7 +10403,7 @@ let _lsdNVList = null;
 async function _lsdLoadNVList(){
   if (_lsdNVList) return _lsdNVList;
   try {
-    // [v9.69 FIX] Bảng nhan_vien có field: ho_ten, role (USER-DEFINED enum), ma_ch_mac_dinh
+    // [v9.71 FIX] Bảng nhan_vien có field: ho_ten, role (USER-DEFINED enum), ma_ch_mac_dinh
     const { data, error } = await supa.from('nhan_vien')
       .select('ma_nv, ho_ten, role, ma_ch_mac_dinh')
       .order('ho_ten', { ascending: true });
@@ -10325,7 +10426,7 @@ async function _lsdLoadNVList(){
   }
 }
 
-// [v9.69] Load danh sách quản lý từ bảng quan_ly riêng (sheet "DANH SÁCH QUẢN LÝ")
+// [v9.71] Load danh sách quản lý từ bảng quan_ly riêng (sheet "DANH SÁCH QUẢN LÝ")
 let _lsdQLList = null;
 async function _lsdLoadQLList(){
   if (_lsdQLList) return _lsdQLList;
@@ -10439,7 +10540,7 @@ async function lsdShowNDSuggest(){
   const inp = document.getElementById('lsd-nd-inp');
   const sug = document.getElementById('lsd-nd-sug');
   if (!inp || !sug) return;
-  // [v9.69] Người duyệt từ bảng quan_ly (không phải nhan_vien)
+  // [v9.71] Người duyệt từ bảng quan_ly (không phải nhan_vien)
   const list = await _lsdLoadQLList();
   const q = inp.value.trim().toLowerCase();
   let matched;
@@ -10574,7 +10675,7 @@ function taiDonNghiPhep(){
 function renderDonNghiPhep(){
   const listEl=document.getElementById('dnp-list');
   if(!_dnpData||!listEl)return;
-  // [v9.69 YC#5] Gộp đơn nghỉ liên tục của cùng NV
+  // [v9.71 YC#5] Gộp đơn nghỉ liên tục của cùng NV
   const dsDon = _dnpData.dsDon || [];
   if(!dsDon.length){listEl.innerHTML='<div class="dnp-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Không có đơn nào.</div>';return;}
   // Sort theo maNV + ngayNghi
@@ -10626,39 +10727,59 @@ function renderDonNghiPhep(){
     const d = new Date(s + 'T00:00:00');
     return dow2[d.getDay()] + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth()+1);
   };
-  listEl.innerHTML = groups.map(g => {
-    const badgeCls = g.trangThai==='Đã duyệt'?'dnpb-da':g.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
-    const lyDoTxt = g.lyDo || '';
-    const linkAnh = g.anhUrl || '';
-    // Hiển thị thời gian dễ thấy
-    const timeLabel = g.soNgay === 1
-      ? fmtNgay2(g.ngayBatDau) + '/' + new Date(g.ngayBatDau+'T00:00:00').getFullYear()
-      : `<span style="color:#0F6E56;font-weight:700">${fmtNgay2(g.ngayBatDau)} → ${fmtNgay2(g.ngayKetThuc)}</span> <span style="background:#E0F2F1;color:#0F6E56;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px">${g.soNgay} ngày</span>`;
-    // Action duyệt → bulk theo từng đơn con
-    const ids = g.danhSach.map(x => x.id).filter(Boolean);
-    const actionsHtml = g.trangThai === 'Chờ duyệt' ? `
-      <div class="dnp-actions" style="margin-top:8px">
-        <button class="dnp-btn-ok" onclick="duyetGopDonNghi('${ids.join(',')}','Đã duyệt')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>Duyệt cả ${g.soNgay} ngày</button>
-        <button class="dnp-btn-no" onclick="duyetGopDonNghi('${ids.join(',')}','Từ chối')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Từ chối</button>
-      </div>` : '';
-    const qlnsNote = g.ghiChuQLNS ? `<div class="dnp-qlns-note">💬 ${g.ghiChuQLNS}</div>` : '';
-    const nguoiDuyetInfo = (g.trangThai!=='Chờ duyệt' && g.nguoiDuyet)
-      ? `<div style="font-size:11px;color:var(--text-m);margin-top:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Người duyệt: ${g.nguoiDuyet}</div>` : '';
-    return `<div class="dnp-item" style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px;margin-bottom:8px">
-      <div class="dnp-item-top" style="display:flex;align-items:flex-start;gap:10px">
-        ${_renderAvatar(g.maNV, g.tenNV, 40)}
-        <div class="dnp-info" style="flex:1;min-width:0">
-          <div class="dnp-name" style="font-size:14px;font-weight:600;color:#0F172A">${g.tenNV} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${g.maNV}</span></div>
-          <div style="font-size:12.5px;color:#334155;margin-top:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;color:#64748B"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg> ${timeLabel}</div>
-          <div class="dnp-sub" style="font-size:11.5px;color:var(--text-m);margin-top:3px">${g.cuaHang || g.khuVuc || ''}</div>
+  // [v9.71 YC#4] Nhóm theo ngày bắt đầu để có header lớn
+  const byDay = {};
+  groups.forEach(g => {
+    if (!byDay[g.ngayBatDau]) byDay[g.ngayBatDau] = [];
+    byDay[g.ngayBatDau].push(g);
+  });
+  const dayKeys = Object.keys(byDay).sort().reverse();
+  listEl.innerHTML = dayKeys.map(ngay => {
+    const d = new Date(ngay + 'T00:00:00');
+    const ngayHeader = dow2[d.getDay()] + ', ' + pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+    const groupsInDay = byDay[ngay];
+    const soDon = groupsInDay.length;
+    const soCho = groupsInDay.filter(g => g.trangThai === 'Chờ duyệt').length;
+    const itemsHtml = groupsInDay.map(g => {
+      const badgeCls = g.trangThai==='Đã duyệt'?'dnpb-da':g.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
+      const lyDoTxt = g.lyDo || '';
+      const linkAnh = g.anhUrl || '';
+      const timeLabel = g.soNgay === 1
+        ? fmtNgay2(g.ngayBatDau)
+        : `<span style="color:#0F6E56;font-weight:700">${fmtNgay2(g.ngayBatDau)} → ${fmtNgay2(g.ngayKetThuc)}</span> <span style="background:#E0F2F1;color:#0F6E56;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px">${g.soNgay} ngày</span>`;
+      const ids = g.danhSach.map(x => x.id).filter(Boolean);
+      const actionsHtml = g.trangThai === 'Chờ duyệt' ? `
+        <div class="dnp-actions" style="margin-top:8px">
+          <button class="dnp-btn-ok" onclick="duyetGopDonNghi('${ids.join(',')}','Đã duyệt')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>Duyệt${g.soNgay>1?' cả '+g.soNgay+' ngày':''}</button>
+          <button class="dnp-btn-no" onclick="duyetGopDonNghi('${ids.join(',')}','Từ chối')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Từ chối</button>
+        </div>` : '';
+      const qlnsNote = g.ghiChuQLNS ? `<div class="dnp-qlns-note">💬 ${g.ghiChuQLNS}</div>` : '';
+      const nguoiDuyetInfo = (g.trangThai!=='Chờ duyệt' && g.nguoiDuyet)
+        ? `<div style="font-size:11px;color:var(--text-m);margin-top:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Người duyệt: ${g.nguoiDuyet}</div>` : '';
+      return `<div class="dnp-item" style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px;margin-bottom:8px">
+        <div class="dnp-item-top" style="display:flex;align-items:flex-start;gap:10px">
+          ${_renderAvatar(g.maNV, g.tenNV, 40)}
+          <div class="dnp-info" style="flex:1;min-width:0">
+            <div class="dnp-name" style="font-size:14px;font-weight:600;color:#0F172A">${g.tenNV} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${g.maNV}</span></div>
+            <div style="font-size:12.5px;color:#334155;margin-top:4px">${timeLabel}</div>
+            <div class="dnp-sub" style="font-size:11.5px;color:var(--text-m);margin-top:3px">${g.cuaHang || g.khuVuc || ''}</div>
+          </div>
+          <span class="dnp-badge ${badgeCls}">${g.trangThai}</span>
         </div>
-        <span class="dnp-badge ${badgeCls}">${g.trangThai}</span>
+        ${lyDoTxt?`<div class="dnp-lydo" style="margin-top:8px"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
+        ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Xem ảnh</div>`:''}
+        ${nguoiDuyetInfo}
+        ${qlnsNote}
+        ${actionsHtml}
+      </div>`;
+    }).join('');
+    return `<div class="dnp-day-group">
+      <div class="dnp-day-head" style="display:flex;align-items:center;gap:8px;padding:8px 4px 8px 4px;font-size:13px;font-weight:700;color:#0F172A">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span style="flex:1">${ngayHeader}</span>
+        <span style="font-size:11.5px;font-weight:600;color:#64748B">${soDon} đơn${soCho>0?' · <span style="color:#F59E0B">'+soCho+' chờ</span>':''}</span>
       </div>
-      ${lyDoTxt?`<div class="dnp-lydo" style="margin-top:8px"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
-      ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Xem ảnh</div>`:''}
-      ${nguoiDuyetInfo}
-      ${qlnsNote}
-      ${actionsHtml}
+      ${itemsHtml}
     </div>`;
   }).join('');
   // [v10.8] Toggle bulk bar theo số đơn Chờ duyệt
@@ -10837,7 +10958,7 @@ async function duyetTatCaDonNghiNS(action){
 }
 
 // QLNS duyệt đơn nghỉ phép — [v11.6 Item 1] Fire-and-forget
-// [v9.69 YC#5] Duyệt nhiều đơn cùng lúc (gộp)
+// [v9.71 YC#5] Duyệt nhiều đơn cùng lúc (gộp)
 async function duyetGopDonNghi(idsStr, quyetDinh){
   const ids = String(idsStr || '').split(',').filter(Boolean);
   if (!ids.length){ showToast('Không có đơn để duyệt', 'err'); return; }
@@ -11471,7 +11592,7 @@ async function moModalBoSungCa(){
   document.getElementById('bsc-lydo').value = '';
   document.getElementById('bsc-err').style.display = 'none';
 
-  // [v9.69 YC#2] Mặc định chọn hôm nay
+  // [v9.71 YC#2] Mặc định chọn hôm nay
   bscChonNgay(0);
 
   // Load quota
@@ -11527,29 +11648,25 @@ function dongModalBoSungCa(){
   document.getElementById('bsc-modal').style.display = 'none';
 }
 
-// [v9.69 YC#2] Chọn ngày bổ sung ca: 0 = hôm nay, -1 = hôm qua
+// [v9.71 YC#2] Chọn ngày bổ sung ca: 0 = hôm nay, -1 = hôm qua
 function bscChonNgay(offset){
   const d = new Date();
   d.setDate(d.getDate() + offset);
   const ngayStr = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   document.getElementById('bsc-ngay').value = ngayStr;
-  // Update UI buttons
   const btnHN = document.getElementById('bsc-ngay-homnay');
   const btnHQ = document.getElementById('bsc-ngay-homqua');
+  // [v9.71] Render label kèm ngày dd/MM
+  const today = new Date();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  if (btnHN) btnHN.innerHTML = '<div style="font-size:13px;font-weight:600">Hôm nay</div><div style="font-size:10.5px;opacity:.85;margin-top:2px">'+pad(today.getDate())+'/'+pad(today.getMonth()+1)+'</div>';
+  if (btnHQ) btnHQ.innerHTML = '<div style="font-size:13px;font-weight:600">Hôm qua</div><div style="font-size:10.5px;opacity:.85;margin-top:2px">'+pad(yesterday.getDate())+'/'+pad(yesterday.getMonth()+1)+'</div>';
   if (offset === 0){
-    btnHN.style.borderColor = '#0F6E56';
-    btnHN.style.background = '#0F6E56';
-    btnHN.style.color = '#fff';
-    btnHQ.style.borderColor = '#D1D5DB';
-    btnHQ.style.background = '#fff';
-    btnHQ.style.color = '#374151';
+    btnHN.style.borderColor = '#0F6E56'; btnHN.style.background = '#0F6E56'; btnHN.style.color = '#fff';
+    btnHQ.style.borderColor = '#D1D5DB'; btnHQ.style.background = '#fff'; btnHQ.style.color = '#374151';
   } else {
-    btnHQ.style.borderColor = '#0F6E56';
-    btnHQ.style.background = '#0F6E56';
-    btnHQ.style.color = '#fff';
-    btnHN.style.borderColor = '#D1D5DB';
-    btnHN.style.background = '#fff';
-    btnHN.style.color = '#374151';
+    btnHQ.style.borderColor = '#0F6E56'; btnHQ.style.background = '#0F6E56'; btnHQ.style.color = '#fff';
+    btnHN.style.borderColor = '#D1D5DB'; btnHN.style.background = '#fff'; btnHN.style.color = '#374151';
   }
 }
 
@@ -11569,7 +11686,7 @@ async function guiBoSungCa(){
   const btn = document.getElementById('bsc-btn-gui');
   btn.disabled = true; btn.textContent = 'Đang gửi...';
   try {
-    // [v9.69 YC#2] Dùng ngày user chọn (hôm nay hoặc hôm qua), không hardcode today
+    // [v9.71 YC#2] Dùng ngày user chọn (hôm nay hoặc hôm qua), không hardcode today
     const ngayBSC = document.getElementById('bsc-ngay').value;
     if (!ngayBSC){ errEl.textContent = 'Chọn ngày cần bổ sung.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
@@ -13902,7 +14019,7 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
-        // [v9.69] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        // [v9.71] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
         localStorage.removeItem('session_cc');
         localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
@@ -15809,7 +15926,7 @@ function bhQlRenderHistory() {
       case 'dur_desc':  return dB - dA;
       case 'dur_asc':   return dA - dB;
       case 'value_desc': return vB - vA;
-      // [v9.69 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
+      // [v9.71 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
       case 'stt_asc':   return tA.slice(0,10).localeCompare(tB.slice(0,10)) || (sA - sB);
       case 'stt_desc':  return tB.slice(0,10).localeCompare(tA.slice(0,10)) || (sB - sA);
       default: return tB.localeCompare(tA);
@@ -15823,7 +15940,7 @@ function bhQlRenderHistory() {
   histEl.innerHTML = fin.map(p => {
     const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng' ? 'auto' : 'notbought');
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
-    // [v9.69 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
+    // [v9.71 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
     const ngayHienThi = p.ngay ? (p.ngay.slice(8,10) + '/' + p.ngay.slice(5,7)) : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
@@ -16947,7 +17064,7 @@ async function adm2RenderPhienHomNay(bodyEl){
   try {
     const today = new Date().toISOString().slice(0,10);
     const { data, error } = await supa.from('phien_ban_hang')
-      .select('id, stt_trong_ngay, ten_ch_snapshot, ma_ch, ten_nv_snapshot, ma_nv_phu_trach, gio_mo, gio_dong, ket_qua, trang_thai, thoi_luong_phut, ghi_chu, tong_tien, so_sp, yeu_cau_xoa')
+      .select('id, stt_trong_ngay, ten_ch_snapshot, ma_ch, ten_nv_snapshot, ma_nv, gio_mo, gio_dong, ket_qua, trang_thai, thoi_luong_phut, ghi_chu, tong_gia_tri, sp_da_mua_text, yeu_cau_xoa')
       .eq('ngay', today).order('gio_mo', { ascending:false }).limit(200);
     if (error) throw error;
     if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Chưa có phiên nào hôm nay</div>'; return; }
@@ -16959,7 +17076,8 @@ async function adm2RenderPhienHomNay(bodyEl){
         : p.trang_thai === 'DANG_MO' ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">⟳ ĐANG MỞ</span>'
         : '<span style="background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">—</span>';
       const ycXoa = p.yeu_cau_xoa ? '<span style="background:#FEE2E2;color:#991B1B;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:600;margin-left:4px">🗑 YC XÓA</span>' : '';
-      const tien = p.tong_tien ? `<div style="font-size:12px;color:#0F172A;margin-top:2px"><strong>${Number(p.tong_tien).toLocaleString('vi-VN')}đ</strong> · ${p.so_sp || 0} SP</div>` : '';
+      const _soSP = p.sp_da_mua_text ? p.sp_da_mua_text.split(',').filter(x => x.trim()).length : 0;
+      const tien = p.tong_gia_tri ? `<div style="font-size:12px;color:#0F172A;margin-top:2px"><strong>${Number(p.tong_gia_tri).toLocaleString('vi-VN')}đ</strong> · ${_soSP} SP</div>` : '';
       const ghiChu = p.ghi_chu ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;font-style:italic">"${adm2Esc(p.ghi_chu)}"</div>` : '';
       
       return `
@@ -16970,7 +17088,7 @@ async function adm2RenderPhienHomNay(bodyEl){
                 #${p.stt_trong_ngay || '?'} · ${adm2Esc(p.ten_ch_snapshot || p.ma_ch)} ${ktBadge}${ycXoa}
               </div>
               <div style="font-size:11px;color:#6B7280;margin-top:2px">
-                NV: ${adm2Esc(p.ten_nv_snapshot || '—')} ${p.ma_nv_phu_trach ? '('+adm2Esc(p.ma_nv_phu_trach)+')' : ''} · ${adm2FmtTime(p.gio_mo)} → ${p.gio_dong ? adm2FmtTime(p.gio_dong) : '...'} · ${adm2FmtDuration(p.thoi_luong_phut)}
+                NV: ${adm2Esc(p.ten_nv_snapshot || '—')} ${p.ma_nv ? '('+adm2Esc(p.ma_nv)+')' : ''} · ${adm2FmtTime(p.gio_mo)} → ${p.gio_dong ? adm2FmtTime(p.gio_dong) : '...'} · ${adm2FmtDuration(p.thoi_luong_phut)}
               </div>
               ${tien}
               ${ghiChu}
@@ -17013,7 +17131,7 @@ async function adm2EditPhien(id){
           </div>
           <div>
             <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Mã NV phụ trách</label>
-            <input id="aep-ma-nv" value="${adm2Esc(p.ma_nv_phu_trach||'')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+            <input id="aep-ma-nv" value="${adm2Esc(p.ma_nv||'')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
           </div>
           <div>
             <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Giờ mở</label>
@@ -17042,12 +17160,8 @@ async function adm2EditPhien(id){
             </select>
           </div>
           <div>
-            <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Tổng tiền (VNĐ)</label>
-            <input id="aep-tong-tien" type="number" value="${p.tong_tien||0}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Số SP</label>
-            <input id="aep-so-sp" type="number" value="${p.so_sp||0}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+            <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Tổng giá trị (VNĐ)</label>
+            <input id="aep-tong-tien" type="number" value="${p.tong_gia_tri||0}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
           </div>
         </div>
         <div style="margin-bottom:14px">
@@ -17068,13 +17182,12 @@ async function adm2SaveEditPhien(id){
   try {
     const updates = {
       ma_ch: document.getElementById('aep-ma-ch').value.trim() || null,
-      ma_nv_phu_trach: document.getElementById('aep-ma-nv').value.trim() || null,
+      ma_nv: document.getElementById('aep-ma-nv').value.trim() || null,
       gio_mo: document.getElementById('aep-gio-mo').value ? new Date(document.getElementById('aep-gio-mo').value).toISOString() : null,
       gio_dong: document.getElementById('aep-gio-dong').value ? new Date(document.getElementById('aep-gio-dong').value).toISOString() : null,
       ket_qua: document.getElementById('aep-ket-qua').value || null,
       trang_thai: document.getElementById('aep-trang-thai').value,
-      tong_tien: parseInt(document.getElementById('aep-tong-tien').value) || 0,
-      so_sp: parseInt(document.getElementById('aep-so-sp').value) || 0,
+      tong_gia_tri: parseInt(document.getElementById('aep-tong-tien').value) || 0,
       ghi_chu: document.getElementById('aep-ghi-chu').value.trim() || null,
     };
     const { error } = await supa.from('phien_ban_hang').update(updates).eq('id', id);
