@@ -310,7 +310,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .gps-btn.success .gps-badge { background:var(--green-m); color:white; }
 .gps-btn.error    { background:var(--red-lt); border-color:#F7C1C1; }
 .gps-btn.error .gps-badge   { background:var(--red-lt); color:var(--red); border:1px solid #F09595; }
-/* [v9.57 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
+/* [v9.58 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
 .gps-btn.warn     { background:#FFF7ED; border-color:#FDBA74; }
 .gps-btn.warn .gps-icon  { background:#FED7AA; }
 .gps-btn.warn .gps-badge { background:#FED7AA; color:#9A3412; border:1px solid #FDBA74; }
@@ -2437,7 +2437,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.57</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.58</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2704,12 +2704,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- [v9.57] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <!-- [v9.58] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
         <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
         <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
         <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.57) -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.58) -->
         <div style="margin-bottom:8px">
           <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
@@ -3041,17 +3041,17 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <!-- [v9.57 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
+    <!-- [v9.58 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
     <div class="card card-ch-overflow" id="card-sale-target" style="margin-top:12px;display:none;border:1.5px solid #F59E0B;background:#FFFBEB">
-      <div class="card-section" style="color:#92400E">🎯 CH thực tế đang đến (Đội SALE)</div>
+      <div class="card-section" style="color:#92400E">🎯 CỬA HÀNG THỰC TẾ ĐANG SALE</div>
       <div class="ch-field">
         <input type="text" class="ch-input" id="input-sale-target-display"
-               placeholder="🔍  Nhập tên CH bạn đang đến..." autocomplete="off"
+               placeholder="🔍  Nhập tên cửa hàng đang sale..." autocomplete="off"
                oninput="onSaleTargetInput()" onblur="hideSaleTargetSuggest()" onfocus="onSaleTargetInput()">
         <input type="hidden" id="sel-sale-target">
         <div class="suggest-list" id="sale-target-suggest-list"></div>
       </div>
-      <div style="font-size:11px;color:#92400E;padding:6px 12px 10px;line-height:1.4">Bạn đang chấm công với tư cách Đội SALE — vui lòng chọn CH đang đến. Hệ thống sẽ lưu dưới dạng <b>"Tên Đội SALE - Tên CH"</b>.</div>
+      <div style="font-size:11px;color:#92400E;padding:6px 12px 10px;line-height:1.4">Vui lòng chọn cửa hàng đang sale.</div>
     </div>
 
     <div class="card">
@@ -3292,7 +3292,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
             <option value="BỔ SUNG CA">Bổ sung ca</option>
           </select>
         </div>
-        <!-- [v9.57 YC#1] Filter NV (autocomplete) -->
+        <!-- [v9.58 YC#1] Filter NV (autocomplete) -->
         <div style="grid-column:1/-1;position:relative">
           <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Nhân viên</label>
           <input type="text" id="lsd-nv-inp" placeholder="Gõ mã/tên NV để chọn..." autocomplete="off"
@@ -3301,7 +3301,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <input type="hidden" id="lsd-nv-ma" value="">
           <div id="lsd-nv-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:7px;margin-top:2px;max-height:180px;overflow-y:auto;display:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
         </div>
-        <!-- [v9.57 YC#1] Filter CH (autocomplete) + Người duyệt -->
+        <!-- [v9.58 YC#1] Filter CH (autocomplete) + Người duyệt -->
         <div style="position:relative">
           <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Cửa hàng</label>
           <input type="text" id="lsd-ch-inp" placeholder="Gõ mã/tên CH..." autocomplete="off"
@@ -3560,7 +3560,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.57 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.58 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4466,7 +4466,7 @@ let lastDay=new Date().getDate();
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
 
-// [v9.57] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+// [v9.58] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
 function _getMondayMidnight(d){
   const x = new Date(d);
   x.setHours(0,0,0,0);
@@ -4483,7 +4483,7 @@ function tick(){
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 
-  // [v9.57] Auto-logout vào 00:00 thứ Hai hàng tuần
+  // [v9.58] Auto-logout vào 00:00 thứ Hai hàng tuần
   // Nguyên tắc: nếu loginTime < thứ Hai 00:00 gần nhất ≤ now → logout
   if(SESSION){
     try {
@@ -4673,7 +4673,7 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    // [v9.57] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    // [v9.58] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
     try{
       localStorage.setItem('session_cc',JSON.stringify(SESSION));
       localStorage.setItem('session_login_ts', String(Date.now()));
@@ -4687,7 +4687,7 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  // [v9.57] Clear cả session + loginTime
+  // [v9.58] Clear cả session + loginTime
   SESSION=null;
   try{
     localStorage.removeItem('session_cc');
@@ -4703,7 +4703,7 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  // [v9.57] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  // [v9.58] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
   try{ s = localStorage.getItem('session_cc'); }catch(e){}
   if(!s){
@@ -4911,14 +4911,14 @@ function selectCH(ma,ten){
   document.getElementById('input-ch-display').value=ten||ma;
   document.getElementById('sel-cuahang').value=ma;
   document.getElementById('ch-suggest-list').style.display='none';
-  // [v9.57 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
+  // [v9.58 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
 // ════════════════════════════════════════════════════════════════════════
-// [v9.57 YC#8] ĐỘI SALE — chấm công với CH đích di động
+// [v9.58 YC#8] ĐỘI SALE — chấm công với CH đích di động
 // Quy ước: tên CH bắt đầu bằng "Đội SALE" hoặc "Doi SALE" (không dấu) = đội sale
 // Khi gửi: ghép tenCh = "Đội SALE 01 - Hai Bà Trưng"
 // ════════════════════════════════════════════════════════════════════════
@@ -5010,7 +5010,7 @@ function layViTri(){
       state.lng=pos.coords.longitude.toFixed(6);
       state.gpsAcc=Math.round(pos.coords.accuracy);
       state.gpsOk=true;
-      // [v9.57 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
+      // [v9.58 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
       const accVal = state.gpsAcc;
       const isWeak = accVal > 100;
       btn.className = isWeak ? 'gps-btn warn' : 'gps-btn success';
@@ -5162,7 +5162,7 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
-// [v9.57] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
+// [v9.58] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
@@ -5211,7 +5211,7 @@ function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
   if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
-  // [v9.57 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
+  // [v9.58 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
   const tenCHHien = document.getElementById('input-ch-display').value || '';
   if (_laDoiSale(tenCHHien)){
     const targetMa = document.getElementById('sel-sale-target').value;
@@ -5325,7 +5325,7 @@ function _doSubmitFinal(){
   state.submitted=true;
   let maCH=document.getElementById('sel-cuahang').value;
   const tenCHDisplay = document.getElementById('input-ch-display').value;
-  // [v9.57 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
+  // [v9.58 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
   //   Lưu tên Đội SALE gốc + đổi maCH sang CH thực tế.
   let _saleOriginMa = '';
   let _saleOriginTen = '';
@@ -5410,13 +5410,13 @@ function _doSubmitFinal(){
       } catch(e) { console.warn('[CC] upload ảnh lỗi:', e); }
     }
 
-    // [v9.57 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
+    // [v9.58 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
     //   → đính kèm Đội SALE gốc vào device_info để Sheet sync ghép tên đúng
     let _deviceInfo = navigator.userAgent.substring(0, 180);
     if (_saleOriginMa && _saleOriginTen){
       _deviceInfo = '[SALE_ORIGIN:' + _saleOriginMa + '|' + _saleOriginTen + '] ' + _deviceInfo;
     }
-    // [v9.57 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
+    // [v9.58 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
     if (state.gpsAcc && state.gpsAcc > 100){
       _deviceInfo = '[GPS_WEAK:' + state.gpsAcc + 'm] ' + _deviceInfo;
     }
@@ -6062,7 +6062,7 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      // [v9.57] Persist sang localStorage
+      // [v9.58] Persist sang localStorage
       try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
@@ -6544,7 +6544,7 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    // [v9.57 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    // [v9.58 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
     try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
@@ -6647,7 +6647,7 @@ function closeGiaiTrinh(){
 function chonLyDo(el,lyDo){
   document.querySelectorAll('.gt-opt').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  // [v9.57 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
+  // [v9.58 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
   if(lyDo==='__khac__'){
     gtLyDo = 'Khác';
     document.getElementById('gt-input').focus();
@@ -6831,7 +6831,7 @@ function startNSPolling(){
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
     const [nsTu,nsDen]=_getNSRange();
-    // [v9.57 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+    // [v9.58 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
     const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
     // [v12-P2] Supabase RPC
     supa.rpc('fn_get_nhan_su_overview', {
@@ -7087,7 +7087,7 @@ function taiNhanSu(forceRefresh){
   // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
   const [nsTu,nsDen]=_getNSRange();
   const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
-  // [v9.57 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+  // [v9.58 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
   const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
   // [v12-P2] Supabase RPC thay nhansu
   supa.rpc('fn_get_nhan_su_overview', {
@@ -8864,7 +8864,7 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
-// [v9.57] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// [v9.58] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
 // State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
 let _xdlEdit = {};
@@ -8892,7 +8892,7 @@ function openXinDoiLichModal() {
     }
   }
   
-  // [v9.57 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
+  // [v9.58 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
   const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
@@ -8909,7 +8909,7 @@ function openXinDoiLichModal() {
   
   // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
   ngayList.forEach(item => {
-    // [v9.57] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    // [v9.58] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
     const cacCa = (lcData.lich || []).filter(l =>
       l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
@@ -9155,7 +9155,7 @@ function xdlShowCHSuggest(ngay, idx){
   const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
   if (!inp || !sug) return;
   const q = inp.value.trim().toLowerCase();
-  // [v9.57] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
+  // [v9.58] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
   const list = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
   let matched;
   if (!q){
@@ -9288,7 +9288,7 @@ async function submitXinDoiLich() {
   try {
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      // [v9.57 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      // [v9.58 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
       p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
@@ -9303,7 +9303,7 @@ async function submitXinDoiLich() {
       return;
     }
     
-    // [v9.57 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    // [v9.58 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
     const soNgay = res.so_ngay_moi || ngayKeys.length;
     showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
@@ -9826,7 +9826,7 @@ async function taiLichSuDuyet(){
   const tt  = document.getElementById('lsd-trangthai').value || null;
   const loai = document.getElementById('lsd-loaicb').value || null;
   const q   = (document.getElementById('lsd-q').value || '').trim() || null;
-  // [v9.57 YC#1] Filter mới: NV, CH, người duyệt
+  // [v9.58 YC#1] Filter mới: NV, CH, người duyệt
   const maNV = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
   const maCH = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
   const maND = (document.getElementById('lsd-nd-ma') && document.getElementById('lsd-nd-ma').value) || null;
@@ -9842,7 +9842,7 @@ async function taiLichSuDuyet(){
     if (error || !data) { listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải.</div>'; return; }
 
     let list  = data.list || [];
-    // [v9.57 YC#1] Filter CH client-side (RPC chưa hỗ trợ p_cua_hang)
+    // [v9.58 YC#1] Filter CH client-side (RPC chưa hỗ trợ p_cua_hang)
     if (maCH){
       list = list.filter(r => (r.maCh || r.maCH || '') === maCH);
     }
@@ -9922,7 +9922,7 @@ function escHtml(s) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// [v9.57 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
+// [v9.58 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
 // ════════════════════════════════════════════════════════════════════════
 
 // Cache danh sách NV để autocomplete (lazy load)
@@ -13397,7 +13397,7 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
-        // [v9.57] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        // [v9.58] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
         localStorage.removeItem('session_cc');
         localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
@@ -15304,7 +15304,7 @@ function bhQlRenderHistory() {
       case 'dur_desc':  return dB - dA;
       case 'dur_asc':   return dA - dB;
       case 'value_desc': return vB - vA;
-      // [v9.57 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
+      // [v9.58 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
       case 'stt_asc':   return tA.slice(0,10).localeCompare(tB.slice(0,10)) || (sA - sB);
       case 'stt_desc':  return tB.slice(0,10).localeCompare(tA.slice(0,10)) || (sB - sA);
       default: return tB.localeCompare(tA);
@@ -15318,7 +15318,7 @@ function bhQlRenderHistory() {
   histEl.innerHTML = fin.map(p => {
     const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng' ? 'auto' : 'notbought');
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
-    // [v9.57 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
+    // [v9.58 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
     const ngayHienThi = p.ngay ? (p.ngay.slice(8,10) + '/' + p.ngay.slice(5,7)) : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
