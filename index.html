@@ -310,6 +310,11 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .gps-btn.success .gps-badge { background:var(--green-m); color:white; }
 .gps-btn.error    { background:var(--red-lt); border-color:#F7C1C1; }
 .gps-btn.error .gps-badge   { background:var(--red-lt); color:var(--red); border:1px solid #F09595; }
+/* [v9.55 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
+.gps-btn.warn     { background:#FFF7ED; border-color:#FDBA74; }
+.gps-btn.warn .gps-icon  { background:#FED7AA; }
+.gps-btn.warn .gps-badge { background:#FED7AA; color:#9A3412; border:1px solid #FDBA74; }
+.gps-btn.warn .gps-label { color:#9A3412; }
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:.25} }
 .blinking { animation:blink .8s infinite; }
 
@@ -2432,7 +2437,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.52</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v9.55</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -2699,12 +2704,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- [v9.52] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <!-- [v9.55] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
         <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
         <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
         <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.52) -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v9.55) -->
         <div style="margin-bottom:8px">
           <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
@@ -3036,6 +3041,19 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
+    <!-- [v9.55 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
+    <div class="card card-ch-overflow" id="card-sale-target" style="margin-top:12px;display:none;border:1.5px solid #F59E0B;background:#FFFBEB">
+      <div class="card-section" style="color:#92400E">🎯 CH thực tế đang đến (Đội SALE)</div>
+      <div class="ch-field">
+        <input type="text" class="ch-input" id="input-sale-target-display"
+               placeholder="🔍  Nhập tên CH bạn đang đến..." autocomplete="off"
+               oninput="onSaleTargetInput()" onblur="hideSaleTargetSuggest()" onfocus="onSaleTargetInput()">
+        <input type="hidden" id="sel-sale-target">
+        <div class="suggest-list" id="sale-target-suggest-list"></div>
+      </div>
+      <div style="font-size:11px;color:#92400E;padding:6px 12px 10px;line-height:1.4">Bạn đang chấm công với tư cách Đội SALE — vui lòng chọn CH đang đến. Hệ thống sẽ lưu dưới dạng <b>"Tên Đội SALE - Tên CH"</b>.</div>
+    </div>
+
     <div class="card">
       <div class="card-section">Thời điểm chấm công</div>
       <div class="type-grid">
@@ -3274,10 +3292,40 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
             <option value="BỔ SUNG CA">Bổ sung ca</option>
           </select>
         </div>
+        <!-- [v9.55 YC#1] Filter NV (autocomplete) -->
+        <div style="grid-column:1/-1;position:relative">
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Nhân viên</label>
+          <input type="text" id="lsd-nv-inp" placeholder="Gõ mã/tên NV để chọn..." autocomplete="off"
+            oninput="lsdOnNVInput()" onfocus="lsdShowNVSuggest()" onblur="lsdHideNVSuggest()"
+            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;box-sizing:border-box">
+          <input type="hidden" id="lsd-nv-ma" value="">
+          <div id="lsd-nv-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:7px;margin-top:2px;max-height:180px;overflow-y:auto;display:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+        </div>
+        <!-- [v9.55 YC#1] Filter CH (autocomplete) + Người duyệt -->
+        <div style="position:relative">
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Cửa hàng</label>
+          <input type="text" id="lsd-ch-inp" placeholder="Gõ mã/tên CH..." autocomplete="off"
+            oninput="lsdOnCHInput()" onfocus="lsdShowCHSuggest()" onblur="lsdHideCHSuggest()"
+            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;box-sizing:border-box">
+          <input type="hidden" id="lsd-ch-ma" value="">
+          <div id="lsd-ch-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:7px;margin-top:2px;max-height:180px;overflow-y:auto;display:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+        </div>
+        <div style="position:relative">
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Người duyệt</label>
+          <input type="text" id="lsd-nd-inp" placeholder="Gõ mã/tên QLNS..." autocomplete="off"
+            oninput="lsdOnNDInput()" onfocus="lsdShowNDSuggest()" onblur="lsdHideNDSuggest()"
+            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;box-sizing:border-box">
+          <input type="hidden" id="lsd-nd-ma" value="">
+          <div id="lsd-nd-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:7px;margin-top:2px;max-height:180px;overflow-y:auto;display:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+        </div>
         <div style="grid-column:1/-1">
-          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Tìm tên/mã NV/giải trình</label>
-          <input type="text" id="lsd-q" placeholder="Gõ để tìm..." oninput="_debLichSuDuyet()" 
-            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
+          <label style="display:block;font-size:10px;color:#6B7280;margin-bottom:2px">Tìm trong giải trình</label>
+          <input type="text" id="lsd-q" placeholder="Từ khóa giải trình..." oninput="_debLichSuDuyet()" 
+            style="width:100%;padding:6px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;box-sizing:border-box">
+        </div>
+        <div style="grid-column:1/-1;display:flex;gap:8px">
+          <button onclick="lsdResetFilters()" style="flex:1;padding:7px;background:#fff;border:1px solid #CBD5E1;color:#475569;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">🔄 Reset</button>
+          <button onclick="lsdExportExcel()" style="flex:1;padding:7px;background:#0F6E56;border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">📥 Xuất Excel</button>
         </div>
       </div>
 
@@ -3512,7 +3560,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.52 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v9.55 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4018,6 +4066,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
           <select id="bh-ql-sort" onchange="bhQlSetSort(this.value)" style="margin-left:auto;padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
             <option value="time_desc">Mới → Cũ</option>
             <option value="time_asc">Cũ → Mới</option>
+            <option value="stt_asc">STT phiên 1 → ∞</option>
+            <option value="stt_desc">STT phiên ∞ → 1</option>
             <option value="dur_desc">Thời lượng dài → ngắn</option>
             <option value="dur_asc">Thời lượng ngắn → dài</option>
             <option value="value_desc">Giá trị cao → thấp</option>
@@ -4416,7 +4466,7 @@ let lastDay=new Date().getDate();
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
 
-// [v9.52] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+// [v9.55] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
 function _getMondayMidnight(d){
   const x = new Date(d);
   x.setHours(0,0,0,0);
@@ -4433,7 +4483,7 @@ function tick(){
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 
-  // [v9.52] Auto-logout vào 00:00 thứ Hai hàng tuần
+  // [v9.55] Auto-logout vào 00:00 thứ Hai hàng tuần
   // Nguyên tắc: nếu loginTime < thứ Hai 00:00 gần nhất ≤ now → logout
   if(SESSION){
     try {
@@ -4623,7 +4673,7 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    // [v9.52] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    // [v9.55] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
     try{
       localStorage.setItem('session_cc',JSON.stringify(SESSION));
       localStorage.setItem('session_login_ts', String(Date.now()));
@@ -4637,7 +4687,7 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  // [v9.52] Clear cả session + loginTime
+  // [v9.55] Clear cả session + loginTime
   SESSION=null;
   try{
     localStorage.removeItem('session_cc');
@@ -4653,7 +4703,7 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  // [v9.52] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  // [v9.55] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
   try{ s = localStorage.getItem('session_cc'); }catch(e){}
   if(!s){
@@ -4861,9 +4911,83 @@ function selectCH(ma,ten){
   document.getElementById('input-ch-display').value=ten||ma;
   document.getElementById('sel-cuahang').value=ma;
   document.getElementById('ch-suggest-list').style.display='none';
+  // [v9.55 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
+  _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
+
+// ════════════════════════════════════════════════════════════════════════
+// [v9.55 YC#8] ĐỘI SALE — chấm công với CH đích di động
+// Quy ước: tên CH bắt đầu bằng "Đội SALE" hoặc "Doi SALE" (không dấu) = đội sale
+// Khi gửi: ghép tenCh = "Đội SALE 01 - Hai Bà Trưng"
+// ════════════════════════════════════════════════════════════════════════
+function _laDoiSale(tenCH){
+  if (!tenCH) return false;
+  const t = tenCH.trim().toLowerCase();
+  return t.startsWith('đội sale') || t.startsWith('doi sale');
+}
+
+function _capNhatUISaleTarget(tenCH){
+  const card = document.getElementById('card-sale-target');
+  const inp = document.getElementById('input-sale-target-display');
+  const hid = document.getElementById('sel-sale-target');
+  if (!card) return;
+  if (_laDoiSale(tenCH)){
+    card.style.display = 'block';
+  } else {
+    card.style.display = 'none';
+    if (inp) inp.value = '';
+    if (hid) hid.value = '';
+  }
+}
+
+// Autocomplete CH thực tế (loại bỏ Đội SALE khỏi danh sách gợi ý)
+let _saleTargetDeb = null;
+function onSaleTargetInput(){
+  clearTimeout(_saleTargetDeb);
+  _saleTargetDeb = setTimeout(()=>{
+    const inp = document.getElementById('input-sale-target-display');
+    const list = document.getElementById('sale-target-suggest-list');
+    if (!inp || !list) return;
+    const q = inp.value.trim().toLowerCase();
+    const src = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
+    // Loại bỏ các Đội SALE khỏi gợi ý
+    const candidates = src.filter(ch => !_laDoiSale(ch.ten));
+    let matched;
+    if (!q){
+      matched = candidates.slice(0, 8);
+    } else {
+      matched = candidates.filter(ch =>
+        (ch.ma || '').toLowerCase().includes(q) || (ch.ten || '').toLowerCase().includes(q)
+      ).slice(0, 10);
+    }
+    if (!matched.length){
+      list.style.display = 'none';
+      document.getElementById('sel-sale-target').value = '';
+      updateSubmitBtn();
+      return;
+    }
+    list.innerHTML = matched.map(ch =>
+      '<div class="suggest-item" onmousedown="selectSaleTarget(\''+esc(ch.ma)+'\',\''+esc(ch.ten)+'\')"><span class="s-ma">'+ch.ma+'</span><span class="s-ten">'+ch.ten+'</span></div>'
+    ).join('');
+    list.style.display = 'block';
+  }, 160);
+}
+
+function selectSaleTarget(ma, ten){
+  document.getElementById('input-sale-target-display').value = ten || ma;
+  document.getElementById('sel-sale-target').value = ma;
+  document.getElementById('sale-target-suggest-list').style.display = 'none';
+  updateSubmitBtn();
+}
+
+function hideSaleTargetSuggest(){
+  setTimeout(()=>{
+    const el = document.getElementById('sale-target-suggest-list');
+    if (el) el.style.display='none';
+  }, 150);
+}
 
 // ─── LOẠI CHẤM CÔNG ─────────────────────────────────────────
 const TYPE_MAP={vao:{cls:'tb-vao'},ra:{cls:'tb-ra'},'ra-g':{cls:'tb-ra-g'},'vao-g':{cls:'tb-vao-g'}};
@@ -4881,8 +5005,21 @@ function layViTri(){
   btn.className='gps-btn loading';label.textContent='Đang lấy tọa độ...';sub.textContent='Vui lòng giữ yên thiết bị';badge.innerHTML='<span class="blinking">●</span> Đang lấy';
   if(!navigator.geolocation){setGpsErr('Thiết bị không hỗ trợ GPS');return;}
   navigator.geolocation.getCurrentPosition(
-    pos=>{state.lat=pos.coords.latitude.toFixed(6);state.lng=pos.coords.longitude.toFixed(6);state.gpsAcc=Math.round(pos.coords.accuracy);state.gpsOk=true;
-      btn.className='gps-btn success';label.textContent='ĐÃ XÁC NHẬN VỊ TRÍ';sub.textContent='Độ chính xác ±'+state.gpsAcc+'m';badge.textContent='✓ ĐÃ XÁC NHẬN';document.getElementById('gps-icon').textContent='✅';updateSubmitBtn();},
+    pos=>{
+      state.lat=pos.coords.latitude.toFixed(6);
+      state.lng=pos.coords.longitude.toFixed(6);
+      state.gpsAcc=Math.round(pos.coords.accuracy);
+      state.gpsOk=true;
+      // [v9.55 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
+      const accVal = state.gpsAcc;
+      const isWeak = accVal > 100;
+      btn.className = isWeak ? 'gps-btn warn' : 'gps-btn success';
+      label.textContent = isWeak ? '⚠ GPS YẾU — vị trí có thể sai' : 'ĐÃ XÁC NHẬN VỊ TRÍ';
+      sub.textContent = '±' + accVal + 'm' + (isWeak ? ' · Hãy ra ngoài trời / bật wifi để chính xác hơn' : '');
+      badge.textContent = isWeak ? '⚠ ' + accVal + 'm' : '✓ ĐÃ XÁC NHẬN';
+      document.getElementById('gps-icon').textContent = isWeak ? '⚠️' : '✅';
+      updateSubmitBtn();
+    },
     err=>{const msgs={1:'Từ chối truy cập vị trí',2:'Không lấy được GPS',3:'Quá thời gian chờ'};setGpsErr(msgs[err.code]||'Lỗi GPS');},
     {enableHighAccuracy:true,timeout:10000,maximumAge:0}
   );
@@ -5025,7 +5162,7 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
-// [v9.52] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
+// [v9.55] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
@@ -5074,6 +5211,12 @@ function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
   if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
+  // [v9.55 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
+  const tenCHHien = document.getElementById('input-ch-display').value || '';
+  if (_laDoiSale(tenCHHien)){
+    const targetMa = document.getElementById('sel-sale-target').value;
+    if (!targetMa){ setBtn('s-disabled','Chọn CH thực tế đang đến'); return; }
+  }
   if(!state.loai) {setBtn('s-disabled','Chọn thời điểm chấm công');return;}
   if(!state.gpsOk){setBtn('s-disabled','Cần xác nhận vị trí GPS');return;}
   if(!state.selfieOk){setBtn('s-disabled','Cần chụp ảnh xác minh');return;}
@@ -5254,6 +5397,19 @@ function _doSubmitFinal(){
       } catch(e) { console.warn('[CC] upload ảnh lỗi:', e); }
     }
 
+    // [v9.55 YC#8] Nếu là Đội SALE: đính kèm CH thực tế đang đến vào device_info
+    // (RPC fn_ghi_cham_cong_v2 không có field riêng cho việc này; QLNS có thể parse từ device_info)
+    let _deviceInfo = navigator.userAgent.substring(0, 180);
+    const _saleTargetMa = (document.getElementById('sel-sale-target') && document.getElementById('sel-sale-target').value) || '';
+    const _saleTargetTen = (document.getElementById('input-sale-target-display') && document.getElementById('input-sale-target-display').value) || '';
+    if (_saleTargetMa){
+      _deviceInfo = '[SALE_TARGET:' + _saleTargetMa + '|' + _saleTargetTen + '] ' + _deviceInfo;
+    }
+    // [v9.55 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
+    if (state.gpsAcc && state.gpsAcc > 100){
+      _deviceInfo = '[GPS_WEAK:' + state.gpsAcc + 'm] ' + _deviceInfo;
+    }
+
     // Gọi RPC ghi chấm công
     const { data: res, error } = await supa.rpc('fn_ghi_cham_cong_v2', {
       p_ma_nv: SESSION.ma,
@@ -5267,7 +5423,7 @@ function _doSubmitFinal(){
       p_anh_path: anhPath,
       p_truong_ca: !!truongCa,
       p_idempotency_key: idemKey,
-      p_device_info: navigator.userAgent.substring(0, 200)
+      p_device_info: _deviceInfo
     });
     if (error) {
       console.error('CC error:', error);
@@ -5895,7 +6051,7 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      // [v9.52] Persist sang localStorage
+      // [v9.55] Persist sang localStorage
       try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
@@ -6377,7 +6533,7 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    // [v9.52 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    // [v9.55 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
     try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
@@ -6480,9 +6636,9 @@ function closeGiaiTrinh(){
 function chonLyDo(el,lyDo){
   document.querySelectorAll('.gt-opt').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  // [v11.6 Item 5] Luôn lưu lý do, textarea LUÔN hiển thị bất kể chọn gì
+  // [v9.55 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
   if(lyDo==='__khac__'){
-    gtLyDo='';
+    gtLyDo = 'Khác';
     document.getElementById('gt-input').focus();
   } else {
     gtLyDo=lyDo;
@@ -6664,10 +6820,12 @@ function startNSPolling(){
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
     const [nsTu,nsDen]=_getNSRange();
+    // [v9.55 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+    const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
     // [v12-P2] Supabase RPC
     supa.rpc('fn_get_nhan_su_overview', {
       p_q: nsSearchQ || null,
-      p_cua_hang: null, p_khu_vuc: null,
+      p_cua_hang: _maCH, p_khu_vuc: null,
       p_tu_ngay: nsTu, p_den_ngay: nsDen
     }).then(({ data: d, error }) => {
       if(error || !d)return;
@@ -6918,10 +7076,12 @@ function taiNhanSu(forceRefresh){
   // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
   const [nsTu,nsDen]=_getNSRange();
   const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
+  // [v9.55 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+  const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
   // [v12-P2] Supabase RPC thay nhansu
   supa.rpc('fn_get_nhan_su_overview', {
     p_q: nsSearchQ || null,
-    p_cua_hang: null, p_khu_vuc: null,
+    p_cua_hang: _maCH, p_khu_vuc: null,
     p_tu_ngay: nsTu, p_den_ngay: nsDen
   }).then(({ data: d, error }) => {
     if(error || !d){list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';return;}
@@ -8693,7 +8853,7 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
-// [v9.52] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// [v9.55] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
 // State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
 let _xdlEdit = {};
@@ -8721,7 +8881,7 @@ function openXinDoiLichModal() {
     }
   }
   
-  // [v9.52 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
+  // [v9.55 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
   const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
@@ -8738,7 +8898,7 @@ function openXinDoiLichModal() {
   
   // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
   ngayList.forEach(item => {
-    // [v9.52] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    // [v9.55] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
     const cacCa = (lcData.lich || []).filter(l =>
       l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
@@ -8984,31 +9144,35 @@ function xdlShowCHSuggest(ngay, idx){
   const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
   if (!inp || !sug) return;
   const q = inp.value.trim().toLowerCase();
-  // CH_LIST là global, format: [{ma, ten}, ...]
+  // [v9.55] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
+  const list = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
   let matched;
   if (!q){
     // Trống → gợi ý 5 CH hay làm (dùng cache _goiYCH_cache nếu có)
-    try { if (typeof _taiGoiYCH === 'function' && !_goiYCH_cache) _taiGoiYCH(); } catch(_){}
+    try { if (typeof _taiGoiYCH === 'function' && typeof _goiYCH_cache !== 'undefined' && !_goiYCH_cache) _taiGoiYCH(); } catch(_){}
     const goiY = (typeof _goiYCH_cache !== 'undefined' && _goiYCH_cache) ? _goiYCH_cache : [];
     if (goiY.length){
-      matched = goiY.slice(0, 5).map(g => ({ ma: g.maCH, ten: g.tenCH }));
+      matched = goiY.slice(0, 5).map(g => ({ ma: g.maCH, ten: g.tenCH, _goiY: true, soLan: g.soLan }));
     } else {
-      matched = (window.CH_LIST || []).slice(0, 5);
+      matched = list.slice(0, 5);
     }
   } else {
-    matched = (window.CH_LIST || []).filter(ch =>
+    matched = list.filter(ch =>
       (ch.ma || '').toLowerCase().includes(q) || (ch.ten || '').toLowerCase().includes(q)
     ).slice(0, 6);
   }
   if (!matched.length){ sug.style.display = 'none'; return; }
-  sug.innerHTML = matched.map(ch =>
-    `<div onmousedown="event.preventDefault();xdlPickCH('${ngay}',${idx},'${(ch.ma||'').replace(/'/g,"\\'")}','${(ch.ten||'').replace(/'/g,"\\'")}')"
-       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9"
+  sug.innerHTML = matched.map(ch => {
+    const badge = ch._goiY ? `<span style="font-size:10px;color:#1D9E75;margin-left:auto;font-weight:600">⭐ ${ch.soLan}× tuần qua</span>` : '';
+    return `<div onmousedown="event.preventDefault();xdlPickCH('${ngay}',${idx},'${(ch.ma||'').replace(/'/g,"\\'")}','${(ch.ten||'').replace(/'/g,"\\'")}')"
+       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px"
        onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
-      <div style="font-weight:600;color:#0F172A">${ch.ten || ''}</div>
-      <div style="font-size:10.5px;color:#64748B">${ch.ma || ''}</div>
-    </div>`
-  ).join('');
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;color:#0F172A">${ch.ten || ''}</div>
+        <div style="font-size:10.5px;color:#64748B">${ch.ma || ''}</div>
+      </div>${badge}
+    </div>`;
+  }).join('');
   sug.style.display = 'block';
 }
 
@@ -9075,8 +9239,8 @@ async function submitXinDoiLich() {
         // Nếu user gõ tên CH nhưng chưa pick suggest → resolve từ CH_LIST
         let maCH = s.maCH || '';
         let tenCH = s.tenCH || '';
-        if (!maCH && tenCH && window.CH_LIST){
-          const match = window.CH_LIST.find(ch => (ch.ten || '').toLowerCase() === tenCH.toLowerCase());
+        if (!maCH && tenCH && typeof CH_LIST !== 'undefined' && CH_LIST){
+          const match = CH_LIST.find(ch => (ch.ten || '').toLowerCase() === tenCH.toLowerCase());
           if (match){ maCH = match.ma; tenCH = match.ten; }
         }
         thayDoi.push({
@@ -9113,7 +9277,7 @@ async function submitXinDoiLich() {
   try {
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      // [v9.52 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      // [v9.55 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
       p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
@@ -9128,7 +9292,7 @@ async function submitXinDoiLich() {
       return;
     }
     
-    // [v9.52 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    // [v9.55 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
     const soNgay = res.so_ngay_moi || ngayKeys.length;
     showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
@@ -9651,20 +9815,30 @@ async function taiLichSuDuyet(){
   const tt  = document.getElementById('lsd-trangthai').value || null;
   const loai = document.getElementById('lsd-loaicb').value || null;
   const q   = (document.getElementById('lsd-q').value || '').trim() || null;
+  // [v9.55 YC#1] Filter mới: NV, CH, người duyệt
+  const maNV = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
+  const maCH = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
+  const maND = (document.getElementById('lsd-nd-ma') && document.getElementById('lsd-nd-ma').value) || null;
 
   if (!document.getElementById('lsd-tu').value)  document.getElementById('lsd-tu').value = tu;
   if (!document.getElementById('lsd-den').value) document.getElementById('lsd-den').value = den;
 
   try {
     const { data, error } = await supa.rpc('fn_get_lich_su_duyet', {
-      p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: null,
-      p_nguoi_duyet: null, p_loai_cb: loai, p_trang_thai: tt, p_q: q, p_limit: 200
+      p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV,
+      p_nguoi_duyet: maND, p_loai_cb: loai, p_trang_thai: tt, p_q: q, p_limit: 500
     });
     if (error || !data) { listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải.</div>'; return; }
 
-    const list  = data.list || [];
+    let list  = data.list || [];
+    // [v9.55 YC#1] Filter CH client-side (RPC chưa hỗ trợ p_cua_hang)
+    if (maCH){
+      list = list.filter(r => (r.maCh || r.maCH || '') === maCH);
+    }
+    // Cache để xuất Excel
+    window._lsdCachedList = list;
     const stats = data.stats || {};
-    document.getElementById('lsd-stat-tong').textContent   = stats.tong || 0;
+    document.getElementById('lsd-stat-tong').textContent   = (maCH ? list.length : (stats.tong || 0));
     document.getElementById('lsd-stat-duyet').textContent  = stats.duyet || 0;
     document.getElementById('lsd-stat-tuchoi').textContent = stats.tuChoi || 0;
     // [v9.45] Chờ duyệt: ưu tiên stats.choDuyet từ backend, nếu không có → đếm từ list
@@ -9734,6 +9908,197 @@ async function taiLichSuDuyet(){
 
 function escHtml(s) {
   return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// [v9.55 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
+// ════════════════════════════════════════════════════════════════════════
+
+// Cache danh sách NV để autocomplete (lazy load)
+let _lsdNVList = null;
+async function _lsdLoadNVList(){
+  if (_lsdNVList) return _lsdNVList;
+  try {
+    const { data, error } = await supa.from('nhan_vien')
+      .select('ma_nv, ten_nv, role, ma_ch')
+      .order('ten_nv', { ascending: true });
+    if (error || !data) return [];
+    _lsdNVList = data;
+    return data;
+  } catch(e){ return []; }
+}
+
+// NV input handlers
+function lsdOnNVInput(){
+  const inp = document.getElementById('lsd-nv-inp');
+  const hid = document.getElementById('lsd-nv-ma');
+  if (!inp.value.trim()){ hid.value = ''; taiLichSuDuyet(); }
+  lsdShowNVSuggest();
+}
+async function lsdShowNVSuggest(){
+  const inp = document.getElementById('lsd-nv-inp');
+  const sug = document.getElementById('lsd-nv-sug');
+  if (!inp || !sug) return;
+  const list = await _lsdLoadNVList();
+  const q = inp.value.trim().toLowerCase();
+  let matched;
+  if (!q){
+    matched = list.slice(0, 8);
+  } else {
+    matched = list.filter(nv =>
+      (nv.ma_nv || '').toLowerCase().includes(q) || (nv.ten_nv || '').toLowerCase().includes(q)
+    ).slice(0, 10);
+  }
+  if (!matched.length){ sug.style.display = 'none'; return; }
+  sug.innerHTML = matched.map(nv =>
+    `<div onmousedown="event.preventDefault();lsdPickNV('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}')"
+       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${nv.ten_nv || ''}</div>
+      <div style="font-size:10.5px;color:#64748B">${nv.ma_nv || ''}${nv.role && nv.role!=='NV' ? ' · '+nv.role : ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display = 'block';
+}
+function lsdHideNVSuggest(){
+  setTimeout(()=>{const s=document.getElementById('lsd-nv-sug'); if(s) s.style.display='none';}, 200);
+}
+function lsdPickNV(ma, ten){
+  document.getElementById('lsd-nv-inp').value = ten + ' (' + ma + ')';
+  document.getElementById('lsd-nv-ma').value = ma;
+  document.getElementById('lsd-nv-sug').style.display = 'none';
+  taiLichSuDuyet();
+}
+
+// CH input handlers — dùng CH_LIST có sẵn
+function lsdOnCHInput(){
+  const inp = document.getElementById('lsd-ch-inp');
+  const hid = document.getElementById('lsd-ch-ma');
+  if (!inp.value.trim()){ hid.value = ''; taiLichSuDuyet(); }
+  lsdShowCHSuggest();
+}
+function lsdShowCHSuggest(){
+  const inp = document.getElementById('lsd-ch-inp');
+  const sug = document.getElementById('lsd-ch-sug');
+  if (!inp || !sug) return;
+  const list = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
+  const q = inp.value.trim().toLowerCase();
+  let matched;
+  if (!q) matched = list.slice(0, 8);
+  else matched = list.filter(ch =>
+    (ch.ma || '').toLowerCase().includes(q) || (ch.ten || '').toLowerCase().includes(q)
+  ).slice(0, 10);
+  if (!matched.length){ sug.style.display = 'none'; return; }
+  sug.innerHTML = matched.map(ch =>
+    `<div onmousedown="event.preventDefault();lsdPickCH('${ch.ma}','${(ch.ten||'').replace(/'/g,"\\'")}')"
+       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${ch.ten || ''}</div>
+      <div style="font-size:10.5px;color:#64748B">${ch.ma || ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display = 'block';
+}
+function lsdHideCHSuggest(){
+  setTimeout(()=>{const s=document.getElementById('lsd-ch-sug'); if(s) s.style.display='none';}, 200);
+}
+function lsdPickCH(ma, ten){
+  document.getElementById('lsd-ch-inp').value = ten + ' (' + ma + ')';
+  document.getElementById('lsd-ch-ma').value = ma;
+  document.getElementById('lsd-ch-sug').style.display = 'none';
+  taiLichSuDuyet();
+}
+
+// Người duyệt input handlers — filter chỉ QLNS/ADMIN
+function lsdOnNDInput(){
+  const inp = document.getElementById('lsd-nd-inp');
+  const hid = document.getElementById('lsd-nd-ma');
+  if (!inp.value.trim()){ hid.value = ''; taiLichSuDuyet(); }
+  lsdShowNDSuggest();
+}
+async function lsdShowNDSuggest(){
+  const inp = document.getElementById('lsd-nd-inp');
+  const sug = document.getElementById('lsd-nd-sug');
+  if (!inp || !sug) return;
+  const all = await _lsdLoadNVList();
+  const list = all.filter(nv => nv.role === 'QLNS' || nv.role === 'ADMIN');
+  const q = inp.value.trim().toLowerCase();
+  let matched;
+  if (!q) matched = list.slice(0, 8);
+  else matched = list.filter(nv =>
+    (nv.ma_nv || '').toLowerCase().includes(q) || (nv.ten_nv || '').toLowerCase().includes(q)
+  ).slice(0, 10);
+  if (!matched.length){ sug.style.display = 'none'; return; }
+  sug.innerHTML = matched.map(nv =>
+    `<div onmousedown="event.preventDefault();lsdPickND('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}')"
+       style="padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${nv.ten_nv || ''}</div>
+      <div style="font-size:10.5px;color:#64748B">${nv.ma_nv || ''} · ${nv.role || ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display = 'block';
+}
+function lsdHideNDSuggest(){
+  setTimeout(()=>{const s=document.getElementById('lsd-nd-sug'); if(s) s.style.display='none';}, 200);
+}
+function lsdPickND(ma, ten){
+  document.getElementById('lsd-nd-inp').value = ten + ' (' + ma + ')';
+  document.getElementById('lsd-nd-ma').value = ma;
+  document.getElementById('lsd-nd-sug').style.display = 'none';
+  taiLichSuDuyet();
+}
+
+function lsdResetFilters(){
+  const today = new Date().toISOString().substring(0,10);
+  const ago30 = new Date(Date.now() - 30*86400000).toISOString().substring(0,10);
+  document.getElementById('lsd-tu').value = ago30;
+  document.getElementById('lsd-den').value = today;
+  document.getElementById('lsd-trangthai').value = '';
+  document.getElementById('lsd-loaicb').value = '';
+  document.getElementById('lsd-q').value = '';
+  document.getElementById('lsd-nv-inp').value = '';
+  document.getElementById('lsd-nv-ma').value = '';
+  document.getElementById('lsd-ch-inp').value = '';
+  document.getElementById('lsd-ch-ma').value = '';
+  document.getElementById('lsd-nd-inp').value = '';
+  document.getElementById('lsd-nd-ma').value = '';
+  taiLichSuDuyet();
+}
+
+// Xuất CSV (mở Excel được, không cần thư viện)
+function lsdExportExcel(){
+  const list = window._lsdCachedList || [];
+  if (!list.length){
+    showToast('Không có dữ liệu để xuất.', 'err');
+    return;
+  }
+  const headers = ['Ngày','Mã NV','Tên NV','CH chấm','Tên CH','Loại CB','Trạng thái','Giải trình','Người duyệt','Thời gian duyệt'];
+  const rows = list.map(r => [
+    r.ngay || '',
+    r.maNv || '',
+    r.tenNv || '',
+    r.maCh || r.maCH || '',
+    r.tenCh || r.tenCH || '',
+    r.loaiCb || r.loai || '',
+    r.trangThai || '',
+    (r.giaiTrinh || '').replace(/\n/g,' ').replace(/"/g,'""'),
+    r.maNguoiDuyet || r.tenNguoiDuyet || '',
+    r.thoiGianDuyet || ''
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(cell => '"' + String(cell).replace(/"/g,'""') + '"').join(',')
+  ).join('\n');
+  // UTF-8 BOM để Excel mở tiếng Việt không bị lỗi
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'lich-su-duyet-' + new Date().toISOString().substring(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);}, 100);
+  showToast('✓ Đã xuất ' + list.length + ' dòng.', 'ok');
 }
 
 // Nạp danh sách đơn nghỉ phép
@@ -13021,7 +13386,7 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
-        // [v9.52] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        // [v9.55] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
         localStorage.removeItem('session_cc');
         localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
@@ -14920,12 +15285,17 @@ function bhQlRenderHistory() {
     const dB = bhParseThoiLuong(b.thoiLuong);
     const vA = parseFloat(a.tongGiaTri) || 0;
     const vB = parseFloat(b.tongGiaTri) || 0;
+    const sA = parseInt(a.stt) || 0;
+    const sB = parseInt(b.stt) || 0;
     switch(sb) {
       case 'time_asc':  return tA.localeCompare(tB);
       case 'time_desc': return tB.localeCompare(tA);
       case 'dur_desc':  return dB - dA;
       case 'dur_asc':   return dA - dB;
       case 'value_desc': return vB - vA;
+      // [v9.55 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
+      case 'stt_asc':   return tA.slice(0,10).localeCompare(tB.slice(0,10)) || (sA - sB);
+      case 'stt_desc':  return tB.slice(0,10).localeCompare(tA.slice(0,10)) || (sB - sA);
       default: return tB.localeCompare(tA);
     }
   });
@@ -14937,18 +15307,20 @@ function bhQlRenderHistory() {
   histEl.innerHTML = fin.map(p => {
     const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng' ? 'auto' : 'notbought');
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
+    // [v9.55 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
+    const ngayHienThi = p.ngay ? (p.ngay.slice(8,10) + '/' + p.ngay.slice(5,7)) : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
         <div class="bh-hist-status ${cls}"></div>
         <div class="bh-hist-info">
           <div class="bh-hist-ch">${sttTC}${bhEscHtml(p.tenCH)} · ${bhEscHtml(p.trangThai)}</div>
           <div class="bh-hist-meta">
-            ${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
+            ${ngayHienThi ? '<span style="color:#0F6E56;font-weight:600">'+ngayHienThi+'</span> · ' : ''}${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
             ${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}
             ${p.tongGiaTri ? ' · <strong>' + bhFormatMoney(p.tongGiaTri) + 'đ</strong>' : ''}
           </div>
         </div>
-        <div class="bh-hist-time">${p.ngay && p.ngay !== BH.qlFilterTuNgay ? p.ngay.slice(5) : ''}</div>
+        <div class="bh-hist-time">${ngayHienThi}</div>
       </div>
     `;
   }).join('');
