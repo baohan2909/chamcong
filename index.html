@@ -16677,6 +16677,10 @@ const ADM2_STATS_CONFIG = [
   { key:'dn', label:'Duyệt nghỉ phép', color:'rose',
     icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
     value: d => d.don_nghi_cho_duyet, warn: d => d.don_nghi_cho_duyet > 0, detail:'dn' },
+  // [v9.73] NV chưa kết thúc ca ngày trước
+  { key:'chua_ra_ca', label:'Chưa kết thúc ca', color:'amber',
+    icon:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M3.5 3.5l17 17" stroke-width="1.5" opacity="0.5"/>',
+    value: d => d.chua_ket_thuc_ca || 0, warn: d => (d.chua_ket_thuc_ca||0) > 0, detail:'chua_ra_ca' },
 ];
 
 async function adm2LoadDashboard() {
@@ -16685,6 +16689,18 @@ async function adm2LoadDashboard() {
   try {
     const data = await adm2Rpc('fn_admin_dashboard', { p_admin: SESSION.ma });
     const d = data.data; ADM2.dashboardData = d;
+    // [v9.73] Đếm NV chưa kết thúc ca (client-side, không phụ thuộc RPC)
+    try {
+      const vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+      const yToday = vnNow.getFullYear() + '-' + pad(vnNow.getMonth()+1) + '-' + pad(vnNow.getDate());
+      const min30 = new Date(vnNow); min30.setDate(min30.getDate() - 30);
+      const yMin = min30.getFullYear() + '-' + pad(min30.getMonth()+1) + '-' + pad(min30.getDate());
+      const { count } = await supa.from('cham_cong')
+        .select('id', { count: 'exact', head: true })
+        .in('trang_thai_o', ['DANG_LAM_VIEC', 'RA_NGOAI'])
+        .lt('ngay', yToday).gte('ngay', yMin);
+      d.chua_ket_thuc_ca = count || 0;
+    } catch(e) { d.chua_ket_thuc_ca = 0; }
     el.innerHTML = ADM2_STATS_CONFIG.map(s => {
       const val = s.value(d);
       const sfx = s.suffix ? s.suffix(d) : '';
@@ -16749,6 +16765,7 @@ function adm2OpenDetail(key) {
     phien_mo:  { title:'Phiên đang mở',                        loader: () => adm2DetailPhienDangMo(bodyEl) },
     phien_today:{title:'Phiên hôm nay',                        loader: () => adm2DetailPhienHomNay(bodyEl) },
     dn:        { title:'Duyệt nghỉ phép',                      loader: () => adm2DetailDonNghi(bodyEl) },
+    chua_ra_ca:{ title:'NV chưa kết thúc ca',                  loader: () => adm2DetailChuaRaCa(bodyEl) },
   };
   const m = map[key];
   if (m) { titleEl.textContent = m.title; m.loader(); }
@@ -16769,6 +16786,53 @@ async function adm2DetailDaDoiMK(bodyEl) {
     const data = await adm2Rpc('fn_admin_search_account', { p_admin: SESSION.ma, p_keyword:'', p_loai:'ALL', p_limit:500 });
     const list = (data.data || []).filter(a => a.da_doi_mk);
     adm2RenderAccRows(list, bodyEl);
+  } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
+}
+
+// [v9.73] NV chưa kết thúc ca (DANG_LAM_VIEC/RA_NGOAI ở ngày < hôm nay)
+async function adm2DetailChuaRaCa(bodyEl) {
+  try {
+    const today = new Date();
+    const vnNow = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+    const yToday = vnNow.getFullYear() + '-' + pad(vnNow.getMonth()+1) + '-' + pad(vnNow.getDate());
+    const min30 = new Date(vnNow); min30.setDate(min30.getDate() - 30);
+    const yMin = min30.getFullYear() + '-' + pad(min30.getMonth()+1) + '-' + pad(min30.getDate());
+    const { data, error } = await supa.from('cham_cong')
+      .select('ma_nv, ten_nv_snapshot, ten_ch_snapshot, ma_ch, ngay, thoi_gian, trang_thai_o')
+      .in('trang_thai_o', ['DANG_LAM_VIEC', 'RA_NGOAI'])
+      .lt('ngay', yToday)
+      .gte('ngay', yMin)
+      .order('ngay', { ascending: false });
+    if (error) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(error.message)+'</div>'; return; }
+    if (!data || !data.length) { bodyEl.innerHTML = '<div class="adm2-empty">✓ Không có NV nào còn ca treo</div>'; return; }
+    // Group theo ngày
+    const byDay = {};
+    data.forEach(r => { if (!byDay[r.ngay]) byDay[r.ngay]=[]; byDay[r.ngay].push(r); });
+    const days = Object.keys(byDay).sort().reverse();
+    const dow = ['CN','T2','T3','T4','T5','T6','T7'];
+    bodyEl.innerHTML = days.map(ng => {
+      const dt = new Date(ng + 'T00:00:00');
+      const header = dow[dt.getDay()] + ', ' + pad(dt.getDate()) + '/' + pad(dt.getMonth()+1) + '/' + dt.getFullYear();
+      const rows = byDay[ng].map(r => {
+        const gioVao = r.thoi_gian ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' }) : '--';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #F1F5F9">
+          ${_renderAvatar(r.ma_nv, r.ten_nv_snapshot || r.ma_nv, 32)}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:#0F172A">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} <span style="font-size:11px;font-weight:400;color:#94A3B8">${r.ma_nv}</span></div>
+            <div style="font-size:11.5px;color:#64748B">${adm2Esc(r.ten_ch_snapshot || r.ma_ch || '')} · Vào lúc ${gioVao}</div>
+          </div>
+          <span style="font-size:10.5px;font-weight:700;color:#B45309;background:#FEF3C7;padding:3px 9px;border-radius:99px">Chưa ra ca</span>
+        </div>`;
+      }).join('');
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:7px;padding:8px 4px;font-size:12.5px;font-weight:700;color:#0F172A">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style="flex:1">${header}</span>
+          <span style="font-size:11px;font-weight:600;color:#64748B">${byDay[ng].length} NV</span>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden">${rows}</div>
+      </div>`;
+    }).join('');
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
