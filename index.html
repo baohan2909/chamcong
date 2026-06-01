@@ -310,13 +310,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .gps-btn.success .gps-badge { background:var(--green-m); color:white; }
 .gps-btn.error    { background:var(--red-lt); border-color:#F7C1C1; }
 .gps-btn.error .gps-badge   { background:var(--red-lt); color:var(--red); border:1px solid #F09595; }
-/* [v10.53 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
+/* [v10.6 YC#4] GPS yếu (accuracy > 100m) — màu cam cảnh báo */
 .gps-btn.warn     { background:#FFF7ED; border-color:#FDBA74; }
 .gps-btn.warn .gps-icon  { background:#FED7AA; }
 .gps-btn.warn .gps-badge { background:#FED7AA; color:#9A3412; border:1px solid #FDBA74; }
 .gps-btn.warn .gps-label { color:#9A3412; }
 
-/* [v10.53 YC#6] Avatar hover zoom — toàn bộ vị trí có _renderAvatar */
+/* [v10.6 YC#6] Avatar hover zoom — toàn bộ vị trí có _renderAvatar */
 .ns-avatar {
   transition: transform .18s cubic-bezier(.4,.2,.2,1), box-shadow .18s, z-index 0s .18s;
   cursor: pointer;
@@ -329,7 +329,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   transition: transform .18s cubic-bezier(.4,.2,.2,1), box-shadow .18s;
 }
 
-/* [v10.53] SETTINGS PAGE — full-screen overlay xịn */
+/* [v10.6] SETTINGS PAGE — full-screen overlay xịn */
 .settings-page {
   position:fixed; inset:0; z-index:10000;
   background:#F8FAFC;
@@ -352,7 +352,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   background:linear-gradient(135deg,var(--green) 0%,var(--green-m) 100%);
   color:#fff;
   padding:8px 20px 5px;
-  /* [v10.53] padding-top = đáy Dynamic Island (safe-area inset top) */
+  /* [v10.6] padding-top = đáy Dynamic Island (safe-area inset top) */
   padding-top:env(safe-area-inset-top, 8px);
   box-shadow:0 2px 8px rgba(15,110,86,.18);
   flex-shrink:0;
@@ -534,7 +534,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 }
 .set-card-control { flex-shrink:0; }
 
-/* [v10.53] Card right: control + action buttons */
+/* [v10.6] Card right: control + action buttons */
 .set-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; }
 .set-card-actions { display:flex; gap:6px; }
 .set-btn-save {
@@ -655,7 +655,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   color:#94A3B8; font-size:13px; gap:10px;
 }
 
-/* [v10.53] Spinner cho action card đang xử lý */
+/* [v10.6] Spinner cho action card đang xử lý */
 .set-spin { animation: setSpin 0.9s linear infinite; }
 @keyframes setSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
@@ -703,7 +703,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   .set-btn-reset { padding:5px 10px; font-size:11px; }
 }
 
-/* [v10.53] Lịch sử duyệt — Filter compact & responsive */
+/* [v10.6] Lịch sử duyệt — Filter compact & responsive */
 .lsd-grid {
   display:grid;
   grid-template-columns:repeat(4, 1fr);
@@ -711,7 +711,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 }
 @media (max-width:980px){ .lsd-grid{ grid-template-columns:repeat(3, 1fr); } }
 @media (max-width:720px){ .lsd-grid{ grid-template-columns:repeat(2, 1fr); } }
-/* [v10.53 YC#1] Mobile vẫn giữ 2 cột (gọn hơn 1 cột) */
+/* [v10.6 YC#1] Mobile vẫn giữ 2 cột (gọn hơn 1 cột) */
 @media (max-width:380px){ .lsd-grid{ grid-template-columns:repeat(2, 1fr); gap:8px; } .lsd-inp{ font-size:12px; padding:6px 8px; } .lsd-lbl{ font-size:10px; } }
 .lsd-fld { display:flex; flex-direction:column; min-width:0; }
 .lsd-lbl {
@@ -764,7 +764,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .lsd-action-primary { background:#0F6E56; color:#fff; }
 .lsd-action-primary:hover { opacity:.9; }
 
-/* [v10.53] Card row lịch sử duyệt — gọn hơn */
+/* [v10.6] Card row lịch sử duyệt — gọn hơn */
 .lsd-card {
   background:#fff;
   border:1px solid #E5E7EB;
@@ -828,10 +828,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .lsd-btn-sua { background:#fff; color:#0369A1; border-color:#7DD3FC; }
 .lsd-btn-sua:hover { background:#F0F9FF; }
 
-/* [v10.53] Loading spinner */
+/* [v10.6] Loading spinner */
 @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
-/* [v10.53] Stats card clickable */
+/* [v10.6] Stats card clickable */
 .lsd-stat-card {
   background:#fff; border:1px solid #E5E7EB; border-radius:8px;
   padding:10px 8px; text-align:center; cursor:pointer;
@@ -969,7 +969,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .gc-table thead th { padding:10px 8px; text-align:left; font-size:10px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.05em; background:#fafaf8; border-bottom:1px solid var(--border); }
 .gc-table tbody td { padding:11px 8px; border-bottom:0.5px solid var(--border); vertical-align:middle; }
 .gc-table tbody tr:last-child td { border-bottom:none; }
-/* [v10.53] Pastel row + accent + hover */
+/* [v10.6] Pastel row + accent + hover */
 .gc-r { transition:background .15s, transform .15s, box-shadow .15s; cursor:default; position:relative; }
 .gc-r td:first-child { border-left:3px solid transparent; transition:border-color .15s; }
 .gc-r-ok       td:first-child { border-left-color:#10B981; }
@@ -1183,7 +1183,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-item    { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:0.5px solid var(--border); -webkit-tap-highlight-color:transparent; }
 .ns-item:last-child { border-bottom:none; }
 
-/* [v10.53 YC#4] PC: hiển thị grid 2 cột (tiết kiệm chiều ngang) */
+/* [v10.6 YC#4] PC: hiển thị grid 2 cột (tiết kiệm chiều ngang) */
 @media (min-width: 1024px){
   .ns-list { 
     display:grid; 
@@ -1236,7 +1236,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ns-btn-edit { flex:1; padding:7px; border-radius:8px; border:none; background:#EFF6FF; color:#1D4ED8; font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; display:inline-flex; align-items:center; justify-content:center; }
 .ns-empty    { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
 
-/* [v10.53 YC#6] Giờ công QL — group KV→CH→NV */
+/* [v10.6 YC#6] Giờ công QL — group KV→CH→NV */
 .gcql-kv-group { background:#fff; border:none; border-radius:12px; margin-bottom:10px; overflow:hidden; transition:transform .15s, box-shadow .15s; }
 .gcql-kv-group:hover { transform:translateX(2px); box-shadow:0 4px 14px -4px rgba(15,23,42,.1); }
 .gcql-kv-header { display:flex; align-items:center; gap:8px; padding:13px 14px; font-weight:700; font-size:13.5px; transition:filter .15s; border-radius:12px; }
@@ -1306,7 +1306,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .lc-day-card:hover { transform:translateX(2px); box-shadow:0 6px 16px -6px rgba(15,23,42,.12); }
 .lc-day-card.lc-today  { border-color:var(--green-bd); border-left-color:var(--green); }
 .lc-day-card.lc-vang   { opacity:.65; }
-/* [v10.53] Accent border-left theo trạng thái day-dot */
+/* [v10.6] Accent border-left theo trạng thái day-dot */
 .lc-day-card:has(.lc-day-dot.work) { border-left-color:var(--green); }
 .lc-day-card:has(.lc-day-dot.off)  { border-left-color:#94A3B8; }
 .lc-day-card:has(.lc-day-dot.wait) { border-left-color:#D97706; }
@@ -1414,7 +1414,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .busy-box { background:white; padding:18px 24px; border-radius:14px; display:flex; align-items:center; gap:12px; box-shadow:0 10px 40px rgba(0,0,0,.25); font-size:13px; font-weight:600; color:var(--text,#1a1a1a); }
 .busy-box .spinner { width:18px; height:18px; border-color:rgba(29,158,117,.25); border-top-color:#1D9E75; margin:0; }
 /* ═══════════════════════════════════════════════════════════
-   [v10.53] GIAO DIỆN — Chọn màu chủ đạo (preset + picker)
+   [v10.6] GIAO DIỆN — Chọn màu chủ đạo (preset + picker)
    ═══════════════════════════════════════════════════════════ */
 .gd-title    { font-size:18px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:4px; }
 .gd-subtitle { font-size:12px; color:var(--text-m,#666); margin-bottom:20px; }
@@ -1464,10 +1464,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 
 
 
-/* [v10.53 Yc #2] Optimistic UI: row đang duyệt mờ đi nhưng không chặn UI */
+/* [v10.6 Yc #2] Optimistic UI: row đang duyệt mờ đi nhưng không chặn UI */
 .duyet-processing { opacity:.5; pointer-events:none; position:relative; transition:opacity .2s; }
 .duyet-processing::after { content:''; position:absolute; top:6px; right:6px; width:14px; height:14px; border:2px solid rgba(29,158,117,.3); border-top-color:#1D9E75; border-radius:50%; animation:spin .7s linear infinite; }
-/* [v10.53 Yc #1] Thanh duyệt hàng loạt */
+/* [v10.6 Yc #1] Thanh duyệt hàng loạt */
 .yc-bulk-bar { margin:10px 14px 0; display:flex; gap:10px; transition:opacity .2s; }
 .yc-bulk-btn { flex:1; padding:10px 14px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .15s; }
 .yc-bulk-btn:active { transform:scale(.97); }
@@ -1793,7 +1793,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .bxh-mini-list {
   display:flex; flex-direction:column; gap:5px;
 }
-/* [v10.53] Podium top 3 — 3 ô vuông trên 1 hàng */
+/* [v10.6] Podium top 3 — 3 ô vuông trên 1 hàng */
 .bxh-podium {
   display:grid; grid-template-columns:1fr 1.12fr 1fr; gap:8px; margin-bottom:14px;
   align-items:end;
@@ -1834,7 +1834,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   .bxh-pod-diem { font-size:18px; }
   .bxh-pod-card.r1 .bxh-pod-diem { font-size:22px; }
 }
-/* [v10.53] Danh sách từ #4 */
+/* [v10.6] Danh sách từ #4 */
 .bxh-mini-rest { display:flex; flex-direction:column; gap:6px; }
 .bxh-mini-num {
   width:34px; flex-shrink:0; text-align:center;
@@ -3094,7 +3094,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .adm2-toast.error { background:#DC2626; }
 @keyframes adm2ToastIn { from { opacity:0; transform:translate(-50%, 10px); } to { opacity:1; transform:translate(-50%, 0); } }
 
-/* ═══════════ [v10.53] CHECKLIST CỬA HÀNG ═══════════ */
+/* ═══════════ [v10.6] CHECKLIST CỬA HÀNG ═══════════ */
 #page-checklist { padding-bottom:90px; display:none; }
 #page-checklist.active { display:block; }
 .chk-wrap { max-width:560px; margin:0 auto; padding:12px 14px; }
@@ -3211,7 +3211,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .chk-mucdo-tag.vua { background:#FFEDD5; color:#C2410C; }
 .chk-mucdo-tag.khan { background:#FEE2E2; color:#B91C1C; }
 
-/* ═══════════ [v10.53] QUẢN LÝ SỰ CỐ (QLNS/Admin) ═══════════ */
+/* ═══════════ [v10.6] QUẢN LÝ SỰ CỐ (QLNS/Admin) ═══════════ */
 #page-checklist-ql { padding-bottom:90px; display:none; }
 #page-checklist-ql.active { display:block; }
 .chkql-wrap { max-width:760px; margin:0 auto; padding:12px 14px; }
@@ -3260,7 +3260,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .chkql-tk-bar { height:100%; background:linear-gradient(90deg,#F97316,#DC2626); border-radius:99px; }
 .chkql-tk-num { font-size:13px; font-weight:800; color:#DC2626; min-width:28px; text-align:right; }
 
-/* ═══════════ [v10.53] CHƯƠNG TRÌNH KHUYẾN MÃI ═══════════ */
+/* ═══════════ [v10.6] CHƯƠNG TRÌNH KHUYẾN MÃI ═══════════ */
 #page-chuongtrinh { padding-bottom:90px; display:none; }
 #page-chuongtrinh.active { display:block; }
 .ct-wrap { max-width:560px; margin:0 auto; padding:12px 14px; }
@@ -3382,7 +3382,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.53</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.6</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -3510,7 +3510,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
     <div id="bsc-quota" style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:8px;border-radius:6px;margin-bottom:12px">Đang tải quota...</div>
 
-    <!-- [v10.53 YC#2] Chọn ngày cho phép bổ sung -->
+    <!-- [v10.6 YC#2] Chọn ngày cho phép bổ sung -->
     <div style="margin-bottom:10px">
       <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Ngày cần bổ sung</label>
       <div style="display:flex;gap:6px">
@@ -3537,10 +3537,15 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
 
     <div style="margin-bottom:10px">
-      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng</label>
-      <select id="bsc-ch" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#fff">
-        <option value="">— Chọn cửa hàng —</option>
-      </select>
+      <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Cửa hàng / Đội SALE</label>
+      <div style="position:relative">
+        <input type="text" id="bsc-ch-inp" placeholder="Gõ mã CH, tên CH hoặc Đội SALE..." autocomplete="off"
+               oninput="bscOnCHInput()" onfocus="bscShowCHSug()" onblur="bscHideCHSug()"
+               style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#fff;box-sizing:border-box">
+        <input type="hidden" id="bsc-ch" value="">
+        <div id="bsc-ch-sug" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.12);margin-top:4px;max-height:260px;overflow-y:auto;z-index:10"></div>
+      </div>
+      <div id="bsc-ch-hint" style="font-size:10.5px;color:#94A3B8;margin-top:4px"></div>
     </div>
 
     <div style="margin-bottom:10px">
@@ -3557,7 +3562,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   </div>
 </div>
 
-<!-- [v10.53] MODAL QLNS SỬA CẢNH BÁO BỔ SUNG CA -->
+<!-- [v10.6] MODAL QLNS SỬA CẢNH BÁO BỔ SUNG CA -->
 <div id="sua-cb-modal" onclick="if(event.target===this)dongModalSuaCB()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:flex-end;justify-content:center">
   <div style="background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:20px;max-height:90vh;overflow-y:auto">
     <div style="width:36px;height:4px;background:#D1D5DB;border-radius:99px;margin:0 auto 14px"></div>
@@ -3697,12 +3702,12 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       
       <!-- Body — scroll -->
       <div style="padding:14px 18px;overflow-y:auto;flex:1">
-        <!-- [v10.53] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
+        <!-- [v10.6] Danh sách ngày dùng UI giống form Gửi lịch tuần -->
         <div style="font-size:12.5px;font-weight:600;color:#374151;margin-bottom:8px">Chọn ngày + ca mới <span style="color:#DC2626">*</span></div>
         <div id="xdl-days-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
         <div style="font-size:11px;color:#94A3B8;margin:-6px 0 14px">Chỉ những ngày từ hôm nay trở đi. Tích chọn để bật và đăng ký ca mới.</div>
         
-        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v10.53) -->
+        <!-- Lý do (luôn nằm dưới cùng — yêu cầu Aroma v10.6) -->
         <div style="margin-bottom:8px">
           <label style="display:block;font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px">Lý do đổi lịch <span style="color:#DC2626">*</span></label>
           <textarea id="xdl-lydo" rows="3" placeholder="VD: Bệnh đột xuất, đổi ca với NS00xxx, theo phân công của QLNS, có việc gia đình..."
@@ -4034,7 +4039,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
     </div>
 
-    <!-- [v10.53 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
+    <!-- [v10.6 YC#8] Đội SALE: chọn thêm CH thực tế đang đến -->
     <div class="card card-ch-overflow" id="card-sale-target" style="margin-top:12px;display:none;border:1.5px solid #F59E0B;background:#FFFBEB">
       <div class="card-section" style="color:#92400E">🎯 CỬA HÀNG THỰC TẾ ĐANG SALE</div>
       <div class="ch-field">
@@ -4250,12 +4255,13 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <!-- [v8.1] Lịch sử duyệt -->
       <button class="ns-subtab" id="nssub-lichsu" onclick="setNSSubTab('lichsu')">
         Lịch sử duyệt
+        <span class="ns-subtab-badge" id="lsd-badge" style="display:none"></span>
       </button>
     </div>
 
     <!-- SUB PANEL: Lịch sử duyệt [v8.1] -->
     <div id="ns-sub-lichsu" style="display:none;padding:10px 14px">
-      <!-- [v10.53] Filters — compact PC/tablet/mobile responsive -->
+      <!-- [v10.6] Filters — compact PC/tablet/mobile responsive -->
       <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px;margin-bottom:10px">
         <div class="lsd-grid">
           <div class="lsd-fld">
@@ -4324,8 +4330,8 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         </div>
       </div>
 
-      <!-- [v10.53 YC#4] Stats — click filter -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+      <!-- [v10.6 YC#4] Stats — click filter; [v10.6] thêm Bổ sung ca -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px">
         <div class="lsd-stat-card" id="lsd-stat-card-tong" onclick="lsdFilterByStatus('')">
           <div class="lsd-stat-num" style="color:#0F172A" id="lsd-stat-tong">--</div>
           <div class="lsd-stat-lbl">Tổng</div>
@@ -4333,6 +4339,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="lsd-stat-card" id="lsd-stat-card-chodet" onclick="lsdFilterByStatus('CHO_DUYET')">
           <div class="lsd-stat-num" style="color:#F59E0B" id="lsd-stat-chodet">--</div>
           <div class="lsd-stat-lbl">Chờ duyệt</div>
+        </div>
+        <div class="lsd-stat-card" id="lsd-stat-card-bosung" onclick="lsdFilterByLoai('BỔ SUNG CA')">
+          <div class="lsd-stat-num" style="color:#0EA5E9" id="lsd-stat-bosung">--</div>
+          <div class="lsd-stat-lbl">Bổ sung ca</div>
         </div>
         <div class="lsd-stat-card" id="lsd-stat-card-duyet" onclick="lsdFilterByStatus('DA_DUYET')">
           <div class="lsd-stat-num" style="color:#16A34A" id="lsd-stat-duyet">--</div>
@@ -4373,7 +4383,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="ns-tabs" id="ns-kv-tabs">
         <button class="ns-tab active" id="nst-all" title="Tất cả khu vực" onclick="setNSKhuVuc('')">Tất cả</button>
       </div>
-      <!-- [v10.53 Yc #6] Bỏ 2 banner (ns-loi-banner, ns-donnghi-banner) — số liệu đã có ở ô KPI "Chờ duyệt" phía dưới và badge ở bottom nav -->
+      <!-- [v10.6 Yc #6] Bỏ 2 banner (ns-loi-banner, ns-donnghi-banner) — số liệu đã có ở ô KPI "Chờ duyệt" phía dưới và badge ở bottom nav -->
       <div class="ns-stats-grid">
         <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('ĐANG LÀM VIỆC')"><div class="ns-stat-val ns-v-green" id="ns-s-dang">--</div><div class="ns-stat-lbl">Đang làm ›</div></div>
         <div class="ns-stat" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="setNSFilter('RA NGOÀI')"><div class="ns-stat-val ns-v-amber" id="ns-s-ra">--</div><div class="ns-stat-lbl">Chưa làm ›</div></div>
@@ -4495,7 +4505,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-label">Lịch làm việc</div>
         <div class="menu-arrow">›</div>
       </div>
-      <!-- [v10.53] Kiểm tra cửa hàng — NV + CUA_HANG -->
+      <!-- [v10.6] Kiểm tra cửa hàng — NV + CUA_HANG -->
       <div class="menu-item" id="menu-checklist" onclick="goToPage('checklist')" style="display:none">
         <div class="menu-icon" style="background:#F0FDFA">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -4567,7 +4577,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
         <div class="menu-label">Phiên bán hàng</div>
         <div class="menu-arrow">›</div>
       </div>
-      <!-- [v10.53] Giao diện (theme) -->
+      <!-- [v10.6] Giao diện (theme) -->
       <div class="menu-item" onclick="goToPage('giaodien')">
         <div class="menu-icon" style="background:linear-gradient(135deg,#ffb547,#ff8c42)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
@@ -4588,7 +4598,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.53 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.6 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -4597,7 +4607,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- PAGE: GIAO DIỆN (theme) [v10.53] -->
+  <!-- PAGE: GIAO DIỆN (theme) [v10.6] -->
   <div class="page" id="page-giaodien">
     <div style="padding:20px 14px">
       <div class="gd-title">Màu chủ đạo</div>
@@ -4788,7 +4798,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </select>
       <input type="text" id="yc-filter-q" placeholder="Tìm NV..." oninput="filterYCLocal()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
     </div>
-    <!-- [v10.53 Yc #1] Thanh hành động hàng loạt -->
+    <!-- [v10.6 Yc #1] Thanh hành động hàng loạt -->
     <div class="yc-bulk-bar" id="yc-bulk-bar" style="display:none">
       <button class="yc-bulk-btn yc-bulk-ok"  onclick="duyetTatCa('ok')">✓ Duyệt tất cả (<span id="yc-bulk-count">0</span>)</button>
       <button class="yc-bulk-btn yc-bulk-no"  onclick="duyetTatCa('no')">✗ Từ chối tất cả</button>
@@ -4797,7 +4807,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- [v10.53] CHƯƠNG TRÌNH KHUYẾN MÃI -->
+  <!-- [v10.6] CHƯƠNG TRÌNH KHUYẾN MÃI -->
   <div class="page" id="page-chuongtrinh">
     <div class="ct-wrap">
       <div class="ct-banner">
@@ -4826,7 +4836,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- [v10.53] CHECKLIST CỬA HÀNG -->
+  <!-- [v10.6] CHECKLIST CỬA HÀNG -->
   <div class="page" id="page-checklist">
     <div class="chk-wrap">
       <div class="chk-topbar">
@@ -4870,7 +4880,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
     </div>
   </div>
 
-  <!-- [v10.53] QUẢN LÝ SỰ CỐ CỬA HÀNG (QLNS/Admin) -->
+  <!-- [v10.6] QUẢN LÝ SỰ CỐ CỬA HÀNG (QLNS/Admin) -->
   <div class="page" id="page-checklist-ql">
     <div class="chkql-wrap">
       <div class="chkql-subtabs">
@@ -5502,7 +5512,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div class="nav-label">Bán hàng</div>
       <span class="nav-badge" id="bh-nav-badge" style="display:none"></span>
     </button>
-    <!-- [v10.53] Tab Chương trình khuyến mãi -->
+    <!-- [v10.6] Tab Chương trình khuyến mãi -->
     <button class="nav-item" id="nav-chuongtrinh" onclick="goToPage('chuongtrinh')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
       <div class="nav-label">Chương trình</div>
@@ -5541,7 +5551,7 @@ try {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// [v10.53] HỆ THỐNG CÀI ĐẶT (Settings)
+// [v10.6] HỆ THỐNG CÀI ĐẶT (Settings)
 // ════════════════════════════════════════════════════════════════════
 window.APP_SETTINGS = {};
 // Defaults — fallback khi setting chưa load hoặc DB chưa có key
@@ -5567,13 +5577,13 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.53',
+  'sys.cache_version': 'v10.6',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
   'chk.bat_buoc_anh_khan_cap': false,
   'chk.tb_quanly': true,
-  // [v10.53] Lịch ca
+  // [v10.6] Lịch ca
   'lc.cho_phep_tuan_hien_tai': false
 };
 
@@ -5650,7 +5660,7 @@ try {
   if (cached) window.APP_SETTINGS = JSON.parse(cached);
 } catch(e){}
 
-// [v10.53 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
+// [v10.6 Yc #3] Cache-busting — tránh browser/Apps Script serve data cũ
 // Wrap fetch gốc để tự thêm `_t=<ts>` vào mọi GET tới SCRIPT_URL
 // [v11] Ngoài ra: nếu role=CUA_HANG → tự inject cuaHang=<maCH> để lọc phạm vi
 const _fetchGoc = window.fetch.bind(window);
@@ -5717,7 +5727,7 @@ let lastDay=new Date().getDate();
 // ─── CLOCK + AUTO LOGOUT ────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0');}
 
-// [v10.53] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
+// [v10.6] Tính thời điểm 00:00 thứ Hai gần nhất TRƯỚC hoặc BẰNG thời điểm given
 function _getMondayMidnight(d){
   const x = new Date(d);
   x.setHours(0,0,0,0);
@@ -5734,7 +5744,7 @@ function tick(){
   const el=document.getElementById('clock');
   if(el)el.textContent=days[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 
-  // [v10.53] Check session theo settings:
+  // [v10.6] Check session theo settings:
   //  - ui.persistent_login = false → logout mỗi lần đóng tab (chuyển localStorage → sessionStorage)
   //  - ui.session_expire_days → logout nếu login > N ngày
   if(SESSION){
@@ -5743,7 +5753,7 @@ function tick(){
       const persistOn = _getSetting('ui.persistent_login', true);
       const expireDays = Number(_getSetting('ui.session_expire_days', 7));
       if(loginTime > 0){
-        // [v10.53] Persistent login tắt → coi mỗi lần mở tab mới là phải login (đơn giản: dùng sessionStorage_flag)
+        // [v10.6] Persistent login tắt → coi mỗi lần mở tab mới là phải login (đơn giản: dùng sessionStorage_flag)
         if (persistOn === false || persistOn === 'false') {
           // Nếu tab này chưa từng "thấy" session (sessionStorage trống) → logout
           if (!sessionStorage.getItem('_tab_seen')) {
@@ -5773,7 +5783,7 @@ function tick(){
 setInterval(tick,1000);tick();
 
 // ═══════════════════════════════════════════════════════════
-// [v10.53 Yc #5] VERSION CHECK — phát hiện deploy mới → banner 5s → reload
+// [v10.6 Yc #5] VERSION CHECK — phát hiện deploy mới → banner 5s → reload
 // [v12-P3] Đã tắt vì không còn Apps Script
 // ═══════════════════════════════════════════════════════════
 let _appVersion = null;
@@ -5801,7 +5811,7 @@ setInterval(_kiemTraVersion, 90000);
 setTimeout(_kiemTraVersion, 2000); // gọi lần đầu sau 2s để set baseline
 
 // ═══════════════════════════════════════════════════════════
-// [v10.53 Yc #4] NOTIFICATION — Browser Notification API + poll thông báo
+// [v10.6 Yc #4] NOTIFICATION — Browser Notification API + poll thông báo
 // ═══════════════════════════════════════════════════════════
 let _tbLastTs = 0;
 let _tbPermRequested = false;
@@ -5872,16 +5882,16 @@ const PAGE_TITLES={
   // [v10]
   'donnghi-acc':'ĐƠN NGHỈ PHÉP',
   'duyetyc':   'DUYỆT YÊU CẦU',
-  // [v10.53]
+  // [v10.6]
   'giaodien':  'GIAO DIỆN',
   // [v11]
   'banhang':   'BÁN HÀNG',
   // [v12]
   'admin':     '🛠️ ADMIN',
-  // [v10.53]
+  // [v10.6]
   'checklist': 'KIỂM TRA CỬA HÀNG',
   'checklist-ql': 'SỰ CỐ CỬA HÀNG',
-  // [v10.53]
+  // [v10.6]
   'chuongtrinh': 'CHƯƠNG TRÌNH KHUYẾN MÃI',
 };
 function goToPage(page){
@@ -5915,12 +5925,12 @@ function goToPage(page){
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
-  if(page==='giaodien')    _capNhatGDUI(); // [v10.53]
+  if(page==='giaodien')    _capNhatGDUI(); // [v10.6]
   if(page==='banhang')     bhInitPage();    // [v11] Init module bán hàng
   if(page==='admin')       adm2InitPage(); // [v12 v2]
-  if(page==='checklist')   chkInitPage();   // [v10.53] Checklist cửa hàng
-  if(page==='checklist-ql') chkqlInitPage(); // [v10.53] Quản lý sự cố
-  if(page==='chuongtrinh')  ctInitPage();    // [v10.53] Chương trình KM
+  if(page==='checklist')   chkInitPage();   // [v10.6] Checklist cửa hàng
+  if(page==='checklist-ql') chkqlInitPage(); // [v10.6] Quản lý sự cố
+  if(page==='chuongtrinh')  ctInitPage();    // [v10.6] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
 }
 // Tab Giờ công: NV → giocong, QLNS → giocong-ql
@@ -5947,11 +5957,11 @@ function doLogin(){
     SESSION=res.nhanVien;
     // [v9.45] Fetch avatar URL sau login (không block UI)
     _fetchAvatarUrl();
-    // [v10.53 YC#7] Preload bulk avatars để render avatar nhanh ở các tab
+    // [v10.6 YC#7] Preload bulk avatars để render avatar nhanh ở các tab
     try { _loadAvatarBulk(); } catch(e){}
-    // [v10.53] Load app settings
+    // [v10.6] Load app settings
     try { _loadAllSettings(); } catch(e){}
-    // [v10.53] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
+    // [v10.6] Persistent login: localStorage thay vì sessionStorage, lưu cả loginTime để check 00:00 T2
     try{
       localStorage.setItem('session_cc',JSON.stringify(SESSION));
       localStorage.setItem('session_login_ts', String(Date.now()));
@@ -5961,7 +5971,7 @@ function doLogin(){
 }
 function showLoginErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.style.display='block';}
 
-// [v10.53] Tải lại toàn app: clear service worker cache + force reload (giữ session)
+// [v10.6] Tải lại toàn app: clear service worker cache + force reload (giữ session)
 async function forceReloadApp(){
   const ok = await appConfirm('Tải lại toàn bộ ứng dụng để lấy phiên bản mới nhất?\nBạn vẫn được đăng nhập sau khi tải lại.', { title:'Tải lại ứng dụng', okLabel:'Tải lại' });
   if (!ok) return;
@@ -5987,7 +5997,7 @@ async function doLogout(){
   if(!ok) return;
   // [v11.5 TB] Stop notif polling
   try { stopNotifPolling(); } catch(e){}
-  // [v10.53] Clear cả session + loginTime
+  // [v10.6] Clear cả session + loginTime
   SESSION=null;
   try{
     localStorage.removeItem('session_cc');
@@ -6003,7 +6013,7 @@ async function doLogout(){
   document.getElementById('login-err').style.display='none';
 }
 window.addEventListener('load',()=>{
-  // [v10.53] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
+  // [v10.6] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
   try{ s = localStorage.getItem('session_cc'); }catch(e){}
   if(!s){
@@ -6077,14 +6087,14 @@ function khoiDongApp(){
   // Force lại sau 50ms + 200ms để chắc chắn không bị async overrride
   requestAnimationFrame(() => { window.scrollTo(0, 0); });
   setTimeout(() => { window.scrollTo(0, 0); }, 200);
-  // [v10.53 Yc #4] Xin quyền notification + set baseline timestamp
+  // [v10.6 Yc #4] Xin quyền notification + set baseline timestamp
   _tbLastTs = Date.now(); // chỉ thông báo mới từ thời điểm đăng nhập
   setTimeout(_xinQuyenThongBao, 2000);
   setTimeout(_pollThongBao, 5000);
   // [v11.5 TB-05] Khởi động hệ thống thông báo realtime với chuông SVG
   setTimeout(startNotifPolling, 1500);
-  // [v10.53] Áp theme từ localStorage (nếu đã chọn trước)
-  // [v10.53] Áp màu chủ đạo từ localStorage (nếu đã chọn trước)
+  // [v10.6] Áp theme từ localStorage (nếu đã chọn trước)
+  // [v10.6] Áp màu chủ đạo từ localStorage (nếu đã chọn trước)
   try{
     const saved = localStorage.getItem('_mauChinh');
     if(saved) _apDungMauChinh(saved);
@@ -6108,10 +6118,10 @@ function khoiDongApp(){
 
   // [v7.0] Menu "Xin bổ sung ca" — chỉ NV thường
   const isNV = !isQL && !isCH && !isQLBH && !isAdminAll;
-  // [v10.53] Tab Chương trình khuyến mãi — hiện cho tất cả role (mọi NV bán hàng cần)
+  // [v10.6] Tab Chương trình khuyến mãi — hiện cho tất cả role (mọi NV bán hàng cần)
   const nCT = document.getElementById('nav-chuongtrinh');
   if (nCT) nCT.style.display = '';
-  // [v10.53] Kiểm tra cửa hàng → vào menu Tài khoản (NV + CUA_HANG)
+  // [v10.6] Kiểm tra cửa hàng → vào menu Tài khoản (NV + CUA_HANG)
   if (isNV || isCH) {
     const mChk = document.getElementById('menu-checklist');
     if (mChk) mChk.style.display = '';
@@ -6144,7 +6154,7 @@ function khoiDongApp(){
     document.getElementById('menu-lichca-ql').style.display='';
     document.getElementById('menu-dashboard').style.display=''; // [FIX v9 #12]
     document.getElementById('menu-duyetyc').style.display='';   // [v10 Yc #5]
-    document.getElementById('menu-checklist-ql').style.display=''; // [v10.53] Sự cố CH
+    document.getElementById('menu-checklist-ql').style.display=''; // [v10.6] Sự cố CH
   }
 
   // [v11] Phân quyền CỬA HÀNG
@@ -6220,14 +6230,14 @@ function selectCH(ma,ten){
   document.getElementById('input-ch-display').value=ten||ma;
   document.getElementById('sel-cuahang').value=ma;
   document.getElementById('ch-suggest-list').style.display='none';
-  // [v10.53 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
+  // [v10.6 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
 // ════════════════════════════════════════════════════════════════════════
-// [v10.53 YC#8] ĐỘI SALE — chấm công với CH đích di động
+// [v10.6 YC#8] ĐỘI SALE — chấm công với CH đích di động
 // Quy ước: tên CH bắt đầu bằng "Đội SALE" hoặc "Doi SALE" (không dấu) = đội sale
 // Khi gửi: ghép tenCh = "Đội SALE 01 - Hai Bà Trưng"
 // ════════════════════════════════════════════════════════════════════════
@@ -6319,8 +6329,8 @@ function layViTri(){
       state.lng=pos.coords.longitude.toFixed(6);
       state.gpsAcc=Math.round(pos.coords.accuracy);
       state.gpsOk=true;
-      state.gpsCaptureTs = Date.now();  // [v10.53] thời điểm capture GPS
-      // [v10.53 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
+      state.gpsCaptureTs = Date.now();  // [v10.6] thời điểm capture GPS
+      // [v10.6 YC#4] Cảnh báo GPS kém (accuracy > 100m): mạng yếu → tọa độ có thể sai
       const accVal = state.gpsAcc;
       const isWeak = accVal > Number(_getSetting("cc.gps_weak_threshold_m", 100));
       btn.className = isWeak ? 'gps-btn warn' : 'gps-btn success';
@@ -6440,7 +6450,7 @@ function chupAnhCamera(){
   // Routing theo target
   if(_cameraTarget === 'cham_cong'){
     state.selfieB64 = b64; state.selfieOk = true;
-    state.selfieCaptureTs = Date.now(); // [v10.53] timestamp chụp ảnh
+    state.selfieCaptureTs = Date.now(); // [v10.6] timestamp chụp ảnh
     const preview = document.getElementById('selfie-preview');
     preview.src = b64; preview.style.display = 'block';
     document.getElementById('selfie-icon').style.display = 'none';
@@ -6473,7 +6483,7 @@ async function moCameraLichNghi(ngay){
   await _moCameraDialog('environment');
 }
 
-// [v10.53] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
+// [v10.6] Bản gốc: không can thiệp EXIF, không lật gương — để iOS/Android tự xử lý theo cài đặt máy
 function xuLyAnhChup(input){
   if(!input.files||!input.files[0])return;
   const file=input.files[0];
@@ -6503,7 +6513,7 @@ function xuLyAnhChup(input){
       ctx.font='13px monospace';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,h-26,w,26);
       ctx.fillStyle='white';ctx.fillText('📍 '+ts+'  '+SESSION.ma,8,h-9);
       state.selfieB64=canvas.toDataURL('image/jpeg',0.75);state.selfieOk=true;
-      state.selfieCaptureTs = Date.now(); // [v10.53]
+      state.selfieCaptureTs = Date.now(); // [v10.6]
       const preview=document.getElementById('selfie-preview');
       preview.src=state.selfieB64;preview.style.display='block';
       document.getElementById('selfie-icon').style.display='none';
@@ -6523,7 +6533,7 @@ function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
   if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
-  // [v10.53 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
+  // [v10.6 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
   const tenCHHien = document.getElementById('input-ch-display').value || '';
   if (_laDoiSale(tenCHHien)){
     const targetMa = document.getElementById('sel-sale-target').value;
@@ -6545,8 +6555,8 @@ function onTruongCaChange(){
   }
 }
 
-// [v10.53] Kiểm tra dữ liệu chấm công còn tươi không (≤ 60s)
-// [v10.53] Lấy từ settings, fallback 60s
+// [v10.6] Kiểm tra dữ liệu chấm công còn tươi không (≤ 60s)
+// [v10.6] Lấy từ settings, fallback 60s
 function _ccFreshLimitMs(){ return Number(_getSetting('cc.fresh_seconds', 60)) * 1000; }
 function _ccDataExpired(){
   const now = Date.now();
@@ -6617,14 +6627,14 @@ function doSubmit(){
   if(document.getElementById('submit-btn').classList.contains('s-disabled'))return;
   if(!SESSION)return;
 
-  // [v10.53] Chặn nếu hệ thống đang bảo trì
+  // [v10.6] Chặn nếu hệ thống đang bảo trì
   const maint = _getSetting('sys.maintenance_mode', false);
   if ((maint === true || maint === 'true') && String(SESSION.vaiTro||'').toUpperCase() !== 'ADMIN') {
     if (typeof showToast === 'function') showToast('🔧 ' + _getSetting('sys.maintenance_message', 'Hệ thống đang bảo trì'), 'warn');
     return;
   }
 
-  // [v10.53] Chặn nếu GPS hoặc ảnh đã quá 60s
+  // [v10.6] Chặn nếu GPS hoặc ảnh đã quá 60s
   const expired = _ccDataExpired();
   if (expired) {
     _ccInvalidateStale();
@@ -6718,7 +6728,7 @@ function _doSubmitFinal(){
   state.submitted=true;
   let maCH=document.getElementById('sel-cuahang').value;
   const tenCHDisplay = document.getElementById('input-ch-display').value;
-  // [v10.53 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
+  // [v10.6 YC#8] Đội SALE: nếu user đã chọn CH thực tế → dùng MÃ CH THỰC TẾ để check GPS đúng
   //   Lưu tên Đội SALE gốc + đổi maCH sang CH thực tế.
   let _saleOriginMa = '';
   let _saleOriginTen = '';
@@ -6742,7 +6752,7 @@ function _doSubmitFinal(){
     const ch = (typeof CH_LIST !== 'undefined' ? CH_LIST.find(c => c.ma === maCH) : null);
     if (ch && ch.lat && ch.lng && state.lat && state.lng) {
       preKhoangCach = Math.round(_distMeters(state.lat, state.lng, parseFloat(ch.lat), parseFloat(ch.lng)));
-      preCheckGPS = preKhoangCach <= Number(_getSetting('cc.gps_radius_m', 100)); // [v10.53] từ setting
+      preCheckGPS = preKhoangCach <= Number(_getSetting('cc.gps_radius_m', 100)); // [v10.6] từ setting
     }
   } catch(e){}
 
@@ -6803,13 +6813,13 @@ function _doSubmitFinal(){
       } catch(e) { console.warn('[CC] upload ảnh lỗi:', e); }
     }
 
-    // [v10.53 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
+    // [v10.6 YC#8] Đội SALE: maCH đã đổi sang CH thực tế ở _doSubmitFinal
     //   → đính kèm Đội SALE gốc vào device_info để Sheet sync ghép tên đúng
     let _deviceInfo = navigator.userAgent.substring(0, 180);
     if (_saleOriginMa && _saleOriginTen){
       _deviceInfo = '[SALE_ORIGIN:' + _saleOriginMa + '|' + _saleOriginTen + '] ' + _deviceInfo;
     }
-    // [v10.53 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
+    // [v10.6 YC#4] Đính kèm flag GPS_WEAK nếu accuracy > 100m → QLNS biết để xem xét linh hoạt
     if (state.gpsAcc && state.gpsAcc > Number(_getSetting("cc.gps_weak_threshold_m", 100))){
       _deviceInfo = '[GPS_WEAK:' + state.gpsAcc + 'm] ' + _deviceInfo;
     }
@@ -7119,7 +7129,7 @@ function _gcBadgeTrangThai(p) {
 
   // ─── Ưu tiên 2: Thiếu Vào/Ra → kiểm tra đơn xin bổ sung ───
   if (isThieu) {
-    // [v10.53] Nếu Thiếu RA mà là NGÀY HÔM NAY → NV chưa chấm ra là bình thường, không cảnh báo
+    // [v10.6] Nếu Thiếu RA mà là NGÀY HÔM NAY → NV chưa chấm ra là bình thường, không cảnh báo
     if (p.lyDo === 'THIEU_RA') {
       const vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
       const yToday = vnNow.getFullYear() + '-' + pad(vnNow.getMonth()+1) + '-' + pad(vnNow.getDate());
@@ -7179,7 +7189,7 @@ function _renderGioCongTable(){
         gioCongStr = h + 'g ' + mPad + 'p';
       }
 
-      // [v10.53] Ẩn cảnh báo Thiếu Ra cho ngày hôm nay (NV đang trong ca, chưa chấm ra là bình thường)
+      // [v10.6] Ẩn cảnh báo Thiếu Ra cho ngày hôm nay (NV đang trong ca, chưa chấm ra là bình thường)
       let warnTxt = '';
       if (p.lyDo) {
         const vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
@@ -7195,13 +7205,13 @@ function _renderGioCongTable(){
         ? `<div class="gc-ngay">${ngFmt}</div><div class="gc-thu">${thu}</div>${caps.length>1?'<div style="font-size:9px;color:#6B7280">'+caps.length+' cặp</div>':''}`
         : '<div style="font-size:10px;color:#9CA3AF">↳</div>';
 
-      // [v10.53] Cell không tô đỏ nếu chỉ là Thiếu Ra hôm nay (NV đang trong ca)
+      // [v10.6] Cell không tô đỏ nếu chỉ là Thiếu Ra hôm nay (NV đang trong ca)
       const vnNowCell = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
       const yTodayCell = vnNowCell.getFullYear() + '-' + pad(vnNowCell.getMonth()+1) + '-' + pad(vnNowCell.getDate());
       const skipTodayCell = (p.lyDo === 'THIEU_RA' && p.ngay === yTodayCell);
       const cellStyle = (p.hopLe || skipTodayCell) ? '' : 'background:#FEF2F2';
 
-      // [v10.53] Class trạng thái cho hover/active style + border accent màu
+      // [v10.6] Class trạng thái cho hover/active style + border accent màu
       let rowCls = 'gc-r-ok';
       if (skipTodayCell) rowCls = 'gc-r-today';
       else if (!p.hopLe) {
@@ -7326,13 +7336,13 @@ function doiThangQL(delta){
   gcThangQL=d.getFullYear()+'-'+pad(d.getMonth()+1);taiGioCongQL();
 }
 function taiGioCongQL(){
-  gcDataQL=[]; // [v10.53 Yc #3] reset state
+  gcDataQL=[]; // [v10.6 Yc #3] reset state
   const [y,m]=gcThangQL.split('-').map(Number);
   document.getElementById('thang-label-ql').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
   ['gcql-nv','gcql-ngay','gcql-gio'].forEach(id=>document.getElementById(id).textContent='--');
   // [v12-P2] Supabase RPC
-  // [v10.53 YC#1] Load song song: RPC + bảng cua_hang để enrich khu vực
+  // [v10.6 YC#1] Load song song: RPC + bảng cua_hang để enrich khu vực
   Promise.all([
     supa.rpc('fn_get_tong_hop_thang_all', { p_thang: gcThangQL }),
     supa.from('cua_hang').select('ma_ch, ten_ch, khu_vuc'),
@@ -7356,7 +7366,7 @@ function taiGioCongQL(){
     });
     // Enrich: nếu khuVuc trống → tìm từ chMap, nvMap
     gcDataQL = (rpcRes.data || []).map(r => {
-      // [v10.53] Check cả camelCase và snake_case
+      // [v10.6] Check cả camelCase và snake_case
       let kv = r.khuVuc || r.khu_vuc || '';
       let maCH = r.maCH || r.ma_ch || '';
       let cuaHang = r.cuaHang || r.cua_hang || '';
@@ -7385,7 +7395,7 @@ function taiGioCongQL(){
   })
   .catch(()=>{document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
 }
-// [v10.53 YC#3] State accordion giờ công QL
+// [v10.6 YC#3] State accordion giờ công QL
 let _gcqlExpandedKV = new Set();
 let _gcqlExpandedCH = new Set();
 
@@ -7402,7 +7412,7 @@ function _gcqlToggleCH(key){
 
 function renderGioCongQL(){
   const q=(document.getElementById('gcql-search').value||'').trim().toLowerCase();
-  // [v10.53 YC#6] Ẩn NV chưa hoàn tất chấm công (CÓ LỖI = chưa duyệt giải trình → coi như chưa xong)
+  // [v10.6 YC#6] Ẩn NV chưa hoàn tất chấm công (CÓ LỖI = chưa duyệt giải trình → coi như chưa xong)
   const _isValid = tt => tt==='ĐỦ CA' || tt==='HOÀN THÀNH' || tt==='DUYET_KHONG_CONG';
   const filtered = gcDataQL.filter(r => {
     if (q && !(r.maNV.toLowerCase().includes(q) || r.tenNV.toLowerCase().includes(q) || r.cuaHang.toLowerCase().includes(q) || (r.khuVuc||'').toLowerCase().includes(q))) {
@@ -7423,7 +7433,7 @@ function renderGioCongQL(){
     else tongPhut += parseGioCong(r.tongGioCong);
   });
   const _fmtVN = (n) => Number(n).toLocaleString('vi-VN');
-  // [v10.53] fmtPhut → có dấu chấm
+  // [v10.6] fmtPhut → có dấu chấm
   const _fmtPhutVN = (m) => {
     const h = Math.floor(m / 60);
     const p = m % 60;
@@ -7433,7 +7443,7 @@ function renderGioCongQL(){
   document.getElementById('gcql-ngay').textContent = _fmtVN(ngayDone.size);
   document.getElementById('gcql-gio').textContent  = _fmtPhutVN(tongPhut);
 
-  // [v10.53 YC#2] Map KV đầy đủ về tên ngắn — bỏ prefix "Khu vực"
+  // [v10.6 YC#2] Map KV đầy đủ về tên ngắn — bỏ prefix "Khu vực"
   const _kvShort = (kv) => {
     if (!kv) return 'Khác';
     const k = kv.toLowerCase().replace(/^khu vực\s+/i, '');
@@ -7473,7 +7483,7 @@ function renderGioCongQL(){
     else nv.tongPhut += parseGioCong(r.tongGioCong);
   });
 
-  // [v10.53 YC#2] Sort theo thứ tự yêu cầu
+  // [v10.6 YC#2] Sort theo thứ tự yêu cầu
   const KV_ORDER = ['Hà Nội', 'Bắc Trung Bộ', 'Trung Tây Nguyên', 'Hồ Chí Minh', 'Đông Nam Bộ', 'Tây Nam Bộ'];
   const allKVs = Object.keys(groups);
   const sortedKVs = [
@@ -7497,7 +7507,7 @@ function renderGioCongQL(){
     const chevronKV = isKVExpanded
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
       : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
-    // [v10.53] Mỗi KV 1 màu — style action card: nền tint nhạt + chữ đậm + viền mỏng accent
+    // [v10.6] Mỗi KV 1 màu — style action card: nền tint nhạt + chữ đậm + viền mỏng accent
     const KV_COLORS = {
       'Hà Nội':         { accent:'#0284C7', tint:'#F0F9FF', bd:'#BAE6FD' },
       'Bắc Trung Bộ':   { accent:'#0F6E56', tint:'#ECFDF5', bd:'#A7F3D0' },
@@ -7644,7 +7654,7 @@ async function _fetchAvatarUrl() {
     
     if (data.avatar_url !== SESSION.avatarUrl) {
       SESSION.avatarUrl = data.avatar_url;
-      // [v10.53] Persist sang localStorage
+      // [v10.6] Persist sang localStorage
       try{ localStorage.setItem('session_cc', JSON.stringify(SESSION)); }catch(e){}
       // Re-render UI nếu đang ở tab Tài khoản
       if (typeof renderTaiKhoan === 'function' && document.getElementById('page-taikhoan').style.display !== 'none') {
@@ -8126,7 +8136,7 @@ async function xoaAvatar() {
     
     // Update SESSION
     SESSION.avatarUrl = null;
-    // [v10.53 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
+    // [v10.6 FIX BUG] Đã dùng sai key 'nonson_session' → đổi về 'session_cc' (đồng bộ với toàn app)
     try { localStorage.setItem('session_cc', JSON.stringify(SESSION)); } catch(e) {}
     
     // Re-render
@@ -8229,7 +8239,7 @@ function closeGiaiTrinh(){
 function chonLyDo(el,lyDo){
   document.querySelectorAll('.gt-opt').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  // [v10.53 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
+  // [v10.6 FIX] Khi chọn "Lý do khác": gtLyDo = 'Khác' (không phải '') để qua checkGtFormState
   if(lyDo==='__khac__'){
     gtLyDo = 'Khác';
     document.getElementById('gt-input').focus();
@@ -8413,7 +8423,7 @@ function startNSPolling(){
   _pollTimer=setInterval(()=>{
     if(currentPage!=='nhansu')return;
     const [nsTu,nsDen]=_getNSRange();
-    // [v10.53 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+    // [v10.6 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
     const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
     // [v12-P2] Supabase RPC
     supa.rpc('fn_get_nhan_su_overview', {
@@ -8448,7 +8458,7 @@ function startNSPolling(){
 function stopNSPolling(){clearInterval(_pollTimer);_pollTimer=null;}
 
 // ─── BADGE THÔNG BÁO TAB NHÂN SỰ ───────────────────────────
-// [v10.53 Yc #6] Badge bottom nav "Nhân sự" = tổng cảnh báo chờ duyệt + đơn nghỉ chờ duyệt
+// [v10.6 Yc #6] Badge bottom nav "Nhân sự" = tổng cảnh báo chờ duyệt + đơn nghỉ chờ duyệt
 let _nsBadgeCB=0, _nsBadgeDN=0;
 function _capNhatBadgeNS(soLoi){
   if(typeof soLoi === 'number') _nsBadgeCB = soLoi;
@@ -8562,7 +8572,7 @@ function onNSSearch(){
 function escHtml(s){return String(s).replace(/'/g,"\\'")}
 
 // ════════════════════════════════════════════════════════════════════════
-// [v10.53 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
+// [v10.6 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
 // _renderAvatar(maNV, tenNV, sizePx, avatarUrl?) → HTML string
 // - Có avatarUrl → <img>
 // - Không có → <div> với chữ cái đầu họ tên + màu nền mặc định
@@ -8574,7 +8584,7 @@ window._avatarLoadedAll = false;
 async function _loadAvatarBulk(){
   if (window._avatarLoadedAll) return;
   try {
-    // [v10.53 YC#5] Paginate vì Supabase mặc định 1000 dòng/request; NS có >500 NV
+    // [v10.6 YC#5] Paginate vì Supabase mặc định 1000 dòng/request; NS có >500 NV
     let offset = 0;
     const PAGE = 1000;
     while (true) {
@@ -8590,9 +8600,9 @@ async function _loadAvatarBulk(){
     }
     window._avatarLoadedAll = true;
     console.log('[avatar] loaded', Object.keys(window._avatarCache).length, 'urls');
-    // [v10.53] Bù ảnh cho mọi avatar đang hiện chữ trên toàn DOM
+    // [v10.6] Bù ảnh cho mọi avatar đang hiện chữ trên toàn DOM
     try { _patchAvatars(); } catch(e){ console.warn('[patch avatar]', e.message); }
-    // [v10.53] Patch thêm vài lần để bắt các trang/list render muộn (polling, lazy)
+    // [v10.6] Patch thêm vài lần để bắt các trang/list render muộn (polling, lazy)
     setTimeout(()=>{ try{_patchAvatars();}catch(e){} }, 800);
     setTimeout(()=>{ try{_patchAvatars();}catch(e){} }, 2500);
   } catch(e){ console.warn('[_loadAvatarBulk]', e.message); }
@@ -8611,7 +8621,7 @@ function _renderAvatar(maNV, tenNV, sizePx, urlOverride){
   const initial = _avatarInitial(tenNV);
   const fontSize = Math.round(size * 0.44);
   const baseStyle = `width:${size}px;height:${size}px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;`;
-  // [v10.53] data-anv = mã NV để bù ảnh khi cache load sau; data-asz = size
+  // [v10.6] data-anv = mã NV để bù ảnh khi cache load sau; data-asz = size
   if (url){
     return `<span class="ns-avatar" data-anv="${escHtml(maNV||'')}" data-asz="${size}" style="${baseStyle}background:#E0F2F1;position:relative">
       <img src="${url}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -8622,7 +8632,7 @@ function _renderAvatar(maNV, tenNV, sizePx, urlOverride){
   return `<span class="ns-avatar" data-anv="${escHtml(maNV||'')}" data-asz="${size}" data-aini="${initial}" style="${baseStyle}background:#E0F2F1;font-size:${fontSize}px;font-weight:600;color:#0F6E56">${initial}</span>`;
 }
 
-// [v10.53] Bù ảnh cho mọi avatar đang hiện chữ (sau khi cache load xong)
+// [v10.6] Bù ảnh cho mọi avatar đang hiện chữ (sau khi cache load xong)
 function _patchAvatars(){
   if (!window._avatarCache) return;
   document.querySelectorAll('span.ns-avatar[data-anv]').forEach(span => {
@@ -8749,7 +8759,7 @@ function taiNhanSu(forceRefresh){
   // [v10 Yc #3] Phạm vi thời gian cho "Nghỉ phép"
   const [nsTu,nsDen]=_getNSRange();
   const timeParam='&tuNgay='+nsTu+'&denNgay='+nsDen;
-  // [v10.53 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
+  // [v10.6 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
   const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
   // [v12-P2] Supabase RPC thay nhansu
   supa.rpc('fn_get_nhan_su_overview', {
@@ -8781,7 +8791,7 @@ function taiNhanSu(forceRefresh){
   .catch(()=>{list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';});
 }
 
-// [v10.53 Yc #6] Chỉ cập nhật badge (banner ns-donnghi-banner đã bị xóa)
+// [v10.6 Yc #6] Chỉ cập nhật badge (banner ns-donnghi-banner đã bị xóa)
 function _silentCheckDonNghi(){
   // [v12-P3] Supabase RPC
   supa.rpc('fn_get_don_nghi_list', { p_trang_thai: 'Chờ duyệt' })
@@ -8840,7 +8850,7 @@ function renderNhanSu(){
   document.getElementById('ns-s-loi').textContent=loiCount;
   document.getElementById('ns-s-tong').textContent=statsBase.length;
   // Banner cần duyệt
-  const banner=document.getElementById('ns-loi-banner'); /* v10.53: banner removed */
+  const banner=document.getElementById('ns-loi-banner'); /* v10.6: banner removed */
   if(banner){if(loiCount>0){const el=document.getElementById('ns-loi-count');if(el)el.textContent=loiCount;banner.style.display='flex';}else banner.style.display='none';}
   // Badge tab — luôn dùng tổng toàn hệ thống
   _capNhatBadgeNS(nsCBList.length);
@@ -8935,7 +8945,7 @@ function renderNhanSu(){
       ${_renderAvatar(nv.ma, nv.ten, 40)}
       <div class="ns-info">
         <div class="ns-ten">${nv.ten} <span style="font-size:11px;font-weight:400;color:var(--text-m)">${nv.ma}</span>${nvCBTxt}</div>
-        <div class="ns-sub">${nv.cuaHang}${gio}</div>
+        <div class="ns-sub">${typeof _fmtChVoiDoiSale === 'function' ? _fmtChVoiDoiSale(nv.ma, nv.cuaHang) : nv.cuaHang}${gio}</div>
       </div>
       <span class="ns-badge ${badgeCls}">${badgeLbl}</span>
     </div>`;
@@ -9754,7 +9764,7 @@ function doiTuanLC(delta){
 
 function taiLichCa(){
   if(!SESSION)return;
-  _taiGoiYCH(); // [v10.53] Preload gợi ý CH
+  _taiGoiYCH(); // [v10.6] Preload gợi ý CH
   document.getElementById('lc-tuan-lbl').textContent=_tuanLabel(lcTuan);
   document.getElementById('lc-week').innerHTML='<div style="padding:40px;text-align:center;color:var(--text-m);font-size:13px">⏳ Đang tải...</div>';
   // [v12-P3] Supabase RPC, adapt response sang format cũ
@@ -9845,7 +9855,7 @@ function renderLichCa(data){
   const hanEl=document.getElementById('lc-han-badge');
   const metaEl=document.getElementById('lc-meta-txt');
   // [v9.45] Show/hide banner XIN ĐỔI LỊCH — cho cả tuần hiện tại và tuần sau (đã gửi)
-  // [v10.53] Ẩn banner nếu setting 'lc.cho_phep_tuan_hien_tai' bật (vì NV gửi trực tiếp được)
+  // [v10.6] Ẩn banner nếu setting 'lc.cho_phep_tuan_hien_tai' bật (vì NV gửi trực tiếp được)
   const xdlBanner = document.getElementById('lc-xdl-banner');
   const _choPhepHT = _getSetting('lc.cho_phep_tuan_hien_tai', false);
   if(xdlBanner) {
@@ -10196,7 +10206,7 @@ function xoaCa(ngay,idx){
 }
 
 // Autocomplete cửa hàng [FIX v9 #4] — tràn ra ngoài khung, ~3 gợi ý
-// [v10.53 Đề xuất] Khi input trống: hiển thị top 5 CH từ getGoiYCuaHang (CH hay làm tuần trước)
+// [v10.6 Đề xuất] Khi input trống: hiển thị top 5 CH từ getGoiYCuaHang (CH hay làm tuần trước)
 let _goiYCH_cache = null;
 function _taiGoiYCH(){
   if(_goiYCH_cache || !SESSION)return;
@@ -10226,7 +10236,7 @@ function onLCCHInput(ngay,idx){
   }
   let matched;
   if(!q){
-    // [v10.53] Input trống → hiện gợi ý thông minh từ CH hay làm
+    // [v10.6] Input trống → hiện gợi ý thông minh từ CH hay làm
     if(!_goiYCH_cache){_taiGoiYCH();}
     const goiY = _goiYCH_cache || [];
     if(!goiY.length){sug.style.display='none';return;}
@@ -10365,7 +10375,7 @@ function _updateLCSendBtn(conHan, soNgayDienTu){
     const e=lcEdit[k]; if(!e||!e.type)return true; // ngày trống thì bỏ qua
     return e.type==='nghi';
   });
-  // [v10.53] Setting "cho phép gửi tuần hiện tại" → coi như conHan=true cho HIEN_TAI
+  // [v10.6] Setting "cho phép gửi tuần hiện tại" → coi như conHan=true cho HIEN_TAI
   let effectiveConHan = conHan;
   if (lcData && lcData.trangThaiTuan === 'HIEN_TAI' && _getSetting('lc.cho_phep_tuan_hien_tai', false)) {
     effectiveConHan = true;
@@ -10384,7 +10394,7 @@ function guiLichCa(){
 
   // [v9.45] Chặn gửi tuần đã qua / tuần hiện tại
   // [v9.45] Ngoại lệ: tuần HIEN_TAI vẫn cho gửi NẾU toàn bộ là Nghỉ phép đột xuất
-  // [v10.53] Hoặc setting 'lc.cho_phep_tuan_hien_tai' bật → cho gửi tự do tuần hiện tại
+  // [v10.6] Hoặc setting 'lc.cho_phep_tuan_hien_tai' bật → cho gửi tự do tuần hiện tại
   if(lcData){
     // Kiểm tra có phải toàn nghỉ phép không
     const toanNghi = Object.keys(lcEdit).every(k=>{
@@ -10539,7 +10549,7 @@ let _dxState = { ngayChon: new Set(), anhB64: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // [v9.45] XIN ĐỔI LỊCH — Modal multi-day cho phép NV đề nghị sửa lịch
-// [v10.53] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
+// [v10.6] REWRITE — UI giống form Gửi lịch tuần (nhiều ca/ngày, autocomplete CH, preset giờ)
 // State: _xdlEdit[ngay] = { enabled, type:'work'|'nghi', slots:[{maCH,tenCH,gioBD,gioKT}], lyDoMoi, anhB64Moi }
 // ════════════════════════════════════════════════════════════════════════
 let _xdlEdit = {};
@@ -10567,7 +10577,7 @@ function openXinDoiLichModal() {
     }
   }
   
-  // [v10.53 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
+  // [v10.6 FIX] Dùng helper _ngayTuan có sẵn (lcData không có field thuHai)
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = _toDateStr(today);
   const fullTuan = (typeof _ngayTuan === 'function' && lcTuan) ? _ngayTuan(lcTuan) : [];
@@ -10584,7 +10594,7 @@ function openXinDoiLichModal() {
   
   // Khởi tạo _xdlEdit với ca hiện tại làm baseline (disabled cho đến khi tích)
   ngayList.forEach(item => {
-    // [v10.53] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
+    // [v10.6] Lấy TẤT CẢ slots trong ngày (1 ngày có thể có nhiều ca)
     const cacCa = (lcData.lich || []).filter(l =>
       l.ngay === item.ngay &&
       (l.trangThai === 'DA_DUYET' || l.trangThai === 'DA_GUI' || l.trangThai === 'CHO_DUYET_THAY_THE')
@@ -10830,7 +10840,7 @@ function xdlShowCHSuggest(ngay, idx){
   const sug = document.getElementById('xdl-ch-sug-' + ngay + '-' + idx);
   if (!inp || !sug) return;
   const q = inp.value.trim().toLowerCase();
-  // [v10.53] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
+  // [v10.6] CH_LIST khai báo bằng `let` → KHÔNG tự gán vào window. Dùng trực tiếp.
   const list = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
   let matched;
   if (!q){
@@ -10931,7 +10941,7 @@ async function submitXinDoiLich() {
         }
         thayDoi.push({
           ngay, loai: 'Đi làm',
-          // [v10.53 FIX] ca_lam NOT NULL trong DB → dùng "HH:MM-HH:MM" hoặc "Đi làm"
+          // [v10.6 FIX] ca_lam NOT NULL trong DB → dùng "HH:MM-HH:MM" hoặc "Đi làm"
           ca_lam: (s.gioBD && s.gioKT) ? (s.gioBD + '-' + s.gioKT) : 'Đi làm',
           ma_ch: maCH || null,
           gio_bd: s.gioBD || null,
@@ -10964,7 +10974,7 @@ async function submitXinDoiLich() {
   try {
     const { data: res, error } = await supa.rpc('fn_xin_doi_lich', {
       p_ma_nv: SESSION.ma,
-      // [v10.53 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
+      // [v10.6 FIX BUG] SESSION dùng key 'ten' (xem fn_dang_nhap), không phải hoTen/tenNV
       p_ten_nv: SESSION.ten || SESSION.ma,
       p_tuan: lcData.tuanNam || lcData.tuan,
       p_thay_doi: thayDoi,
@@ -10979,7 +10989,7 @@ async function submitXinDoiLich() {
       return;
     }
     
-    // [v10.53 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
+    // [v10.6 FIX BUG] RPC trả 'so_ngay_moi', không phải 'so_thay_doi'
     const soNgay = res.so_ngay_moi || ngayKeys.length;
     showToast('✓ Đã gửi yêu cầu đổi ' + soNgay + ' ngày. Chờ QLNS duyệt.', 'ok');
     closeXinDoiLichModal();
@@ -11331,7 +11341,7 @@ function renderLCQL(){
   const _icoCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
   const _icoNV = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
   const _icoCal= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-  // [v10.53 YC#2] Sort KV theo thứ tự: Hà Nội, Bắc Trung Bộ, Trung Tây Nguyên, HCM, Đông Nam Bộ, Tây Nam Bộ, còn lại
+  // [v10.6 YC#2] Sort KV theo thứ tự: Hà Nội, Bắc Trung Bộ, Trung Tây Nguyên, HCM, Đông Nam Bộ, Tây Nam Bộ, còn lại
   const _kvSortLich = (a, b) => {
     const ORDER = ['hà nội', 'bắc trung', 'trung tây nguyên', 'hồ chí minh', 'đông nam', 'tây nam'];
     const _idx = (kv) => {
@@ -11345,7 +11355,7 @@ function renderLCQL(){
     if (ia !== ib) return ia - ib;
     return (a || '').localeCompare(b || '', 'vi');
   };
-  // [v10.53] Mỗi KV 1 màu — style action card: nền tint nhạt + chữ đậm + viền mỏng
+  // [v10.6] Mỗi KV 1 màu — style action card: nền tint nhạt + chữ đậm + viền mỏng
   const LCQL_KV_COLORS = {
     'Hà Nội':         { accent:'#0284C7', tint:'#F0F9FF', bd:'#BAE6FD' },
     'Bắc Trung Bộ':   { accent:'#0F6E56', tint:'#ECFDF5', bd:'#A7F3D0' },
@@ -11409,7 +11419,7 @@ function renderLCQL(){
       </div></div>`;
     });
   } else {
-    // [v10.53 YC#4] Mode NV: avatar lớn 40, body xanh nhạt
+    // [v10.6 YC#4] Mode NV: avatar lớn 40, body xanh nhạt
     const g={};filtered.forEach(d=>{if(!g[d.maNV])g[d.maNV]={ten:d.tenNV,ch:d.tenCH,maCH:d.maCH,kv:d.khuVuc,days:[]};g[d.maNV].days.push(d);});
     Object.keys(g).sort((a,b)=>(g[a].ten||'').localeCompare(g[b].ten||'','vi')).forEach(nk=>{
       const ni=g[nk];const _soNgay = new Set(ni.days.map(x=>x.ngay)).size;
@@ -11549,15 +11559,30 @@ function _debLichSuDuyet(){
   _lsdDeb = setTimeout(taiLichSuDuyet, 400);
 }
 
-// [v10.53 YC#4] Click card stats để filter theo trạng thái
+// [v10.6 YC#4] Click card stats để filter theo trạng thái
 function lsdFilterByStatus(status){
   const sel = document.getElementById('lsd-trangthai');
   if (sel) sel.value = status;
+  // Reset bộ lọc loại CB nếu đang lọc theo loại
+  const selLoai = document.getElementById('lsd-loaicb');
+  if (selLoai) selLoai.value = '';
+  taiLichSuDuyet();
+}
+
+// [v10.6] Click thẻ "Bổ sung ca" → filter theo loaiCB
+function lsdFilterByLoai(loai){
+  const sel = document.getElementById('lsd-loaicb');
+  if (sel) sel.value = loai;
+  // Reset trạng thái
+  const selTT = document.getElementById('lsd-trangthai');
+  if (selTT) selTT.value = '';
   taiLichSuDuyet();
 }
 
 function _lsdUpdateActiveStat(currentStatus){
-  // currentStatus: '' (all) | 'CHO_DUYET' | 'DA_DUYET' | 'TU_CHOI'
+  // [v10.6] Cân nhắc cả filter loaiCB="BỔ SUNG CA"
+  const selLoai = document.getElementById('lsd-loaicb');
+  const isBoSung = selLoai && selLoai.value === 'BỔ SUNG CA';
   const ids = {
     '': 'lsd-stat-card-tong',
     'CHO_DUYET': 'lsd-stat-card-chodet',
@@ -11568,15 +11593,21 @@ function _lsdUpdateActiveStat(currentStatus){
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeId = ids[currentStatus || ''];
-  const activeEl = document.getElementById(activeId);
-  if (activeEl) activeEl.classList.add('active');
+  const bsEl = document.getElementById('lsd-stat-card-bosung');
+  if (bsEl) bsEl.classList.remove('active');
+  if (isBoSung) {
+    if (bsEl) bsEl.classList.add('active');
+  } else {
+    const activeId = ids[currentStatus || ''];
+    const activeEl = document.getElementById(activeId);
+    if (activeEl) activeEl.classList.add('active');
+  }
 }
 
 async function taiLichSuDuyet(){
   const listEl = document.getElementById('lsd-list');
   if (!listEl) return;
-  // [v10.53] Smooth loading: không clear DOM, chỉ giảm opacity
+  // [v10.6] Smooth loading: không clear DOM, chỉ giảm opacity
   const isFirstLoad = !listEl.querySelector('.lsd-card');
   if (isFirstLoad) {
     listEl.innerHTML = '<div class="ns-empty" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:30px;color:#94A3B8;font-size:13px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg><span>Đang tải...</span></div>';
@@ -11592,7 +11623,7 @@ async function taiLichSuDuyet(){
   const tt  = document.getElementById('lsd-trangthai').value || null;
   const loai = document.getElementById('lsd-loaicb').value || null;
   const q   = (document.getElementById('lsd-q').value || '').trim();
-  // [v10.53 YC#1] Filter NV / CH / Người duyệt
+  // [v10.6 YC#1] Filter NV / CH / Người duyệt
   const maNV = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
   const maCH = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
   const maND = (document.getElementById('lsd-nd-ma') && document.getElementById('lsd-nd-ma').value) || null;
@@ -11601,6 +11632,8 @@ async function taiLichSuDuyet(){
   if (!document.getElementById('lsd-den').value) document.getElementById('lsd-den').value = den;
 
   try {
+    // [v10.6] Đảm bảo NV list đã load để biết đội sale
+    if (!_lsdNVList) { await _lsdLoadNVList().catch(()=>{}); }
     const { data, error } = await supa.rpc('fn_get_lich_su_duyet', {
       p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV,
       p_nguoi_duyet: maND, p_loai_cb: loai, p_trang_thai: tt,
@@ -11613,20 +11646,20 @@ async function taiLichSuDuyet(){
 
     let list = data.list || [];
 
-    // [v10.53] Debug: log keys của 1 record để xác định field name
+    // [v10.6] Debug: log keys của 1 record để xác định field name
     if (list.length > 0 && !window._lsdDebugged){
       console.log('[LSD DEBUG] Sample record keys:', Object.keys(list[0]), list[0]);
       window._lsdDebugged = true;
     }
 
-    // [v10.53 YC#1] Filter CH client-side — thử nhiều variant field
+    // [v10.6 YC#1] Filter CH client-side — thử nhiều variant field
     if (maCH){
       list = list.filter(r => {
         const ch = r.maCh || r.maCH || r.ma_ch || r.maCuaHang || '';
         return ch === maCH;
       });
     }
-    // [v10.53 YC#1+3] Filter Q (giải trình + tên) client-side
+    // [v10.6 YC#1+3] Filter Q (giải trình + tên) client-side
     if (q){
       const qLower = q.toLowerCase();
       list = list.filter(r => {
@@ -11638,7 +11671,7 @@ async function taiLichSuDuyet(){
             || (r.tenCH || r.tenCh || r.ten_ch || '').toLowerCase().includes(qLower);
       });
     }
-    // [v10.53 YC#1] Sort client-side: mới → cũ (theo ngày + giờ)
+    // [v10.6 YC#1] Sort client-side: mới → cũ (theo ngày + giờ)
     list.sort((a, b) => {
       const dA = (a.ngay || '') + 'T' + (a.gioCham || '00:00');
       const dB = (b.ngay || '') + 'T' + (b.gioCham || '00:00');
@@ -11656,11 +11689,28 @@ async function taiLichSuDuyet(){
     document.getElementById('lsd-stat-duyet').textContent  = list.filter(r => r.trangThai === 'DA_DUYET').length;
     document.getElementById('lsd-stat-tuchoi').textContent = list.filter(r => r.trangThai === 'TU_CHOI').length;
     const choEl = document.getElementById('lsd-stat-chodet');
+    let choCount = 0;
     if (choEl) {
-      const choCount = list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
+      choCount = list.filter(r => r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH').length;
       choEl.textContent = choCount;
     }
-    // [v10.53 YC#4] Highlight card đang được filter
+    // [v10.6] Số bổ sung ca + cập nhật badge nav
+    const bosungEl = document.getElementById('lsd-stat-bosung');
+    let bosungCount = 0;
+    let bosungChoCount = 0;
+    if (bosungEl) {
+      bosungCount = list.filter(r => r.loaiCB === 'BỔ SUNG CA').length;
+      bosungChoCount = list.filter(r => r.loaiCB === 'BỔ SUNG CA' &&
+        (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH')).length;
+      bosungEl.textContent = bosungCount;
+    }
+    // Badge trên tab nav (số chờ duyệt tổng)
+    const lsdBadge = document.getElementById('lsd-badge');
+    if (lsdBadge) {
+      if (choCount > 0) { lsdBadge.textContent = choCount; lsdBadge.style.display = ''; }
+      else lsdBadge.style.display = 'none';
+    }
+    // [v10.6 YC#4] Highlight card đang được filter
     _lsdUpdateActiveStat(tt);
 
     if (!list.length) {
@@ -11686,15 +11736,19 @@ async function taiLichSuDuyet(){
       const badgeFix = isRequireFix ? '<span class="lsd-badge-fix">CẦN SỬA GIỜ</span>' : '';
       const noiDung = r.noiDung ? `<div class="lsd-card-noidung">${escHtml(r.noiDung)}</div>` : '';
       const isPending = (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH');
+      const isDuyetRoi = (r.trangThai === 'DA_DUYET' || r.trangThai === 'TU_CHOI');
       const isAdmin = SESSION && (SESSION.vaiTro==='QLNS' || SESSION.vaiTro==='ADMIN');
-      const suaLichBtn = (r.loaiCB==='BỔ SUNG CA' && isAdmin)
+      // [v10.6 V#1] Cho phép sửa lịch CHO MỌI loại + MỌI trạng thái (sau duyệt vẫn sửa được)
+      const suaLichBtn = isAdmin
         ? `<button class="lsd-btn-mini lsd-btn-sua" onclick="adm2OpenSuaLog('${r.maNV||r.ma_nv||''}','${r.ngay||''}','${r.id||''}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1.5px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa lịch</button>` : '';
+      const datLaiBtn = (isAdmin && isDuyetRoi)
+        ? `<button class="lsd-btn-mini" style="background:#F3F4F6;color:#374151;border:1px solid #D1D5DB" onclick="adm2RevertCanhBao('${r.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1.5px;margin-right:3px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Đặt lại</button>` : '';
       const actionBtn = isAdmin
         ? `<div class="lsd-card-actions">
              ${suaLichBtn}
-             ${(isRequireFix && !suaLichBtn) ? `<button class="lsd-btn-mini lsd-btn-sua" onclick="adm2OpenSuaLog('${r.maNV}','${r.ngay}','${r.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa lịch</button>` : ''}
              ${isPending ? `<button class="lsd-btn-mini lsd-btn-duyet" onclick="adm2DuyetCanhBao('${r.id}','${r.loaiCB||''}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Duyệt</button>
              <button class="lsd-btn-mini lsd-btn-tuchoi" onclick="adm2TuChoiCanhBao('${r.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Từ chối</button>` : ''}
+             ${datLaiBtn}
            </div>`
         : '';
       const giaiTrinhBlock = r.giaiTrinh
@@ -11710,7 +11764,7 @@ async function taiLichSuDuyet(){
           <div style="flex:1;min-width:0">
             <div class="lsd-card-name">${escHtml(r.tenNV||r.maNV)}</div>
             <div class="lsd-card-meta">
-              <strong>${escHtml(r.loaiCB||'')}</strong>${badgeFix} · ${ngayFmt} ${r.gioCham||''} · ${escHtml(r.tenCH||'')}
+              <strong>${escHtml(r.loaiCB||'')}</strong>${badgeFix} · ${ngayFmt} ${r.gioCham||''} · ${_fmtChVoiDoiSale(r.maNV||r.ma_nv, r.tenCH)}
             </div>
             ${noiDung}
           </div>
@@ -11725,7 +11779,7 @@ async function taiLichSuDuyet(){
         ${actionBtn}
       </div>`;
     }).join('');
-    // [v10.53] Reset opacity sau khi render thành công
+    // [v10.6] Reset opacity sau khi render thành công
     listEl.style.opacity = '1';
   } catch(e) {
     listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+escHtml(e.message)+'</div>';
@@ -11737,8 +11791,30 @@ function escHtml(s) {
   return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// [v10.6] Lookup đội sale của NV: trả về tên đội nếu NV mặc định thuộc đội sale, null nếu không
+function _getDoiSaleNV(maNV) {
+  if (!maNV || !_lsdNVList) return null;
+  const nv = _lsdNVList.find(n => n.ma_nv === maNV);
+  if (!nv || !nv.ma_ch) return null;
+  if (typeof CH_LIST === 'undefined' || !CH_LIST) return null;
+  const ch = CH_LIST.find(c => c.ma === nv.ma_ch);
+  if (!ch || !ch.ten) return null;
+  // Tên CH bắt đầu "Đội SALE" → là đội sale
+  if (/^\s*đội\s*sale/i.test(ch.ten)) return ch.ten;
+  return null;
+}
+
+// [v10.6] Format hiển thị CH với prefix đội sale nếu NV thuộc đội
+function _fmtChVoiDoiSale(maNV, tenCH) {
+  const doi = _getDoiSaleNV(maNV);
+  if (doi && tenCH && !/đội\s*sale/i.test(tenCH)) {
+    return `<span style="color:#7C3AED;font-weight:600">${escHtml(doi)}</span> · ${escHtml(tenCH)}`;
+  }
+  return escHtml(tenCH || '');
+}
+
 // ════════════════════════════════════════════════════════════════════════
-// [v10.53 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
+// [v10.6 YC#1] AUTOCOMPLETE FILTERS cho tab Lịch sử duyệt
 // ════════════════════════════════════════════════════════════════════════
 
 // Cache danh sách NV để autocomplete (lazy load)
@@ -11746,7 +11822,7 @@ let _lsdNVList = null;
 async function _lsdLoadNVList(){
   if (_lsdNVList) return _lsdNVList;
   try {
-    // [v10.53 FIX] Bảng nhan_vien có field: ho_ten, role (USER-DEFINED enum), ma_ch_mac_dinh
+    // [v10.6 FIX] Bảng nhan_vien có field: ho_ten, role (USER-DEFINED enum), ma_ch_mac_dinh
     const { data, error } = await supa.from('nhan_vien')
       .select('ma_nv, ho_ten, role, ma_ch_mac_dinh')
       .order('ho_ten', { ascending: true });
@@ -11769,7 +11845,7 @@ async function _lsdLoadNVList(){
   }
 }
 
-// [v10.53] Load danh sách quản lý từ bảng quan_ly riêng (sheet "DANH SÁCH QUẢN LÝ")
+// [v10.6] Load danh sách quản lý từ bảng quan_ly riêng (sheet "DANH SÁCH QUẢN LÝ")
 let _lsdQLList = null;
 async function _lsdLoadQLList(){
   if (_lsdQLList) return _lsdQLList;
@@ -11883,7 +11959,7 @@ async function lsdShowNDSuggest(){
   const inp = document.getElementById('lsd-nd-inp');
   const sug = document.getElementById('lsd-nd-sug');
   if (!inp || !sug) return;
-  // [v10.53] Người duyệt từ bảng quan_ly (không phải nhan_vien)
+  // [v10.6] Người duyệt từ bảng quan_ly (không phải nhan_vien)
   const list = await _lsdLoadQLList();
   const q = inp.value.trim().toLowerCase();
   let matched;
@@ -12018,7 +12094,7 @@ function taiDonNghiPhep(){
 function renderDonNghiPhep(){
   const listEl=document.getElementById('dnp-list');
   if(!_dnpData||!listEl)return;
-  // [v10.53 YC#5] Gộp đơn nghỉ liên tục của cùng NV
+  // [v10.6 YC#5] Gộp đơn nghỉ liên tục của cùng NV
   const dsDon = _dnpData.dsDon || [];
   if(!dsDon.length){listEl.innerHTML='<div class="dnp-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Không có đơn nào.</div>';return;}
   // Sort theo maNV + ngayNghi
@@ -12070,7 +12146,7 @@ function renderDonNghiPhep(){
     const d = new Date(s + 'T00:00:00');
     return dow2[d.getDay()] + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth()+1);
   };
-  // [v10.53 YC#4] Nhóm theo ngày bắt đầu để có header lớn
+  // [v10.6 YC#4] Nhóm theo ngày bắt đầu để có header lớn
   const byDay = {};
   groups.forEach(g => {
     if (!byDay[g.ngayBatDau]) byDay[g.ngayBatDau] = [];
@@ -12301,7 +12377,7 @@ async function duyetTatCaDonNghiNS(action){
 }
 
 // QLNS duyệt đơn nghỉ phép — [v11.6 Item 1] Fire-and-forget
-// [v10.53 YC#5] Duyệt nhiều đơn cùng lúc (gộp)
+// [v10.6 YC#5] Duyệt nhiều đơn cùng lúc (gộp)
 async function duyetGopDonNghi(idsStr, quyetDinh){
   const ids = String(idsStr || '').split(',').filter(Boolean);
   if (!ids.length){ showToast('Không có đơn để duyệt', 'err'); return; }
@@ -12601,7 +12677,7 @@ function guiDonNghiMoi(){
   const lyDo=document.getElementById('dn-lydo').value.trim();
   if(!ngay){showToast('Chọn ngày xin nghỉ.','err');return;}
   if(!lyDo){showToast('Nhập lý do nghỉ.','err');return;}
-  // [v10.53] Setting bắt buộc ảnh + tối thiểu trước N ngày
+  // [v10.6] Setting bắt buộc ảnh + tối thiểu trước N ngày
   const batBuocAnh = _getSetting('np.bat_buoc_anh', true);
   if((batBuocAnh === true || batBuocAnh === 'true') && !_dnAnhB64){
     showToast('Đơn nghỉ phép bắt buộc có ảnh đính kèm.','err');return;
@@ -12950,7 +13026,7 @@ async function moModalBoSungCa(){
   document.getElementById('bsc-lydo').value = '';
   document.getElementById('bsc-err').style.display = 'none';
 
-  // [v10.53 YC#2] Mặc định chọn hôm nay
+  // [v10.6 YC#2] Mặc định chọn hôm nay
   bscChonNgay(0);
 
   // Load quota
@@ -12968,45 +13044,92 @@ async function moModalBoSungCa(){
     }
   } catch (e) {}
 
-  // Load CH list (chỉ load 1 lần)
-  const selCH = document.getElementById('bsc-ch');
-  if (selCH && selCH.options.length <= 1) {
+  // [v10.6] Load CH list vào window cache để dùng cho custom dropdown
+  const inpCH = document.getElementById('bsc-ch-inp');
+  if (!window._bscChList || !window._bscChList.length) {
     try {
       const { data } = await supa.from('cua_hang')
         .select('ma_ch, ten_ch, khu_vuc')
         .eq('trang_thai', 'ĐANG HOẠT ĐỘNG')
         .order('khu_vuc').order('ten_ch');
       if (data) {
-        let lastKV = '';
+        window._bscChList = data;
+        window._bscChSet = new Set();
+        window._bscChMap = {};
         data.forEach(ch => {
-          if (ch.khu_vuc !== lastKV) {
-            const og = document.createElement('optgroup');
-            og.label = ch.khu_vuc || 'Khác';
-            selCH.appendChild(og);
-            lastKV = ch.khu_vuc;
-          }
-          const opt = document.createElement('option');
-          opt.value = ch.ma_ch;
-          opt.textContent = ch.ma_ch + ' · ' + ch.ten_ch;
-          selCH.lastElementChild.appendChild(opt);
+          window._bscChSet.add(ch.ma_ch);
+          window._bscChMap[ch.ma_ch] = ch.ten_ch;
         });
       }
     } catch (e) {}
   }
 
-  // Set default CH = CH mặc định của NV
-  if (selCH && SESSION.cuaHangMa && !selCH.value) {
-    selCH.value = SESSION.cuaHangMa;
+  // Set default CH = CH mặc định của NV (hiển thị tên đẹp)
+  const hiddenCH = document.getElementById('bsc-ch');
+  if (inpCH && SESSION.cuaHangMa && !hiddenCH.value) {
+    hiddenCH.value = SESSION.cuaHangMa;
+    const ten = window._bscChMap ? window._bscChMap[SESSION.cuaHangMa] : '';
+    inpCH.value = ten ? `${ten} (${SESSION.cuaHangMa})` : SESSION.cuaHangMa;
+    const hint = document.getElementById('bsc-ch-hint');
+    if (hint && ten) { hint.textContent = '✓ ' + ten; hint.style.color = '#059669'; }
   }
 
   m.style.display = 'flex';
+}
+
+// [v10.6] Bổ sung ca — custom dropdown (search-on-type) cho CH + Đội SALE
+function bscOnCHInput(){
+  const inp = document.getElementById('bsc-ch-inp');
+  const hid = document.getElementById('bsc-ch');
+  if (!inp.value.trim()) { hid.value = ''; }
+  const hint = document.getElementById('bsc-ch-hint');
+  if (hint) hint.textContent = '';
+  bscShowCHSug();
+}
+function bscShowCHSug(){
+  const inp = document.getElementById('bsc-ch-inp');
+  const sug = document.getElementById('bsc-ch-sug');
+  if (!inp || !sug) return;
+  const list = window._bscChList || [];
+  const q = inp.value.trim().toLowerCase();
+  let matched;
+  if (!q) matched = list.slice(0, 12);
+  else matched = list.filter(ch =>
+    (ch.ma_ch || '').toLowerCase().includes(q) ||
+    (ch.ten_ch || '').toLowerCase().includes(q) ||
+    (ch.khu_vuc || '').toLowerCase().includes(q)
+  ).slice(0, 15);
+  if (!matched.length) { sug.style.display = 'none'; return; }
+  sug.innerHTML = matched.map(ch => {
+    const isDoi = /đội\s*sale/i.test(ch.ten_ch || '');
+    const tagHtml = isDoi
+      ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>`
+      : '';
+    return `<div onmousedown="event.preventDefault();bscPickCH('${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
+         style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
+         onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+        <div style="font-weight:600;color:#0F172A">${(ch.ten_ch || '').replace(/</g,'&lt;')}${tagHtml}</div>
+        <div style="font-size:10.5px;color:#64748B;margin-top:2px">${ch.ma_ch}${ch.khu_vuc ? ' · ' + ch.khu_vuc.replace(/</g,'&lt;') : ''}</div>
+      </div>`;
+  }).join('');
+  sug.style.display = 'block';
+}
+function bscHideCHSug(){
+  setTimeout(() => { const s = document.getElementById('bsc-ch-sug'); if (s) s.style.display = 'none'; }, 200);
+}
+function bscPickCH(ma, ten){
+  document.getElementById('bsc-ch-inp').value = ten + ' (' + ma + ')';
+  document.getElementById('bsc-ch').value = ma;
+  document.getElementById('bsc-ch-sug').style.display = 'none';
+  const hint = document.getElementById('bsc-ch-hint');
+  if (hint) { hint.textContent = '✓ ' + ten; hint.style.color = '#059669'; }
 }
 
 function dongModalBoSungCa(){
   document.getElementById('bsc-modal').style.display = 'none';
 }
 
-// [v10.53 YC#2] Chọn ngày bổ sung ca: 0 = hôm nay, -1 = hôm qua
+// [v10.6 YC#2] Chọn ngày bổ sung ca: 0 = hôm nay, -1 = hôm qua
 function bscChonNgay(offset){
   const d = new Date();
   d.setDate(d.getDate() + offset);
@@ -13014,7 +13137,7 @@ function bscChonNgay(offset){
   document.getElementById('bsc-ngay').value = ngayStr;
   const btnHN = document.getElementById('bsc-ngay-homnay');
   const btnHQ = document.getElementById('bsc-ngay-homqua');
-  // [v10.53] Render label kèm ngày dd/MM
+  // [v10.6] Render label kèm ngày dd/MM
   const today = new Date();
   const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
   if (btnHN) btnHN.innerHTML = '<div style="font-size:13px;font-weight:600">Hôm nay</div><div style="font-size:10.5px;opacity:.85;margin-top:2px">'+pad(today.getDate())+'/'+pad(today.getMonth()+1)+'</div>';
@@ -13044,7 +13167,7 @@ async function guiBoSungCa(){
   const btn = document.getElementById('bsc-btn-gui');
   btn.disabled = true; btn.textContent = 'Đang gửi...';
   try {
-    // [v10.53 YC#2] Dùng ngày user chọn (hôm nay hoặc hôm qua), không hardcode today
+    // [v10.6 YC#2] Dùng ngày user chọn (hôm nay hoặc hôm qua), không hardcode today
     const ngayBSC = document.getElementById('bsc-ngay').value;
     if (!ngayBSC){ errEl.textContent = 'Chọn ngày cần bổ sung.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
@@ -13739,7 +13862,7 @@ function _renderYC(filterQ){
   }
 }
 
-// [v10.53 Yc #1] Duyệt hàng loạt — confirm → batch API → toast kèm nút Hoàn tác 24h
+// [v10.6 Yc #1] Duyệt hàng loạt — confirm → batch API → toast kèm nút Hoàn tác 24h
 async function duyetTatCa(action){
   if(!_ycData)return;
   const items = _ycTab==='donnghi' ? (_ycData.donNghi||[]) : (_ycData.giaiTrinh||[]);
@@ -13827,7 +13950,7 @@ async function duyetTatCa(action){
   });
 }
 
-// [v10.53 Yc #1 UNDO] Toast kèm nút Hoàn tác — lưu token vào localStorage 24h
+// [v10.6 Yc #1 UNDO] Toast kèm nút Hoàn tác — lưu token vào localStorage 24h
 const UNDO_LS_KEY='_undoTokens';
 function _layUndoTokens(){
   try{
@@ -13920,7 +14043,7 @@ function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbId){
 }
 
 // ═══════════════════════════════════════════════════════════
-// [v10.53] QLNS SỬA CẢNH BÁO BỔ SUNG CA (CH/ca/giờ/ngày)
+// [v10.6] QLNS SỬA CẢNH BÁO BỔ SUNG CA (CH/ca/giờ/ngày)
 // ═══════════════════════════════════════════════════════════
 let _suaCBData = null;
 
@@ -14332,7 +14455,7 @@ function _silentUpdateAccBadges(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// [v10.53] GIAO DIỆN — Đổi màu chủ đạo (accent)
+// [v10.6] GIAO DIỆN — Đổi màu chủ đạo (accent)
 // Đổi biến --green (màu chính), --green-m (nhạt hơn), --green-lt (rất nhạt), --green-bd (viền)
 // Và <meta name="theme-color"> → iOS status bar đổi theo
 // ═══════════════════════════════════════════════════════════
@@ -14993,7 +15116,7 @@ function _bxhRankIconCornerHtml(rank) {
 }
 
 function bxhRenderMini() {
-  // [v10.53] Setting ẩn BXH cho NV (ADMIN/QLBH luôn xem được)
+  // [v10.6] Setting ẩn BXH cho NV (ADMIN/QLBH luôn xem được)
   const role = String(SESSION && SESSION.vaiTro || '').toUpperCase();
   const nvXem = _getSetting('ui.nv_xem_bxh', true);
   if (role === 'NV' && (nvXem === false || nvXem === 'false')) {
@@ -15012,7 +15135,7 @@ function bxhRenderMini() {
   }
   const meCode = SESSION && SESSION.ma ? String(SESSION.ma).toUpperCase() : '';
 
-  // [v10.53] Màu theo hạng
+  // [v10.6] Màu theo hạng
   const RANK_COLOR = {
     1: { num:'#C99A2E', bg:'linear-gradient(160deg,#FFFDF5 0%,#FDF6E3 100%)', bd:'#E8D08A', glow:'rgba(201,154,46,.25)' },
     2: { num:'#7C8BA0', bg:'linear-gradient(160deg,#FBFCFE 0%,#EEF2F7 100%)', bd:'#CBD5E1', glow:'rgba(124,139,160,.2)' },
@@ -15194,7 +15317,7 @@ function bxhRenderFull() {
     <div class="bxh-full-podium">
       ${podiumOrder.map(e => {
         const sz = e.xep_hang === 1 ? 80 : 68;
-        // [v10.53] Avatar thực + medal nhỏ ở góc
+        // [v10.6] Avatar thực + medal nhỏ ở góc
         const avatarHtml = window._avatarCache && window._avatarCache[e.ma_nv]
           ? `<img src="${window._avatarCache[e.ma_nv]}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%" loading="lazy" decoding="async">`
           : `<div style="width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*0.4)}px;font-weight:700;color:#5C4408">${_avatarInitial(e.ten_nv)}</div>`;
@@ -15530,7 +15653,7 @@ function bhScheduleLogoutAt0h() {
     bhShowToast('🌙 Hết ngày làm việc - đăng xuất tự động', null);
     setTimeout(() => {
       try {
-        // [v10.53] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
+        // [v10.6] CUA_HANG vẫn auto logout 0h — xóa cả localStorage
         localStorage.removeItem('session_cc');
         localStorage.removeItem('session_login_ts');
         sessionStorage.removeItem('session_cc');
@@ -17437,7 +17560,7 @@ function bhQlRenderHistory() {
       case 'dur_desc':  return dB - dA;
       case 'dur_asc':   return dA - dB;
       case 'value_desc': return vB - vA;
-      // [v10.53 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
+      // [v10.6 YC#2] Sort theo STT phiên trong ngày (kết hợp với ngày)
       case 'stt_asc':   return tA.slice(0,10).localeCompare(tB.slice(0,10)) || (sA - sB);
       case 'stt_desc':  return tB.slice(0,10).localeCompare(tA.slice(0,10)) || (sB - sA);
       default: return tB.localeCompare(tA);
@@ -17451,7 +17574,7 @@ function bhQlRenderHistory() {
   histEl.innerHTML = fin.map(p => {
     const cls = p.trangThai === 'Đã mua' ? 'bought' : (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng' ? 'auto' : 'notbought');
     const sttTC = p.stt ? `<span class="bh-stt-tc">#${p.stt}</span>` : '';
-    // [v10.53 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
+    // [v10.6 YC#2] Luôn hiển thị ngày dd/MM (trước đây ẩn nếu trùng ngày filter)
     const ngayHienThi = p.ngay ? (p.ngay.slice(8,10) + '/' + p.ngay.slice(5,7)) : '';
     return `
       <div class="bh-hist-card" onclick="bhQlOpenDetail('${p.idPhien}')">
@@ -17845,7 +17968,7 @@ const ADM2 = {
 };
 
 // ════════════════════════════════════════════════════════════
-// [v10.53] CHƯƠNG TRÌNH KHUYẾN MÃI — Tháng 6 Rực Rỡ
+// [v10.6] CHƯƠNG TRÌNH KHUYẾN MÃI — Tháng 6 Rực Rỡ
 // ════════════════════════════════════════════════════════════
 let ctRows = []; // mảng giá (number) - mỗi phần tử = 1 ô; rỗng nếu chưa nhập
 
@@ -18043,7 +18166,7 @@ function ctRecalc(){
 
 function _ctRenderResult(r, validCount, totalRows){
   const box = document.getElementById('ct-result');
-  // [v10.53] Reset card TB ở trên — chỉ hiện khi n=2 (xử lý dưới)
+  // [v10.6] Reset card TB ở trên — chỉ hiện khi n=2 (xử lý dưới)
   const _tbCardEl = document.getElementById('ct-tb-card');
   if (_tbCardEl && r.n !== 2) _tbCardEl.style.display = 'none';
   if (validCount === 0) {
@@ -18142,7 +18265,7 @@ function _ctRenderResult(r, validCount, totalRows){
       </div>
     </div>` : '';
 
-  // [v10.53] Cập nhật card giá trung bình ở trên (chỉ hiện khi n=2)
+  // [v10.6] Cập nhật card giá trung bình ở trên (chỉ hiện khi n=2)
   const tbCard = document.getElementById('ct-tb-card');
   if (tbCard) {
     if (r.n === 2) {
@@ -18191,7 +18314,7 @@ function _ctPriceAt(r, idx){
 }
 
 // ════════════════════════════════════════════════════════════
-// [v10.53] CHECKLIST CỬA HÀNG
+// [v10.6] CHECKLIST CỬA HÀNG
 // ════════════════════════════════════════════════════════════
 let chkDanhMuc = [];        // [{id, nhom_key, nhom_ten, nhom_thu_tu, muc_ten, muc_thu_tu, la_muc_mo}]
 let chkGroups = [];         // [{key, ten, items:[...]}]
@@ -18628,7 +18751,7 @@ function chkViewPhoto(url){
 }
 
 // ════════════════════════════════════════════════════════════
-// [v10.53] QUẢN LÝ SỰ CỐ CỬA HÀNG (QLNS/Admin)
+// [v10.6] QUẢN LÝ SỰ CỐ CỬA HÀNG (QLNS/Admin)
 // ════════════════════════════════════════════════════════════
 let chkqlMucDo = '';
 let chkqlSub = 'vande';
@@ -18908,11 +19031,11 @@ const ADM2_STATS_CONFIG = [
   { key:'dn', label:'Duyệt nghỉ phép', color:'rose',
     icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
     value: d => d.don_nghi_cho_duyet, warn: d => d.don_nghi_cho_duyet > 0, detail:'dn' },
-  // [v10.53] NV chưa kết thúc ca ngày trước
+  // [v10.6] NV chưa kết thúc ca ngày trước
   { key:'chua_ra_ca', label:'Ca tự động đóng', color:'amber',
     icon:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M3.5 3.5l17 17" stroke-width="1.5" opacity="0.5"/>',
     value: d => d.chua_ket_thuc_ca || 0, warn: d => (d.chua_ket_thuc_ca||0) > 0, detail:'chua_ra_ca' },
-  // [v10.53] Card Settings
+  // [v10.6] Card Settings
   { key:'settings', label:'Cài đặt hệ thống', color:'slate',
     icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
     value: d => '⚙', warn: d => false, detail:'settings' },
@@ -18924,7 +19047,7 @@ async function adm2LoadDashboard() {
   try {
     const data = await adm2Rpc('fn_admin_dashboard', { p_admin: SESSION.ma });
     const d = data.data; ADM2.dashboardData = d;
-    // [v10.53] Đếm ca bị auto-close CHƯA được bổ sung RA_CA
+    // [v10.6] Đếm ca bị auto-close CHƯA được bổ sung RA_CA
     try {
       const vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
       const yToday = vnNow.getFullYear() + '-' + pad(vnNow.getMonth()+1) + '-' + pad(vnNow.getDate());
@@ -19029,7 +19152,7 @@ async function adm2DetailDaDoiMK(bodyEl) {
   } catch (e) { bodyEl.innerHTML = '<div class="adm2-empty" style="color:#DC2626">Lỗi: '+adm2Esc(e.message)+'</div>'; }
 }
 
-// [v10.53] Ca bị hệ thống tự đóng (AUTO-CLOSED) — filter click + lọc ngày
+// [v10.6] Ca bị hệ thống tự đóng (AUTO-CLOSED) — filter click + lọc ngày
 let _craFilter = 'all';   // all | da | chua
 let _craTuNgay = '';
 let _craDenNgay = '';
@@ -19152,7 +19275,7 @@ function _craRenderBody(bodyEl){
 
 
 // ════════════════════════════════════════════════════════════════════
-// [v10.53] SETTINGS PANEL — Admin cài đặt hệ thống
+// [v10.6] SETTINGS PANEL — Admin cài đặt hệ thống
 // ════════════════════════════════════════════════════════════════════
 const SETTINGS_SCHEMA = [
   { group: 'cham_cong', title: '⏱ Chấm công', items: [
@@ -19201,7 +19324,7 @@ const SETTINGS_SCHEMA = [
 let _settingsLoading = false;
 
 async function adm2DetailSettings(bodyEl){
-  // [v10.53] Mở settings dạng FULL-SCREEN PAGE, không render trong adm2-detail-body
+  // [v10.6] Mở settings dạng FULL-SCREEN PAGE, không render trong adm2-detail-body
   // Đóng panel detail (chỉ là dummy bodyEl cho callback)
   if (typeof adm2CloseDetail === 'function') { try { adm2CloseDetail(); } catch(e){} }
   if (_settingsLoading) return;
@@ -19431,7 +19554,7 @@ function _settingsCardHtml(item, cur, meta, groupBadge){
   </div>`;
 }
 
-// [v10.53] Đánh dấu card "dirty" — bật nút Kích hoạt
+// [v10.6] Đánh dấu card "dirty" — bật nút Kích hoạt
 function _setMarkDirty(key){
   const safeKey = key.replace(/\./g, '_');
   const btn = document.getElementById('set-save-' + safeKey);
@@ -19440,7 +19563,7 @@ function _setMarkDirty(key){
   if (card) card.classList.add('is-dirty');
 }
 
-// [v10.53] Lưu setting khi bấm "Kích hoạt"
+// [v10.6] Lưu setting khi bấm "Kích hoạt"
 async function _setSave(key){
   const safeKey = key.replace(/\./g, '_');
   const card = document.getElementById('set-card-' + safeKey);
@@ -19479,7 +19602,7 @@ async function _setSave(key){
   }
 }
 
-// [v10.53] Quay về mặc định
+// [v10.6] Quay về mặc định
 async function _setReset(key){
   const defVal = window.APP_SETTINGS_DEFAULTS[key];
   if (defVal === undefined) { showToast('Không có giá trị mặc định', 'warn'); return; }
@@ -19563,7 +19686,7 @@ async function settingsSaveItem(key, rawValue, type){
   } catch(e) { showToast('⚠ ' + e.message, 'warn'); }
 }
 
-// [v10.53] Helper: hiện loading state trên 1 action card
+// [v10.6] Helper: hiện loading state trên 1 action card
 function _setActionBusy(btn, busy, busyText){
   if (!btn) return;
   if (busy) {
@@ -19682,7 +19805,7 @@ function _csvDownload(filename, rows) {
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 100);
 }
 
-// [v10.53] Lazy-load SheetJS để xuất XLSX thật (không phải CSV)
+// [v10.6] Lazy-load SheetJS để xuất XLSX thật (không phải CSV)
 function _loadSheetJS(){
   if (window.XLSX) return Promise.resolve(window.XLSX);
   if (window._xlsxLoading) return window._xlsxLoading;
@@ -19959,7 +20082,11 @@ async function adm2LoadCBList(){
   if(!el) return;
   el.innerHTML = '<div class="adm2-empty">⏳ Đang tải...</div>';
   try {
-    let q = supa.from('canh_bao').select('id, ngay, gio_chamcong, ma_nv, ten_nv_snapshot, ma_ch, loai_canh_bao, noi_dung, giai_trinh, trang_thai, nguoi_duyet, thoi_gian_duyet, ghi_chu_duyet');
+    // [v10.6] Đảm bảo NV list đã load để biết đội sale
+    if (typeof _lsdNVList !== 'undefined' && !_lsdNVList && typeof _lsdLoadNVList === 'function') {
+      await _lsdLoadNVList().catch(()=>{});
+    }
+    let q = supa.from('canh_bao').select('id, ngay, gio_chamcong, ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, loai_canh_bao, noi_dung, giai_trinh, trang_thai, nguoi_duyet, thoi_gian_duyet, ghi_chu_duyet');
     if (_adm2CbFilter === 'CHO_DUYET') q = q.in('trang_thai', ['DA_GIAI_TRINH','CHUA_GIAI_TRINH']);
     else if (_adm2CbFilter === 'DA_DUYET') q = q.eq('trang_thai', 'DA_DUYET');
     else if (_adm2CbFilter === 'TU_CHOI') q = q.eq('trang_thai', 'TU_CHOI');
@@ -19997,7 +20124,7 @@ async function adm2LoadCBList(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:#0F172A">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · <strong>${adm2Esc(r.loai_canh_bao || '')}</strong>${badge}</div>
-            <div style="font-size:11px;color:#6B7280;margin-top:2px">${adm2Esc(r.ngay)}${r.gio_chamcong ? ' · '+String(r.gio_chamcong).substring(0,5) : ''}</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px">${adm2Esc(r.ngay)}${r.gio_chamcong ? ' · '+String(r.gio_chamcong).substring(0,5) : ''}${r.ten_ch_snapshot ? ' · ' + (typeof _fmtChVoiDoiSale === 'function' ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot) : adm2Esc(r.ten_ch_snapshot)) : ''}</div>
             ${noiDung}
             ${giaiTrinh}
             ${ghiChu}
@@ -20026,9 +20153,12 @@ async function adm2RevertCanhBao(id){
 }
 
 async function adm2DuyetCanhBao(id, loaiCb) {
-  // SAI CA / THIẾU CA: bắt buộc sửa giờ trước
+  // [v10.6] SAI CA / THIẾU CA: tự động mở modal sửa lịch để user khỏi phải bấm nút khác
   const requireFix = (loaiCb === 'SAI CA' || loaiCb === 'THIẾU CA');
   if (requireFix) {
+    // Tìm nút "Sửa lịch" trong card cùng id rồi click programatically
+    const suaBtn = document.querySelector(`button[onclick*="adm2OpenSuaLog"][onclick*="'${id}'"]`);
+    if (suaBtn) { suaBtn.click(); return; }
     adm2Toast('Lỗi "' + loaiCb + '" cần sửa giờ chấm công trước khi duyệt. Bấm nút "Sửa lịch" để chỉnh.', 'error');
     return;
   }
@@ -20041,6 +20171,8 @@ async function adm2DuyetCanhBao(id, loaiCb) {
     // [v9.45] Reload list để cập nhật trạng thái
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();
+    } else if (typeof renderLSDList === 'function') {
+      renderLSDList();  // [v10.6] Reload list Lịch sử duyệt trong tab Nhân sự
     } else {
       const row = document.getElementById('adm2-cb-' + id);
       if (row) row.remove();
