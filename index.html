@@ -3733,6 +3733,340 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 }
 .cdm-err b { display:block; margin-bottom:4px; font-size:13px; }
 
+/* ═══════════════════════════════════════════════════════════════
+   [v10.87] GLOBAL UI REFRESH — Modern facelift toàn app
+   Chiến lược: CSS override, KHÔNG đổi HTML.
+   Tone: theo var(--green) đổi theo theme picker.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Enriched design tokens ─── */
+:root {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  --gradient-primary: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
+  --gradient-card: linear-gradient(180deg, #fff 0%, #fafaf8 100%);
+  --gradient-bg: linear-gradient(180deg, #faf9f5 0%, var(--bg) 50%);
+  --border-soft: rgba(0,0,0,0.05);
+}
+
+/* ─── Body subtle gradient ─── */
+body {
+  background: var(--gradient-bg) !important;
+  background-attachment: fixed;
+}
+
+/* ─── Card refresh: shadow mềm + border subtle ─── */
+.card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-soft);
+}
+
+/* ─── Bottom nav: glass effect + theme-aware active ─── */
+.bottom-nav {
+  border-top: none !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08) !important;
+  background: rgba(255,255,255,0.96) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.nav-item.active .nav-svg { stroke: var(--green) !important; }
+.nav-item.active .nav-label { color: var(--green) !important; font-weight: 700 !important; }
+.nav-item { transition: transform .12s; }
+.nav-item:active { transform: scale(0.92); }
+
+/* ─── Login screen modernize ─── */
+.login-logo-icon {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 10px 28px var(--green-shadow, rgba(15,110,86,0.35));
+  color: #fff !important;
+}
+.login-logo-icon svg, .login-logo-icon img { filter: brightness(0) invert(1); }
+.login-pw-toggle:active { transform: translateY(-50%) scale(0.9); }
+#login-screen { background: var(--gradient-bg) !important; }
+
+/* ─── Inputs: focus ring theme đồng bộ ─── */
+input[type=text]:focus,
+input[type=number]:focus,
+input[type=date]:focus,
+input[type=time]:focus,
+input[type=tel]:focus,
+input[type=email]:focus,
+input[type=password]:focus,
+input[type=search]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--green-lt);
+}
+
+/* ─── Modal modernize (common patterns) ─── */
+.modal-content,
+[id$="-modal"] > div:first-child,
+[class*="modal-box"] {
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* ─── Toast: modern ─── */
+#toast,
+.toast,
+[id*="toast"] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* ─── NS STATS: gradient card + lift hover ─── */
+.ns-stat {
+  background: var(--gradient-card) !important;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform .15s, box-shadow .15s;
+}
+.ns-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
+.ns-stat:active { transform: translateY(0) scale(0.97); }
+
+/* ─── NS TAB + SUBTAB: theme-aware ─── */
+.ns-tab.active {
+  background: var(--gradient-primary) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.25));
+}
+.ns-subtab {
+  transition: background .15s, transform .12s;
+}
+.ns-subtab.active {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px var(--green-shadow, rgba(15,110,86,0.3));
+}
+.ns-subtab:not(.active):active { transform: scale(0.96); }
+
+/* ─── NS time tabs ─── */
+.ns-time-tab.active {
+  background: var(--green-lt) !important;
+  color: var(--green) !important;
+  border-color: var(--green-bd) !important;
+}
+
+/* ─── Search bar refresh ─── */
+.ns-search {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border-soft) !important;
+  transition: border-color .15s, box-shadow .15s;
+}
+.ns-search:focus {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--green-lt) !important;
+}
+
+/* ─── BH STATS: align with theme system ─── */
+.bh-stat {
+  background: var(--gradient-card) !important;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform .12s, box-shadow .15s;
+}
+.bh-stat[data-stat-filter]:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
+.bh-stat.active-filter {
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 12px var(--green-shadow, rgba(15,110,86,0.2)) !important;
+}
+
+/* ─── BH BUTTONS: orange (module identity) + modern shadow ─── */
+.bh-btn-primary {
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%) !important;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.32) !important;
+  border-radius: var(--radius-lg) !important;
+}
+.bh-btn-primary:active { transform: scale(0.97); }
+
+/* ─── MAP BUTTONS theme-aware ─── */
+.map-btn-primary {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 4px 14px var(--green-shadow, rgba(15,110,86,0.3)) !important;
+  border-radius: var(--radius-md) !important;
+}
+.map-btn-primary:active { background: var(--green) !important; transform: scale(0.97); }
+.map-btn-secondary {
+  border-radius: var(--radius-md) !important;
+}
+
+/* ─── ADM2 (admin panel) buttons ─── */
+.adm2-btn-primary {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 2px 10px var(--green-shadow, rgba(15,110,86,0.25));
+  border-radius: var(--radius-sm) !important;
+}
+.adm2-btn-primary:hover { opacity: 0.95; }
+.adm2-btn-secondary {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* ─── GCQL (giờ công QL) ─── */
+.gcql-search,
+.gcql-date-inp {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.gcql-search:focus,
+.gcql-date-inp:focus {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--green-lt) !important;
+}
+.gcql-date-btn {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 2px 8px var(--green-shadow, rgba(15,110,86,0.25));
+  border-radius: var(--radius-md) !important;
+}
+.gcql-mode-tab.active {
+  background: var(--green-lt) !important;
+  border-color: var(--green-bd) !important;
+  color: var(--green) !important;
+}
+.gcql-kv-group {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.gcql-kv-group:hover { box-shadow: var(--shadow-md) !important; }
+
+/* ─── LSD stat cards (lịch sử duyệt) ─── */
+.lsd-stat-card {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: var(--gradient-card) !important;
+  transition: transform .12s, box-shadow .15s, border-color .15s;
+}
+.lsd-stat-card:hover {
+  border-color: var(--green-bd) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+.lsd-stat-card.active {
+  border-color: var(--green) !important;
+  background: var(--green-lt) !important;
+  box-shadow: 0 0 0 3px var(--green-lt), var(--shadow-md) !important;
+}
+.lsd-card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow .15s, transform .12s;
+}
+.lsd-card:hover { box-shadow: var(--shadow-md) !important; transform: translateY(-1px); }
+.lsd-action-primary {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 2px 8px var(--green-shadow, rgba(15,110,86,0.25));
+}
+.lsd-inp,
+.cdm-inp {
+  border-radius: var(--radius-sm) !important;
+}
+.lsd-inp:focus {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--green-lt) !important;
+}
+
+/* ─── Checklist + Quản lý sự cố ─── */
+[class^="chk-"] [id^="chk-"][class*="card"],
+.chk-stat,
+.chkql-stat {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ─── Lịch ca: day cards ─── */
+.lc-day, .lc-day-card {
+  border-radius: var(--radius-md) !important;
+  transition: transform .12s, box-shadow .15s;
+}
+.lc-preset-chip {
+  transition: transform .1s, background .15s;
+}
+.lc-preset-chip:active { transform: scale(0.95); }
+
+/* ─── Settings page (giao diện) ─── */
+.set-card {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.set-nav-item {
+  transition: background .15s, transform .12s;
+}
+.set-nav-item:active { transform: scale(0.97); }
+
+/* ─── Generic primary button pattern ─── */
+button[onclick]:not([class*="btn"]):not([class*="tab"]):not([class*="nav"]):not(.app-confirm-btn) {
+  border-radius: var(--radius-sm);
+  transition: transform .1s, opacity .15s, box-shadow .15s;
+}
+button[onclick]:active { transform: scale(0.97); }
+
+/* ─── App confirm modal modernize ─── */
+.app-confirm-btn {
+  border-radius: var(--radius-sm) !important;
+  transition: transform .1s, opacity .15s;
+}
+.app-confirm-btn:active { transform: scale(0.96); }
+.app-confirm-btn.confirm {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 4px 12px var(--green-shadow, rgba(15,110,86,0.3));
+}
+
+/* ─── Generic select dropdown ─── */
+select {
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+/* ─── Tooltips, badges modernize ─── */
+.ns-subtab-badge,
+.lsd-badge {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* ─── Hover lift cho clickable cards chung ─── */
+[onclick],
+[data-stat-filter] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Smooth scroll toàn cục ─── */
+html { scroll-behavior: smooth; }
+
+/* ─── Selection color theme ─── */
+::selection { background: var(--green-lt); color: var(--green); }
+
+/* ─── Scrollbar minimal (PC) ─── */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+/* ─── Loading spinner color theme ─── */
+.spinner, [class*="spinner"] {
+  border-top-color: var(--green) !important;
+}
+
+/* ─── PC tablet refinement (≥ 768px) ─── */
+@media (min-width: 768px) {
+  .app { max-width: 560px !important; }
+  .bottom-nav { max-width: 560px !important; }
+  .card { margin: 14px 18px 0 !important; }
+}
+
 </style>
 </head>
 <body>
@@ -3742,7 +4076,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.86.1</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.87</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -5227,7 +5561,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.86.1 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.87 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -6206,7 +6540,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.86.1',
+  'sys.cache_version': 'v10.87',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
