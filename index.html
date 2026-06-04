@@ -3396,1072 +3396,16 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .ct-tb-val { font-size:22px; font-weight:800; color:#064E3B; font-variant-numeric:tabular-nums; line-height:1; }
 .ct-tb-val span { font-size:14px; font-weight:700; opacity:.7; margin-left:2px; }
 
-/* ═══════════════════════════════════════════════════════════════
-   [v10.86] CHUYỂN ĐỔI MÃ NV (CTV → NS)
-   Tone theo --green (đổi theo theme chủ đạo)
-   ═══════════════════════════════════════════════════════════════ */
-.cdm-wrap { padding:12px 14px; max-width:760px; margin:0 auto; }
-
-/* Hero header */
-.cdm-hero {
-  background:linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
-  border-radius:14px;
-  padding:16px 18px;
-  color:#fff;
-  margin-bottom:12px;
-  box-shadow:0 4px 14px var(--green-shadow, rgba(15,110,86,0.3));
-  position:relative;
-  overflow:hidden;
-}
-.cdm-hero::after {
-  content:''; position:absolute; right:-20px; top:-20px;
-  width:120px; height:120px; border-radius:50%;
-  background:rgba(255,255,255,0.08);
-  pointer-events:none;
-}
-.cdm-hero-title {
-  font-size:15px; font-weight:700; margin-bottom:4px;
-  display:flex; align-items:center; gap:8px;
-}
-.cdm-hero-sub {
-  font-size:12px; opacity:0.92; line-height:1.5;
-}
-
-/* Warning banner */
-.cdm-warn {
-  background:#FEF3C7;
-  border-left:4px solid #F59E0B;
-  border-radius:8px;
-  padding:10px 12px;
-  margin-bottom:12px;
-  font-size:12px; color:#78350F; line-height:1.5;
-  display:flex; gap:10px; align-items:flex-start;
-}
-.cdm-warn-ico {
-  flex-shrink:0; width:22px; height:22px;
-  background:#F59E0B; color:#fff;
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-weight:800; font-size:13px;
-}
-.cdm-warn b { color:#92400E; }
-.cdm-warn code { background:#FFF; padding:1px 5px; border-radius:3px; font-size:11px; color:#92400E; }
-
-/* Main card */
-.cdm-card {
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px;
-  box-shadow:var(--shadow);
-  margin-bottom:12px;
-}
-
-/* Step header */
-.cdm-step {
-  display:flex; align-items:center; gap:9px;
-  font-size:12px; font-weight:700;
-  color:var(--green); text-transform:uppercase;
-  letter-spacing:.04em; margin-bottom:10px;
-}
-.cdm-step-num {
-  width:22px; height:22px;
-  background:var(--green); color:#fff;
-  border-radius:50%; font-size:11px;
-  display:flex; align-items:center; justify-content:center;
-}
-
-/* Transfer visual: CTV box → arrow → NS box */
-.cdm-transfer {
-  display:grid;
-  grid-template-columns:1fr 36px 1fr;
-  gap:8px; align-items:stretch;
-  margin-bottom:8px;
-}
-@media (max-width:520px){
-  .cdm-transfer { grid-template-columns:1fr; gap:6px; }
-  .cdm-arrow { transform:rotate(90deg); height:30px !important; }
-}
-
-.cdm-side {
-  border-radius:10px;
-  padding:12px;
-  position:relative;
-}
-.cdm-side-cu  { background:#FEF2F2; border:1.5px solid #FCA5A5; }
-.cdm-side-moi { background:var(--green-lt); border:1.5px solid var(--green-bd); }
-
-.cdm-side-lbl {
-  display:flex; align-items:center; gap:6px;
-  font-size:10.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.05em; margin-bottom:6px;
-}
-.cdm-side-cu  .cdm-side-lbl { color:#B91C1C; }
-.cdm-side-moi .cdm-side-lbl { color:var(--green); }
-
-.cdm-side-lbl-dot {
-  width:8px; height:8px; border-radius:50%;
-}
-.cdm-side-cu  .cdm-side-lbl-dot { background:#DC2626; }
-.cdm-side-moi .cdm-side-lbl-dot { background:var(--green); }
-
-.cdm-inp {
-  width:100%;
-  padding:9px 11px;
-  border:1.5px solid #fff;
-  background:#fff;
-  border-radius:8px;
-  font-size:13px;
-  color:var(--text);
-  font-family:inherit;
-  outline:none;
-  box-sizing:border-box;
-  transition:border-color .15s, box-shadow .15s;
-}
-.cdm-side-cu  .cdm-inp:focus { border-color:#DC2626; box-shadow:0 0 0 3px rgba(220,38,38,0.12); }
-.cdm-side-moi .cdm-inp:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-lt); }
-.cdm-inp::placeholder { color:#94A3B8; font-size:12px; }
-
-.cdm-sug {
-  position:absolute; top:100%; left:0; right:0;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:10px;
-  margin-top:4px;
-  max-height:280px;
-  overflow-y:auto;
-  display:none;
-  z-index:60;
-  box-shadow:0 10px 30px rgba(0,0,0,0.12);
-}
-.cdm-sug-item {
-  padding:9px 12px;
-  cursor:pointer;
-  border-bottom:1px solid #F1F5F9;
-  transition:background .12s;
-}
-.cdm-sug-item:last-child { border-bottom:none; }
-.cdm-sug-item:hover { background:var(--green-lt); }
-.cdm-sug-item-name { font-weight:600; color:var(--text); font-size:12.5px; }
-.cdm-sug-item-meta { font-size:11px; color:var(--text-m); margin-top:1px; }
-.cdm-sug-item-role {
-  display:inline-block; padding:1px 6px;
-  background:var(--green-lt); color:var(--green);
-  border-radius:4px; font-size:9.5px; font-weight:700;
-  margin-left:4px; text-transform:uppercase; letter-spacing:.04em;
-}
-
-/* Arrow */
-.cdm-arrow {
-  display:flex; align-items:center; justify-content:center;
-  color:var(--green); font-size:24px;
-  transition:transform .3s;
-}
-
-/* Lý do textarea */
-.cdm-lydo-wrap { margin-top:12px; }
-.cdm-lydo-lbl {
-  display:block; font-size:11px; font-weight:600;
-  color:var(--text-m); margin-bottom:5px;
-  text-transform:uppercase; letter-spacing:.04em;
-}
-.cdm-lydo {
-  width:100%;
-  padding:9px 11px;
-  border:1.5px solid var(--border);
-  background:#fff;
-  border-radius:8px;
-  font-size:12.5px;
-  font-family:inherit;
-  resize:vertical;
-  min-height:50px;
-  outline:none;
-  box-sizing:border-box;
-  transition:border-color .15s, box-shadow .15s;
-}
-.cdm-lydo:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-lt); }
-
-/* Preview stats */
-.cdm-preview {
-  margin-top:12px;
-  background:var(--green-lt);
-  border:1px dashed var(--green-bd);
-  border-radius:10px;
-  padding:12px;
-  display:none;
-}
-.cdm-preview-title {
-  font-size:11.5px; font-weight:700;
-  color:var(--green); margin-bottom:8px;
-  text-transform:uppercase; letter-spacing:.04em;
-}
-.cdm-preview-grid {
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:6px;
-}
-@media (max-width:520px){
-  .cdm-preview-grid { grid-template-columns:repeat(2, 1fr); }
-}
-.cdm-stat-mini {
-  background:#fff;
-  border-radius:8px;
-  padding:8px 10px;
-  border:1px solid var(--green-bd);
-  display:flex; align-items:center; gap:8px;
-}
-.cdm-stat-mini-ico {
-  width:28px; height:28px; flex-shrink:0;
-  background:var(--green-lt); color:var(--green);
-  border-radius:7px;
-  display:flex; align-items:center; justify-content:center;
-}
-.cdm-stat-mini-body { min-width:0; flex:1; }
-.cdm-stat-mini-num {
-  font-size:15px; font-weight:800; color:var(--text);
-  line-height:1; font-variant-numeric:tabular-nums;
-}
-.cdm-stat-mini-lbl {
-  font-size:10.5px; color:var(--text-m);
-  margin-top:2px; white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis;
-}
-.cdm-preview-tong {
-  margin-top:8px; padding:8px 10px;
-  background:#fff; border-radius:7px;
-  font-size:11.5px; color:var(--text-m);
-}
-.cdm-preview-tong b { color:var(--green); font-size:13px; }
-
-/* Action buttons */
-.cdm-actions {
-  display:flex; gap:8px; margin-top:14px;
-}
-.cdm-btn {
-  padding:11px 16px;
-  border-radius:10px;
-  font-size:13px; font-weight:700;
-  cursor:pointer;
-  font-family:inherit;
-  display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  transition:transform .12s, box-shadow .15s, opacity .15s;
-  border:none;
-}
-.cdm-btn:active { transform:scale(0.97); }
-.cdm-btn-secondary {
-  flex:1; background:#fff;
-  border:1.5px solid var(--border); color:var(--text-m);
-}
-.cdm-btn-secondary:hover { background:#F8FAFC; }
-.cdm-btn-primary {
-  flex:2;
-  background:linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
-  color:#fff;
-  box-shadow:0 4px 12px var(--green-shadow, rgba(15,110,86,0.3));
-}
-.cdm-btn-primary:hover { opacity:.95; }
-.cdm-btn-primary:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-
-/* Result card */
-.cdm-result {
-  background:#fff;
-  border:1.5px solid var(--green-bd);
-  border-radius:14px;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  display:none;
-  margin-bottom:14px;
-}
-.cdm-result-head {
-  background:linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
-  color:#fff;
-  padding:14px 16px;
-  display:flex; align-items:center; gap:10px;
-}
-.cdm-result-ico {
-  width:34px; height:34px; flex-shrink:0;
-  background:rgba(255,255,255,0.22);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:800;
-}
-.cdm-result-head-title { font-size:14px; font-weight:700; }
-.cdm-result-head-sub { font-size:11.5px; opacity:0.9; margin-top:2px; }
-.cdm-result-body { padding:14px 16px; }
-.cdm-result-flow {
-  display:flex; align-items:center; gap:10px;
-  background:var(--green-lt);
-  border-radius:10px; padding:10px 12px;
-  margin-bottom:12px;
-  font-size:12.5px; color:var(--text);
-  flex-wrap:wrap;
-}
-.cdm-result-flow code {
-  background:#fff; color:var(--green);
-  padding:2px 7px; border-radius:5px;
-  font-weight:700; font-size:11.5px;
-}
-.cdm-result-list-title {
-  font-size:11px; font-weight:700; color:var(--text-m);
-  text-transform:uppercase; letter-spacing:.04em;
-  margin-bottom:7px;
-}
-.cdm-result-grid {
-  display:grid; grid-template-columns:repeat(2, 1fr);
-  gap:5px;
-}
-.cdm-result-row {
-  background:var(--green-lt);
-  border-radius:6px; padding:6px 9px;
-  display:flex; justify-content:space-between; align-items:center;
-  font-size:11.5px;
-}
-.cdm-result-row code { color:var(--text-m); font-size:11px; }
-.cdm-result-row b { color:var(--green); font-size:13px; font-variant-numeric:tabular-nums; }
-.cdm-result-foot {
-  margin-top:12px; padding:10px 12px;
-  background:#FAFAF8; border-radius:8px;
-  font-size:11.5px; color:var(--text-m); line-height:1.5;
-}
-.cdm-result-foot code { color:var(--green); font-weight:600; }
-
-/* Error result */
-.cdm-err {
-  background:#FEF2F2; border:1.5px solid #FCA5A5;
-  border-radius:12px; padding:12px 14px;
-  color:#991B1B; font-size:12.5px; line-height:1.5;
-}
-.cdm-err b { display:block; margin-bottom:4px; font-size:13px; }
-
-/* ═══════════════════════════════════════════════════════════════
-   [v10.89] GLOBAL UI REFRESH — Modern facelift toàn app
-   Chiến lược: CSS override, KHÔNG đổi HTML.
-   Tone: theo var(--green) đổi theo theme picker.
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ─── Enriched design tokens ─── */
-:root {
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
-  --gradient-primary: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
-  --gradient-card: linear-gradient(180deg, #fff 0%, #fafaf8 100%);
-  --gradient-bg: linear-gradient(180deg, #faf9f5 0%, var(--bg) 50%);
-  --border-soft: rgba(0,0,0,0.05);
-}
-
-/* ─── Body subtle gradient ─── */
-body {
-  background: var(--gradient-bg) !important;
-  background-attachment: fixed;
-}
-
-/* ─── Card refresh: shadow mềm + border subtle ─── */
-.card {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-md) !important;
-  border: 1px solid var(--border-soft);
-}
-
-/* ─── Bottom nav: glass effect + theme-aware active ─── */
-.bottom-nav {
-  border-top: none !important;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.08) !important;
-  background: rgba(255,255,255,0.96) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-.nav-item.active .nav-svg { stroke: var(--green) !important; }
-.nav-item.active .nav-label { color: var(--green) !important; font-weight: 700 !important; }
-.nav-item { transition: transform .12s; }
-.nav-item:active { transform: scale(0.92); }
-
-/* ─── Login screen modernize ─── */
-.login-logo-icon {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 10px 28px var(--green-shadow, rgba(15,110,86,0.35));
-  color: #fff !important;
-}
-.login-logo-icon svg, .login-logo-icon img { filter: brightness(0) invert(1); }
-.login-pw-toggle:active { transform: translateY(-50%) scale(0.9); }
-#login-screen { background: var(--gradient-bg) !important; }
-
-/* ─── Inputs: focus ring theme đồng bộ ─── */
-input[type=text]:focus,
-input[type=number]:focus,
-input[type=date]:focus,
-input[type=time]:focus,
-input[type=tel]:focus,
-input[type=email]:focus,
-input[type=password]:focus,
-input[type=search]:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px var(--green-lt);
-}
-
-/* ─── Modal modernize (common patterns) ─── */
-.modal-content,
-[id$="-modal"] > div:first-child,
-[class*="modal-box"] {
-  border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-/* ─── Toast: modern ─── */
-#toast,
-.toast,
-[id*="toast"] {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-lg) !important;
-  backdrop-filter: blur(10px);
-}
-
-/* ─── NS STATS: gradient card + lift hover ─── */
-.ns-stat {
-  background: var(--gradient-card) !important;
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-sm) !important;
-  transition: transform .15s, box-shadow .15s;
-}
-.ns-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
-.ns-stat:active { transform: translateY(0) scale(0.97); }
-
-/* ─── NS TAB + SUBTAB: theme-aware ─── */
-.ns-tab.active {
-  background: var(--gradient-primary) !important;
-  border-color: transparent !important;
-  color: #fff !important;
-  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.25));
-}
-.ns-subtab {
-  transition: background .15s, transform .12s;
-}
-.ns-subtab.active {
-  background: var(--gradient-primary) !important;
-  color: #fff !important;
-  box-shadow: 0 2px 10px var(--green-shadow, rgba(15,110,86,0.3));
-}
-.ns-subtab:not(.active):active { transform: scale(0.96); }
-
-/* ─── NS time tabs ─── */
-.ns-time-tab.active {
-  background: var(--green-lt) !important;
-  color: var(--green) !important;
-  border-color: var(--green-bd) !important;
-}
-
-/* ─── Search bar refresh ─── */
-.ns-search {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  border: 1px solid var(--border-soft) !important;
-  transition: border-color .15s, box-shadow .15s;
-}
-.ns-search:focus {
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px var(--green-lt) !important;
-}
-
-/* ─── BH STATS: align with theme system ─── */
-.bh-stat {
-  background: var(--gradient-card) !important;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  transition: transform .12s, box-shadow .15s;
-}
-.bh-stat[data-stat-filter]:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
-.bh-stat.active-filter {
-  box-shadow: inset 0 0 0 2px var(--green), 0 4px 12px var(--green-shadow, rgba(15,110,86,0.2)) !important;
-}
-
-/* ─── BH BUTTONS: orange (module identity) + modern shadow ─── */
-.bh-btn-primary {
-  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%) !important;
-  box-shadow: 0 4px 14px rgba(249,115,22,0.32) !important;
-  border-radius: var(--radius-lg) !important;
-}
-.bh-btn-primary:active { transform: scale(0.97); }
-
-/* ─── MAP BUTTONS theme-aware ─── */
-.map-btn-primary {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 4px 14px var(--green-shadow, rgba(15,110,86,0.3)) !important;
-  border-radius: var(--radius-md) !important;
-}
-.map-btn-primary:active { background: var(--green) !important; transform: scale(0.97); }
-.map-btn-secondary {
-  border-radius: var(--radius-md) !important;
-}
-
-/* ─── ADM2 (admin panel) buttons ─── */
-.adm2-btn-primary {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 2px 10px var(--green-shadow, rgba(15,110,86,0.25));
-  border-radius: var(--radius-sm) !important;
-}
-.adm2-btn-primary:hover { opacity: 0.95; }
-.adm2-btn-secondary {
-  border-radius: var(--radius-sm) !important;
-}
-
-/* ─── GCQL (giờ công QL) ─── */
-.gcql-search,
-.gcql-date-inp {
-  border-radius: var(--radius-md) !important;
-  border: 1px solid var(--border-soft) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-.gcql-search:focus,
-.gcql-date-inp:focus {
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px var(--green-lt) !important;
-}
-.gcql-date-btn {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 2px 8px var(--green-shadow, rgba(15,110,86,0.25));
-  border-radius: var(--radius-md) !important;
-}
-.gcql-mode-tab.active {
-  background: var(--green-lt) !important;
-  border-color: var(--green-bd) !important;
-  color: var(--green) !important;
-}
-.gcql-kv-group {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-.gcql-kv-group:hover { box-shadow: var(--shadow-md) !important; }
-
-/* ─── LSD stat cards (lịch sử duyệt) ─── */
-.lsd-stat-card {
-  border-radius: var(--radius-md) !important;
-  border: 1px solid var(--border-soft) !important;
-  box-shadow: var(--shadow-sm) !important;
-  background: var(--gradient-card) !important;
-  transition: transform .12s, box-shadow .15s, border-color .15s;
-}
-.lsd-stat-card:hover {
-  border-color: var(--green-bd) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md) !important;
-}
-.lsd-stat-card.active {
-  border-color: var(--green) !important;
-  background: var(--green-lt) !important;
-  box-shadow: 0 0 0 3px var(--green-lt), var(--shadow-md) !important;
-}
-.lsd-card {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-  transition: box-shadow .15s, transform .12s;
-}
-.lsd-card:hover { box-shadow: var(--shadow-md) !important; transform: translateY(-1px); }
-.lsd-action-primary {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 2px 8px var(--green-shadow, rgba(15,110,86,0.25));
-}
-.lsd-inp,
-.cdm-inp {
-  border-radius: var(--radius-sm) !important;
-}
-.lsd-inp:focus {
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px var(--green-lt) !important;
-}
-
-/* ─── Checklist + Quản lý sự cố ─── */
-[class^="chk-"] [id^="chk-"][class*="card"],
-.chk-stat,
-.chkql-stat {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-
-/* ─── Lịch ca: day cards ─── */
-.lc-day, .lc-day-card {
-  border-radius: var(--radius-md) !important;
-  transition: transform .12s, box-shadow .15s;
-}
-.lc-preset-chip {
-  transition: transform .1s, background .15s;
-}
-.lc-preset-chip:active { transform: scale(0.95); }
-
-/* ─── Settings page (giao diện) ─── */
-.set-card {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-.set-nav-item {
-  transition: background .15s, transform .12s;
-}
-.set-nav-item:active { transform: scale(0.97); }
-
-/* ─── Generic primary button pattern ─── */
-button[onclick]:not([class*="btn"]):not([class*="tab"]):not([class*="nav"]):not(.app-confirm-btn) {
-  border-radius: var(--radius-sm);
-  transition: transform .1s, opacity .15s, box-shadow .15s;
-}
-button[onclick]:active { transform: scale(0.97); }
-
-/* ─── App confirm modal modernize ─── */
-.app-confirm-btn {
-  border-radius: var(--radius-sm) !important;
-  transition: transform .1s, opacity .15s;
-}
-.app-confirm-btn:active { transform: scale(0.96); }
-.app-confirm-btn.confirm {
-  background: var(--gradient-primary) !important;
-  box-shadow: 0 4px 12px var(--green-shadow, rgba(15,110,86,0.3));
-}
-
-/* ─── Generic select dropdown ─── */
-select {
-  cursor: pointer;
-  transition: border-color .15s, box-shadow .15s;
-}
-
-/* ─── Tooltips, badges modernize ─── */
-.ns-subtab-badge,
-.lsd-badge {
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-}
-
-/* ─── Hover lift cho clickable cards chung ─── */
-[onclick],
-[data-stat-filter] {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ─── Smooth scroll toàn cục ─── */
-html { scroll-behavior: smooth; }
-
-/* ─── Selection color theme ─── */
-::selection { background: var(--green-lt); color: var(--green); }
-
-/* ─── Scrollbar minimal (PC) ─── */
-@media (min-width: 768px) {
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); }
-  ::-webkit-scrollbar-track { background: transparent; }
-}
-
-/* ─── Loading spinner color theme ─── */
-.spinner, [class*="spinner"] {
-  border-top-color: var(--green) !important;
-}
-
-/* ─── PC tablet refinement (≥ 768px) ─── */
-@media (min-width: 768px) {
-  .app { max-width: 560px !important; }
-  .bottom-nav { max-width: 560px !important; }
-  .card { margin: 14px 18px 0 !important; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   [v10.89] FINISHING TOUCHES — Header gradient + curve, các nút,
-   GPS, avatar placeholder theme-aware, page background uniform
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ─── GLOBAL HERO BACKGROUND ─── */
-/* Fixed gradient bar trên top, content scroll over */
-#global-hero-bg {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 190px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
-  border-radius: 0 0 28px 28px;
-  z-index: -10;
-  pointer-events: none;
-  box-shadow: 0 6px 20px var(--green-shadow, rgba(15,110,86,0.25));
-}
-/* Ẩn ở login screen + page map fullscreen */
-body.has-login #global-hero-bg,
-body.page-bandochidung #global-hero-bg {
-  display: none;
-}
-/* Khi login screen đang hiện thì cũng ẩn */
-#login-screen:not([style*="display: none"]) ~ #global-hero-bg,
-#login-screen:not([style*="display:none"]) ~ #global-hero-bg {
-  /* không can thiệp được vì DOM order */
-}
-
-/* Body khi ở login: background gradient riêng */
-body { background: var(--bg) !important; }
-.app { position: relative; z-index: 1; }
-
-/* Spacer top: tránh card đầu page bị giấu sau iPhone Dynamic Island */
-.page { padding-top: env(safe-area-inset-top, 0); }
-
-/* ─── HEADER STRIP: card đầu của mỗi page nên trong suốt
-   để hero gradient lộ ra ─── */
-.page > .card:first-of-type,
-.page > div:first-child > .card:first-of-type {
-  margin-top: max(16px, env(safe-area-inset-top, 16px)) !important;
-}
-
-/* ─── BANNER ĐỔI MẬT KHẨU: modernize ─── */
-.banner-pw {
-  background: linear-gradient(135deg, #FFFBEB 0%, var(--amber-lt) 100%) !important;
-  border: 1px solid var(--amber-bd) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-md) !important;
-  margin: 16px 14px 0 !important;
-}
-.banner-pw-btn {
-  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
-  box-shadow: 0 4px 14px rgba(186,117,23,0.35) !important;
-  border-radius: var(--radius-md) !important;
-  padding: 9px 18px !important;
-  margin-top: 10px !important;
-  transition: transform .12s, box-shadow .15s;
-}
-.banner-pw-btn:active { transform: scale(0.96); }
-
-/* ─── CARD SECTION: khi card đầu page (banner-pw, info NV) ─── */
-.card-section { font-size: 10.5px !important; }
-
-/* ─── CH INPUT: bỏ outline xấu khi focus ─── */
-.ch-input {
-  border-radius: var(--radius-md) !important;
-  border: 1.5px solid transparent !important;
-  transition: border-color .15s, box-shadow .15s;
-}
-.ch-input:focus {
-  outline: none !important;
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px var(--green-lt) !important;
-}
-.ch-field { position: relative; }
-.suggest-list {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-lg) !important;
-  border: 1px solid var(--border-soft) !important;
-}
-
-/* ─── 4 NÚT CHẤM CÔNG (type-btn): MODERN GRADIENT ─── */
-.type-btn {
-  border-radius: var(--radius-md) !important;
-  background: var(--gradient-card) !important;
-  border: 1.5px solid var(--border-soft) !important;
-  box-shadow: var(--shadow-sm) !important;
-  padding: 14px 8px !important;
-  transition: transform .12s, box-shadow .15s, background .2s, border-color .2s !important;
-}
-.type-btn:hover { box-shadow: var(--shadow-md) !important; transform: translateY(-2px); }
-.type-btn:active { transform: translateY(0) scale(0.97) !important; }
-.type-btn .t-icon { font-size: 22px; margin-bottom: 4px; }
-
-/* Default tints */
-.tb-vao   { border-color: var(--green-bd) !important; }
-.tb-vao   .t-name, .tb-vao   .t-sub { color: var(--green) !important; }
-.tb-ra    { border-color: var(--blue-bd) !important; }
-.tb-ra    .t-name, .tb-ra    .t-sub { color: var(--blue) !important; }
-.tb-ra-g  { border-color: var(--amber-bd) !important; }
-.tb-ra-g  .t-name, .tb-ra-g  .t-sub { color: var(--amber) !important; }
-.tb-vao-g { border-color: var(--purple-bd) !important; }
-.tb-vao-g .t-name, .tb-vao-g .t-sub { color: var(--purple) !important; }
-
-/* Selected: gradient bold + shadow */
-.tb-vao.sel {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
-  border-color: transparent !important;
-  box-shadow: 0 6px 18px var(--green-shadow, rgba(15,110,86,0.4)) !important;
-}
-.tb-ra.sel {
-  background: linear-gradient(135deg, var(--blue) 0%, #2474BD 100%) !important;
-  border-color: transparent !important;
-  box-shadow: 0 6px 18px rgba(24,95,165,0.4) !important;
-}
-.tb-ra-g.sel {
-  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
-  border-color: transparent !important;
-  box-shadow: 0 6px 18px rgba(186,117,23,0.4) !important;
-}
-.tb-vao-g.sel {
-  background: linear-gradient(135deg, var(--purple) 0%, #6B62D1 100%) !important;
-  border-color: transparent !important;
-  box-shadow: 0 6px 18px rgba(83,74,183,0.4) !important;
-}
-.type-btn.sel .t-name { color: #fff !important; font-weight: 700; }
-.type-btn.sel .t-sub  { color: rgba(255,255,255,0.85) !important; }
-
-/* ─── GPS BUTTON (Lấy vị trí) ─── */
-.gps-btn {
-  background: var(--gradient-card) !important;
-  border: 1.5px solid var(--border-soft) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  padding: 14px 16px !important;
-  transition: box-shadow .15s, transform .12s !important;
-}
-.gps-btn:hover { box-shadow: var(--shadow-md) !important; }
-.gps-btn:active { transform: scale(0.99); }
-.gps-icon {
-  background: var(--green-lt) !important;
-  border: none !important;
-}
-.gps-badge {
-  background: var(--gradient-primary) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 99px !important;
-  padding: 6px 14px !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.3));
-}
-.gps-btn.success {
-  background: linear-gradient(135deg, #fff 0%, var(--green-lt) 100%) !important;
-  border-color: var(--green-bd) !important;
-}
-.gps-btn.success .gps-badge { background: linear-gradient(135deg, var(--green), var(--green-m)) !important; }
-.gps-btn.loading .gps-badge {
-  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
-  box-shadow: 0 3px 10px rgba(186,117,23,0.3);
-}
-.gps-btn.error .gps-badge {
-  background: linear-gradient(135deg, var(--red) 0%, #B91C1C 100%) !important;
-  color: #fff !important;
-  border: none !important;
-}
-.gps-btn.warn .gps-badge {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
-  color: #fff !important;
-  border: none !important;
-}
-
-/* ─── SELFIE BUTTON (Chụp ảnh xác minh) ─── */
-.selfie-btn {
-  background: var(--gradient-card) !important;
-  border: 1.5px dashed var(--amber-bd) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  transition: box-shadow .15s, transform .12s;
-}
-.selfie-btn:hover { box-shadow: var(--shadow-md) !important; }
-
-/* ─── SUBMIT BTN (nút Xác nhận chấm công) ─── */
-.submit-btn {
-  border-radius: var(--radius-lg) !important;
-  letter-spacing: 0.3px;
-  transition: transform .12s, box-shadow .15s, background .2s !important;
-}
-.s-ready {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
-  box-shadow: 0 8px 24px var(--green-shadow, rgba(15,110,86,0.4)) !important;
-  color: #fff !important;
-}
-.s-ready:hover { box-shadow: 0 10px 28px var(--green-shadow, rgba(15,110,86,0.5)) !important; }
-.s-ready:active { transform: scale(0.98); }
-.s-loading {
-  background: linear-gradient(135deg, var(--green-m) 0%, var(--green) 100%) !important;
-  color: #fff !important;
-}
-.s-done {
-  background: var(--green-lt) !important;
-  color: var(--green) !important;
-  border: 1.5px solid var(--green-bd) !important;
-}
-
-/* ─── GIỜ CÔNG: KV header gradient mạnh + bỏ nền trắng ─── */
-.gcql-kv-group {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-  background: transparent !important; /* để hero gradient lộ */
-  margin-bottom: 12px !important;
-  overflow: hidden;
-}
-.gcql-kv-group:hover { box-shadow: var(--shadow-md) !important; }
-.gcql-kv-header {
-  padding: 14px 16px !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  /* inline color/bg vẫn từ KV_COLORS — em chỉ enrich radius + shadow */
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-  border-left-width: 5px !important;
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.04);
-}
-.gcql-ch-header {
-  background: rgba(255,255,255,0.7) !important;
-  backdrop-filter: blur(4px);
-  border-bottom: 1px solid var(--border-soft) !important;
-}
-.gcql-nv-list {
-  background: rgba(250,250,248,0.6) !important;
-}
-.gcql-nv-row:hover {
-  background: var(--green-lt) !important;
-}
-.gcql-nv-gio { color: var(--green) !important; }
-#page-giocong-ql, #page-giocong {
-  background: transparent !important;
-  min-height: calc(100vh - 60px);
-}
-
-/* ─── AVATAR placeholder theme-aware ─── */
-.ns-avatar {
-  background: var(--green-lt) !important;
-  color: var(--green) !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.ns-avatar > img { background: var(--green-lt); }
-.ns-avatar > span:not(:empty) {
-  background: linear-gradient(135deg, var(--green-lt) 0%, #fff 100%) !important;
-  color: var(--green) !important;
-}
-.lscc-avatar-fallback {
-  background: linear-gradient(135deg, var(--green-lt) 0%, #fff 100%) !important;
-  color: var(--green) !important;
-  font-weight: 700;
-}
-
-/* ─── NÚT "THÊM CA THỦ CÔNG" (lịch sử CC tab) ─── */
-button.lsd-inp[onclick*="lscThemCa"] {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: var(--radius-md) !important;
-  padding: 10px 16px !important;
-  font-weight: 700 !important;
-  box-shadow: 0 4px 14px var(--green-shadow, rgba(15,110,86,0.3)) !important;
-  cursor: pointer !important;
-  transition: transform .12s, box-shadow .15s;
-}
-button.lsd-inp[onclick*="lscThemCa"]:hover {
-  box-shadow: 0 6px 18px var(--green-shadow, rgba(15,110,86,0.4)) !important;
-}
-button.lsd-inp[onclick*="lscThemCa"]:active { transform: scale(0.97); }
-
-/* ─── DUYỆT BUTTONS (Đơn nghỉ + Lịch sử duyệt) ─── */
-button[onclick*="duyetDN"]:not(.no-style),
-button[onclick*="duyetDonNghi"]:not(.no-style),
-button[onclick*="approveCB"]:not(.no-style),
-button[onclick*="duyetCB"]:not(.no-style) {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: var(--radius-sm) !important;
-  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.25)) !important;
-  transition: transform .12s, box-shadow .15s;
-}
-button[onclick*="duyetDN"]:active,
-button[onclick*="duyetDonNghi"]:active,
-button[onclick*="approveCB"]:active,
-button[onclick*="duyetCB"]:active { transform: scale(0.96); }
-
-/* ─── PAGE BACKGROUND uniform (xoá nền trắng) ─── */
-.page {
-  background: transparent !important;
-  min-height: calc(100vh - 60px);
-}
-/* Map page riêng - giữ trắng */
-#page-bandochidung { background: var(--bg) !important; }
-
-/* ─── TAB BẢN ĐỒ header (nếu có element header) ─── */
-.bd-header,
-.map-header,
-[id^="bd-"][class*="header"] {
-  background: var(--gradient-primary) !important;
-  color: #fff !important;
-  border-radius: 0 0 24px 24px;
-  box-shadow: var(--shadow-md);
-}
-
-/* ─── TAB Lịch ca: day cards ─── */
-#page-lichca .lc-day-card,
-#page-lichca [class*="lc-day"],
-#page-lichca-ql [class*="lc-"] {
-  border-radius: var(--radius-md) !important;
-}
-.lc-day-card { box-shadow: var(--shadow-sm) !important; }
-.lc-day-card:hover { box-shadow: var(--shadow-md) !important; }
-
-/* ─── TAB Chương trình: cards ─── */
-#page-chuongtrinh .ct-card,
-#page-chuongtrinh [class^="ct-"][class*="card"],
-#page-chuongtrinh [class^="ct-"][class*="box"] {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-#page-chuongtrinh button[class*="primary"],
-#page-chuongtrinh button[onclick]:not([class*="secondary"]):not([class*="tab"]) {
-  border-radius: var(--radius-md) !important;
-}
-
-/* ─── TAB Tài khoản: cards ─── */
-#page-taikhoan .card,
-#page-taikhoan .tk-card,
-#page-taikhoan [class^="tk-"][class*="card"] {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-md) !important;
-}
-
-/* ─── TAB Admin (adm2-*) ─── */
-[class^="adm2-"][class*="card"],
-[class^="adm2-"][class*="panel"],
-[class^="adm2-"][class*="box"] {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-.adm2-tab.active,
-button[class^="adm2-"][class*="active"] {
-  background: var(--gradient-primary) !important;
-  color: #fff !important;
-}
-
-/* ─── Disable outline xấu cho mọi input/button mặc định ─── */
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-button:focus-visible {
-  outline: none;
-}
-
-/* ─── Fix iPhone safe-area top khi có #global-hero-bg ─── */
-@supports (padding: max(0px)) {
-  #global-hero-bg {
-    height: calc(190px + env(safe-area-inset-top, 0));
-    padding-top: env(safe-area-inset-top, 0);
-  }
-}
-
-/* ─── Khi không có session (login screen show), ẩn hero ─── */
-body:has(#login-screen:not([style*="display: none"])) #global-hero-bg,
-body:has(#login-screen[style=""]) #global-hero-bg {
-  display: none;
-}
-/* Fallback (Safari cũ không support :has): JS toggle class */
-body.is-login #global-hero-bg { display: none !important; }
-body.is-map #global-hero-bg { display: none !important; }
-
 </style>
 </head>
 <body>
-
-<!-- [v10.89] Global hero background — gradient theme với curve bottom -->
-<div id="global-hero-bg" aria-hidden="true"></div>
-
-<script>
-// [v10.89] Đánh dấu is-login ngay đầu để ẩn hero bg trước khi user đăng nhập
-document.body.classList.add('is-login');
-</script>
 
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.89</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.85</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -5248,7 +4192,7 @@ document.body.classList.add('is-login');
     </div>
 
     <div class="card">
-      <div class="card-section">Lấy vị trí</div>
+      <div class="card-section">Vị trí hiện tại</div>
       <div class="gps-wrap">
         <div class="gps-btn" id="gps-btn" onclick="layViTri()">
           <div class="gps-left">
@@ -5620,90 +4564,63 @@ document.body.classList.add('is-login');
     </div>
 
     <!-- [v10.86] SUB PANEL: Chuyển đổi mã NV (ADMIN + QLNS) -->
-    <div id="ns-sub-chuyenma" style="display:none">
-      <div class="cdm-wrap">
+    <div id="ns-sub-chuyenma" style="display:none;padding:10px 14px">
+      <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#78350F;line-height:1.5">
+        <div style="font-weight:700;margin-bottom:4px">⚠ Lưu ý quan trọng</div>
+        Chức năng này dùng khi <b>CTV chuyển thành NV chính thức</b> (được cấp mã mới). Toàn bộ data ở mã cũ (chấm công, cảnh báo, đơn nghỉ, lịch ca, BXH, ...) sẽ được chuyển sang mã mới. Mã cũ sẽ bị khóa (<code>DA_CHUYEN_MA</code>), không thể đăng nhập nữa. <b>Không thể hoàn tác.</b>
+      </div>
 
-        <!-- Hero -->
-        <div class="cdm-hero">
-          <div class="cdm-hero-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-            Chuyển đổi mã nhân viên
-          </div>
-          <div class="cdm-hero-sub">Dùng khi <b>CTV chuyển thành NV chính thức</b> — toàn bộ data sẽ được kế thừa sang mã mới.</div>
-        </div>
-
-        <!-- Warning -->
-        <div class="cdm-warn">
-          <div class="cdm-warn-ico">!</div>
-          <div>
-            Mã cũ sẽ bị khóa (<code>DA_CHUYEN_MA</code>) sau khi chuyển và <b>không đăng nhập được nữa</b>.
-            Snapshot tên CH/NV trong các bản ghi cũ <b>giữ nguyên</b>. Thao tác này <b>không thể hoàn tác</b>.
-          </div>
-        </div>
-
-        <!-- Main card: select 2 mã -->
-        <div class="cdm-card">
-          <div class="cdm-step">
-            <span class="cdm-step-num">1</span> Chọn mã cũ và mã mới
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px">
+          <!-- Mã cũ -->
+          <div style="position:relative">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">
+              MÃ CŨ (CTV) <span style="color:#DC2626">*</span>
+            </label>
+            <input type="text" id="cdm-cu-inp" placeholder="Gõ mã hoặc tên NV cũ..." autocomplete="off"
+                   oninput="cdmOnCuInput()" onfocus="cdmShowCuSug()" onblur="cdmHideCuSug()"
+                   style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box">
+            <input type="hidden" id="cdm-cu-ma" value="">
+            <div id="cdm-cu-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:8px;max-height:280px;overflow-y:auto;display:none;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin-top:2px"></div>
           </div>
 
-          <div class="cdm-transfer">
-            <!-- Mã cũ -->
-            <div class="cdm-side cdm-side-cu" style="position:relative">
-              <div class="cdm-side-lbl">
-                <span class="cdm-side-lbl-dot"></span>
-                Mã cũ (CTV)
-              </div>
-              <input type="text" id="cdm-cu-inp" class="cdm-inp" placeholder="Gõ mã hoặc tên NV cũ..." autocomplete="off"
-                     oninput="cdmOnCuInput()" onfocus="cdmShowCuSug()" onblur="cdmHideCuSug()">
-              <input type="hidden" id="cdm-cu-ma" value="">
-              <div id="cdm-cu-sug" class="cdm-sug"></div>
-            </div>
-
-            <!-- Arrow -->
-            <div class="cdm-arrow">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
-
-            <!-- Mã mới -->
-            <div class="cdm-side cdm-side-moi" style="position:relative">
-              <div class="cdm-side-lbl">
-                <span class="cdm-side-lbl-dot"></span>
-                Mã mới (NS)
-              </div>
-              <input type="text" id="cdm-moi-inp" class="cdm-inp" placeholder="Gõ mã hoặc tên NV mới..." autocomplete="off"
-                     oninput="cdmOnMoiInput()" onfocus="cdmShowMoiSug()" onblur="cdmHideMoiSug()">
-              <input type="hidden" id="cdm-moi-ma" value="">
-              <div id="cdm-moi-sug" class="cdm-sug"></div>
-            </div>
+          <!-- Mã mới -->
+          <div style="position:relative">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">
+              MÃ MỚI (NS) <span style="color:#DC2626">*</span>
+            </label>
+            <input type="text" id="cdm-moi-inp" placeholder="Gõ mã hoặc tên NV mới (đã đồng bộ từ Sheet)..." autocomplete="off"
+                   oninput="cdmOnMoiInput()" onfocus="cdmShowMoiSug()" onblur="cdmHideMoiSug()"
+                   style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box">
+            <input type="hidden" id="cdm-moi-ma" value="">
+            <div id="cdm-moi-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:8px;max-height:280px;overflow-y:auto;display:none;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin-top:2px"></div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Mã mới phải đã tồn tại trong hệ thống (đồng bộ Sheet trước).</div>
           </div>
 
           <!-- Lý do -->
-          <div class="cdm-lydo-wrap">
-            <label class="cdm-lydo-lbl">Lý do (tùy chọn)</label>
-            <textarea id="cdm-lydo" class="cdm-lydo" placeholder="VD: CTV ký HĐ chính thức tháng 6/2026..."></textarea>
-          </div>
-
-          <!-- Preview -->
-          <div id="cdm-preview" class="cdm-preview"></div>
-
-          <!-- Actions -->
-          <div class="cdm-actions">
-            <button onclick="cdmReset()" class="cdm-btn cdm-btn-secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Xóa form
-            </button>
-            <button onclick="cdmConfirm()" id="cdm-btn-go" class="cdm-btn cdm-btn-primary">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-              Chuyển đổi
-            </button>
+          <div>
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">LÝ DO (tùy chọn)</label>
+            <textarea id="cdm-lydo" rows="2" placeholder="VD: CTV ký HĐ chính thức tháng 6/2026..."
+                      style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit"></textarea>
           </div>
         </div>
 
-        <!-- Result -->
-        <div id="cdm-result" class="cdm-result"></div>
+        <!-- Preview -->
+        <div id="cdm-preview" style="display:none;margin-top:14px;padding:12px;background:#F1F5F9;border-radius:8px;border:1px dashed #94A3B8"></div>
 
+        <!-- Buttons -->
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button onclick="cdmReset()" style="flex:1;padding:10px;background:#fff;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer">
+            Xóa form
+          </button>
+          <button onclick="cdmConfirm()" id="cdm-btn-go" style="flex:2;padding:10px;background:var(--green);border:none;border-radius:8px;font-size:13px;font-weight:700;color:#fff;cursor:pointer">
+            Chuyển đổi
+          </button>
+        </div>
       </div>
+
+      <!-- Kết quả -->
+      <div id="cdm-result" style="display:none"></div>
     </div>
 
     <!-- SUB PANEL: Nhân sự -->
@@ -5946,7 +4863,7 @@ document.body.classList.add('is-login');
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.89 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.85 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -6925,7 +5842,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.89',
+  'sys.cache_version': 'v10.86',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -7264,8 +6181,6 @@ function goToPage(page){
     if(lcNav)lcNav.classList.add('active');
   }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
-  // [v10.89] Toggle class is-map để ẩn hero bg ở page bản đồ
-  document.body.classList.toggle('is-map', page === 'bandochidung');
   // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -7378,7 +6293,6 @@ async function doLogout(){
   document.getElementById('main-app').style.display='none';
   document.getElementById('main-header').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  document.body.classList.add('is-login'); // [v10.89] ẩn hero bg
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
 }
@@ -7445,7 +6359,6 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
-  document.body.classList.remove('is-login'); // [v10.89] hiện hero bg
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
@@ -23119,9 +22032,11 @@ async function cdmShowCuSug(){
   ).slice(0, 15);
   if (!matched.length){ sug.style.display='none'; return; }
   sug.innerHTML = matched.map(nv =>
-    `<div class="cdm-sug-item" onmousedown="event.preventDefault();cdmPickCu('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')">
-      <div class="cdm-sug-item-name">${escHtml(nv.ten_nv||'')}</div>
-      <div class="cdm-sug-item-meta">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? '<span class="cdm-sug-item-role">'+escHtml(nv.role)+'</span>' : ''}</div>
+    `<div onmousedown="event.preventDefault();cdmPickCu('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')"
+       style="padding:9px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${escHtml(nv.ten_nv||'')}</div>
+      <div style="font-size:11px;color:#64748B">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? ' · '+escHtml(nv.role) : ''}</div>
     </div>`
   ).join('');
   sug.style.display='block';
@@ -23159,9 +22074,11 @@ async function cdmShowMoiSug(){
   ).slice(0, 15);
   if (!matched.length){ sug.style.display='none'; return; }
   sug.innerHTML = matched.map(nv =>
-    `<div class="cdm-sug-item" onmousedown="event.preventDefault();cdmPickMoi('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')">
-      <div class="cdm-sug-item-name">${escHtml(nv.ten_nv||'')}</div>
-      <div class="cdm-sug-item-meta">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? '<span class="cdm-sug-item-role">'+escHtml(nv.role)+'</span>' : ''}</div>
+    `<div onmousedown="event.preventDefault();cdmPickMoi('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')"
+       style="padding:9px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${escHtml(nv.ten_nv||'')}</div>
+      <div style="font-size:11px;color:#64748B">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? ' · '+escHtml(nv.role) : ''}</div>
     </div>`
   ).join('');
   sug.style.display='block';
@@ -23184,11 +22101,11 @@ async function cdmUpdatePreview(){
   if (!maCu || !maMoi){ pv.style.display='none'; return; }
   if (maCu === maMoi){
     pv.style.display='block';
-    pv.innerHTML = '<div style="color:#DC2626;font-weight:600;font-size:12.5px">⚠ Mã cũ và mã mới giống nhau</div>';
+    pv.innerHTML = '<div style="color:#DC2626;font-weight:600">⚠ Mã cũ và mã mới giống nhau</div>';
     return;
   }
   pv.style.display='block';
-  pv.innerHTML = '<div style="color:var(--text-m);font-size:12px">⏳ Đang đếm bản ghi...</div>';
+  pv.innerHTML = '<div style="color:#64748B;font-size:12px">⏳ Đang đếm bản ghi...</div>';
   try {
     const [cc, cb, dn, lc, pbh, tht] = await Promise.all([
       supa.from('cham_cong').select('id', {count:'exact', head:true}).eq('ma_nv', maCu),
@@ -23199,35 +22116,22 @@ async function cdmUpdatePreview(){
       supa.from('tong_hop_thang').select('ma_nv', {count:'exact', head:true}).eq('ma_nv', maCu)
     ]);
     const tong = (cc.count||0)+(cb.count||0)+(dn.count||0)+(lc.count||0)+(pbh.count||0)+(tht.count||0);
-
-    // Icons cho 6 loại data chính
-    const icoCC  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-    const icoCB  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
-    const icoDN  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-    const icoLC  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="M8 14h2M14 14h2M8 18h2M14 18h2"/></svg>';
-    const icoPBH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
-    const icoTHT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>';
-
-    const mkStat = (ico, num, lbl) => `
-      <div class="cdm-stat-mini">
-        <div class="cdm-stat-mini-ico">${ico}</div>
-        <div class="cdm-stat-mini-body">
-          <div class="cdm-stat-mini-num">${num||0}</div>
-          <div class="cdm-stat-mini-lbl">${lbl}</div>
-        </div>
-      </div>`;
-
     pv.innerHTML = `
-      <div class="cdm-preview-title">Bản ghi sẽ chuyển</div>
-      <div class="cdm-preview-grid">
-        ${mkStat(icoCC,  cc.count,  'Chấm công')}
-        ${mkStat(icoCB,  cb.count,  'Cảnh báo')}
-        ${mkStat(icoDN,  dn.count,  'Đơn nghỉ')}
-        ${mkStat(icoLC,  lc.count,  'Lịch ca')}
-        ${mkStat(icoPBH, pbh.count, 'Phiên BH')}
-        ${mkStat(icoTHT, tht.count, 'Tổng hợp')}
+      <div style="font-weight:700;color:#0F172A;margin-bottom:8px;font-size:12.5px">
+        Số bản ghi sẽ chuyển từ <code style="background:#fff;padding:2px 6px;border-radius:4px;color:#DC2626">${escHtml(maCu)}</code>
+        → <code style="background:#fff;padding:2px 6px;border-radius:4px;color:#16A34A">${escHtml(maMoi)}</code>:
       </div>
-      <div class="cdm-preview-tong">+ các bảng phụ (BXH, checklist, thông báo, ...). Tổng ước tính: <b>${tong}+</b> bản ghi.</div>`;
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11.5px">
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${cc.count||0}</b> chấm công</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${cb.count||0}</b> cảnh báo</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${dn.count||0}</b> đơn nghỉ</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${lc.count||0}</b> lịch ca</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${pbh.count||0}</b> phiên bán hàng</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${tht.count||0}</b> tổng hợp tháng</div>
+      </div>
+      <div style="margin-top:8px;font-size:11.5px;color:#475569">
+        + các bảng phụ (BXH, checklist, thông báo, ...). <b>Tổng ~${tong}+</b> bản ghi.
+      </div>`;
   } catch(e){
     pv.innerHTML = '<div style="color:#DC2626;font-size:12px">Lỗi đếm preview: '+escHtml(e.message||'')+'</div>';
   }
@@ -23259,7 +22163,7 @@ async function cdmConfirm(){
   if (!ok2) return;
 
   const btn = document.getElementById('cdm-btn-go');
-  if (btn){ btn.disabled = true; btn.innerHTML = '⏳ Đang chuyển...'; }
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Đang chuyển...'; btn.style.opacity = '0.6'; }
 
   try {
     const { data, error } = await supa.rpc('fn_chuyen_doi_ma_nv', {
@@ -23273,83 +22177,46 @@ async function cdmConfirm(){
 
     const c = data.count || {};
     const tong = Object.values(c).reduce((s,n)=>s+(n||0), 0);
-
-    // Label nice cho từng bảng
-    const labelMap = {
-      cham_cong: 'Chấm công', canh_bao: 'Cảnh báo',
-      don_nghi: 'Đơn nghỉ', lich_ca: 'Lịch ca',
-      phien_ban_hang: 'Phiên bán hàng', tong_hop_thang: 'Tổng hợp tháng',
-      bang_xep_hang: 'BXH bán hàng', bao_cao_bat_thuong: 'Báo cáo bất thường',
-      checklist: 'Checklist', checklist_van_de: 'Checklist vấn đề',
-      gio_cong_ngay_ch: 'Giờ công ngày CH', nv_quota_sua: 'Quota sửa',
-      phien_nv: 'Phiên NV', thong_bao: 'Thông báo'
-    };
-
     const rs = document.getElementById('cdm-result');
     rs.style.display = 'block';
     rs.innerHTML = `
-      <div class="cdm-result-head">
-        <div class="cdm-result-ico">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div style="background:#F0FDF4;border:1.5px solid #16A34A;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:#15803D;font-size:14px;margin-bottom:8px">✓ Chuyển đổi thành công</div>
+        <div style="font-size:12.5px;color:#0F172A;margin-bottom:10px;line-height:1.6">
+          <b>${escHtml(data.ten_cu||'')}</b> (<code>${escHtml(data.ma_cu||'')}</code>)
+          → <b>${escHtml(data.ten_moi||'')}</b> (<code>${escHtml(data.ma_moi||'')}</code>)<br>
+          Lúc: ${escHtml(data.thoi_gian||'')} bởi ${escHtml(data.admin||'')}
         </div>
-        <div>
-          <div class="cdm-result-head-title">Chuyển đổi thành công</div>
-          <div class="cdm-result-head-sub">${escHtml(data.thoi_gian||'')} · bởi ${escHtml(data.admin||'')}</div>
-        </div>
-      </div>
-      <div class="cdm-result-body">
-        <div class="cdm-result-flow">
-          <code>${escHtml(data.ma_cu||'')}</code>
-          <span style="color:var(--text-m)">${escHtml(data.ten_cu||'')}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          <code>${escHtml(data.ma_moi||'')}</code>
-          <span style="color:var(--text-m)">${escHtml(data.ten_moi||'')}</span>
-        </div>
-
-        <div class="cdm-result-list-title">Chi tiết bản ghi đã chuyển — tổng ${tong}</div>
-        <div class="cdm-result-grid">
+        <div style="font-weight:600;color:#475569;font-size:11.5px;margin-bottom:6px">Chi tiết bản ghi đã chuyển (tổng: ${tong}):</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;font-size:11.5px">
           ${Object.entries(c).map(([k,v]) => 
-            `<div class="cdm-result-row">
-              <code>${escHtml(labelMap[k]||k)}</code>
-              <b>${v}</b>
+            `<div style="background:#fff;padding:5px 8px;border-radius:5px;border:1px solid #DCFCE7">
+              <code style="color:#475569">${escHtml(k)}</code>: <b>${v}</b>
             </div>`
           ).join('')}
         </div>
-
-        <div class="cdm-result-foot">
-          Mã <code>${escHtml(data.ma_cu||'')}</code> đã được đánh dấu <code>DA_CHUYEN_MA</code> và ghi chú lịch sử chuyển. Mã này không thể đăng nhập nữa.
+        <div style="margin-top:10px;font-size:11.5px;color:#15803D;background:#fff;padding:8px;border-radius:6px">
+          Mã <code>${escHtml(data.ma_cu||'')}</code> đã được đánh dấu <code>DA_CHUYEN_MA</code> + ghi chú lịch sử.
         </div>
       </div>`;
-
     showToast('✓ Đã chuyển ' + tong + ' bản ghi', 'ok');
     document.getElementById('cdm-cu-inp').value = '';
     document.getElementById('cdm-cu-ma').value = '';
     document.getElementById('cdm-moi-inp').value = '';
     document.getElementById('cdm-moi-ma').value = '';
     document.getElementById('cdm-lydo').value = '';
-    const pv = document.getElementById('cdm-preview'); if (pv){ pv.style.display='none'; pv.innerHTML=''; }
-    // Cache NV list có thể cũ → invalidate để lần sau load lại
+    document.getElementById('cdm-preview').style.display = 'none';
     try { if (typeof _lsdNVList !== 'undefined') _lsdNVList = null; } catch(e){}
-
-    // Scroll xuống xem kết quả
-    setTimeout(()=>{ try { rs.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){} }, 100);
   } catch(e){
     console.error('[cdmConfirm] Lỗi:', e);
     showToast('Lỗi: ' + (e.message || e), 'err');
     const rs = document.getElementById('cdm-result');
     rs.style.display = 'block';
-    rs.style.background = 'transparent';
-    rs.style.border = 'none';
-    rs.style.boxShadow = 'none';
-    rs.innerHTML = `<div class="cdm-err">
-      <b>✗ Lỗi chuyển đổi</b>
-      ${escHtml(e.message || String(e))}
+    rs.innerHTML = `<div style="background:#FEF2F2;border:1.5px solid #DC2626;border-radius:10px;padding:12px;color:#991B1B;font-size:12.5px">
+      <b>✗ Lỗi chuyển đổi:</b><br>${escHtml(e.message || String(e))}
     </div>`;
   } finally {
-    if (btn){
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Chuyển đổi';
-    }
+    if (btn){ btn.disabled = false; btn.textContent = 'Chuyển đổi'; btn.style.opacity = '1'; }
   }
 }
 
