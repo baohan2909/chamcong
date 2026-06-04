@@ -3734,7 +3734,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .cdm-err b { display:block; margin-bottom:4px; font-size:13px; }
 
 /* ═══════════════════════════════════════════════════════════════
-   [v10.87] GLOBAL UI REFRESH — Modern facelift toàn app
+   [v10.88] GLOBAL UI REFRESH — Modern facelift toàn app
    Chiến lược: CSS override, KHÔNG đổi HTML.
    Tone: theo var(--green) đổi theo theme picker.
    ═══════════════════════════════════════════════════════════════ */
@@ -4067,16 +4067,401 @@ html { scroll-behavior: smooth; }
   .card { margin: 14px 18px 0 !important; }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   [v10.88] FINISHING TOUCHES — Header gradient + curve, các nút,
+   GPS, avatar placeholder theme-aware, page background uniform
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── GLOBAL HERO BACKGROUND ─── */
+/* Fixed gradient bar trên top, content scroll over */
+#global-hero-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 190px;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%);
+  border-radius: 0 0 28px 28px;
+  z-index: -10;
+  pointer-events: none;
+  box-shadow: 0 6px 20px var(--green-shadow, rgba(15,110,86,0.25));
+}
+/* Ẩn ở login screen + page map fullscreen */
+body.has-login #global-hero-bg,
+body.page-bandochidung #global-hero-bg {
+  display: none;
+}
+/* Khi login screen đang hiện thì cũng ẩn */
+#login-screen:not([style*="display: none"]) ~ #global-hero-bg,
+#login-screen:not([style*="display:none"]) ~ #global-hero-bg {
+  /* không can thiệp được vì DOM order */
+}
+
+/* Body khi ở login: background gradient riêng */
+body { background: var(--bg) !important; }
+.app { position: relative; z-index: 1; }
+
+/* Spacer top: tránh card đầu page bị giấu sau iPhone Dynamic Island */
+.page { padding-top: env(safe-area-inset-top, 0); }
+
+/* ─── HEADER STRIP: card đầu của mỗi page nên trong suốt
+   để hero gradient lộ ra ─── */
+.page > .card:first-of-type,
+.page > div:first-child > .card:first-of-type {
+  margin-top: max(16px, env(safe-area-inset-top, 16px)) !important;
+}
+
+/* ─── BANNER ĐỔI MẬT KHẨU: modernize ─── */
+.banner-pw {
+  background: linear-gradient(135deg, #FFFBEB 0%, var(--amber-lt) 100%) !important;
+  border: 1px solid var(--amber-bd) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  margin: 16px 14px 0 !important;
+}
+.banner-pw-btn {
+  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
+  box-shadow: 0 4px 14px rgba(186,117,23,0.35) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 9px 18px !important;
+  margin-top: 10px !important;
+  transition: transform .12s, box-shadow .15s;
+}
+.banner-pw-btn:active { transform: scale(0.96); }
+
+/* ─── CARD SECTION: khi card đầu page (banner-pw, info NV) ─── */
+.card-section { font-size: 10.5px !important; }
+
+/* ─── CH INPUT: bỏ outline xấu khi focus ─── */
+.ch-input {
+  border-radius: var(--radius-md) !important;
+  border: 1.5px solid transparent !important;
+  transition: border-color .15s, box-shadow .15s;
+}
+.ch-input:focus {
+  outline: none !important;
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--green-lt) !important;
+}
+.ch-field { position: relative; }
+.suggest-list {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border-soft) !important;
+}
+
+/* ─── 4 NÚT CHẤM CÔNG (type-btn): MODERN GRADIENT ─── */
+.type-btn {
+  border-radius: var(--radius-md) !important;
+  background: var(--gradient-card) !important;
+  border: 1.5px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 14px 8px !important;
+  transition: transform .12s, box-shadow .15s, background .2s, border-color .2s !important;
+}
+.type-btn:hover { box-shadow: var(--shadow-md) !important; transform: translateY(-2px); }
+.type-btn:active { transform: translateY(0) scale(0.97) !important; }
+.type-btn .t-icon { font-size: 22px; margin-bottom: 4px; }
+
+/* Default tints */
+.tb-vao   { border-color: var(--green-bd) !important; }
+.tb-vao   .t-name, .tb-vao   .t-sub { color: var(--green) !important; }
+.tb-ra    { border-color: var(--blue-bd) !important; }
+.tb-ra    .t-name, .tb-ra    .t-sub { color: var(--blue) !important; }
+.tb-ra-g  { border-color: var(--amber-bd) !important; }
+.tb-ra-g  .t-name, .tb-ra-g  .t-sub { color: var(--amber) !important; }
+.tb-vao-g { border-color: var(--purple-bd) !important; }
+.tb-vao-g .t-name, .tb-vao-g .t-sub { color: var(--purple) !important; }
+
+/* Selected: gradient bold + shadow */
+.tb-vao.sel {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 18px var(--green-shadow, rgba(15,110,86,0.4)) !important;
+}
+.tb-ra.sel {
+  background: linear-gradient(135deg, var(--blue) 0%, #2474BD 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 18px rgba(24,95,165,0.4) !important;
+}
+.tb-ra-g.sel {
+  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 18px rgba(186,117,23,0.4) !important;
+}
+.tb-vao-g.sel {
+  background: linear-gradient(135deg, var(--purple) 0%, #6B62D1 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 18px rgba(83,74,183,0.4) !important;
+}
+.type-btn.sel .t-name { color: #fff !important; font-weight: 700; }
+.type-btn.sel .t-sub  { color: rgba(255,255,255,0.85) !important; }
+
+/* ─── GPS BUTTON (Lấy vị trí) ─── */
+.gps-btn {
+  background: var(--gradient-card) !important;
+  border: 1.5px solid var(--border-soft) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 14px 16px !important;
+  transition: box-shadow .15s, transform .12s !important;
+}
+.gps-btn:hover { box-shadow: var(--shadow-md) !important; }
+.gps-btn:active { transform: scale(0.99); }
+.gps-icon {
+  background: var(--green-lt) !important;
+  border: none !important;
+}
+.gps-badge {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 99px !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.3));
+}
+.gps-btn.success {
+  background: linear-gradient(135deg, #fff 0%, var(--green-lt) 100%) !important;
+  border-color: var(--green-bd) !important;
+}
+.gps-btn.success .gps-badge { background: linear-gradient(135deg, var(--green), var(--green-m)) !important; }
+.gps-btn.loading .gps-badge {
+  background: linear-gradient(135deg, var(--amber) 0%, #D97706 100%) !important;
+  box-shadow: 0 3px 10px rgba(186,117,23,0.3);
+}
+.gps-btn.error .gps-badge {
+  background: linear-gradient(135deg, var(--red) 0%, #B91C1C 100%) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.gps-btn.warn .gps-badge {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* ─── SELFIE BUTTON (Chụp ảnh xác minh) ─── */
+.selfie-btn {
+  background: var(--gradient-card) !important;
+  border: 1.5px dashed var(--amber-bd) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow .15s, transform .12s;
+}
+.selfie-btn:hover { box-shadow: var(--shadow-md) !important; }
+
+/* ─── SUBMIT BTN (nút Xác nhận chấm công) ─── */
+.submit-btn {
+  border-radius: var(--radius-lg) !important;
+  letter-spacing: 0.3px;
+  transition: transform .12s, box-shadow .15s, background .2s !important;
+}
+.s-ready {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
+  box-shadow: 0 8px 24px var(--green-shadow, rgba(15,110,86,0.4)) !important;
+  color: #fff !important;
+}
+.s-ready:hover { box-shadow: 0 10px 28px var(--green-shadow, rgba(15,110,86,0.5)) !important; }
+.s-ready:active { transform: scale(0.98); }
+.s-loading {
+  background: linear-gradient(135deg, var(--green-m) 0%, var(--green) 100%) !important;
+  color: #fff !important;
+}
+.s-done {
+  background: var(--green-lt) !important;
+  color: var(--green) !important;
+  border: 1.5px solid var(--green-bd) !important;
+}
+
+/* ─── GIỜ CÔNG: KV header gradient mạnh + bỏ nền trắng ─── */
+.gcql-kv-group {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: transparent !important; /* để hero gradient lộ */
+  margin-bottom: 12px !important;
+  overflow: hidden;
+}
+.gcql-kv-group:hover { box-shadow: var(--shadow-md) !important; }
+.gcql-kv-header {
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  /* inline color/bg vẫn từ KV_COLORS — em chỉ enrich radius + shadow */
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+  border-left-width: 5px !important;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.04);
+}
+.gcql-ch-header {
+  background: rgba(255,255,255,0.7) !important;
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid var(--border-soft) !important;
+}
+.gcql-nv-list {
+  background: rgba(250,250,248,0.6) !important;
+}
+.gcql-nv-row:hover {
+  background: var(--green-lt) !important;
+}
+.gcql-nv-gio { color: var(--green) !important; }
+#page-giocong-ql, #page-giocong {
+  background: transparent !important;
+  min-height: calc(100vh - 60px);
+}
+
+/* ─── AVATAR placeholder theme-aware ─── */
+.ns-avatar {
+  background: var(--green-lt) !important;
+  color: var(--green) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.ns-avatar > img { background: var(--green-lt); }
+.ns-avatar > span:not(:empty) {
+  background: linear-gradient(135deg, var(--green-lt) 0%, #fff 100%) !important;
+  color: var(--green) !important;
+}
+.lscc-avatar-fallback {
+  background: linear-gradient(135deg, var(--green-lt) 0%, #fff 100%) !important;
+  color: var(--green) !important;
+  font-weight: 700;
+}
+
+/* ─── NÚT "THÊM CA THỦ CÔNG" (lịch sử CC tab) ─── */
+button.lsd-inp[onclick*="lscThemCa"] {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  padding: 10px 16px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px var(--green-shadow, rgba(15,110,86,0.3)) !important;
+  cursor: pointer !important;
+  transition: transform .12s, box-shadow .15s;
+}
+button.lsd-inp[onclick*="lscThemCa"]:hover {
+  box-shadow: 0 6px 18px var(--green-shadow, rgba(15,110,86,0.4)) !important;
+}
+button.lsd-inp[onclick*="lscThemCa"]:active { transform: scale(0.97); }
+
+/* ─── DUYỆT BUTTONS (Đơn nghỉ + Lịch sử duyệt) ─── */
+button[onclick*="duyetDN"]:not(.no-style),
+button[onclick*="duyetDonNghi"]:not(.no-style),
+button[onclick*="approveCB"]:not(.no-style),
+button[onclick*="duyetCB"]:not(.no-style) {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-m) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 3px 10px var(--green-shadow, rgba(15,110,86,0.25)) !important;
+  transition: transform .12s, box-shadow .15s;
+}
+button[onclick*="duyetDN"]:active,
+button[onclick*="duyetDonNghi"]:active,
+button[onclick*="approveCB"]:active,
+button[onclick*="duyetCB"]:active { transform: scale(0.96); }
+
+/* ─── PAGE BACKGROUND uniform (xoá nền trắng) ─── */
+.page {
+  background: transparent !important;
+  min-height: calc(100vh - 60px);
+}
+/* Map page riêng - giữ trắng */
+#page-bandochidung { background: var(--bg) !important; }
+
+/* ─── TAB BẢN ĐỒ header (nếu có element header) ─── */
+.bd-header,
+.map-header,
+[id^="bd-"][class*="header"] {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  border-radius: 0 0 24px 24px;
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── TAB Lịch ca: day cards ─── */
+#page-lichca .lc-day-card,
+#page-lichca [class*="lc-day"],
+#page-lichca-ql [class*="lc-"] {
+  border-radius: var(--radius-md) !important;
+}
+.lc-day-card { box-shadow: var(--shadow-sm) !important; }
+.lc-day-card:hover { box-shadow: var(--shadow-md) !important; }
+
+/* ─── TAB Chương trình: cards ─── */
+#page-chuongtrinh .ct-card,
+#page-chuongtrinh [class^="ct-"][class*="card"],
+#page-chuongtrinh [class^="ct-"][class*="box"] {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+#page-chuongtrinh button[class*="primary"],
+#page-chuongtrinh button[onclick]:not([class*="secondary"]):not([class*="tab"]) {
+  border-radius: var(--radius-md) !important;
+}
+
+/* ─── TAB Tài khoản: cards ─── */
+#page-taikhoan .card,
+#page-taikhoan .tk-card,
+#page-taikhoan [class^="tk-"][class*="card"] {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* ─── TAB Admin (adm2-*) ─── */
+[class^="adm2-"][class*="card"],
+[class^="adm2-"][class*="panel"],
+[class^="adm2-"][class*="box"] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.adm2-tab.active,
+button[class^="adm2-"][class*="active"] {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+}
+
+/* ─── Disable outline xấu cho mọi input/button mặc định ─── */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: none;
+}
+
+/* ─── Fix iPhone safe-area top khi có #global-hero-bg ─── */
+@supports (padding: max(0px)) {
+  #global-hero-bg {
+    height: calc(190px + env(safe-area-inset-top, 0));
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}
+
+/* ─── Khi không có session (login screen show), ẩn hero ─── */
+body:has(#login-screen:not([style*="display: none"])) #global-hero-bg,
+body:has(#login-screen[style=""]) #global-hero-bg {
+  display: none;
+}
+/* Fallback (Safari cũ không support :has): JS toggle class */
+body.is-login #global-hero-bg { display: none !important; }
+body.is-map #global-hero-bg { display: none !important; }
+
 </style>
 </head>
 <body>
+
+<!-- [v10.88] Global hero background — gradient theme với curve bottom -->
+<div id="global-hero-bg" aria-hidden="true"></div>
+
+<script>
+// [v10.88] Đánh dấu is-login ngay đầu để ẩn hero bg trước khi user đăng nhập
+document.body.classList.add('is-login');
+</script>
 
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.87</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.88</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -4863,7 +5248,7 @@ html { scroll-behavior: smooth; }
     </div>
 
     <div class="card">
-      <div class="card-section">Vị trí hiện tại</div>
+      <div class="card-section">Lấy vị trí</div>
       <div class="gps-wrap">
         <div class="gps-btn" id="gps-btn" onclick="layViTri()">
           <div class="gps-left">
@@ -5561,7 +5946,7 @@ html { scroll-behavior: smooth; }
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.87 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.88 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -6540,7 +6925,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.87',
+  'sys.cache_version': 'v10.88',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -6879,6 +7264,8 @@ function goToPage(page){
     if(lcNav)lcNav.classList.add('active');
   }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
+  // [v10.88] Toggle class is-map để ẩn hero bg ở page bản đồ
+  document.body.classList.toggle('is-map', page === 'bandochidung');
   // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -6991,6 +7378,7 @@ async function doLogout(){
   document.getElementById('main-app').style.display='none';
   document.getElementById('main-header').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+  document.body.classList.add('is-login'); // [v10.88] ẩn hero bg
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
 }
@@ -7057,6 +7445,7 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
+  document.body.classList.remove('is-login'); // [v10.88] hiện hero bg
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
