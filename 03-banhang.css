@@ -1,0 +1,275 @@
+/* ═══════════════════════════════════════════════════════════
+   [v10.85] GIAO DIỆN — Chọn màu chủ đạo (preset + picker)
+   ═══════════════════════════════════════════════════════════ */
+.gd-title    { font-size:18px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:4px; }
+.gd-subtitle { font-size:12px; color:var(--text-m,#666); margin-bottom:20px; }
+
+/* Palette 12 màu preset */
+.gd-palette   { display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:10px; margin-bottom:22px; }
+.gd-swatch    { position:relative; aspect-ratio:1; border-radius:12px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.1), inset 0 0 0 2px rgba(255,255,255,.2); background:var(--sw,#ccc); transition:transform .15s, box-shadow .2s; -webkit-tap-highlight-color:transparent; }
+.gd-swatch:active   { transform:scale(.92); }
+.gd-swatch:hover    { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.18), inset 0 0 0 2px rgba(255,255,255,.25); }
+.gd-swatch.selected { box-shadow:0 0 0 3px white, 0 0 0 5px var(--sw), 0 4px 14px rgba(0,0,0,.25); }
+.gd-swatch.selected::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:18px; text-shadow:0 1px 3px rgba(0,0,0,.35); }
+.gd-sw-label  { position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--text-m); white-space:nowrap; font-weight:600; }
+/* Preset inline colors */
+.gd-swatch[data-color="#0F6E56"] { --sw:#0F6E56; }
+.gd-swatch[data-color="#185FA5"] { --sw:#185FA5; }
+.gd-swatch[data-color="#7C3AED"] { --sw:#7C3AED; }
+.gd-swatch[data-color="#DB2777"] { --sw:#DB2777; }
+.gd-swatch[data-color="#DC2626"] { --sw:#DC2626; }
+.gd-swatch[data-color="#EA580C"] { --sw:#EA580C; }
+.gd-swatch[data-color="#CA8A04"] { --sw:#CA8A04; }
+.gd-swatch[data-color="#0891B2"] { --sw:#0891B2; }
+.gd-swatch[data-color="#059669"] { --sw:#059669; }
+.gd-swatch[data-color="#4338CA"] { --sw:#4338CA; }
+.gd-swatch[data-color="#BE123C"] { --sw:#BE123C; }
+.gd-swatch[data-color="#334155"] { --sw:#334155; }
+
+/* Custom color picker */
+.gd-custom      { background:white; border-radius:14px; padding:14px; box-shadow:var(--shadow); margin:24px 0 20px; border:1px solid var(--border,#eee); }
+.gd-custom-lbl  { display:block; font-size:12px; font-weight:700; color:var(--text,#1a1a1a); margin-bottom:10px; }
+.gd-custom-row  { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+#gd-picker      { width:52px; height:40px; border:none; border-radius:8px; cursor:pointer; padding:0; background:none; overflow:hidden; }
+#gd-picker::-webkit-color-swatch-wrapper { padding:0; }
+#gd-picker::-webkit-color-swatch { border:1.5px solid var(--border); border-radius:8px; }
+#gd-picker-hex  { flex:1; min-width:120px; padding:9px 12px; border:1.5px solid var(--border,#eee); border-radius:8px; font-size:13px; font-family:'SF Mono',Menlo,monospace; text-transform:uppercase; outline:none; }
+#gd-picker-hex:focus { border-color:var(--green); }
+.gd-reset-btn   { padding:9px 12px; border:1.5px solid var(--border,#eee); border-radius:8px; background:white; font-size:12px; font-weight:600; color:var(--text-m,#666); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.gd-reset-btn:active { background:var(--bg,#f5f5f5); }
+
+/* Preview card */
+.gd-preview-card { background:white; border-radius:14px; padding:14px; box-shadow:var(--shadow); border:1px solid var(--border,#eee); }
+.gd-pv-lbl       { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-m); margin-bottom:10px; }
+.gd-pv-content   { display:flex; flex-direction:column; gap:12px; }
+.gd-pv-header    { background:var(--green); color:white; padding:10px 14px; border-radius:10px; font-weight:700; font-size:13px; }
+.gd-pv-btn       { background:var(--green); color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; }
+.gd-pv-badge     { background:var(--green-lt); color:var(--green); padding:4px 10px; border-radius:99px; font-size:11px; font-weight:700; align-self:center; }
+.gd-pv-link      { color:var(--green); font-weight:700; font-size:13px; align-self:center; text-decoration:underline; cursor:pointer; }
+
+
+
+/* [v10.85 Yc #2] Optimistic UI: row đang duyệt mờ đi nhưng không chặn UI */
+.duyet-processing { opacity:.5; pointer-events:none; position:relative; transition:opacity .2s; }
+.duyet-processing::after { content:''; position:absolute; top:6px; right:6px; width:14px; height:14px; border:2px solid rgba(29,158,117,.3); border-top-color:#1D9E75; border-radius:50%; animation:spin .7s linear infinite; }
+/* [v10.85 Yc #1] Thanh duyệt hàng loạt */
+.yc-bulk-bar { margin:10px 14px 0; display:flex; gap:10px; transition:opacity .2s; }
+.yc-bulk-btn { flex:1; padding:10px 14px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .15s; }
+.yc-bulk-btn:active { transform:scale(.97); }
+.yc-bulk-ok { background:var(--green,#1D9E75); color:white; box-shadow:0 3px 10px rgba(29,158,117,.3); }
+.yc-bulk-no { background:white; color:var(--red,#E11D48); border:1.5px solid var(--red,#E11D48); }
+
+/* Badge thông báo tab Nhân Sự */
+.nav-badge {
+  position:absolute; top:6px; right:4px;
+  min-width:16px; height:16px;
+  background:var(--red); color:white;
+  font-size:10px; font-weight:700;
+  border-radius:99px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+.nav-item { position:relative; }
+
+/* ── MÀU NGHỈ PHÉP (thay Vắng) ── */
+--pink:#C2185B; --pink-lt:#FCE4EC; --pink-bd:#F48FB1;
+.lc-day-card.lc-nghi { opacity:.75; }
+.lc-day-dot.nghi     { background:var(--pink-lt); }
+.lc-day-dot.nghi .lc-day-dow, .lc-day-dot.nghi .lc-day-num { color:var(--pink,#C2185B); }
+/* [v10 Yc #2] Form nghỉ phép inline trong lịch ca */
+.lc-nghi-form  { background:white; border:1.5px solid #F8BBD0; border-radius:10px; padding:10px 12px; }
+.lc-nghi-lbl   { display:block; font-size:11px; font-weight:700; color:#C2185B; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+.lc-nghi-input { width:100%; box-sizing:border-box; padding:8px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; outline:none; background:white; }
+.lc-nghi-input:focus { border-color:#C2185B; }
+.lc-nghi-anh-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px dashed #F48FB1; border-radius:8px; background:#FFF5F8; color:#C2185B; font-size:12px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.lc-nghi-anh-btn:active { background:#FCE4EC; }
+.lc-nghi-anh-btn.done { border-style:solid; border-color:var(--green-bd); background:var(--green-lt); color:#085041; }
+.lc-nghi-anh-ico { font-size:16px; }
+.lcs-nghi   { background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); }
+.lc-mini-day.nghi { background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); }
+.lc-type-btn.sel-nghi { border-color:#C2185B; background:#FCE4EC; color:#C2185B; }
+
+/* ── TAB CON TRONG NHÂN SỰ (QLNS) ── */
+.ns-subtabs { display:flex; margin:10px 14px 0; background:white; border-radius:12px; padding:4px; gap:4px; box-shadow:var(--shadow); }
+.ns-subtab  { flex:1; padding:8px 4px; border-radius:9px; border:none; font-size:12px; font-weight:600; cursor:pointer; text-align:center; color:var(--text-m); background:transparent; transition:all .15s; position:relative; -webkit-tap-highlight-color:transparent; }
+.ns-subtab.active { background:var(--green); color:white; }
+.ns-subtab-badge { position:absolute; top:2px; right:4px; min-width:14px; height:14px; background:var(--red); color:white; font-size:9px; font-weight:700; border-radius:99px; padding:0 3px; display:flex; align-items:center; justify-content:center; }
+
+/* ── ACCORDION PHÂN TẦNG LỊCH CA QLNS ── */
+.lcql-mode-tabs { display:flex; margin:10px 14px 0; background:white; border-radius:12px; padding:4px; gap:4px; box-shadow:var(--shadow); }
+.lcql-mode-tab  { flex:1; padding:8px 4px; border-radius:9px; border:none; font-size:12px; font-weight:600; cursor:pointer; text-align:center; color:var(--text-m); background:transparent; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.lcql-mode-tab.active { background:var(--green); color:white; }
+
+/* Accordion items */
+.acc-kv  { background:white; border-radius:14px; margin:0 0 6px; overflow:hidden; box-shadow:var(--shadow); }
+.acc-kv-head { display:flex; align-items:center; gap:10px; padding:13px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .12s; }
+.acc-kv-head:active { background:var(--gray-lt); }
+.acc-kv-ico  { font-size:18px; flex-shrink:0; }
+.acc-kv-name { font-size:14px; font-weight:700; flex:1; }
+.acc-kv-stats{ font-size:11px; color:var(--text-m); }
+.acc-kv-arr  { font-size:16px; color:var(--text-lt); transition:transform .2s; }
+.acc-kv-head.open .acc-kv-arr { transform:rotate(90deg); }
+
+.acc-ch-list { display:none; border-top:0.5px solid var(--border); }
+.acc-ch-list.open { display:block; }
+.acc-ch-item { display:flex; align-items:center; gap:10px; padding:11px 16px 11px 20px; cursor:pointer; border-bottom:0.5px solid var(--border); -webkit-tap-highlight-color:transparent; transition:background .12s; }
+.acc-ch-item:last-child { border-bottom:none; }
+.acc-ch-item:active { background:var(--gray-lt); }
+.acc-ch-ico  { font-size:15px; flex-shrink:0; }
+.acc-ch-name { font-size:13px; font-weight:600; flex:1; }
+.acc-ch-stats{ font-size:11px; color:var(--text-m); text-align:right; }
+.acc-ch-arr  { font-size:14px; color:var(--text-lt); transition:transform .2s; }
+.acc-ch-item.open .acc-ch-arr { transform:rotate(90deg); }
+
+.acc-nv-list { display:none; background:#fafaf8; border-top:0.5px solid var(--border); }
+.acc-nv-list.open { display:block; }
+.acc-nv-item { display:flex; align-items:center; gap:10px; padding:10px 16px 10px 30px; border-bottom:0.5px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.acc-nv-item:last-child { border-bottom:none; }
+.acc-nv-item:active { background:var(--green-lt); }
+.acc-nv-av   { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; background:var(--green-lt); color:#085041; }
+.acc-nv-av.gray { background:var(--gray-lt); color:var(--text-m); }
+.acc-nv-av.warn { background:var(--red-lt); color:var(--red); }
+.acc-nv-name { font-size:13px; font-weight:600; flex:1; }
+.acc-nv-gio  { font-size:11px; color:var(--text-m); }
+.acc-nv-badge{ font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; }
+
+/* Thẻ thống kê mode */
+.lcql-mode-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:8px 14px 0; }
+.lcql-mstat { background:white; border-radius:12px; padding:10px 6px; text-align:center; box-shadow:var(--shadow); }
+.lcql-mstat-val { font-size:18px; font-weight:700; }
+.lcql-mstat-lbl { font-size:9px; color:var(--text-m); margin-top:2px; line-height:1.3; }
+
+/* ── ĐƠN NGHỈ PHÉP QLNS ── */
+.dnp-list    { margin:10px 14px 0; }
+.dnp-day-group { margin-bottom:10px; }
+.dnp-day-head  { font-size:11px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.06em; padding:6px 4px; display:flex; align-items:center; gap:8px; }
+.dnp-day-cnt   { background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; }
+.dnp-card      { background:white; border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
+.dnp-item      { padding:13px 16px; border-bottom:0.5px solid var(--border); }
+.dnp-item:last-child { border-bottom:none; }
+.dnp-item-top  { display:flex; align-items:flex-start; gap:10px; }
+.dnp-av        { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; background:var(--pink-lt,#FCE4EC); color:var(--pink,#C2185B); }
+.dnp-info      { flex:1; min-width:0; }
+.dnp-name      { font-size:14px; font-weight:700; }
+.dnp-sub       { font-size:11px; color:var(--text-m); margin-top:2px; }
+.dnp-badge     { font-size:10px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; flex-shrink:0; }
+.dnpb-cho   { background:var(--amber-lt); color:#412402; }
+.dnpb-dd    { background:var(--green-lt, #d1fae5); color:var(--green-m, #047857); }
+.dnpb-da    { background:var(--green-lt); color:#085041; }
+.dnpb-tc    { background:var(--red-lt); color:var(--red); }
+.dnp-lydo   { font-size:12px; color:var(--text-m); margin-top:7px; line-height:1.5; background:var(--gray-lt); border-radius:8px; padding:8px 10px; }
+.dnp-lydo-lbl { font-size:10px; font-weight:700; color:var(--text-lt); text-transform:uppercase; margin-bottom:3px; }
+.dnp-anh-btn { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--blue); margin-top:5px; cursor:pointer; text-decoration:underline; -webkit-tap-highlight-color:transparent; }
+.dnp-qlns-note { font-size:12px; color:var(--green); margin-top:6px; font-style:italic; }
+.dnp-actions   { display:flex; gap:6px; margin-top:9px; }
+.dnp-btn-ok    { flex:1; padding:9px; border-radius:10px; border:none; background:var(--green); color:white; font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.dnp-btn-no    { flex:1; padding:9px; border-radius:10px; border:none; background:var(--red-lt); color:var(--red); font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; border:1px solid var(--red-bd); }
+.dnp-note-wrap { margin-top:6px; display:none; }
+.dnp-note-inp  { width:100%; padding:9px 12px; border-radius:10px; border:1.5px solid var(--border); font-size:12px; outline:none; resize:none; }
+.dnp-note-inp:focus { border-color:var(--green); }
+.dnp-empty     { padding:40px 20px; text-align:center; color:var(--text-m); font-size:13px; }
+.dnp-filter-row { display:flex; gap:8px; margin:8px 14px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+.dnp-filter-row::-webkit-scrollbar { display:none; }
+.dnp-filter-sel { flex-shrink:0; padding:8px 12px; border-radius:10px; border:1.5px solid var(--border); font-size:12px; background:white; color:var(--text); outline:none; }
+
+/* ── FORM XIN NGHỈ PHÉP (NV) ── */
+.np-form  { background:#fafaf8; border-top:0.5px solid var(--border); padding:12px 14px 14px; }
+.np-label { font-size:11px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+.np-inp   { width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); font-size:13px; outline:none; resize:none; background:white; margin-bottom:8px; }
+.np-inp:focus { border-color:#C2185B; }
+.np-cam-btn { width:100%; display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--gray-lt); border:1.5px dashed #F48FB1; border-radius:10px; cursor:pointer; transition:all .15s; margin-bottom:8px; }
+.np-cam-btn.done { background:var(--green-lt); border-style:solid; border-color:var(--green-bd); }
+.np-cam-ico { width:36px; height:36px; border-radius:9px; background:white; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.np-cam-txt { font-size:12px; font-weight:600; }
+.np-cam-sub { font-size:11px; color:#C2185B; margin-top:1px; }
+.np-cam-btn.done .np-cam-sub { color:#085041; }
+.np-req-badge { display:inline-block; font-size:10px; font-weight:700; color:var(--red); background:var(--red-lt); padding:1px 6px; border-radius:99px; margin-left:4px; }
+
+/* ═══ DASHBOARD QLNS [FIX v9 #12] ═══ */
+.dash-filter-card { background:white; border-radius:14px; margin:12px 14px 0; padding:12px 14px; box-shadow:var(--shadow); }
+.dash-filter-label { font-size:10px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+.dash-time-tabs { display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+.dash-time-tabs::-webkit-scrollbar { display:none; }
+.dash-time-tab { flex-shrink:0; padding:7px 12px; border-radius:99px; border:1.5px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; color:var(--text-m); background:white; -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.dash-time-tab.active { border-color:var(--green); background:var(--green-lt); color:#085041; }
+.dash-date-range { display:flex; align-items:center; gap:8px; margin-top:8px; }
+.dash-search-row { margin-top:10px; }
+
+.dash-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 14px 0; }
+.dash-kpi-grid:nth-of-type(2) { grid-template-columns:repeat(3,1fr); }
+.dash-kpi { background:white; border-radius:12px; padding:10px 6px; text-align:center; box-shadow:var(--shadow); }
+.dash-kpi-val { font-size:18px; font-weight:700; line-height:1.1; }
+.dash-kpi-lbl { font-size:9px; color:var(--text-m); margin-top:3px; line-height:1.2; }
+
+.dash-section-title { font-size:11px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.06em; margin:14px 14px 6px; }
+.dash-chart-card { background:white; border-radius:14px; margin:0 14px; padding:14px 10px; box-shadow:var(--shadow); }
+.dash-donut-wrap { display:flex; align-items:center; gap:14px; }
+.dash-donut-legend { flex:1; display:flex; flex-direction:column; gap:6px; font-size:12px; }
+.dash-legend-item { display:flex; align-items:center; gap:8px; }
+.dash-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.dash-legend-text { flex:1; color:var(--text-m); }
+.dash-legend-val { font-weight:700; color:var(--text); }
+
+.dash-rank-card { background:white; border-radius:14px; margin:0 14px; overflow:hidden; box-shadow:var(--shadow); }
+.dash-rank-item { padding:10px 14px; border-bottom:0.5px solid var(--border); display:flex; align-items:center; gap:10px; }
+.dash-rank-item:last-child { border-bottom:none; }
+.dash-rank-idx { width:24px; height:24px; background:var(--green-lt); color:#085041; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+.dash-rank-info { flex:1; min-width:0; }
+.dash-rank-name { font-size:13px; font-weight:600; }
+.dash-rank-sub { font-size:11px; color:var(--text-m); margin-top:1px; }
+.dash-rank-val { font-size:12px; font-weight:700; color:var(--green); flex-shrink:0; }
+
+.dash-alert-card { background:white; border-radius:14px; margin:0 14px 14px; overflow:hidden; box-shadow:var(--shadow); }
+.dash-alert-item { padding:11px 14px; border-bottom:0.5px solid var(--border); display:flex; align-items:center; gap:10px; }
+.dash-alert-item:last-child { border-bottom:none; }
+.dash-alert-ico { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.dash-alert-ico.warn { background:var(--amber-lt); }
+.dash-alert-ico.err  { background:var(--red-lt); }
+.dash-alert-ico.info { background:var(--blue-lt); }
+.dash-alert-txt { flex:1; font-size:12px; color:var(--text); line-height:1.4; }
+.dash-alert-empty { padding:20px; text-align:center; color:var(--text-m); font-size:12px; }
+
+/* lcql-mstat active filter state */
+.lcql-mstat.active { border:1.5px solid var(--green); background:var(--green-lt); }
+.lcql-mstat { transition:all .15s; -webkit-tap-highlight-color:transparent; border:1.5px solid transparent; }
+.lcql-mstat:active { transform:scale(.97); }
+
+/* ── SLOT CA trong lịch NV [FIX v9 #4] ── */
+.lc-day-editor { overflow:visible !important; } /* quan trọng: cho suggest tràn ra ngoài */
+.lc-day-card { overflow:visible !important; }
+.lc-slot { background:white; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+.lc-slot-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.lc-slot-lbl { font-size:11px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:.05em; }
+.lc-slot-del { background:var(--red-lt); color:var(--red); border:none; width:22px; height:22px; border-radius:50%; font-size:14px; font-weight:700; line-height:1; cursor:pointer; padding:0; -webkit-tap-highlight-color:transparent; }
+.lc-slot-del:active { background:var(--red); color:white; }
+.lc-add-ca { width:100%; padding:10px; border-radius:10px; border:1.5px dashed var(--green-bd); background:var(--green-lt); color:var(--green); font-size:12px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all .15s; }
+.lc-add-ca:active { transform:scale(.98); background:var(--green-bd); }
+
+/* Autocomplete CH tràn ra ngoài [FIX v9 #4] */
+.lc-ch-sug { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:1000; background:white; border:0.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:180px; overflow-y:auto; display:none; }
+
+/* Note nghỉ phép trong lịch [FIX v9 #5] */
+.lc-nghi-note { background:#FCE4EC; border:1px solid #F48FB1; border-radius:10px; padding:12px 14px; }
+
+/* ── TAB CON TRONG LỊCH NV [FIX v9 #5] ── */
+.lcnv-subtabs { display:flex; margin:12px 14px 0; background:white; border-radius:12px; padding:4px; gap:4px; box-shadow:var(--shadow); }
+.lcnv-subtab  { flex:1; padding:9px 4px; border-radius:9px; border:none; font-size:12px; font-weight:600; cursor:pointer; text-align:center; color:var(--text-m); background:transparent; transition:all .15s; position:relative; -webkit-tap-highlight-color:transparent; }
+.lcnv-subtab.active { background:var(--green); color:white; }
+
+/* Modal tạo đơn nghỉ phép [FIX v9 #5] */
+#don-nghi-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2100; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
+#don-nghi-modal.show { display:flex; }
+.don-nghi-box { background:white; border-radius:20px 20px 0 0; width:100%; max-width:430px; max-height:90vh; display:flex; flex-direction:column; animation:slideUp .25s ease; }
+.don-nghi-handle { width:40px; height:4px; background:#e0ddd5; border-radius:99px; margin:12px auto 0; flex-shrink:0; }
+.don-nghi-head { padding:14px 20px 10px; border-bottom:0.5px solid var(--border); flex-shrink:0; }
+.don-nghi-title { font-size:16px; font-weight:700; color:#C2185B; }
+.don-nghi-body { overflow-y:auto; padding:14px 16px; flex:1; -webkit-overflow-scrolling:touch; }
+.don-nghi-actions { display:flex; gap:8px; padding:12px 16px; border-top:0.5px solid var(--border); flex-shrink:0; }
+.don-nghi-send { flex:1; padding:13px; border-radius:12px; font-size:14px; font-weight:700; background:#C2185B; color:white; border:none; cursor:pointer; }
+.don-nghi-cancel { padding:13px 18px; border-radius:12px; font-size:14px; font-weight:700; background:var(--gray-lt); color:var(--text-m); border:none; cursor:pointer; }
+
+/* ── ANIMATION CA MỚI / XÓA CA ── */
+@keyframes slideInDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideOutUp  { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
+.lc-day-editor.open  { animation:slideInDown .18s ease; }
+
