@@ -4390,6 +4390,10 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       <button class="ns-subtab" id="nssub-lichsucc" onclick="setNSSubTab('lichsucc')" style="display:none">
         Lịch sử chấm công
       </button>
+      <!-- [v10.86] Chuyển đổi mã NV (ADMIN + QLNS) -->
+      <button class="ns-subtab" id="nssub-chuyenma" onclick="setNSSubTab('chuyenma')" style="display:none">
+        Chuyển đổi mã
+      </button>
     </div>
 
     <!-- SUB PANEL: Lịch sử duyệt [v8.1] -->
@@ -4557,6 +4561,66 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
       </div>
 
       <div id="lscc-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+    </div>
+
+    <!-- [v10.86] SUB PANEL: Chuyển đổi mã NV (ADMIN + QLNS) -->
+    <div id="ns-sub-chuyenma" style="display:none;padding:10px 14px">
+      <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#78350F;line-height:1.5">
+        <div style="font-weight:700;margin-bottom:4px">⚠ Lưu ý quan trọng</div>
+        Chức năng này dùng khi <b>CTV chuyển thành NV chính thức</b> (được cấp mã mới). Toàn bộ data ở mã cũ (chấm công, cảnh báo, đơn nghỉ, lịch ca, BXH, ...) sẽ được chuyển sang mã mới. Mã cũ sẽ bị khóa (<code>DA_CHUYEN_MA</code>), không thể đăng nhập nữa. <b>Không thể hoàn tác.</b>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px">
+          <!-- Mã cũ -->
+          <div style="position:relative">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">
+              MÃ CŨ (CTV) <span style="color:#DC2626">*</span>
+            </label>
+            <input type="text" id="cdm-cu-inp" placeholder="Gõ mã hoặc tên NV cũ..." autocomplete="off"
+                   oninput="cdmOnCuInput()" onfocus="cdmShowCuSug()" onblur="cdmHideCuSug()"
+                   style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box">
+            <input type="hidden" id="cdm-cu-ma" value="">
+            <div id="cdm-cu-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:8px;max-height:280px;overflow-y:auto;display:none;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin-top:2px"></div>
+          </div>
+
+          <!-- Mã mới -->
+          <div style="position:relative">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">
+              MÃ MỚI (NS) <span style="color:#DC2626">*</span>
+            </label>
+            <input type="text" id="cdm-moi-inp" placeholder="Gõ mã hoặc tên NV mới (đã đồng bộ từ Sheet)..." autocomplete="off"
+                   oninput="cdmOnMoiInput()" onfocus="cdmShowMoiSug()" onblur="cdmHideMoiSug()"
+                   style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box">
+            <input type="hidden" id="cdm-moi-ma" value="">
+            <div id="cdm-moi-sug" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:8px;max-height:280px;overflow-y:auto;display:none;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin-top:2px"></div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Mã mới phải đã tồn tại trong hệ thống (đồng bộ Sheet trước).</div>
+          </div>
+
+          <!-- Lý do -->
+          <div>
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#475569;margin-bottom:5px">LÝ DO (tùy chọn)</label>
+            <textarea id="cdm-lydo" rows="2" placeholder="VD: CTV ký HĐ chính thức tháng 6/2026..."
+                      style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit"></textarea>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div id="cdm-preview" style="display:none;margin-top:14px;padding:12px;background:#F1F5F9;border-radius:8px;border:1px dashed #94A3B8"></div>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button onclick="cdmReset()" style="flex:1;padding:10px;background:#fff;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer">
+            Xóa form
+          </button>
+          <button onclick="cdmConfirm()" id="cdm-btn-go" style="flex:2;padding:10px;background:#7C3AED;border:none;border-radius:8px;font-size:13px;font-weight:700;color:#fff;cursor:pointer">
+            ↻ Chuyển đổi
+          </button>
+        </div>
+      </div>
+
+      <!-- Kết quả -->
+      <div id="cdm-result" style="display:none"></div>
     </div>
 
     <!-- SUB PANEL: Nhân sự -->
@@ -5778,7 +5842,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.85',
+  'sys.cache_version': 'v10.86',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -6132,6 +6196,9 @@ function goToPage(page){
     // [v10.85] Show tab "Lịch sử chấm công" chỉ cho ADMIN
     const btnLSCC = document.getElementById('nssub-lichsucc');
     if (btnLSCC) btnLSCC.style.display = (SESSION && SESSION.vaiTro === 'ADMIN') ? '' : 'none';
+    // [v10.86] Show tab "Chuyển đổi mã" cho ADMIN + QLNS
+    const btnCDM = document.getElementById('nssub-chuyenma');
+    if (btnCDM) btnCDM.style.display = (SESSION && (SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'QLNS')) ? '' : 'none';
   }
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
@@ -11818,15 +11885,22 @@ function setNSSubTab(tab){
   if (elLS) elLS.classList.toggle('active',tab==='lichsu');
   const elLSCC = document.getElementById('nssub-lichsucc');
   if (elLSCC) elLSCC.classList.toggle('active',tab==='lichsucc');
+  // [v10.86] Tab Chuyển đổi mã
+  const elCDM = document.getElementById('nssub-chuyenma');
+  if (elCDM) elCDM.classList.toggle('active',tab==='chuyenma');
   document.getElementById('ns-sub-nhansu').style.display=tab==='nhansu'?'':'none';
   document.getElementById('ns-sub-donnghi').style.display=tab==='donnghi'?'':'none';
   const elLSPanel = document.getElementById('ns-sub-lichsu');
   if (elLSPanel) elLSPanel.style.display=tab==='lichsu'?'':'none';
   const elLSCCPanel = document.getElementById('ns-sub-lichsucc');
   if (elLSCCPanel) elLSCCPanel.style.display=tab==='lichsucc'?'':'none';
+  // [v10.86] Panel Chuyển đổi mã
+  const elCDMPanel = document.getElementById('ns-sub-chuyenma');
+  if (elCDMPanel) elCDMPanel.style.display=tab==='chuyenma'?'':'none';
   if(tab==='donnghi')taiDonNghiPhep();
   if(tab==='lichsu') taiLichSuDuyet();
   if(tab==='lichsucc') taiLichSuCC();
+  if(tab==='chuyenma') cdmInit(); // [v10.86]
 }
 
 // ═══ [v10.85] LỊCH SỬ CHẤM CÔNG (ADMIN TỔNG KIỂM) ═══
@@ -21914,6 +21988,242 @@ async function adm2DuyetAllCanhBao() {
     const data = await adm2Rpc('fn_admin_duyet_all_canh_bao', { p_admin: SESSION.ma });
     adm2Toast('Đã duyệt ' + (data.approved || 0) + ' cảnh báo', 'success');
   } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// [v10.86] CHUYỂN ĐỔI MÃ NV (CTV → NS)
+// ═══════════════════════════════════════════════════════════════════
+function cdmInit(){
+  // Load danh sách NV nếu chưa có
+  if (typeof _lsdLoadNVList === 'function' && !_lsdNVList) {
+    _lsdLoadNVList().catch(()=>{});
+  }
+  cdmReset();
+}
+
+function cdmReset(){
+  ['cdm-cu-inp','cdm-cu-ma','cdm-moi-inp','cdm-moi-ma','cdm-lydo'].forEach(id=>{
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const pv = document.getElementById('cdm-preview'); if (pv) pv.style.display='none';
+  const rs = document.getElementById('cdm-result'); if (rs){ rs.style.display='none'; rs.innerHTML=''; }
+  ['cdm-cu-sug','cdm-moi-sug'].forEach(id=>{
+    const el = document.getElementById(id); if (el) el.style.display='none';
+  });
+}
+
+// ─── Autocomplete mã cũ ─────────────────────────────────
+function cdmOnCuInput(){
+  const inp = document.getElementById('cdm-cu-inp');
+  const hid = document.getElementById('cdm-cu-ma');
+  if (!inp.value.trim()){ hid.value=''; }
+  cdmShowCuSug();
+  cdmUpdatePreview();
+}
+async function cdmShowCuSug(){
+  const inp = document.getElementById('cdm-cu-inp');
+  const sug = document.getElementById('cdm-cu-sug');
+  if (!inp || !sug) return;
+  const list = await _lsdLoadNVList();
+  const q = (inp.value || '').trim().toLowerCase();
+  // Cho phép chọn mọi trạng thái trừ DA_CHUYEN_MA (mã cũ phải còn dùng được)
+  // _lsdLoadNVList không có trang_thai → query supplement
+  let matched;
+  if (!q) matched = list.slice(0, 10);
+  else matched = list.filter(nv =>
+    (nv.ma_nv||'').toLowerCase().includes(q) || (nv.ten_nv||'').toLowerCase().includes(q)
+  ).slice(0, 15);
+  if (!matched.length){ sug.style.display='none'; return; }
+  sug.innerHTML = matched.map(nv =>
+    `<div onmousedown="event.preventDefault();cdmPickCu('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')"
+       style="padding:9px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${escHtml(nv.ten_nv||'')}</div>
+      <div style="font-size:11px;color:#64748B">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? ' · '+escHtml(nv.role) : ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display='block';
+}
+function cdmHideCuSug(){
+  setTimeout(()=>{const s=document.getElementById('cdm-cu-sug'); if(s) s.style.display='none';}, 200);
+}
+function cdmPickCu(ma, ten, role){
+  document.getElementById('cdm-cu-inp').value = ten + ' (' + ma + ')' + (role && role!=='NV' ? ' · '+role : '');
+  document.getElementById('cdm-cu-ma').value = ma;
+  document.getElementById('cdm-cu-sug').style.display='none';
+  cdmUpdatePreview();
+}
+
+// ─── Autocomplete mã mới ────────────────────────────────
+function cdmOnMoiInput(){
+  const inp = document.getElementById('cdm-moi-inp');
+  const hid = document.getElementById('cdm-moi-ma');
+  if (!inp.value.trim()){ hid.value=''; }
+  cdmShowMoiSug();
+  cdmUpdatePreview();
+}
+async function cdmShowMoiSug(){
+  const inp = document.getElementById('cdm-moi-inp');
+  const sug = document.getElementById('cdm-moi-sug');
+  if (!inp || !sug) return;
+  const list = await _lsdLoadNVList();
+  const maCu = document.getElementById('cdm-cu-ma').value;
+  const q = (inp.value || '').trim().toLowerCase();
+  let matched;
+  if (!q) matched = list.filter(nv => nv.ma_nv !== maCu).slice(0, 10);
+  else matched = list.filter(nv =>
+    nv.ma_nv !== maCu &&
+    ((nv.ma_nv||'').toLowerCase().includes(q) || (nv.ten_nv||'').toLowerCase().includes(q))
+  ).slice(0, 15);
+  if (!matched.length){ sug.style.display='none'; return; }
+  sug.innerHTML = matched.map(nv =>
+    `<div onmousedown="event.preventDefault();cdmPickMoi('${nv.ma_nv}','${(nv.ten_nv||'').replace(/'/g,"\\'")}','${nv.role||''}')"
+       style="padding:9px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #F1F5F9"
+       onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
+      <div style="font-weight:600;color:#0F172A">${escHtml(nv.ten_nv||'')}</div>
+      <div style="font-size:11px;color:#64748B">${escHtml(nv.ma_nv||'')}${nv.role && nv.role!=='NV' ? ' · '+escHtml(nv.role) : ''}</div>
+    </div>`
+  ).join('');
+  sug.style.display='block';
+}
+function cdmHideMoiSug(){
+  setTimeout(()=>{const s=document.getElementById('cdm-moi-sug'); if(s) s.style.display='none';}, 200);
+}
+function cdmPickMoi(ma, ten, role){
+  document.getElementById('cdm-moi-inp').value = ten + ' (' + ma + ')' + (role && role!=='NV' ? ' · '+role : '');
+  document.getElementById('cdm-moi-ma').value = ma;
+  document.getElementById('cdm-moi-sug').style.display='none';
+  cdmUpdatePreview();
+}
+
+// ─── Preview số bản ghi sẽ chuyển ───────────────────────
+async function cdmUpdatePreview(){
+  const maCu = document.getElementById('cdm-cu-ma').value;
+  const maMoi = document.getElementById('cdm-moi-ma').value;
+  const pv = document.getElementById('cdm-preview');
+  if (!maCu || !maMoi){ pv.style.display='none'; return; }
+  if (maCu === maMoi){
+    pv.style.display='block';
+    pv.innerHTML = '<div style="color:#DC2626;font-weight:600">⚠ Mã cũ và mã mới giống nhau</div>';
+    return;
+  }
+  pv.style.display='block';
+  pv.innerHTML = '<div style="color:#64748B;font-size:12px">⏳ Đang đếm bản ghi...</div>';
+  try {
+    // Đếm song song 6 bảng chính (FK) để hiển thị
+    const [cc, cb, dn, lc, pbh, tht] = await Promise.all([
+      supa.from('cham_cong').select('id', {count:'exact', head:true}).eq('ma_nv', maCu),
+      supa.from('canh_bao').select('id', {count:'exact', head:true}).eq('ma_nv', maCu),
+      supa.from('don_nghi').select('ma_nv', {count:'exact', head:true}).eq('ma_nv', maCu),
+      supa.from('lich_ca').select('ma_nv', {count:'exact', head:true}).eq('ma_nv', maCu),
+      supa.from('phien_ban_hang').select('id', {count:'exact', head:true}).eq('ma_nv', maCu),
+      supa.from('tong_hop_thang').select('ma_nv', {count:'exact', head:true}).eq('ma_nv', maCu)
+    ]);
+    const tong = (cc.count||0)+(cb.count||0)+(dn.count||0)+(lc.count||0)+(pbh.count||0)+(tht.count||0);
+    pv.innerHTML = `
+      <div style="font-weight:700;color:#0F172A;margin-bottom:8px;font-size:12.5px">
+        Số bản ghi sẽ chuyển từ <code style="background:#fff;padding:2px 6px;border-radius:4px;color:#DC2626">${escHtml(maCu)}</code>
+        → <code style="background:#fff;padding:2px 6px;border-radius:4px;color:#16A34A">${escHtml(maMoi)}</code>:
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11.5px">
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${cc.count||0}</b> chấm công</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${cb.count||0}</b> cảnh báo</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${dn.count||0}</b> đơn nghỉ</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${lc.count||0}</b> lịch ca</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${pbh.count||0}</b> phiên bán hàng</div>
+        <div style="background:#fff;padding:6px 8px;border-radius:6px"><b>${tht.count||0}</b> tổng hợp tháng</div>
+      </div>
+      <div style="margin-top:8px;font-size:11.5px;color:#475569">
+        + các bảng phụ (BXH, checklist, thông báo, ...). <b>Tổng ~${tong}+</b> bản ghi.
+      </div>`;
+  } catch(e){
+    pv.innerHTML = '<div style="color:#DC2626;font-size:12px">Lỗi đếm preview: '+escHtml(e.message||'')+'</div>';
+  }
+}
+
+// ─── Confirm + Call RPC ─────────────────────────────────
+async function cdmConfirm(){
+  const maCu = document.getElementById('cdm-cu-ma').value;
+  const maMoi = document.getElementById('cdm-moi-ma').value;
+  const lyDo = document.getElementById('cdm-lydo').value.trim();
+  if (!maCu){ showToast('Vui lòng chọn mã cũ', 'err'); return; }
+  if (!maMoi){ showToast('Vui lòng chọn mã mới', 'err'); return; }
+  if (maCu === maMoi){ showToast('Mã cũ và mã mới giống nhau', 'err'); return; }
+
+  // Check role
+  if (!SESSION || (SESSION.vaiTro !== 'ADMIN' && SESSION.vaiTro !== 'QLNS')){
+    showToast('Chỉ ADMIN hoặc QLNS được phép', 'err'); return;
+  }
+
+  const ok1 = await appConfirm(
+    `Chuyển toàn bộ data từ ${maCu} sang ${maMoi}?\nMã cũ sẽ bị khóa (DA_CHUYEN_MA), không đăng nhập được nữa.\nKHÔNG THỂ HOÀN TÁC.`,
+    { title:'Xác nhận chuyển đổi mã NV', okLabel:'Chuyển đổi', danger:true }
+  );
+  if (!ok1) return;
+
+  const ok2 = await appConfirm(
+    `Bạn chắc chắn 100% chuyển ${maCu} → ${maMoi}?`,
+    { title:'Xác nhận lần cuối', okLabel:'Chắc chắn', danger:true }
+  );
+  if (!ok2) return;
+
+  const btn = document.getElementById('cdm-btn-go');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Đang chuyển...'; btn.style.opacity = '0.6'; }
+
+  try {
+    const { data, error } = await supa.rpc('fn_chuyen_doi_ma_nv', {
+      p_admin: SESSION.ma,
+      p_ma_cu: maCu,
+      p_ma_moi: maMoi,
+      p_ly_do: lyDo || null
+    });
+    if (error) throw error;
+    if (!data || !data.success) throw new Error('RPC trả về không thành công');
+
+    // Hiển thị kết quả
+    const c = data.count || {};
+    const tong = Object.values(c).reduce((s,n)=>s+(n||0), 0);
+    const rs = document.getElementById('cdm-result');
+    rs.style.display = 'block';
+    rs.innerHTML = `
+      <div style="background:#F0FDF4;border:1.5px solid #16A34A;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:#15803D;font-size:14px;margin-bottom:8px">✓ Chuyển đổi thành công</div>
+        <div style="font-size:12.5px;color:#0F172A;margin-bottom:10px;line-height:1.6">
+          <b>${escHtml(data.ten_cu||'')}</b> (<code>${escHtml(data.ma_cu||'')}</code>)
+          → <b>${escHtml(data.ten_moi||'')}</b> (<code>${escHtml(data.ma_moi||'')}</code>)<br>
+          Lúc: ${escHtml(data.thoi_gian||'')} bởi ${escHtml(data.admin||'')}
+        </div>
+        <div style="font-weight:600;color:#475569;font-size:11.5px;margin-bottom:6px">Chi tiết bản ghi đã chuyển (tổng: ${tong}):</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;font-size:11.5px">
+          ${Object.entries(c).map(([k,v]) => 
+            `<div style="background:#fff;padding:5px 8px;border-radius:5px;border:1px solid #DCFCE7">
+              <code style="color:#475569">${escHtml(k)}</code>: <b>${v}</b>
+            </div>`
+          ).join('')}
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:#15803D;background:#fff;padding:8px;border-radius:6px">
+          Mã <code>${escHtml(data.ma_cu||'')}</code> đã được đánh dấu <code>DA_CHUYEN_MA</code> + ghi chú lịch sử.
+        </div>
+      </div>`;
+    showToast('✓ Đã chuyển ' + tong + ' bản ghi', 'ok');
+    // Clear form (giữ result)
+    document.getElementById('cdm-cu-inp').value = '';
+    document.getElementById('cdm-cu-ma').value = '';
+    document.getElementById('cdm-moi-inp').value = '';
+    document.getElementById('cdm-moi-ma').value = '';
+    document.getElementById('cdm-lydo').value = '';
+    document.getElementById('cdm-preview').style.display = 'none';
+  } catch(e){
+    console.error('[cdmConfirm] Lỗi:', e);
+    showToast('Lỗi: ' + (e.message || e), 'err');
+    const rs = document.getElementById('cdm-result');
+    rs.style.display = 'block';
+    rs.innerHTML = `<div style="background:#FEF2F2;border:1.5px solid #DC2626;border-radius:10px;padding:12px;color:#991B1B;font-size:12.5px">
+      <b>✗ Lỗi chuyển đổi:</b><br>${escHtml(e.message || String(e))}
+    </div>`;
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = '↻ Chuyển đổi'; btn.style.opacity = '1'; }
+  }
 }
 
 </script>
