@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.93',
+  'sys.cache_version': 'v10.94',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -539,20 +539,19 @@ function khoiDongApp(){
   document.getElementById('disp-ma-nv').textContent=SESSION.ma;
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
-  // [v10.93] Header modern + Hero card data
+  // [v10.94] Header modern compact + Hero card data
   try{
     const dateEl = document.getElementById('cc-header-date');
     const nameEl = document.getElementById('cc-header-name');
     const avEl   = document.getElementById('cc-header-avatar');
+    const clockEl= document.getElementById('cc-clock-live');
     if(dateEl){
       const d = new Date();
-      const dow = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][d.getDay()];
+      const dow = ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
       dateEl.textContent = dow + ' · ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
     }
     if(nameEl){
-      const parts = (SESSION.ten||'').trim().split(/\s+/);
-      const shortName = parts.length ? parts[parts.length-1] : SESSION.ten;
-      nameEl.textContent = 'Chào ' + shortName + ' 👋';
+      nameEl.textContent = SESSION.ten || '--';
     }
     if(avEl){
       const parts = (SESSION.ten||'').trim().split(/\s+/);
@@ -561,7 +560,17 @@ function khoiDongApp(){
       else if(parts.length === 1 && parts[0]) initial = parts[0][0];
       avEl.textContent = initial.toUpperCase();
     }
-    // Hero card — placeholder data, sẽ wire-up từ lịch ca ở session sau
+    // Live clock — tick mỗi giây
+    function _tickClock(){
+      if(!clockEl) return;
+      const n = new Date();
+      const pad = v => String(v).padStart(2,'0');
+      clockEl.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
+    }
+    _tickClock();
+    if(!window._ccClockTimer) window._ccClockTimer = setInterval(_tickClock, 1000);
+
+    // Hero card — placeholder data
     const heroLoc = document.getElementById('cc-hero-loc-text');
     const heroStatus = document.getElementById('cc-hero-status-txt');
     const heroDone = document.getElementById('cc-hero-done');
