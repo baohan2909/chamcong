@@ -3734,7 +3734,7 @@ img.selfie-preview { width:44px; height:44px; border-radius:10px; object-fit:cov
 .cdm-err b { display:block; margin-bottom:4px; font-size:13px; }
 
 /* ═══════════════════════════════════════════════════════════════
-   [v10.88] GLOBAL UI REFRESH — Modern facelift toàn app
+   [v10.89] GLOBAL UI REFRESH — Modern facelift toàn app
    Chiến lược: CSS override, KHÔNG đổi HTML.
    Tone: theo var(--green) đổi theo theme picker.
    ═══════════════════════════════════════════════════════════════ */
@@ -4068,7 +4068,7 @@ html { scroll-behavior: smooth; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   [v10.88] FINISHING TOUCHES — Header gradient + curve, các nút,
+   [v10.89] FINISHING TOUCHES — Header gradient + curve, các nút,
    GPS, avatar placeholder theme-aware, page background uniform
    ═══════════════════════════════════════════════════════════════ */
 
@@ -4448,11 +4448,11 @@ body.is-map #global-hero-bg { display: none !important; }
 </head>
 <body>
 
-<!-- [v10.88] Global hero background — gradient theme với curve bottom -->
+<!-- [v10.89] Global hero background — gradient theme với curve bottom -->
 <div id="global-hero-bg" aria-hidden="true"></div>
 
 <script>
-// [v10.88] Đánh dấu is-login ngay đầu để ẩn hero bg trước khi user đăng nhập
+// [v10.89] Đánh dấu is-login ngay đầu để ẩn hero bg trước khi user đăng nhập
 document.body.classList.add('is-login');
 </script>
 
@@ -4461,7 +4461,7 @@ document.body.classList.add('is-login');
   <div class="login-logo-wrap">
     <div class="login-logo-icon">⏱️</div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.88</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.89</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -5946,7 +5946,7 @@ document.body.classList.add('is-login');
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.88 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.89 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -6925,7 +6925,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.88',
+  'sys.cache_version': 'v10.89',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -7264,7 +7264,7 @@ function goToPage(page){
     if(lcNav)lcNav.classList.add('active');
   }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
-  // [v10.88] Toggle class is-map để ẩn hero bg ở page bản đồ
+  // [v10.89] Toggle class is-map để ẩn hero bg ở page bản đồ
   document.body.classList.toggle('is-map', page === 'bandochidung');
   // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
   window.scrollTo(0, 0);
@@ -7378,7 +7378,7 @@ async function doLogout(){
   document.getElementById('main-app').style.display='none';
   document.getElementById('main-header').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  document.body.classList.add('is-login'); // [v10.88] ẩn hero bg
+  document.body.classList.add('is-login'); // [v10.89] ẩn hero bg
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
 }
@@ -7445,7 +7445,7 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
-  document.body.classList.remove('is-login'); // [v10.88] hiện hero bg
+  document.body.classList.remove('is-login'); // [v10.89] hiện hero bg
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
