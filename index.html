@@ -23,23 +23,23 @@
 
 <title>Chấm công · Nón Sơn</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="css/00-tokens.css?v=10.94">
-<link rel="stylesheet" href="css/01-base.css?v=10.94">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=10.94">
-<link rel="stylesheet" href="css/03-banhang.css?v=10.94">
-<link rel="stylesheet" href="css/04-responsive.css?v=10.94">
-<link rel="stylesheet" href="css/05-admin.css?v=10.94">
-<link rel="stylesheet" href="css/06-modules.css?v=10.94">
-<link rel="stylesheet" href="css/08-redesign.css?v=10.94">
+<link rel="stylesheet" href="css/00-tokens.css?v=10.95">
+<link rel="stylesheet" href="css/01-base.css?v=10.95">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=10.95">
+<link rel="stylesheet" href="css/03-banhang.css?v=10.95">
+<link rel="stylesheet" href="css/04-responsive.css?v=10.95">
+<link rel="stylesheet" href="css/05-admin.css?v=10.95">
+<link rel="stylesheet" href="css/06-modules.css?v=10.95">
+<link rel="stylesheet" href="css/08-redesign.css?v=10.95">
 </head>
 <body class="cc-redesign-active">
 
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo-wrap">
-    <div class="login-logo-icon">⏱️</div>
+    <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.94</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.95</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -627,7 +627,7 @@
     </div>
     <div class="header-nv" id="header-nv-info">--</div>
 
-    <!-- [v10.94] Header modern compact — avatar + name + meta (date · clock live) + bell -->
+    <!-- [v10.95] Header modern compact — avatar + name + meta (date · clock live) + bell -->
     <div class="cc-header-row">
       <div class="cc-header-avatar" id="cc-header-avatar" onclick="goToPage('taikhoan')">--</div>
       <div class="cc-header-info">
@@ -797,7 +797,7 @@
 
   <!-- PAGE: CHẤM CÔNG -->
   <div class="page active" id="page-chamcong">
-    <!-- [v10.94] HERO CARD "Ca hôm nay" -->
+    <!-- [v10.95] HERO CARD "Ca hôm nay" -->
     <div class="cc-hero">
       <div class="cc-hero-bubble-1"></div>
       <div class="cc-hero-bubble-2"></div>
@@ -895,7 +895,7 @@
       <div class="gps-wrap">
         <div class="gps-btn" id="gps-btn" onclick="layViTri()">
           <div class="gps-left">
-            <div class="gps-icon" id="gps-icon">📍</div>
+            <div class="gps-icon" id="gps-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
             <div><div class="gps-label" id="gps-label">Chưa xác nhận vị trí</div><div class="gps-sub" id="gps-sub">Bấm để lấy vị trí</div></div>
           </div>
           <div class="gps-badge" id="gps-badge">Lấy vị trí</div>
@@ -909,7 +909,7 @@
         <input type="file" id="camera-file-input" accept="image/*" capture="user"
                style="display:none" onchange="xuLyAnhChup(this)">
         <div class="selfie-btn" id="selfie-btn" onclick="moCamera()">
-          <div class="selfie-icon" id="selfie-icon">📷</div>
+          <div class="selfie-icon" id="selfie-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
           <img id="selfie-preview" class="selfie-preview" alt="selfie">
           <div>
             <div class="selfie-text" id="selfie-text">Chụp ảnh xác minh</div>
@@ -1562,7 +1562,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.94 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.95 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2443,7 +2443,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV [v10.94 modern liquid glass] -->
+  <!-- BOTTOM NAV [v10.95 modern liquid glass] -->
   <div class="bottom-nav cc-nav-modern" id="bottom-nav">
     <div class="cc-nav-inner">
     <button class="nav-item active" id="nav-chamcong" onclick="goToPage('chamcong')">
@@ -2495,13 +2495,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=10.94"></script>
-<script src="js/core/02-system.js?v=10.94"></script>
+<script src="js/core/01-config.js?v=10.95"></script>
+<script src="js/core/02-system.js?v=10.95"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=10.94">
+<link rel="stylesheet" href="css/07-extras.css?v=10.95">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2536,13 +2536,13 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=10.94"></script>
-<script src="js/pages/01-lichca.js?v=10.94"></script>
-<script src="js/pages/02-nhansu.js?v=10.94"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=10.94"></script>
-<script src="js/pages/04-misc.js?v=10.94"></script>
-<script src="js/admin/01-banhang.js?v=10.94"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=10.94"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=10.94"></script>
+<script src="js/core/03-router.js?v=10.95"></script>
+<script src="js/pages/01-lichca.js?v=10.95"></script>
+<script src="js/pages/02-nhansu.js?v=10.95"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=10.95"></script>
+<script src="js/pages/04-misc.js?v=10.95"></script>
+<script src="js/admin/01-banhang.js?v=10.95"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=10.95"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=10.95"></script>
 </body>
 </html>
