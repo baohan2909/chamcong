@@ -178,13 +178,16 @@ async function loadNotifications(reset) {
 
 function renderNotifBadge() {
   const badge = document.getElementById('header-bell-badge');
-  if (!badge) return;
+  const badgeNew = document.getElementById('cc-header-bell-badge');
   const unreadCount = _notifList.filter(n => !n.daXem).length;
-  if (unreadCount > 0) {
-    badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
-    badge.style.display = 'flex';
-  } else {
-    badge.style.display = 'none';
+  const txt = unreadCount > 99 ? '99+' : String(unreadCount);
+  if (badge) {
+    if (unreadCount > 0) { badge.textContent = txt; badge.style.display = 'flex'; }
+    else badge.style.display = 'none';
+  }
+  if (badgeNew) {
+    if (unreadCount > 0) { badgeNew.textContent = txt; badgeNew.style.display = 'flex'; }
+    else badgeNew.style.display = 'none';
   }
 }
 

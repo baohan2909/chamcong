@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.92',
+  'sys.cache_version': 'v10.93',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -538,6 +538,40 @@ function khoiDongApp(){
   document.getElementById('disp-ten-nv').textContent=SESSION.ten;
   document.getElementById('disp-ma-nv').textContent=SESSION.ma;
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
+
+  // [v10.93] Header modern + Hero card data
+  try{
+    const dateEl = document.getElementById('cc-header-date');
+    const nameEl = document.getElementById('cc-header-name');
+    const avEl   = document.getElementById('cc-header-avatar');
+    if(dateEl){
+      const d = new Date();
+      const dow = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][d.getDay()];
+      dateEl.textContent = dow + ' · ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+    }
+    if(nameEl){
+      const parts = (SESSION.ten||'').trim().split(/\s+/);
+      const shortName = parts.length ? parts[parts.length-1] : SESSION.ten;
+      nameEl.textContent = 'Chào ' + shortName + ' 👋';
+    }
+    if(avEl){
+      const parts = (SESSION.ten||'').trim().split(/\s+/);
+      let initial = '--';
+      if(parts.length >= 2) initial = (parts[parts.length-2][0]||'') + (parts[parts.length-1][0]||'');
+      else if(parts.length === 1 && parts[0]) initial = parts[0][0];
+      avEl.textContent = initial.toUpperCase();
+    }
+    // Hero card — placeholder data, sẽ wire-up từ lịch ca ở session sau
+    const heroLoc = document.getElementById('cc-hero-loc-text');
+    const heroStatus = document.getElementById('cc-hero-status-txt');
+    const heroDone = document.getElementById('cc-hero-done');
+    const heroLeft = document.getElementById('cc-hero-left');
+    if(heroLoc) heroLoc.textContent = SESSION.ma + ' · ' + (SESSION.ten||'').substring(0,30);
+    if(heroStatus) heroStatus.textContent = 'Sẵn sàng';
+    if(heroDone) heroDone.textContent = '--';
+    if(heroLeft) heroLeft.textContent = '--';
+  }catch(_e){}
+
   document.getElementById('banner-pw').style.display=SESSION.laDatMacDinh?'block':'none';
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
