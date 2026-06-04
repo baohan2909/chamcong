@@ -1213,10 +1213,6 @@ async function taiLichSuDuyet(){
   }
 }
 
-function escHtml(s) {
-  return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 // [v10.85] Lookup đội sale của NV: trả về tên đội nếu NV mặc định thuộc đội sale, null nếu không
 function _getDoiSaleNV(maNV) {
   if (!maNV || !_lsdNVList) return null;
