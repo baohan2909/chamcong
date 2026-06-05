@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.97',
+  'sys.cache_version': 'v10.98',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -628,15 +628,20 @@ function khoiDongApp(){
 
   // [v7.0] Menu "Xin bổ sung ca" — chỉ NV thường
   const isNV = !isQL && !isCH && !isQLBH && !isAdminAll;
-  // [v10.97] Tab Chương trình → đã chuyển vào tab Tài khoản, KHÔNG hiện ở bottom nav
+  // [v10.98] Phân quyền BOTTOM NAV theo role
+  // - NV/CTV: thêm nav-bandochidung + nav-chuongtrinh vào bottom
+  // - ADMIN: thêm nav-banhang + nav-admin vào bottom
+  // - QLNS/QLBH/CH: thêm nav-banhang vào bottom (đã có sẵn cho QLBH/CH)
   const nCT = document.getElementById('nav-chuongtrinh');
-  if (nCT) nCT.style.display = 'none';
-  // [v10.97] Kiểm tra cửa hàng → vào menu Tài khoản (NV + CUA_HANG)
+  const nBD = document.getElementById('nav-bandochidung');
   if (isNV || isCH) {
     const mChk = document.getElementById('menu-checklist');
     if (mChk) mChk.style.display = '';
   }
   if (isNV) {
+    // NV: bật bản đồ + chương trình ở bottom nav
+    if (nCT) nCT.style.display = '';
+    if (nBD) nBD.style.display = '';
     const mb = document.getElementById('menu-bosung-ca');
     if (mb) {
       mb.style.display = '';
@@ -651,12 +656,13 @@ function khoiDongApp(){
     }
   }
   if (isAdminAll) {
-    // [v10.97] Tab Admin → ẨN khỏi bottom, hiện menu trong Tài khoản
+    // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
     const nA = document.getElementById('nav-admin');
-    if (nA) nA.style.display = 'none';
+    if (nA) nA.style.display = '';
+    const nBH = document.getElementById('nav-banhang');
+    if (nBH) nBH.style.display = '';
     const mAd = document.getElementById('menu-admin');
     if (mAd) mAd.style.display = '';
-    // [v5.6] ADMIN cũng có menu Phiên bán hàng
     const mBH = document.getElementById('menu-banhang');
     if (mBH) mBH.style.display='';
   }

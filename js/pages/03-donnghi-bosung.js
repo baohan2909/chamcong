@@ -334,15 +334,22 @@ function taiDashboard(){
       });
       return;
     }
-    // Adapt sang format Apps Script gốc
+    // Adapt sang format Apps Script gốc — keys khớp với renderDashboard
     const tq = res.tongQuan || {};
     const dashboard = {
       kpi: {
-        tongNV: tq.tongNV || 0,
+        tongNS: tq.tongNV || 0,
         diLam: tq.tongChamCong || 0,
-        nghi: tq.tongDonNghi || 0,
-        khong: 0,
-        gioDK: 0, gioTT: 0, chenh: 0
+        nghiPhep: tq.tongDonNghi || 0,
+        khongHoatDong: Math.max(0, (tq.tongNV || 0) - (tq.tongChamCong || 0) - (tq.tongDonNghi || 0))
+      },
+      gioCong: {
+        tongGioDK: tq.tongGioDK || '0g',
+        tongGioTT: tq.tongGioTT || '0g',
+        chenhGio: tq.chenhGio || '0g',
+        tongPhutDK: tq.tongPhutDK || 0,
+        tongPhutTT: tq.tongPhutTT || 0,
+        chenhPct: tq.chenhPct || '—'
       },
       duLieuNgay: [],
       topKV: [],
