@@ -1397,3 +1397,54 @@ body.cc-redesign-active #page-lichca .thang-label {
   text-align: center !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   [v10.99] HOÀN NGUYÊN bubble cho các thẻ TRẮNG / XANH NHẠT
+   Quy tắc: CHỈ thẻ background GRADIENT MÀU CHỦ ĐẠO (teal đậm hero,
+   button gradient, FAB, tab active gradient) MỚI có vòng tròn.
+   Các thẻ trắng/xanh nhạt → KHÔNG có vòng tròn.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Thẻ trong page Chấm công (Info NV, Cửa hàng, GPS card) — nền trắng */
+body.cc-redesign-active #page-chamcong > .card::before { content: none !important; }
+
+/* List cards (Lịch sử duyệt items) — nền trắng */
+body.cc-redesign-active .lsd-card::before { content: none !important; }
+
+/* Stat cards — nền trắng */
+body.cc-redesign-active .ns-stat::before,
+body.cc-redesign-active .lsd-stat-card::before { content: none !important; }
+
+/* Lịch ca header card "Tuần 23" — nền trắng */
+body.cc-redesign-active .lc-header::before { content: none !important; }
+
+/* Giờ công header + Lịch ca header — nền trắng */
+body.cc-redesign-active #page-giocong .gc-header::before,
+body.cc-redesign-active #page-lichca .lc-header::before { content: none !important; }
+
+/* Stat cards trong giờ công + lịch ca — nền trắng */
+body.cc-redesign-active #page-giocong .stat-card::before,
+body.cc-redesign-active #page-lichca .stat-card::before { content: none !important; }
+
+/* Admin action card — nền trắng */
+body.cc-redesign-active .adm2-action-card::before { content: none !important; }
+
+/* Button SECONDARY teal nhạt (Mở Lịch sử duyệt, etc) — BỎ bubble */
+body.cc-redesign-active .adm2-btn.adm2-btn-secondary::before,
+body.cc-redesign-active .lsd-action-btn.lsd-action-secondary::before,
+body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !important; }
+
+/* GIỮ bubble cho:
+   - .cc-hero, .cc-hero-page (gradient teal đậm)
+   - .ct-banner (gradient amber chương trình)
+   - 4 action cards .tb-vao/.tb-ra/.tb-ra-g/.tb-vao-g (decoration đặc biệt theo màu action)
+   - Buttons gradient teal/red đậm (.lsd-btn-duyet, .yc-bulk-ok, .adm2-btn-primary, .submit-btn, .login-btn)
+   - .ns-refresh (FAB gradient teal đậm)
+   - Sub-tabs ACTIVE (.ns-subtab.active, .lcnv-subtab.active, .adm2-tab.active) — gradient teal khi active
+*/
+
+/* ═══ BADGE RỖNG (chấm đỏ không số) — ẨN HOÀN TOÀN ═══ */
+.cc-nav-modern .nav-item .nav-badge:empty { display: none !important; }
+/* Cũng ẩn khi text là "0" hoặc whitespace */
+.cc-nav-modern .nav-item .nav-badge[data-empty="1"] { display: none !important; }
+
