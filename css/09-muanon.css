@@ -1,0 +1,392 @@
+/* ═══════════════════════════════════════════════════════════════
+   MODULE: MẪU NÓN HÀNG TUẦN — CSS (Phase 3 NV side)
+   Path: css/09-muanon.css
+   ═══════════════════════════════════════════════════════════════ */
+
+#page-muanon { padding: 0 0 90px; }
+
+.muanon-content-wrap { padding: 0 14px; }
+
+.muanon-loading,
+.muanon-empty,
+.muanon-err {
+  text-align: center;
+  padding: 40px 16px;
+  color: #6b7280;
+  font-size: 13px;
+}
+.muanon-err { color: #B91C1C; }
+
+/* ═══ STATUS CARD ═══ */
+.muanon-status-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin: 0 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.03);
+}
+.muanon-status-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.muanon-status-icon svg { width: 22px; height: 22px; }
+.muanon-status-card.pending .muanon-status-icon {
+  background: linear-gradient(135deg, #FFF7E6, #FAEEDA);
+  color: #BA7517;
+}
+.muanon-status-card.submitted .muanon-status-icon {
+  background: linear-gradient(135deg, #E1F5EE, #D0EDDD);
+  color: #0F6E56;
+}
+.muanon-status-info { flex: 1; min-width: 0; }
+.muanon-status-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1a1d18;
+  letter-spacing: -0.2px;
+}
+.muanon-status-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.muanon-status-sub b { color: #0F6E56; font-weight: 700; }
+
+/* ═══ SECTION ═══ */
+.muanon-section-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin: 0 14px 8px;
+}
+.muanon-slots-section,
+.muanon-mota-section,
+.muanon-history-section {
+  margin-top: 16px;
+}
+
+/* ═══ SLOTS GRID ═══ */
+.muanon-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 14px;
+}
+.muanon-slot {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease;
+}
+.muanon-slot:active { transform: scale(0.97); }
+
+.muanon-slot.empty {
+  border: 1.5px dashed #cbd5e1;
+  background: #fafbfc;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.muanon-slot.empty:hover,
+.muanon-slot.empty:active {
+  border-color: #0F6E56;
+  background: #f0fbf6;
+  color: #0F6E56;
+}
+.muanon-slot-lbl {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.muanon-slot.filled {
+  background: #f1f5f9;
+  border: 1px solid rgba(0,0,0,0.06);
+  cursor: default;
+}
+.muanon-slot-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.muanon-slot-del {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+.muanon-slot-del:active { background: rgba(0,0,0,0.75); }
+
+.muanon-slot-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.2px;
+  z-index: 2;
+}
+.muanon-slot-tag.has-tag {
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
+  box-shadow: 0 4px 12px -3px rgba(15,110,86,0.5);
+}
+.muanon-slot-tag .tag-label {
+  font-weight: 700;
+}
+.muanon-slot-tag:active { transform: translateY(1px); }
+
+/* ═══ MÔ TẢ ═══ */
+.muanon-mota {
+  width: calc(100% - 28px);
+  margin: 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  min-height: 70px;
+  color: #1a1d18;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: border-color .15s, box-shadow .15s;
+  box-sizing: border-box;
+}
+.muanon-mota:focus {
+  border-color: #1D9E75;
+  box-shadow: 0 0 0 3px rgba(29,158,117,0.1);
+}
+.muanon-mota::placeholder { color: #9ca3af; }
+
+/* ═══ SUBMIT BUTTON ═══ */
+.muanon-submit-wrap {
+  padding: 18px 14px 0;
+}
+.muanon-submit-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -6px rgba(15,110,86,0.5);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.muanon-submit-btn::before {
+  content: '';
+  position: absolute;
+  right: -25px; top: -25px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.13);
+  pointer-events: none;
+}
+.muanon-submit-btn:active { transform: scale(0.98); }
+.muanon-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* ═══ HISTORY LIST ═══ */
+.muanon-history-list {
+  margin: 0 14px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.03);
+}
+.muanon-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.muanon-history-item:last-child { border-bottom: none; }
+
+.muanon-history-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.muanon-history-icon svg { width: 16px; height: 16px; }
+
+.muanon-history-item.done .muanon-history-icon { background: #E1F5EE; color: #0F6E56; }
+.muanon-history-item.late .muanon-history-icon { background: #FAEEDA; color: #BA7517; }
+.muanon-history-item.miss .muanon-history-icon { background: #FCE4EC; color: #B91C1C; }
+.muanon-history-item.open .muanon-history-icon { background: #E6F1FB; color: #185FA5; }
+
+.muanon-history-info { flex: 1; min-width: 0; }
+.muanon-history-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1d18;
+}
+.muanon-history-sub {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ═══ TAG BOTTOM SHEET ═══ */
+.muanon-tag-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: background .25s ease;
+}
+.muanon-tag-sheet-overlay.open { background: rgba(0,0,0,0.45); }
+
+.muanon-tag-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 430px;
+  border-radius: 22px 22px 0 0;
+  padding: 8px 16px max(20px, env(safe-area-inset-bottom)) 16px;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.32, .72, 0, 1);
+  box-shadow: 0 -8px 32px -8px rgba(0,0,0,0.2);
+}
+.muanon-tag-sheet-overlay.open .muanon-tag-sheet { transform: translateY(0); }
+
+.muanon-tag-sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d1d5db;
+  margin: 8px auto 14px;
+}
+.muanon-tag-sheet-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1d18;
+  margin-bottom: 16px;
+  letter-spacing: -0.2px;
+}
+
+.muanon-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.muanon-tag-chip {
+  background: #f4f6f8;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  padding: 12px 6px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .18s ease;
+  position: relative;
+  min-height: 76px;
+}
+.muanon-tag-chip:active { transform: scale(0.94); }
+.muanon-tag-chip-icon {
+  width: 28px;
+  height: 28px;
+  color: #6b7280;
+}
+.muanon-tag-chip-icon svg { width: 28px; height: 28px; stroke-width: 2; }
+.muanon-tag-chip-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  letter-spacing: 0.1px;
+  line-height: 1.15;
+}
+
+.muanon-tag-chip.active {
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
+  border-color: transparent;
+  box-shadow: 0 6px 18px -4px rgba(15,110,86,0.45);
+}
+.muanon-tag-chip.active .muanon-tag-chip-icon,
+.muanon-tag-chip.active .muanon-tag-chip-label {
+  color: #fff;
+}
+.muanon-tag-chip-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  color: #0F6E56;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive: 7 chips → vẫn fit 4 cột × 2 hàng (4+3) */
+@media (max-width: 360px) {
+  .muanon-tag-grid { grid-template-columns: repeat(3, 1fr); }
+}
+

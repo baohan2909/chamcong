@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v10.99',
+  'sys.cache_version': 'v11.0',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -348,6 +348,9 @@ const PAGE_TITLES={
   'checklist-ql': 'SỰ CỐ CỬA HÀNG',
   // [v10.85]
   'chuongtrinh': 'CHƯƠNG TRÌNH KHUYẾN MÃI',
+  // [v11 muanon]
+  'muanon':       'MẪU NÓN HÀNG TUẦN',
+  'muanon-admin': 'QUẢN LÝ MẪU NÓN',
 };
 function goToPage(page){
   currentPage=page;
@@ -665,6 +668,15 @@ function khoiDongApp(){
     if (mAd) mAd.style.display = '';
     const mBH = document.getElementById('menu-banhang');
     if (mBH) mBH.style.display='';
+    // [v11 muanon] menu Hình ảnh sản phẩm hàng tuần
+    const mMNA = document.getElementById('menu-muanon-admin');
+    if (mMNA) mMNA.style.display = '';
+  }
+
+  // [v11 muanon] QL (QLNS/QLBH) cũng thấy menu-muanon-admin
+  if (isQL || isQLBH || isCH) {
+    const mMNA = document.getElementById('menu-muanon-admin');
+    if (mMNA) mMNA.style.display = '';
   }
 
   if(isQL){
