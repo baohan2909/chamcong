@@ -360,17 +360,17 @@ function taiDashboard(){
 }
 
 function renderDashboard(d){
-  const k=d.kpi, gc=d.gioCong;
+  const k = d.kpi || {}, gc = d.gioCong || {};
   // KPI
-  document.getElementById('dash-k-tong').textContent=k.tongNS;
-  document.getElementById('dash-k-dilam').textContent=k.diLam;
-  document.getElementById('dash-k-nghi').textContent=k.nghiPhep;
-  document.getElementById('dash-k-khong').textContent=k.khongHoatDong;
+  document.getElementById('dash-k-tong').textContent=k.tongNS||0;
+  document.getElementById('dash-k-dilam').textContent=k.diLam||0;
+  document.getElementById('dash-k-nghi').textContent=k.nghiPhep||0;
+  document.getElementById('dash-k-khong').textContent=k.khongHoatDong||0;
   document.getElementById('dash-k-giodk').textContent=gc.tongGioDK||'0g';
   document.getElementById('dash-k-giott').textContent=gc.tongGioTT||'0g';
   const chenh=document.getElementById('dash-k-chenh');
   chenh.textContent=gc.chenhGio||'0g';
-  chenh.style.color=gc.tongPhutTT>=gc.tongPhutDK?'var(--green-m)':'var(--red)';
+  chenh.style.color=(gc.tongPhutTT||0)>=(gc.tongPhutDK||0)?'var(--green-m)':'var(--red)';
   document.getElementById('dash-k-chenh-lbl').textContent='Chênh lệch · '+(gc.chenhPct||'—');
 
   // Donut cơ cấu NS

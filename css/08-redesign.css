@@ -546,7 +546,7 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
   pointer-events: none;
 }
 
-/* ═══ BOTTOM NAV — iOS 18 GLASS — ACTIVE EXPAND, INACTIVE ICON ONLY ═══ */
+/* ═══ BOTTOM NAV — iOS 18 GLASS — ICON + LABEL LUÔN HIỆN ═══ */
 .bottom-nav.cc-nav-modern {
   position: fixed !important;
   bottom: 0 !important;
@@ -555,7 +555,7 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
   width: 100% !important;
   max-width: 430px !important;
   z-index: 30 !important;
-  padding: 0 12px env(safe-area-inset-bottom, 8px) !important;
+  padding: 0 10px env(safe-area-inset-bottom, 8px) !important;
   background: transparent !important;
   border-top: none !important;
   box-shadow: none !important;
@@ -563,75 +563,82 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
   height: auto !important;
 }
 .cc-nav-inner {
-  background: rgba(255,255,255,0.72);
+  background: rgba(255,255,255,0.78);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   backdrop-filter: blur(28px) saturate(180%);
   border: 0.5px solid rgba(255,255,255,0.9);
   border-radius: 22px;
-  padding: 5px;
+  padding: 7px 6px;
   display: flex;
-  gap: 2px;
+  gap: 0;
   box-shadow:
     0 12px 32px -6px rgba(0,0,0,0.14),
     0 0 0 0.5px rgba(0,0,0,0.04),
     inset 0 1px 0 rgba(255,255,255,0.9);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+}
+.cc-nav-modern .nav-item:not([style*="display:none"]):not([style*="display: none"]) {
+  display: flex !important;
 }
 .cc-nav-modern .nav-item {
-  flex: 0 0 auto !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
   width: auto !important;
   height: auto !important;
-  padding: 9px 10px !important;
-  display: flex !important;
-  flex-direction: row !important;
+  padding: 7px 2px !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
-  border-radius: 16px !important;
+  gap: 4px !important;
+  border-radius: 14px !important;
   background: transparent !important;
   border: none !important;
   cursor: pointer;
   position: relative;
   -webkit-tap-highlight-color: transparent;
-  transition: background .2s ease, flex .25s ease;
-  min-width: 0 !important;
+  transition: background .2s ease, transform .15s ease;
   color: inherit !important;
 }
 .cc-nav-modern .nav-item .nav-svg {
-  width: 19px !important;
-  height: 19px !important;
-  color: #9b9a96 !important;
-  stroke-width: 2.2 !important;
-  transition: color .2s ease;
+  width: 22px !important;
+  height: 22px !important;
+  color: #6b7280 !important;
+  stroke-width: 2 !important;
+  transition: color .2s ease, transform .2s ease;
   margin: 0 !important;
   flex-shrink: 0;
 }
-/* Label MẶC ĐỊNH ẨN */
 .cc-nav-modern .nav-item .nav-label {
-  display: none !important;
-}
-/* Active tab: EXPAND + show label + background teal-lt */
-.cc-nav-modern .nav-item.active {
-  flex: 1 1 auto !important;
-  background: #E1F5EE !important;
-  padding: 9px 12px !important;
-}
-.cc-nav-modern .nav-item.active .nav-svg { color: #0F6E56 !important; }
-.cc-nav-modern .nav-item.active .nav-label {
   display: block !important;
-  font-size: 11.5px !important;
-  color: #0F6E56 !important;
-  font-weight: 700 !important;
+  font-size: 10px !important;
+  color: #6b7280 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.1px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   margin: 0 !important;
-  line-height: 1;
+  line-height: 1.1;
+  text-align: center;
+  padding: 0 2px;
+}
+.cc-nav-modern .nav-item.active {
+  background: linear-gradient(135deg, #E1F5EE 0%, #DCF3E8 100%) !important;
+}
+.cc-nav-modern .nav-item.active .nav-svg {
+  color: #0F6E56 !important;
+  transform: scale(1.08);
+}
+.cc-nav-modern .nav-item.active .nav-label {
+  color: #0F6E56 !important;
+  font-weight: 700 !important;
 }
 .cc-nav-modern .nav-item:active { transform: scale(0.94); }
 .cc-nav-modern .nav-item .nav-badge {
   position: absolute !important;
-  top: 2px !important;
-  right: 4px !important;
+  top: 1px !important;
+  right: 6px !important;
   min-width: 16px !important;
   height: 16px !important;
   border-radius: 8px !important;
@@ -647,8 +654,8 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
 }
 
 /* Padding-bottom đủ chỗ nav */
-body.cc-redesign-active .page { padding-bottom: 88px !important; }
-body.cc-redesign-active #page-chamcong { padding-bottom: 88px !important; padding-top: 0 !important; }
+body.cc-redesign-active .page { padding-bottom: 90px !important; }
+body.cc-redesign-active #page-chamcong { padding-bottom: 90px !important; padding-top: 0 !important; }
 
 /* Banner-pw — đồng bộ style */
 body.cc-redesign-active #page-chamcong .banner-pw {
@@ -671,10 +678,10 @@ body.cc-redesign-active #page-chamcong .banner-pw {
 body.cc-redesign-active #nav-bandochidung { display: none !important; }
 
 /* ═══ TẤT CẢ SUB-TABS (active) — gradient teal đồng bộ ═══ */
-body.cc-redesign-active .ns-tab.active,
+body.cc-redesign-active .ns-subtab.active,
 body.cc-redesign-active .lcnv-subtab.active,
 body.cc-redesign-active .lc-tab.active,
-body.cc-redesign-active .adm2-subtab.active,
+body.cc-redesign-active .adm2-tab.active,
 body.cc-redesign-active .bxh-tab.active {
   background: linear-gradient(135deg, #1D9E75, #0F6E56) !important;
   color: #fff !important;
@@ -683,9 +690,10 @@ body.cc-redesign-active .bxh-tab.active {
   position: relative;
   overflow: hidden;
 }
-body.cc-redesign-active .ns-tab.active::before,
+body.cc-redesign-active .ns-subtab.active::before,
 body.cc-redesign-active .lcnv-subtab.active::before,
-body.cc-redesign-active .lc-tab.active::before {
+body.cc-redesign-active .lc-tab.active::before,
+body.cc-redesign-active .adm2-tab.active::before {
   content: '';
   position: absolute;
   right: -10px; top: -10px;
@@ -696,8 +704,9 @@ body.cc-redesign-active .lc-tab.active::before {
 }
 
 /* Inactive tabs — pill mềm */
-body.cc-redesign-active .ns-tab,
-body.cc-redesign-active .lcnv-subtab {
+body.cc-redesign-active .ns-subtab,
+body.cc-redesign-active .lcnv-subtab,
+body.cc-redesign-active .adm2-tab {
   background: #fff !important;
   border: 1px solid rgba(0,0,0,0.06) !important;
   color: #6b7280 !important;
@@ -958,3 +967,144 @@ body.cc-redesign-active .lsd-card .lsd-card-foot > *[style*="background:#FEF3C7"
 /* SVG color cho login-logo-icon */
 body.cc-redesign-active .login-logo-icon { color: #0F6E56; }
 body.cc-redesign-active .login-logo-icon svg { width: 36px; height: 36px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   [v10.97] Phase D — Admin row + Hero universal + Sub-tab fixes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══ FIX: ADMIN ROW (.adm2-row) — stack dọc trên mobile khi nhiều actions ═══ */
+body.cc-redesign-active .adm2-row {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+}
+body.cc-redesign-active .adm2-row-main {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+body.cc-redesign-active .adm2-row-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: #1a1d18 !important;
+}
+body.cc-redesign-active .adm2-row-sub {
+  font-size: 11.5px !important;
+  color: #6b7280 !important;
+  line-height: 1.45 !important;
+  margin-top: 2px !important;
+}
+body.cc-redesign-active .adm2-row-actions {
+  display: flex !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  margin-top: 4px !important;
+}
+body.cc-redesign-active .adm2-row-actions > button {
+  flex: 1 1 auto !important;
+  min-width: 70px !important;
+  font-size: 11.5px !important;
+  padding: 7px 8px !important;
+  border-radius: 9px !important;
+  white-space: nowrap;
+  font-weight: 700 !important;
+}
+
+/* ═══ HERO CARD UNIVERSAL — áp dụng mọi page có .cc-hero-page ═══ */
+body.cc-redesign-active .cc-hero-page {
+  background: var(--cc-hero-gradient);
+  border-radius: 22px;
+  margin: 10px 14px 14px;
+  padding: 16px 18px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--cc-hero-shadow);
+}
+body.cc-redesign-active .cc-hero-page::before {
+  content: '';
+  position: absolute;
+  right: -20px; top: -20px;
+  width: 150px; height: 150px;
+  border-radius: 50%;
+  background: var(--cc-bubble-color);
+  pointer-events: none;
+}
+body.cc-redesign-active .cc-hero-page::after {
+  content: '';
+  position: absolute;
+  right: 55px; top: 55px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--cc-bubble-color-sm);
+  pointer-events: none;
+}
+body.cc-redesign-active .cc-hero-page > * { position: relative; z-index: 1; }
+body.cc-redesign-active .cc-hero-page-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(255,255,255,0.22);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+body.cc-redesign-active .cc-hero-page-icon svg { width: 22px; height: 22px; color: #fff; }
+body.cc-redesign-active .cc-hero-page-label {
+  font-size: 10.5px;
+  opacity: 0.85;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+body.cc-redesign-active .cc-hero-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+body.cc-redesign-active .cc-hero-page-sub {
+  font-size: 12px;
+  opacity: 0.88;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ═══ FIX: Sub-tabs container — wrap đẹp + scroll horizontal ═══ */
+body.cc-redesign-active .ns-tabs,
+body.cc-redesign-active .lcnv-subtabs,
+body.cc-redesign-active .adm2-tabs {
+  display: flex !important;
+  gap: 6px !important;
+  margin: 4px 14px 8px !important;
+  padding: 2px 0 4px !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+}
+body.cc-redesign-active .ns-tabs::-webkit-scrollbar,
+body.cc-redesign-active .lcnv-subtabs::-webkit-scrollbar,
+body.cc-redesign-active .adm2-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* ═══ Admin page padding + scroll ═══ */
+body.cc-redesign-active #page-admin .adm2-wrap {
+  padding-top: 0 !important;
+}
+
+/* ═══ NS-stats-grid 3-col → cho mobile compact ═══ */
+body.cc-redesign-active .ns-stats-grid {
+  margin: 8px 14px 0 !important;
+  gap: 8px !important;
+}
+

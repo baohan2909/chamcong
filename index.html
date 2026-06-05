@@ -23,14 +23,14 @@
 
 <title>Chấm công · Nón Sơn</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="css/00-tokens.css?v=10.95">
-<link rel="stylesheet" href="css/01-base.css?v=10.95">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=10.95">
-<link rel="stylesheet" href="css/03-banhang.css?v=10.95">
-<link rel="stylesheet" href="css/04-responsive.css?v=10.95">
-<link rel="stylesheet" href="css/05-admin.css?v=10.95">
-<link rel="stylesheet" href="css/06-modules.css?v=10.95">
-<link rel="stylesheet" href="css/08-redesign.css?v=10.95">
+<link rel="stylesheet" href="css/00-tokens.css?v=10.97">
+<link rel="stylesheet" href="css/01-base.css?v=10.97">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=10.97">
+<link rel="stylesheet" href="css/03-banhang.css?v=10.97">
+<link rel="stylesheet" href="css/04-responsive.css?v=10.97">
+<link rel="stylesheet" href="css/05-admin.css?v=10.97">
+<link rel="stylesheet" href="css/06-modules.css?v=10.97">
+<link rel="stylesheet" href="css/08-redesign.css?v=10.97">
 </head>
 <body class="cc-redesign-active">
 
@@ -39,7 +39,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.95</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v10.97</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -627,7 +627,7 @@
     </div>
     <div class="header-nv" id="header-nv-info">--</div>
 
-    <!-- [v10.95] Header modern compact — avatar + name + meta (date · clock live) + bell -->
+    <!-- [v10.97] Header modern compact — avatar + name + meta (date · clock live) + bell -->
     <div class="cc-header-row">
       <div class="cc-header-avatar" id="cc-header-avatar" onclick="goToPage('taikhoan')">--</div>
       <div class="cc-header-info">
@@ -669,6 +669,15 @@
 
   <!-- PAGE: LICH CA (NV) -->
   <div class="page" id="page-lichca">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="cc-hero-page-label">LỊCH LÀM VIỆC</div>
+      <div class="cc-hero-page-title">Lịch ca tuần này</div>
+      <div class="cc-hero-page-sub">Quản lý lịch làm việc & đơn nghỉ phép</div>
+    </div>
     <!-- [FIX v9 #5] TAB CON: Lịch / Đơn nghỉ phép -->
     <div class="lcnv-subtabs">
       <button class="lcnv-subtab active" id="lcnvsub-lich" onclick="setLCNVSubTab('lich')">
@@ -797,7 +806,7 @@
 
   <!-- PAGE: CHẤM CÔNG -->
   <div class="page active" id="page-chamcong">
-    <!-- [v10.95] HERO CARD "Ca hôm nay" -->
+    <!-- [v10.97] HERO CARD "Ca hôm nay" -->
     <div class="cc-hero">
       <div class="cc-hero-bubble-1"></div>
       <div class="cc-hero-bubble-2"></div>
@@ -988,6 +997,15 @@
 
   <!-- PAGE: GIỜ CÔNG (NV tự xem) -->
   <div class="page" id="page-giocong">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="cc-hero-page-label">GIỜ CÔNG</div>
+      <div class="cc-hero-page-title">Bảng giờ công tháng</div>
+      <div class="cc-hero-page-sub">Đăng ký · Thực tế · Chênh lệch</div>
+    </div>
     <div class="gc-header">
       <button class="thang-btn" onclick="doiThang(-1)">‹</button>
       <div class="thang-label" id="thang-label">--</div>
@@ -1073,6 +1091,15 @@
 
   <!-- PAGE: NHÂN SỰ (QLNS/ADMIN) -->
   <div class="page" id="page-nhansu">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="cc-hero-page-label">QUẢN LÝ NHÂN SỰ</div>
+      <div class="cc-hero-page-title">Nhân sự & duyệt yêu cầu</div>
+      <div class="cc-hero-page-sub">Theo dõi nhân viên, đơn nghỉ phép, lịch sử duyệt</div>
+    </div>
     <!-- [v10 Yc #2] TAB CON ĐƯA LÊN TRÊN CÙNG: Nhân sự / Đơn nghỉ phép -->
     <div class="ns-subtabs" id="ns-subtabs" style="margin-top:10px">
       <button class="ns-subtab active" id="nssub-nhansu" onclick="setNSSubTab('nhansu')">Nhân sự</button>
@@ -1408,6 +1435,15 @@
 
   <!-- PAGE: TÀI KHOẢN -->
   <div class="page" id="page-taikhoan">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="cc-hero-page-label">TÀI KHOẢN</div>
+      <div class="cc-hero-page-title">Hồ sơ & cài đặt</div>
+      <div class="cc-hero-page-sub">Thông tin cá nhân & các tính năng quản lý</div>
+    </div>
     <div class="acc-top">
       <!-- [v9.45] Avatar có thể bấm để đổi ảnh -->
       <div class="acc-avatar" id="acc-avatar" onclick="chonAnhAvatar()" title="Bấm để đổi ảnh">
@@ -1541,6 +1577,22 @@
         <div class="menu-label">Phiên bán hàng</div>
         <div class="menu-arrow">›</div>
       </div>
+      <!-- [v10.97] Chương trình khuyến mãi — chuyển từ bottom nav vào đây -->
+      <div class="menu-item" id="menu-chuongtrinh" onclick="goToPage('chuongtrinh')">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#EF9F27,#BA7517)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="menu-label">Chương trình khuyến mãi</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <!-- [v10.97] Trang Admin — chuyển từ bottom nav vào đây, chỉ hiện cho ADMIN -->
+      <div class="menu-item" id="menu-admin" onclick="goToPage('admin')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
+        </div>
+        <div class="menu-label">Trang Admin</div>
+        <div class="menu-arrow">›</div>
+      </div>
       <!-- [v10.85] Giao diện (theme) -->
       <div class="menu-item" onclick="goToPage('giaodien')">
         <div class="menu-icon" style="background:linear-gradient(135deg,#ffb547,#ff8c42)">
@@ -1562,7 +1614,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.95 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v10.97 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -1773,6 +1825,15 @@
   <!-- ═══════════════════════════════════════════════════════════ -->
   <!-- [v10.85] CHƯƠNG TRÌNH KHUYẾN MÃI -->
   <div class="page" id="page-chuongtrinh">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      </div>
+      <div class="cc-hero-page-label">CHƯƠNG TRÌNH KHUYẾN MÃI</div>
+      <div class="cc-hero-page-title">Tháng 6 Rực Rỡ</div>
+      <div class="cc-hero-page-sub">Nhập giá sản phẩm — gợi ý phương án tối ưu</div>
+    </div>
     <div class="ct-wrap">
       <div class="ct-banner">
         <div class="ct-banner-tag">CHƯƠNG TRÌNH</div>
@@ -1882,6 +1943,15 @@
   <!-- [v12] PAGE: ADMIN — quản trị toàn hệ thống                    -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="page" id="page-admin">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
+      </div>
+      <div class="cc-hero-page-label">TRANG QUẢN TRỊ</div>
+      <div class="cc-hero-page-title">Admin Control Panel</div>
+      <div class="cc-hero-page-sub">Tổng quan · Tài khoản · Phiên BH · Chấm công · Cài đặt</div>
+    </div>
     <div class="adm2-wrap">
       <!-- Tabs -->
       <div class="adm2-tabs">
@@ -2035,6 +2105,15 @@
   <!-- [v11] PAGE: BÁN HÀNG (2 views: CH thao tác, QLBH giám sát)    -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="page" id="page-banhang">
+    <!-- [v10.97] Hero card -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </div>
+      <div class="cc-hero-page-label">PHIÊN BÁN HÀNG</div>
+      <div class="cc-hero-page-title">Quản lý bán hàng</div>
+      <div class="cc-hero-page-sub">Live · Lịch sử · Dashboard · Thống kê</div>
+    </div>
 
     <!-- ═══ VIEW CH: THAO TÁC ĐA PHIÊN ═══ -->
     <div id="bh-view-ch" style="display:none">
@@ -2443,7 +2522,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV [v10.95 modern liquid glass] -->
+  <!-- BOTTOM NAV [v10.97 modern liquid glass] -->
   <div class="bottom-nav cc-nav-modern" id="bottom-nav">
     <div class="cc-nav-inner">
     <button class="nav-item active" id="nav-chamcong" onclick="goToPage('chamcong')">
@@ -2477,13 +2556,13 @@
       <div class="nav-label">Bán hàng</div>
       <span class="nav-badge" id="bh-nav-badge" style="display:none"></span>
     </button>
-    <!-- [v10.85] Tab Chương trình khuyến mãi -->
-    <button class="nav-item" id="nav-chuongtrinh" onclick="goToPage('chuongtrinh')" style="display:none">
+    <!-- [v10.97] Tab Chương trình khuyến mãi — ẨN khỏi bottom, đã chuyển vào tab Tài khoản -->
+    <button class="nav-item" id="nav-chuongtrinh" onclick="goToPage('chuongtrinh')" style="display:none !important">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
       <div class="nav-label">Chương trình</div>
     </button>
-    <!-- [v5.2] Tab Admin — hiện khi vaiTro=ADMIN -->
-    <button class="nav-item" id="nav-admin" onclick="goToPage('admin')" style="display:none">
+    <!-- [v10.97] Tab Admin — ẨN khỏi bottom, đã chuyển vào tab Tài khoản -->
+    <button class="nav-item" id="nav-admin" onclick="goToPage('admin')" style="display:none !important">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
       <div class="nav-label">Admin</div>
     </button>
@@ -2495,13 +2574,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=10.95"></script>
-<script src="js/core/02-system.js?v=10.95"></script>
+<script src="js/core/01-config.js?v=10.97"></script>
+<script src="js/core/02-system.js?v=10.97"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=10.95">
+<link rel="stylesheet" href="css/07-extras.css?v=10.97">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2536,13 +2615,13 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=10.95"></script>
-<script src="js/pages/01-lichca.js?v=10.95"></script>
-<script src="js/pages/02-nhansu.js?v=10.95"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=10.95"></script>
-<script src="js/pages/04-misc.js?v=10.95"></script>
-<script src="js/admin/01-banhang.js?v=10.95"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=10.95"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=10.95"></script>
+<script src="js/core/03-router.js?v=10.97"></script>
+<script src="js/pages/01-lichca.js?v=10.97"></script>
+<script src="js/pages/02-nhansu.js?v=10.97"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=10.97"></script>
+<script src="js/pages/04-misc.js?v=10.97"></script>
+<script src="js/admin/01-banhang.js?v=10.97"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=10.97"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=10.97"></script>
 </body>
 </html>
