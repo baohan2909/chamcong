@@ -149,7 +149,15 @@ function muanonRender() {
 
   // Upload slots grid
   html += '<div class="muanon-slots-section">';
-  html += '<div class="muanon-section-title">ẢNH ĐÃ CHỌN</div>';
+  // [v11.1] Section title + nút áp tag hàng loạt
+  const filledCount = _muanonAnhList.length;
+  const noTagCount = _muanonAnhList.filter(a => a && !a.tag).length;
+  html += '<div class="muanon-section-header">';
+  html += '<div class="muanon-section-title">ẢNH ĐÃ CHỌN' + (filledCount > 0 ? ' · ' + filledCount : '') + '</div>';
+  if (noTagCount >= 2) {
+    html += '<button class="muanon-bulk-tag-btn" onclick="muanonBulkTagOpen()">Chọn loại cho ' + noTagCount + ' ảnh</button>';
+  }
+  html += '</div>';
   html += '<div class="muanon-slots-grid">';
   for (let i = 0; i < numSlots; i++) {
     const a = _muanonAnhList[i];
@@ -249,9 +257,42 @@ function muanonClickSlot(idx) {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/jpeg,image/png,image/webp,image/heic';
-  input.onchange = e => {
-    const file = e.target.files && e.target.files[0];
-    if (file) muanonHandleFile(file, idx);
+  input.multiple = true;  // [v11.1] cho phép chọn nhiều ảnh cùng lúc
+  input.onchange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (files.length === 1) {
+      // 1 ảnh: giữ flow cũ (auto-open tag picker)
+      await muanonHandleFile(files[0], idx);
+      return;
+    }
+
+    // Nhiều ảnh: append tuần tự, KHÔNG auto-open tag từng cái
+    showToast('Đang xử lý ' + files.length + ' ảnh...', 'ok');
+    let added = 0;
+    for (const file of files) {
+      if (_muanonAnhList.length >= 20) {
+        showToast('Tối đa 20 ảnh, bỏ qua phần còn lại', 'err');
+        break;
+      }
+      try {
+        const result = await muanonCompressAnh(file);
+        _muanonAnhList.push({
+          file, blob: result.blob, dataUrl: result.dataUrl, url: result.dataUrl,
+          width: result.width, height: result.height,
+          size_bytes: result.blob.size, mime_type: 'image/jpeg',
+          tag: null, _existed: false
+        });
+        added++;
+      } catch (err) {
+        console.warn('[muanon] compress fail:', err);
+      }
+    }
+    muanonRender();
+    if (added > 0) {
+      showToast('✓ Đã thêm ' + added + ' ảnh, nhấn "Chọn loại cho tất cả" hoặc tap từng ảnh', 'ok');
+    }
   };
   input.click();
 }
@@ -380,6 +421,51 @@ function muanonGanTag(idx, tagCode) {
   setTimeout(() => muanonRender(), 100);
 }
 
+// [v11.1] Mở bottom sheet áp tag cho TẤT CẢ ảnh chưa có tag
+function muanonBulkTagOpen() {
+  const old = document.getElementById('muanon-tag-sheet-overlay');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'muanon-tag-sheet-overlay';
+  overlay.className = 'muanon-tag-sheet-overlay';
+  overlay.onclick = e => { if (e.target === overlay) muanonCloseTagSheet(); };
+
+  const noTagCount = _muanonAnhList.filter(a => a && !a.tag).length;
+
+  let html = '<div class="muanon-tag-sheet" onclick="event.stopPropagation()">';
+  html += '<div class="muanon-tag-sheet-handle"></div>';
+  html += '<div class="muanon-tag-sheet-title">Chọn loại cho <b>' + noTagCount + '</b> ảnh chưa gắn loại</div>';
+  html += '<div class="muanon-tag-grid">';
+  for (const t of MUANON_TAGS) {
+    html += `
+      <button class="muanon-tag-chip" onclick="muanonBulkTagApply('${t.code}')">
+        <div class="muanon-tag-chip-icon">${t.icon}</div>
+        <div class="muanon-tag-chip-label">${escHtml(t.label)}</div>
+      </button>
+    `;
+  }
+  html += '</div></div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function muanonBulkTagApply(tagCode) {
+  let applied = 0;
+  for (const a of _muanonAnhList) {
+    if (a && !a.tag) {
+      a.tag = tagCode;
+      applied++;
+    }
+  }
+  muanonCloseTagSheet();
+  setTimeout(() => {
+    muanonRender();
+    showToast('✓ Đã áp loại cho ' + applied + ' ảnh', 'ok');
+  }, 100);
+}
+
 function muanonXoaAnh(idx) {
   if (!confirm('Xóa ảnh này?')) return;
   _muanonAnhList.splice(idx, 1);
@@ -485,6 +571,8 @@ window.taiMuanonTuan = taiMuanonTuan;
 window.muanonClickSlot = muanonClickSlot;
 window.muanonChonTag = muanonChonTag;
 window.muanonGanTag = muanonGanTag;
+window.muanonBulkTagOpen = muanonBulkTagOpen;
+window.muanonBulkTagApply = muanonBulkTagApply;
 window.muanonCloseTagSheet = muanonCloseTagSheet;
 window.muanonXoaAnh = muanonXoaAnh;
 window.muanonSubmit = muanonSubmit;
