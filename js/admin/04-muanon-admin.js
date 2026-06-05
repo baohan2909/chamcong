@@ -40,6 +40,35 @@ function mnaTagColor(code) {
 
 function _mnaEscAttr(s) { return String(s || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
+// [v11.2] Render strip các filter đang active (dismissible)
+function _mnaRenderActiveFilters() {
+  const f = MUANON_ADMIN.filters || {};
+  const parts = [];
+  if (f.kv) parts.push({ key: 'kv', label: 'Khu vực: ' + f.kv });
+  if (f.ch) parts.push({ key: 'ch', label: 'Cửa hàng: ' + f.ch });
+  if (f.nv) parts.push({ key: 'nv', label: 'NV: ' + f.nv });
+  if (f.tag) parts.push({ key: 'tag', label: 'Loại: ' + mnaTagLabel(f.tag) });
+  if (parts.length === 0) return '';
+  let html = '<div class="mna-active-filters">';
+  for (const p of parts) {
+    html += `
+      <button class="mna-filter-chip" onclick="mnaSetFilter('${p.key}', '')">
+        <span>${escHtml(p.label)}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    `;
+  }
+  html += `<button class="mna-filter-chip-clear" onclick="mnaClearAllFilters()">Xóa tất cả</button>`;
+  html += '</div>';
+  return html;
+}
+
+function mnaClearAllFilters() {
+  MUANON_ADMIN.filters = { kv: null, ch: null, nv: null, tag: null };
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaSwitchTab(MUANON_ADMIN.currentTab);
+}
+
 // ─── ENTRY ──────────────────────────────────────────────────────────────────
 async function moPageMuanonAdmin() {
   goToPage('muanon-admin');
@@ -283,11 +312,15 @@ function mnaRenderGallery() {
   const data = MUANON_ADMIN.galleryData;
   const kvSet = new Set(data.map(d => d.khu_vuc).filter(Boolean));
 
-  let html = `
+  let html = _mnaRenderActiveFilters();
+  html += `
     <div class="mna-filter-sticky">
       <div class="mna-filter-row">
+        <input type="search" class="mna-search-input" placeholder="Tìm NV / CH..."
+               value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+               oninput="mnaDebounceSearch(this.value)"/>
         <select class="mna-filter-sel" onchange="mnaSetFilter('kv', this.value)">
-          <option value="">Tất cả khu vực</option>
+          <option value="">Tất cả KV</option>
           ${[...kvSet].map(kv => `<option value="${_mnaEscAttr(kv)}" ${MUANON_ADMIN.filters.kv === kv ? 'selected' : ''}>${escHtml(kv)}</option>`).join('')}
         </select>
         <select class="mna-filter-sel" onchange="mnaSetFilter('tag', this.value)">
@@ -334,6 +367,15 @@ function mnaSetFilter(key, val) {
   MUANON_ADMIN.galleryOffset = 0;
   if (MUANON_ADMIN.currentTab === 'gallery') mnaLoadGallery();
   else if (MUANON_ADMIN.currentTab === 'chuagui') mnaLoadChuaGui();
+}
+
+// [v11.2] Debounce search NV
+let _mnaSearchTimer = null;
+function mnaDebounceSearch(val) {
+  clearTimeout(_mnaSearchTimer);
+  _mnaSearchTimer = setTimeout(() => {
+    mnaSetFilter('nv', val.trim() || null);
+  }, 350);
 }
 
 function mnaSetZoom(val) {
@@ -419,17 +461,25 @@ function mnaRenderChuaGui(list, total) {
   const kvSet = new Set(list.map(d => d.khu_vuc).filter(Boolean));
   const selected = MUANON_ADMIN.selectedNV;
 
-  let html = `
+  let html = _mnaRenderActiveFilters();
+  html += `
     <div class="mna-filter-sticky">
       <div class="mna-filter-row">
+        <input type="search" class="mna-search-input" placeholder="Tìm NV / CH..."
+               value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+               oninput="mnaDebounceSearch(this.value)"/>
         <select class="mna-filter-sel" onchange="mnaSetFilter('kv', this.value)">
-          <option value="">Tất cả khu vực</option>
+          <option value="">Tất cả KV</option>
           ${[...kvSet].map(kv => `<option value="${_mnaEscAttr(kv)}" ${MUANON_ADMIN.filters.kv === kv ? 'selected' : ''}>${escHtml(kv)}</option>`).join('')}
         </select>
-        <button class="mna-bulk-btn" onclick="mnaSelectAll()">Chọn tất cả</button>
-        <button class="mna-bulk-btn mna-bulk-btn-clear" onclick="mnaClearSelect()">Bỏ chọn</button>
       </div>
-      <div class="mna-cg-info">${total} người chưa gửi · Đã chọn <b id="mna-cg-count">${selected.size}</b></div>
+      <div class="mna-cg-info">
+        <span>${total} người chưa gửi · Đã chọn <b id="mna-cg-count">${selected.size}</b></span>
+        <span class="mna-cg-actions">
+          <button class="mna-bulk-btn" onclick="mnaSelectAll()">Chọn tất cả</button>
+          <button class="mna-bulk-btn mna-bulk-btn-clear" onclick="mnaClearSelect()">Bỏ chọn</button>
+        </span>
+      </div>
     </div>
   `;
 
@@ -602,3 +652,5 @@ window.mnaSelectAll = mnaSelectAll;
 window.mnaClearSelect = mnaClearSelect;
 window.mnaNhacBulk = mnaNhacBulk;
 window.mnaFilterCompliance = mnaFilterCompliance;
+window.mnaDebounceSearch = mnaDebounceSearch;
+window.mnaClearAllFilters = mnaClearAllFilters;
