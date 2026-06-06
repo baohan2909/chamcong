@@ -2427,3 +2427,17 @@
 }
 .mna-lb-act:active { transform: scale(.9); }
 .mna-lb-act.danger { color: #FCA5A5; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   [v11.11] Drag-to-select visual feedback
+   ════════════════════════════════════════════════════════════════════════════ */
+.mna-gallery-grid.sel-mode {
+  touch-action: pan-y;  /* cho phép scroll dọc, nhưng drag ngang sẽ bị preventDefault để select */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mna-gallery-grid.sel-mode .mna-gallery-item img {
+  -webkit-touch-callout: none;  /* tắt menu long-press iOS */
+  -webkit-user-drag: none;
+  pointer-events: none;          /* mọi sự kiện touch dồn vào parent .mna-gallery-item */
+}

@@ -724,10 +724,122 @@ function mnaRenderGallery() {
   // [v11.10] Multi-bar được tạo riêng (DOM ngoài grid) → toggle mượt
   document.getElementById('muanon-admin-content').innerHTML = html;
   _mnaSyncMultiBar();
+  // [v11.11] Setup drag-to-select touch handlers (iPhone Photos style)
+  _mnaSetupDragSelect();
+}
+
+// [v11.11] Drag-to-select state (iPhone Photos style)
+const _MNA_DRAG = {
+  startId: null,
+  startX: 0,
+  startY: 0,
+  active: false,       // chỉ true sau khi di chuyển >10px
+  action: null,        // 'add' | 'remove'
+  lastId: null
+};
+const _MNA_DRAG_THRESHOLD = 10;
+
+function _mnaSetupDragSelect() {
+  const grid = document.querySelector('.mna-gallery-grid');
+  if (!grid || grid.dataset.dragBound === '1') return;
+  grid.dataset.dragBound = '1';
+
+  grid.addEventListener('touchstart', e => {
+    if (!MUANON_ADMIN.selectMode) return;
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const item = (e.target.closest && e.target.closest('.mna-gallery-item'));
+    if (!item) return;
+    const anhId = parseInt(item.dataset.anhId, 10);
+    if (!anhId) return;
+    _MNA_DRAG.startId = anhId;
+    _MNA_DRAG.startX = t.clientX;
+    _MNA_DRAG.startY = t.clientY;
+    _MNA_DRAG.active = false;       // chỉ active sau khi di chuyển
+    _MNA_DRAG.action = null;
+    _MNA_DRAG.lastId = null;
+  }, { passive: true });
+
+  grid.addEventListener('touchmove', e => {
+    if (!_MNA_DRAG.startId || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - _MNA_DRAG.startX);
+    const dy = Math.abs(t.clientY - _MNA_DRAG.startY);
+
+    // Chưa di chuyển đủ → không drag (giữ scroll bình thường)
+    if (!_MNA_DRAG.active) {
+      if (Math.max(dx, dy) < _MNA_DRAG_THRESHOLD) return;
+      // Bắt đầu drag-select
+      _MNA_DRAG.active = true;
+      _MNA_DRAG.lastId = _MNA_DRAG.startId;
+      _MNA_DRAG.action = MUANON_ADMIN.selectedAnh.has(_MNA_DRAG.startId)
+        ? 'remove' : 'add';
+      _mnaApplyDragSel(_MNA_DRAG.startId);  // toggle item đầu vì click sẽ suppress
+    }
+
+    // Đang drag — check item dưới ngón
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    if (!el) return;
+    const item = el.closest('.mna-gallery-item');
+    if (!item) return;
+    const anhId = parseInt(item.dataset.anhId, 10);
+    if (!anhId || anhId === _MNA_DRAG.lastId) return;
+    _MNA_DRAG.lastId = anhId;
+    _mnaApplyDragSel(anhId);
+    e.preventDefault();  // KHÔNG scroll khi drag-select
+  }, { passive: false });
+
+  const endHandler = e => {
+    if (_MNA_DRAG.active && e && e.cancelable) {
+      e.preventDefault();  // suppress click sau touchend
+    }
+    // Reset (giữ active 1 frame để click handler biết)
+    const wasActive = _MNA_DRAG.active;
+    _MNA_DRAG.startId = null;
+    _MNA_DRAG.lastId = null;
+    _MNA_DRAG.action = null;
+    if (wasActive) {
+      // Giữ active flag thêm 1 chút để click bị suppress
+      setTimeout(() => { _MNA_DRAG.active = false; }, 50);
+    } else {
+      _MNA_DRAG.active = false;
+    }
+  };
+  grid.addEventListener('touchend', endHandler, { passive: false });
+  grid.addEventListener('touchcancel', endHandler, { passive: false });
+}
+
+function _mnaApplyDragSel(anhId) {
+  const set = MUANON_ADMIN.selectedAnh;
+  const wasSel = set.has(anhId);
+  if (_MNA_DRAG.action === 'add') {
+    if (wasSel) return;
+    set.add(anhId);
+  } else {
+    if (!wasSel) return;
+    set.delete(anhId);
+  }
+  const el = document.querySelector('.mna-gallery-item[data-anh-id="' + anhId + '"]');
+  if (el) {
+    el.classList.toggle('selected', set.has(anhId));
+    const cb = el.querySelector('.mna-sel-cb');
+    if (cb) {
+      cb.classList.toggle('on', set.has(anhId));
+      cb.innerHTML = set.has(anhId)
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '';
+    }
+  }
+  _mnaSyncMultiBar();
 }
 
 // Click handler thống nhất cho gallery item
 function mnaItemClick(idx, anhId, ev) {
+  // Nếu vừa drag xong → suppress click (touchend.preventDefault chưa đủ trên 1 số browser)
+  if (_MNA_DRAG.active) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    return;
+  }
   if (MUANON_ADMIN.selectMode) {
     mnaToggleAnhSelect(anhId, ev);
   } else {
