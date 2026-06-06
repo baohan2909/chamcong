@@ -9,7 +9,9 @@ const MUANON_ADMIN = {
   tuanList: [],
   currentTab: 'tongquan',
   filters: { kv: null, ch: null, nv: null, tag: null, trang_thai: null },
-  timeRange: { mode: 'all', from: null, to: null },  // 'all' | 'today' | 'week' | 'month' | 'custom'
+  timeRange: { mode: 'all', from: null, to: null },  // 'all'|'today'|'week'|'month'|'custom'
+  tqGroup: localStorage.getItem('muanon_tq_group') || 'kv',
+  tqSort: localStorage.getItem('muanon_tq_sort') || 'count_desc',
   gridCols: parseInt(localStorage.getItem('muanon_grid_cols') || '3', 10),
   selectedNV: new Set(),
   galleryData: [],
@@ -21,8 +23,8 @@ const MUANON_ADMIN = {
   timelineOffset: 0,
   timelineLimit: 20,
   lightboxIdx: -1,
-  lightboxSource: 'gallery', // 'gallery' | 'timeline'
-  lightboxTimelineRef: null, // {baigui_idx, anh_idx}
+  lightboxSource: 'gallery',
+  lightboxTimelineRef: null,
   filterSheetOpen: false,
   _loaded: false
 };
@@ -133,7 +135,7 @@ function mnaRenderHeader() {
     <div class="mna-header-row">
       <select class="mna-tuan-select" onchange="mnaChangeTuan(this.value)">${tuanOptions}</select>
       <button class="mna-refresh-btn" onclick="mnaReload()" title="Tải lại">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.51-7.13"/><polyline points="21 4 21 10 15 10"/></svg>
       </button>
     </div>
     <div class="mna-tabs">${tabsHtml}</div>
@@ -173,122 +175,156 @@ function mnaSwitchTab(tab) {
 // ════════════════════════════════════════════════════════════════════════════
 async function mnaLoadTongQuan() {
   try {
+    // Dashboard metrics
     const { data, error } = await supa.rpc('fn_muanon_admin_dashboard', {
       p_ma_admin: SESSION.ma, p_tuan_id: MUANON_ADMIN.tuanId
     });
     if (error) throw error;
     if (!data || !data.ok) throw new Error((data && data.message) || 'Lỗi');
 
-    const tagRes = await supa.rpc('fn_muanon_admin_tag_stats', {
-      p_ma_admin: SESSION.ma, p_tuan_id: MUANON_ADMIN.tuanId
+    // Group data
+    const grp = MUANON_ADMIN.tqGroup || 'kv';
+    const srt = MUANON_ADMIN.tqSort || 'count_desc';
+    const grpRes = await supa.rpc('fn_muanon_admin_groupby', {
+      p_ma_admin: SESSION.ma,
+      p_tuan_id: MUANON_ADMIN.tuanId,
+      p_group: grp,
+      p_sort: srt
     });
 
-    mnaRenderTongQuan(data, tagRes.data);
+    mnaRenderTongQuan(data.metrics || {}, (grpRes && grpRes.data && grpRes.data.data) || []);
   } catch (err) {
     document.getElementById('muanon-admin-content').innerHTML =
       '<div class="mna-empty">Lỗi: ' + (err.message || 'network') + '</div>';
   }
 }
 
-function mnaRenderTongQuan(data, tagData) {
-  const d = data.dashboard || {};
-  const trend = data.trend_12tuan || [];
-  const topKV = data.top_khu_vuc || [];
-  const tags = (tagData && tagData.ok && tagData.data) || [];
-  const tiLe = d.ti_le_tuan_thu_pct || 0;
-  const cssClass = tiLe >= 70 ? 'good' : (tiLe >= 40 ? 'medium' : 'low');
+function mnaRenderTongQuan(m, groupData) {
+  const tongNv = m.tong_nv || 0;
+  const daGui  = m.so_nv_da_gui || 0;
+  const chuaGui = m.so_nv_chua_gui || 0;
+  const soBai = m.so_bai || 0;
+  const soAnh = m.so_anh || 0;
+  const dungHan = m.so_dung_han || 0;
+  const tre = m.so_tre || 0;
+  const avg = m.avg_anh_per_bai || 0;
 
-  let html = '<div class="mna-content-wrap">';
+  const grp = MUANON_ADMIN.tqGroup || 'kv';
+  const srt = MUANON_ADMIN.tqSort || 'count_desc';
+
+  let html = '<div class="mna-tq-wrap">';
+
+  // ─── HERO METRICS (4 card tappable) ───
   html += `
-    <div class="mna-stat-grid">
-      <div class="mna-stat-card"><div class="mna-stat-label">Tổng NV</div><div class="mna-stat-value">${d.tong_nv_du_kien || 0}</div></div>
-      <div class="mna-stat-card mna-stat-success"><div class="mna-stat-label">Đã gửi</div><div class="mna-stat-value">${d.so_nv_da_gui || 0}</div></div>
-      <div class="mna-stat-card mna-stat-${cssClass}"><div class="mna-stat-label">Tỷ lệ</div><div class="mna-stat-value">${tiLe}%</div></div>
-      <div class="mna-stat-card"><div class="mna-stat-label">Tổng ảnh</div><div class="mna-stat-value">${d.tong_so_anh || 0}</div></div>
+    <div class="mna-tq-hero">
+      <button class="mna-tq-card primary" onclick="mnaSwitchTab('timeline')">
+        <div class="mna-tq-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="mna-tq-card-label">Đã gửi</div>
+        <div class="mna-tq-card-value"><b>${daGui}</b><span class="mna-tq-card-sub">/ ${tongNv} NV</span></div>
+      </button>
+      <button class="mna-tq-card warn" onclick="mnaSwitchTab('chuagui')">
+        <div class="mna-tq-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="mna-tq-card-label">Chưa gửi</div>
+        <div class="mna-tq-card-value"><b>${chuaGui}</b><span class="mna-tq-card-sub">NV</span></div>
+      </button>
+      <button class="mna-tq-card" onclick="mnaSwitchTab('timeline')">
+        <div class="mna-tq-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="mna-tq-card-label">Tổng bài</div>
+        <div class="mna-tq-card-value"><b>${soBai}</b><span class="mna-tq-card-sub">${dungHan} đúng · ${tre} trễ</span></div>
+      </button>
+      <button class="mna-tq-card" onclick="mnaSwitchTab('gallery')">
+        <div class="mna-tq-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="mna-tq-card-label">Tổng ảnh</div>
+        <div class="mna-tq-card-value"><b>${soAnh}</b><span class="mna-tq-card-sub">TB ${avg}/bài</span></div>
+      </button>
     </div>
-    <div class="mna-progress-card">
-      <div class="mna-progress-label"><span>Tỷ lệ tuân thủ tuần này</span><b>${d.so_nv_da_gui || 0} / ${d.tong_nv_du_kien || 0}</b></div>
-      <div class="mna-progress-bar"><div class="mna-progress-fill mna-progress-${cssClass}" style="width:${tiLe}%"></div></div>
-      <div class="mna-progress-detail">
-        <span><b style="color:#0F6E56">${d.so_dung_han || 0}</b> đúng hạn</span>
-        <span><b style="color:#BA7517">${d.so_tre || 0}</b> trễ</span>
-        <span><b style="color:#B91C1C">${(d.tong_nv_du_kien || 0) - (d.so_nv_da_gui || 0)}</b> chưa gửi</span>
+  `;
+
+  // ─── GROUP SELECTOR + SORT ───
+  const groupLabels = { kv: 'Khu vực', ch: 'Cửa hàng', nv: 'Nhân viên', tag: 'Loại nón' };
+  html += `
+    <div class="mna-tq-section">
+      <div class="mna-tq-grp-bar">
+        <div class="mna-tq-grp-label">Xem theo</div>
+        <div class="mna-tq-grp-chips">
+          ${['kv','ch','nv','tag'].map(g =>
+            `<button class="mna-tq-grp-chip ${grp === g ? 'active' : ''}" onclick="mnaSetGroup('${g}')">${groupLabels[g]}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="mna-tq-sort-bar">
+        <span class="mna-tq-sort-label">Sắp xếp:</span>
+        <select class="mna-tq-sort-sel" onchange="mnaSetSort(this.value)">
+          <option value="count_desc" ${srt === 'count_desc' ? 'selected' : ''}>Số lượng nhiều → ít</option>
+          <option value="count_asc"  ${srt === 'count_asc'  ? 'selected' : ''}>Số lượng ít → nhiều</option>
+          <option value="name_asc"   ${srt === 'name_asc'   ? 'selected' : ''}>Tên A → Z</option>
+          <option value="name_desc"  ${srt === 'name_desc'  ? 'selected' : ''}>Tên Z → A</option>
+        </select>
       </div>
     </div>
   `;
 
-  if (trend.length > 0) {
-    html += '<div class="mna-section"><div class="mna-section-title">Xu hướng 12 tuần</div>';
-    html += '<div class="mna-trend-chart">' + mnaRenderTrendSvg(trend) + '</div></div>';
-  }
+  // ─── GROUP LIST ───
+  if (!groupData || groupData.length === 0) {
+    html += '<div class="mna-tq-empty">Chưa có dữ liệu</div>';
+  } else {
+    const maxAnh = Math.max(...groupData.map(g => g.so_anh || 0), 1);
+    html += '<div class="mna-tq-list">';
+    for (const item of groupData) {
+      const w = Math.round(100 * (item.so_anh || 0) / maxAnh);
+      let sub;
+      if (grp === 'kv')      sub = (item.so_nv || 0) + ' NV · ' + (item.so_bai || 0) + ' bài';
+      else if (grp === 'ch') sub = (item.khu_vuc ? item.khu_vuc + ' · ' : '') + (item.so_nv || 0) + ' NV';
+      else if (grp === 'nv') sub = (item.ten_ch || item.ma_ch || '') + (item.khu_vuc ? ' · ' + item.khu_vuc : '');
+      else                   sub = mnaTagLabel(item.label) + ' · ' + (item.so_nv || 0) + ' NV';
 
-  if (topKV.length > 0) {
-    html += '<div class="mna-section"><div class="mna-section-title">Top khu vực gửi nhiều nhất</div><div class="mna-kv-list">';
-    const maxNv = Math.max(...topKV.map(k => k.so_nv_da_gui || 0));
-    for (const kv of topKV) {
-      const w = maxNv > 0 ? Math.round(100 * (kv.so_nv_da_gui || 0) / maxNv) : 0;
-      html += `
-        <div class="mna-kv-item">
-          <div class="mna-kv-info">
-            <div class="mna-kv-name">${escHtml(kv.khu_vuc || '(chưa rõ)')}</div>
-            <div class="mna-kv-sub">${kv.so_nv_da_gui} NV · ${kv.so_anh} ảnh</div>
-          </div>
-          <div class="mna-kv-bar"><div class="mna-kv-bar-fill" style="width:${w}%"></div></div>
-        </div>`;
-    }
-    html += '</div></div>';
-  }
+      const label = grp === 'tag' ? mnaTagLabel(item.label) : (item.label || item.key);
+      const filterKey = grp === 'tag' ? 'tag' : (grp === 'nv' ? 'nv' : (grp === 'ch' ? 'ch' : 'kv'));
+      const filterVal = String(item.key || '').replace(/'/g, "\\'");
 
-  if (tags.length > 0) {
-    html += '<div class="mna-section"><div class="mna-section-title">Phân bổ theo loại nón</div><div class="mna-tag-stats">';
-    const totalAnh = tags.reduce((s, t) => s + (t.so_anh || 0), 0);
-    for (const t of tags) {
-      const pct = totalAnh > 0 ? Math.round(100 * (t.so_anh || 0) / totalAnh) : 0;
-      const color = mnaTagColor(t.tag);
       html += `
-        <div class="mna-tag-stat-item">
-          <div class="mna-tag-stat-header">
-            <span class="mna-tag-dot" style="background:${color}"></span>
-            <span class="mna-tag-stat-label">${escHtml(mnaTagLabel(t.tag))}</span>
-            <span class="mna-tag-stat-value">${t.so_anh} ảnh · ${pct}%</span>
+        <button class="mna-tq-item" onclick="mnaTqDrillDown('${filterKey}', '${filterVal}')">
+          <div class="mna-tq-item-info">
+            <div class="mna-tq-item-name">${escHtml(label)}</div>
+            <div class="mna-tq-item-sub">${escHtml(sub)}</div>
           </div>
-          <div class="mna-tag-stat-bar"><div class="mna-tag-stat-fill" style="width:${pct}%;background:${color}"></div></div>
-        </div>`;
+          <div class="mna-tq-item-count">${item.so_anh || 0}</div>
+          <div class="mna-tq-item-bar"><div class="mna-tq-item-bar-fill" style="width:${w}%"></div></div>
+        </button>
+      `;
     }
-    html += '</div></div>';
+    html += '</div>';
   }
 
   html += '</div>';
   document.getElementById('muanon-admin-content').innerHTML = html;
 }
 
-function mnaRenderTrendSvg(trend) {
-  if (!trend || trend.length === 0) return '';
-  const W = 320, H = 110, PAD = 26;
-  const max = Math.max(...trend.map(t => t.so_nv_da_gui || 0), 1);
-  const stepX = (W - PAD * 2) / Math.max(trend.length - 1, 1);
+function mnaSetGroup(g) {
+  MUANON_ADMIN.tqGroup = g;
+  localStorage.setItem('muanon_tq_group', g);
+  mnaLoadTongQuan();
+}
 
-  let pts = '', dots = '', labels = '';
-  trend.forEach((t, i) => {
-    const x = PAD + i * stepX;
-    const y = H - PAD - ((H - PAD * 2) * (t.so_nv_da_gui || 0) / max);
-    pts += x + ',' + y + ' ';
-    dots += `<circle cx="${x}" cy="${y}" r="3" fill="#0F6E56"/>`;
-    if (i % 2 === 0 || i === trend.length - 1) {
-      labels += `<text x="${x}" y="${H - 6}" text-anchor="middle" font-size="9" fill="#9ca3af">W${(t.tuan_code || '').slice(-2)}</text>`;
-    }
-  });
+function mnaSetSort(s) {
+  MUANON_ADMIN.tqSort = s;
+  localStorage.setItem('muanon_tq_sort', s);
+  mnaLoadTongQuan();
+}
 
-  return `
-    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
-      <defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#1D9E75" stop-opacity="0.3"/>
-        <stop offset="100%" stop-color="#1D9E75" stop-opacity="0"/>
-      </linearGradient></defs>
-      <polyline points="${pts}" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linejoin="round"/>
-      <polygon points="${PAD},${H-PAD} ${pts} ${PAD + (trend.length-1)*stepX},${H-PAD}" fill="url(#trendGrad)"/>
-      ${dots}${labels}
-    </svg>`;
+// Tap item → set filter + chuyển sang tab Gallery (xem ảnh chi tiết)
+function mnaTqDrillDown(key, val) {
+  MUANON_ADMIN.filters[key] = val;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaSwitchTab('gallery');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -854,7 +890,20 @@ function mnaOpenFilterSheet() {
           <button class="mna-fs-chip ${tr.mode === 'today' ? 'active' : ''}" onclick="mnaSetTimeRange('today')">Hôm nay</button>
           <button class="mna-fs-chip ${tr.mode === 'week' ? 'active' : ''}" onclick="mnaSetTimeRange('week')">Tuần này</button>
           <button class="mna-fs-chip ${tr.mode === 'month' ? 'active' : ''}" onclick="mnaSetTimeRange('month')">Tháng này</button>
+          <button class="mna-fs-chip ${tr.mode === 'custom' ? 'active' : ''}" onclick="mnaSetTimeRange('custom')">Tuỳ chọn</button>
         </div>
+        ${tr.mode === 'custom' ? `
+          <div class="mna-fs-date-row">
+            <div class="mna-fs-date-col">
+              <div class="mna-fs-date-lbl">Từ ngày</div>
+              <input type="date" class="mna-fs-date-input" value="${tr.from_date || ''}" onchange="mnaSetCustomDate('from', this.value)"/>
+            </div>
+            <div class="mna-fs-date-col">
+              <div class="mna-fs-date-lbl">Đến ngày</div>
+              <input type="date" class="mna-fs-date-input" value="${tr.to_date || ''}" onchange="mnaSetCustomDate('to', this.value)"/>
+            </div>
+          </div>
+        ` : ''}
       </div>
 
       ${kvHtml ? `
@@ -911,8 +960,15 @@ function mnaSetTimeRange(mode) {
 }
 
 function _mnaGetTimeRange() {
-  const m = MUANON_ADMIN.timeRange.mode;
+  const tr = MUANON_ADMIN.timeRange;
+  const m = tr.mode;
   if (m === 'all') return { from: null, to: null };
+  if (m === 'custom') {
+    return {
+      from: tr.from_date ? new Date(tr.from_date + 'T00:00:00+07:00').toISOString() : null,
+      to:   tr.to_date   ? new Date(tr.to_date   + 'T23:59:59+07:00').toISOString() : null
+    };
+  }
   const now = new Date();
   let from;
   if (m === 'today') {
@@ -924,6 +980,16 @@ function _mnaGetTimeRange() {
     from = new Date(now.getFullYear(), now.getMonth(), 1);
   }
   return { from: from ? from.toISOString() : null, to: null };
+}
+
+function mnaSetCustomDate(which, val) {
+  if (which === 'from') MUANON_ADMIN.timeRange.from_date = val || null;
+  else MUANON_ADMIN.timeRange.to_date = val || null;
+  // Auto reload
+  MUANON_ADMIN.galleryOffset = 0;
+  MUANON_ADMIN.timelineOffset = 0;
+  if (MUANON_ADMIN.currentTab === 'timeline') mnaLoadTimeline();
+  else if (MUANON_ADMIN.currentTab === 'gallery') mnaLoadGallery();
 }
 
 function _mnaRenderTimeRangeChips() {
@@ -994,3 +1060,8 @@ window.mnaOpenFilterSheet = mnaOpenFilterSheet;
 window.mnaCloseFilterSheet = mnaCloseFilterSheet;
 window.mnaFilterSheetSet = mnaFilterSheetSet;
 window.mnaSetTimeRange = mnaSetTimeRange;
+// [v11.4] Tổng quan mới + custom date
+window.mnaSetGroup = mnaSetGroup;
+window.mnaSetSort = mnaSetSort;
+window.mnaTqDrillDown = mnaTqDrillDown;
+window.mnaSetCustomDate = mnaSetCustomDate;
