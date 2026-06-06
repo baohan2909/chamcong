@@ -699,8 +699,9 @@ function muanonGanTag(idx, tagCode) {
   if (_muanonAnhList[idx]) {
     _muanonAnhList[idx].tag = tagCode;
   }
+  // [v11.8] Render NGAY để feedback tức thì + close sheet sau
+  muanonRender();
   muanonCloseTagSheet();
-  setTimeout(() => muanonRender(), 100);
 }
 
 // [v11.1] Mở bottom sheet áp tag cho TẤT CẢ ảnh chưa có tag

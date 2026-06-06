@@ -1997,3 +1997,105 @@
 .mna-cg-list {
   padding-bottom: 120px;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   [v11.8] Yêu thích (Favorite) + Lightbox swipe + Restore scroll
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Heart button trên Gallery item */
+.mna-gallery-item {
+  position: relative;
+}
+.mna-fav-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(6px);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all .15s;
+  z-index: 5;
+  padding: 0;
+}
+.mna-fav-btn:active {
+  transform: scale(0.85);
+}
+.mna-fav-btn.on {
+  background: rgba(239,68,68,.9);
+  color: #fff;
+  animation: mnaHeartPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes mnaHeartPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* Filter button: variant "đã bật yêu thích" */
+.mna-filter-btn.on-fav {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #B91C1C;
+}
+
+/* Timeline ảnh nhỏ: dot màu đỏ góc trên nếu đã fav */
+.mna-tl-img-wrap {
+  position: relative;
+}
+.mna-tl-fav-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+
+/* Lightbox heart button (góc trên trái, đối diện close) */
+.mna-lb-fav {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  z-index: 100;
+  padding: 0;
+}
+.mna-lb-fav:active { transform: scale(0.92); }
+.mna-lb-fav.on {
+  background: rgba(239,68,68,.95);
+  animation: mnaHeartPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Lightbox swipe hint (visual cue cho user lần đầu) */
+.mna-lightbox.open .mna-lb-img {
+  animation: mnaLbFadeIn .2s ease;
+}
+@keyframes mnaLbFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}

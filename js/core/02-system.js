@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v11.7',
+  'sys.cache_version': 'v11.8',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -658,6 +658,10 @@ function khoiDongApp(){
       } catch (e) {}
     }
   }
+  // [v11.8] Bật tab "Mẫu nón" ở bottom nav cho mọi role (NV/CTV/CH/QLBH/ADMIN/QLNS)
+  // Tất cả NV đều cần gửi mẫu nón hàng tuần → đưa ra nav chính
+  const nMN = document.getElementById('nav-muanon');
+  if (nMN) nMN.style.display = '';
   if (isAdminAll) {
     // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
     const nA = document.getElementById('nav-admin');

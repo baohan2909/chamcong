@@ -342,6 +342,7 @@
   align-items: center;
   gap: 6px;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition: all .18s ease;
   position: relative;
   min-height: 76px;

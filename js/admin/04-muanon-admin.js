@@ -546,17 +546,33 @@ function mnaTqDrillDown(key, val) {
 async function mnaLoadGallery() {
   const el = document.getElementById('muanon-admin-content');
   if (el) el.classList.add('mna-fading');
+
   try {
-    const { data, error } = await supa.rpc('fn_muanon_admin_list_anh', {
-      p_ma_admin: SESSION.ma,
-      p_tuan_id: MUANON_ADMIN.tuanId,
-      p_kv: MUANON_ADMIN.filters.kv,
-      p_ch: MUANON_ADMIN.filters.ch,
-      p_nv: MUANON_ADMIN.filters.nv,
-      p_tag: MUANON_ADMIN.filters.tag,
-      p_limit: MUANON_ADMIN.galleryLimit,
-      p_offset: MUANON_ADMIN.galleryOffset
-    });
+    let res;
+    // [v11.8] Nếu đang "Chỉ yêu thích" → gọi RPC list_fav
+    if (MUANON_ADMIN.galleryOnlyFav) {
+      res = await supa.rpc('fn_muanon_admin_list_fav', {
+        p_ma_admin: SESSION.ma,
+        p_limit: MUANON_ADMIN.galleryLimit,
+        p_offset: MUANON_ADMIN.galleryOffset
+      });
+      if (res.data && res.data.data) {
+        // Inject is_fav=true cho mọi item (đã yêu thích)
+        res.data.data.forEach(x => { x.is_fav = true; });
+      }
+    } else {
+      res = await supa.rpc('fn_muanon_admin_list_anh', {
+        p_ma_admin: SESSION.ma,
+        p_tuan_id: MUANON_ADMIN.tuanId,
+        p_kv: MUANON_ADMIN.filters.kv,
+        p_ch: MUANON_ADMIN.filters.ch,
+        p_nv: MUANON_ADMIN.filters.nv,
+        p_tag: MUANON_ADMIN.filters.tag,
+        p_limit: MUANON_ADMIN.galleryLimit,
+        p_offset: MUANON_ADMIN.galleryOffset
+      });
+    }
+    const { data, error } = res;
     if (error) throw error;
     if (!data || !data.ok) throw new Error((data && data.message) || 'Lỗi');
 
@@ -571,18 +587,29 @@ async function mnaLoadGallery() {
   }
 }
 
+function mnaToggleOnlyFav() {
+  MUANON_ADMIN.galleryOnlyFav = !MUANON_ADMIN.galleryOnlyFav;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaLoadGallery();
+}
+
 function mnaRenderGallery() {
   const data = MUANON_ADMIN.galleryData;
+  const onlyFav = !!MUANON_ADMIN.galleryOnlyFav;
 
   let html = _mnaRenderActiveFilters();
   html += `
     <div class="mna-filter-sticky">
       <div class="mna-toolbar">
         <input type="search" class="mna-search-input"
-          placeholder="Tìm tên NV, mã NV, cửa hàng, khu vực..."
+          placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : 'Tìm tên NV, mã NV, cửa hàng, khu vực...'}"
           value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
-          oninput="mnaDebounceSearch(this.value)"/>
-        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
+          oninput="mnaDebounceSearch(this.value)"
+          ${onlyFav ? 'disabled' : ''}/>
+        <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}">
+          <svg viewBox="0 0 24 24" fill="${onlyFav ? '#EF4444' : 'none'}" stroke="${onlyFav ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc" ${onlyFav ? 'disabled' : ''}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           ${_mnaFilterBadge()}
         </button>
@@ -607,9 +634,12 @@ function mnaRenderGallery() {
   data.forEach((a, idx) => {
     const tagColor = a.tag ? mnaTagColor(a.tag) : null;
     html += `
-      <div class="mna-gallery-item" onclick="mnaOpenLightbox(${idx})">
+      <div class="mna-gallery-item" data-anh-id="${a.anh_id}" onclick="mnaOpenLightbox(${idx})">
         <img src="${_mnaEscAttr(a.url || '')}" alt="${_mnaEscAttr(a.ten_nv || '')}" loading="lazy"/>
         ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
+        <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
         <div class="mna-gallery-overlay">
           <div class="mna-gallery-nv">${escHtml(a.ten_nv || a.ma_nv || '')}</div>
           <div class="mna-gallery-ch">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''}</div>
@@ -648,20 +678,104 @@ function mnaSetZoom(val) {
   if (lbl) lbl.textContent = val + ' cột';
 }
 
-function mnaOpenLightbox(idx) { MUANON_ADMIN.lightboxIdx = idx; mnaRenderLightbox(); }
+function mnaOpenLightbox(idx) {
+  MUANON_ADMIN.lightboxIdx = idx;
+  // [v11.8] Lưu scroll position để restore khi đóng
+  MUANON_ADMIN._scrollY = window.scrollY;
+  mnaRenderLightbox();
+}
+
 function mnaCloseLightbox() {
+  const idx = MUANON_ADMIN.lightboxIdx;
   MUANON_ADMIN.lightboxIdx = -1;
   const lb = document.getElementById('mna-lightbox');
   if (lb) { lb.classList.remove('open'); setTimeout(() => lb.remove(), 250); }
+  // [v11.8] Restore scroll + scroll target item into view
+  const items = MUANON_ADMIN.galleryData;
+  if (idx >= 0 && items && items[idx]) {
+    const anhId = items[idx].anh_id;
+    requestAnimationFrame(() => {
+      const targetEl = document.querySelector('[data-anh-id="' + anhId + '"]');
+      if (targetEl) {
+        targetEl.scrollIntoView({ block: 'center', behavior: 'instant' });
+      } else if (MUANON_ADMIN._scrollY != null) {
+        window.scrollTo(0, MUANON_ADMIN._scrollY);
+      }
+    });
+  }
 }
+
 function mnaLightboxNav(dir) {
   const len = MUANON_ADMIN.galleryData.length;
+  if (len === 0) return;
   let next = MUANON_ADMIN.lightboxIdx + dir;
   if (next < 0) next = len - 1;
   if (next >= len) next = 0;
   MUANON_ADMIN.lightboxIdx = next;
   mnaRenderLightbox();
 }
+
+// [v11.8] Toggle yêu thích cho ảnh đang xem trong lightbox
+async function mnaLightboxToggleFav() {
+  const idx = MUANON_ADMIN.lightboxIdx;
+  if (idx < 0) return;
+  const a = MUANON_ADMIN.galleryData[idx];
+  if (!a || !a.anh_id) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_toggle_fav', {
+      p_ma_admin: SESSION.ma, p_anh_id: a.anh_id
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    a.is_fav = data.is_fav;
+    // Update tất cả item cùng anh_id trong data hiện tại (Gallery + Timeline)
+    MUANON_ADMIN.galleryData.forEach(x => { if (x.anh_id === a.anh_id) x.is_fav = data.is_fav; });
+    if (Array.isArray(MUANON_ADMIN.timelineData)) {
+      MUANON_ADMIN.timelineData.forEach(bg => {
+        (bg.anh_list || []).forEach(x => { if (x.anh_id === a.anh_id) x.is_fav = data.is_fav; });
+      });
+    }
+    mnaRenderLightbox();
+    // Cập nhật heart icon ngoài grid (Gallery)
+    document.querySelectorAll('[data-anh-id="' + a.anh_id + '"] .mna-fav-btn').forEach(btn => {
+      btn.classList.toggle('on', data.is_fav);
+    });
+  } catch (err) {
+    showToast('Lỗi: ' + (err.message || 'network'), 'err');
+  }
+}
+
+// [v11.8] Toggle fav từ grid (không cần mở lightbox)
+async function mnaToggleFav(anhId, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  if (!anhId) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_toggle_fav', {
+      p_ma_admin: SESSION.ma, p_anh_id: anhId
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+
+    // Cập nhật trạng thái ở mọi nơi (gallery, timeline, fav data)
+    const update = (arr) => { if (Array.isArray(arr)) arr.forEach(x => { if (x.anh_id === anhId) x.is_fav = data.is_fav; }); };
+    update(MUANON_ADMIN.galleryData);
+    if (Array.isArray(MUANON_ADMIN.timelineData)) {
+      MUANON_ADMIN.timelineData.forEach(bg => update(bg.anh_list));
+    }
+    // Update heart icon DOM
+    document.querySelectorAll('[data-anh-id="' + anhId + '"] .mna-fav-btn').forEach(btn => {
+      btn.classList.toggle('on', data.is_fav);
+    });
+
+    // Nếu đang xem mode "Chỉ yêu thích" và unfav → remove item khỏi grid
+    if (MUANON_ADMIN.galleryOnlyFav && !data.is_fav) {
+      mnaLoadGallery();
+    }
+  } catch (err) {
+    showToast('Lỗi: ' + (err.message || 'network'), 'err');
+  }
+}
+
 function mnaRenderLightbox() {
   const idx = MUANON_ADMIN.lightboxIdx;
   if (idx < 0) return;
@@ -676,11 +790,35 @@ function mnaRenderLightbox() {
     lb.onclick = e => { if (e.target === lb) mnaCloseLightbox(); };
     document.body.appendChild(lb);
     requestAnimationFrame(() => lb.classList.add('open'));
+
+    // [v11.8] Swipe touch handlers
+    let startX = 0, startY = 0, swiping = false;
+    lb.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+    lb.addEventListener('touchend', e => {
+      if (!swiping) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      swiping = false;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        mnaLightboxNav(dx < 0 ? 1 : -1);  // swipe trái → next, phải → prev
+      } else if (dy < -80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+        mnaCloseLightbox();  // swipe up → close
+      }
+    });
   }
 
+  const isFav = !!a.is_fav;
   lb.innerHTML = `
     <button class="mna-lb-close" onclick="mnaCloseLightbox()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="mna-lb-fav ${isFav ? 'on' : ''}" onclick="mnaLightboxToggleFav()" title="Yêu thích">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
     <button class="mna-lb-prev" onclick="mnaLightboxNav(-1)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -691,7 +829,7 @@ function mnaRenderLightbox() {
     <img src="${_mnaEscAttr(a.url || '')}" class="mna-lb-img" alt=""/>
     <div class="mna-lb-info">
       <div class="mna-lb-nv">${escHtml(a.ten_nv || '')} <span style="opacity:0.7">· ${escHtml(a.ma_nv || '')}</span></div>
-      <div class="mna-lb-meta">${escHtml(a.ma_ch || '')} · ${escHtml(a.khu_vuc || '')} ${a.tag ? '· <b style="color:' + mnaTagColor(a.tag) + '">' + escHtml(mnaTagLabel(a.tag)) + '</b>' : ''}</div>
+      <div class="mna-lb-meta">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''} ${a.tag ? '· <b style="color:' + mnaTagColor(a.tag) + '">' + escHtml(mnaTagLabel(a.tag)) + '</b>' : ''}</div>
       <div class="mna-lb-counter">${idx + 1} / ${MUANON_ADMIN.galleryData.length}</div>
     </div>
   `;
@@ -1045,9 +1183,10 @@ function mnaRenderTimeline() {
       const tagBadge = a.tag ? `<span class="mna-tl-img-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : '';
       const overlayN = ai === showMax - 1 && overflow > 0
         ? '<div class="mna-tl-img-overlay">+' + overflow + '</div>' : '';
-      return `<div class="mna-tl-img-wrap" onclick="mnaOpenTimelineLightbox(${idx}, ${ai})">
+      return `<div class="mna-tl-img-wrap" data-anh-id="${a.anh_id}" onclick="mnaOpenTimelineLightbox(${idx}, ${ai})">
         <img src="${_mnaEscAttr(a.url)}" loading="lazy"/>
         ${overlayN}${tagBadge}
+        ${a.is_fav ? '<div class="mna-tl-fav-dot"></div>' : ''}
       </div>`;
     }).join('');
 
@@ -1110,15 +1249,19 @@ function mnaTimelinePage(dir) {
 }
 
 function mnaOpenTimelineLightbox(bgIdx, anhIdx) {
-  // Flatten các ảnh trong timeline (giữ thứ tự) để swipe được
+  // [v11.8] Flatten TOÀN BỘ ảnh trong timeline (giữ thứ tự) để swipe liên tục
+  // qua bài đăng kế tiếp (cross-baigui swipe)
   const items = [];
   let startIdx = 0;
   MUANON_ADMIN.timelineData.forEach((bg, bi) => {
     (bg.anh_list || []).forEach((a, ai) => {
       if (bi === bgIdx && ai === anhIdx) startIdx = items.length;
       items.push({
+        anh_id: a.anh_id,
+        baigui_id: bg.baigui_id,
         url: a.url, url_full: a.url_full || a.url,
         tag: a.tag,
+        is_fav: !!a.is_fav,
         ten_nv: bg.ten_nv, ma_nv: bg.ma_nv,
         ma_ch: bg.ma_ch, ten_ch: bg.ten_ch, khu_vuc: bg.khu_vuc,
         ngay_gui: bg.ngay_gui, tuan_code: bg.tuan_code
@@ -1127,6 +1270,8 @@ function mnaOpenTimelineLightbox(bgIdx, anhIdx) {
   });
   MUANON_ADMIN.lightboxSource = 'timeline';
   MUANON_ADMIN.galleryData = items;  // reuse lightbox renderer
+  // [v11.8] Lưu scroll position của Timeline để restore
+  MUANON_ADMIN._scrollY = window.scrollY;
   MUANON_ADMIN.lightboxIdx = startIdx;
   mnaRenderLightbox();
 }
@@ -1404,3 +1549,7 @@ window.mnaTqSortToggleDir = mnaTqSortToggleDir;
 window.mnaTqDrillDown = mnaTqDrillDown;
 window.mnaSetCustomDate = mnaSetCustomDate;
 window.mnaSetCplFilter = mnaSetCplFilter;
+// [v11.8] Yêu thích + swipe lightbox
+window.mnaToggleFav = mnaToggleFav;
+window.mnaLightboxToggleFav = mnaLightboxToggleFav;
+window.mnaToggleOnlyFav = mnaToggleOnlyFav;
