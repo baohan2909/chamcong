@@ -26,6 +26,13 @@ const MUANON_ADMIN = {
   galleryTotal: 0,
   galleryOffset: 0,
   galleryLimit: 60,
+  galleryOnlyFav: false,
+  // [v11.9] Album + multi-select
+  albums: [],
+  currentAlbumId: null,
+  currentAlbumName: null,
+  selectMode: false,
+  selectedAnh: new Set(),
   timelineData: [],
   timelineTotal: 0,
   timelineOffset: 0,
@@ -549,18 +556,28 @@ async function mnaLoadGallery() {
 
   try {
     let res;
-    // [v11.8] Nếu đang "Chỉ yêu thích" → gọi RPC list_fav
-    if (MUANON_ADMIN.galleryOnlyFav) {
+    // [v11.9] Ưu tiên 1: đang xem album cụ thể
+    if (MUANON_ADMIN.currentAlbumId) {
+      res = await supa.rpc('fn_muanon_admin_album_anh_list', {
+        p_ma_admin: SESSION.ma,
+        p_album_id: MUANON_ADMIN.currentAlbumId,
+        p_limit: MUANON_ADMIN.galleryLimit,
+        p_offset: MUANON_ADMIN.galleryOffset
+      });
+    }
+    // [v11.8] Ưu tiên 2: chỉ yêu thích
+    else if (MUANON_ADMIN.galleryOnlyFav) {
       res = await supa.rpc('fn_muanon_admin_list_fav', {
         p_ma_admin: SESSION.ma,
         p_limit: MUANON_ADMIN.galleryLimit,
         p_offset: MUANON_ADMIN.galleryOffset
       });
       if (res.data && res.data.data) {
-        // Inject is_fav=true cho mọi item (đã yêu thích)
         res.data.data.forEach(x => { x.is_fav = true; });
       }
-    } else {
+    }
+    // Mặc định: gallery thường theo tuần
+    else {
       res = await supa.rpc('fn_muanon_admin_list_anh', {
         p_ma_admin: SESSION.ma,
         p_tuan_id: MUANON_ADMIN.tuanId,
@@ -590,29 +607,81 @@ async function mnaLoadGallery() {
 function mnaToggleOnlyFav() {
   MUANON_ADMIN.galleryOnlyFav = !MUANON_ADMIN.galleryOnlyFav;
   MUANON_ADMIN.galleryOffset = 0;
+  // Exit album if any
+  if (MUANON_ADMIN.galleryOnlyFav && MUANON_ADMIN.currentAlbumId) {
+    MUANON_ADMIN.currentAlbumId = null;
+    MUANON_ADMIN.currentAlbumName = null;
+  }
   mnaLoadGallery();
 }
 
 function mnaRenderGallery() {
   const data = MUANON_ADMIN.galleryData;
   const onlyFav = !!MUANON_ADMIN.galleryOnlyFav;
+  const inAlbum = !!MUANON_ADMIN.currentAlbumId;
+  const albumName = MUANON_ADMIN.currentAlbumName || '';
+  const selMode = MUANON_ADMIN.selectMode;
+  const selCount = MUANON_ADMIN.selectedAnh.size;
 
   let html = _mnaRenderActiveFilters();
+
+  // [v11.9] Album header (khi đang xem album)
+  if (inAlbum) {
+    html += `
+      <div class="mna-album-header">
+        <button class="mna-album-back" onclick="mnaExitAlbum()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="mna-album-h-info">
+          <div class="mna-album-h-name">${escHtml(albumName)}</div>
+          <div class="mna-album-h-meta">${MUANON_ADMIN.galleryTotal} ảnh</div>
+        </div>
+        <button class="mna-album-h-act" onclick="mnaRenameCurrentAlbum()" title="Đổi tên">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="mna-album-h-act danger" onclick="mnaDeleteCurrentAlbum()" title="Xóa">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+  }
+
   html += `
     <div class="mna-filter-sticky">
-      <div class="mna-toolbar">
+      <div class="mna-toolbar">`;
+
+  if (selMode) {
+    // Select mode toolbar
+    html += `
+        <button class="mna-sel-cancel" onclick="mnaToggleSelectMode()">Hủy chọn</button>
+        <div class="mna-sel-count">Đã chọn <b>${selCount}</b></div>
+        <button class="mna-sel-all" onclick="mnaSelectAllGallery()">Chọn tất cả</button>`;
+  } else {
+    html += `
         <input type="search" class="mna-search-input"
-          placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : 'Tìm tên NV, mã NV, cửa hàng, khu vực...'}"
+          placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : (inAlbum ? 'Đang xem bộ sưu tập: ' + escHtml(albumName) : 'Tìm tên NV, mã NV, cửa hàng, khu vực...')}"
           value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
           oninput="mnaDebounceSearch(this.value)"
-          ${onlyFav ? 'disabled' : ''}/>
-        <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}">
+          ${(onlyFav || inAlbum) ? 'disabled' : ''}/>
+        <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}" ${inAlbum ? 'disabled' : ''}>
           <svg viewBox="0 0 24 24" fill="${onlyFav ? '#EF4444' : 'none'}" stroke="${onlyFav ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
-        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc" ${onlyFav ? 'disabled' : ''}>
+        <button class="mna-filter-btn" onclick="mnaOpenAlbumSheet()" title="Bộ sưu tập">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        <button class="mna-filter-btn" onclick="mnaToggleSelectMode()" title="Chọn nhiều">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+        </button>`;
+    if (!inAlbum && !onlyFav) {
+      html += `
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           ${_mnaFilterBadge()}
-        </button>
+        </button>`;
+    }
+  }
+
+  html += `
       </div>
       <div class="mna-zoom-row">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
@@ -625,21 +694,28 @@ function mnaRenderGallery() {
   `;
 
   if (data.length === 0) {
-    html += '<div class="mna-empty">Chưa có ảnh nào</div>';
+    html += '<div class="mna-empty">' + (inAlbum ? 'Bộ sưu tập trống. Vào Gallery chọn ảnh và "Thêm vào bộ sưu tập".' : 'Chưa có ảnh nào') + '</div>';
     document.getElementById('muanon-admin-content').innerHTML = html;
     return;
   }
 
-  html += `<div class="mna-gallery-grid" style="--mna-cols:${MUANON_ADMIN.gridCols}">`;
+  html += `<div class="mna-gallery-grid ${selMode ? 'sel-mode' : ''}" style="--mna-cols:${MUANON_ADMIN.gridCols}">`;
   data.forEach((a, idx) => {
     const tagColor = a.tag ? mnaTagColor(a.tag) : null;
+    const isSel = MUANON_ADMIN.selectedAnh.has(a.anh_id);
+    // Click handler: select mode → toggle, normal → lightbox
+    const clickHandler = selMode
+      ? `mnaToggleAnhSelect(${a.anh_id}, event)`
+      : `mnaOpenLightbox(${idx})`;
     html += `
-      <div class="mna-gallery-item" data-anh-id="${a.anh_id}" onclick="mnaOpenLightbox(${idx})">
+      <div class="mna-gallery-item ${isSel ? 'selected' : ''}" data-anh-id="${a.anh_id}" onclick="${clickHandler}">
         <img src="${_mnaEscAttr(a.url || '')}" alt="${_mnaEscAttr(a.ten_nv || '')}" loading="lazy"/>
         ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
-        <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </button>
+        ${selMode
+          ? `<div class="mna-sel-cb ${isSel ? 'on' : ''}">${isSel ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>`
+          : `<button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>`}
         <div class="mna-gallery-overlay">
           <div class="mna-gallery-nv">${escHtml(a.ten_nv || a.ma_nv || '')}</div>
           <div class="mna-gallery-ch">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''}</div>
@@ -647,6 +723,34 @@ function mnaRenderGallery() {
       </div>`;
   });
   html += '</div>';
+
+  // [v11.9] Multi-select bottom action bar
+  if (selMode) {
+    html += `
+      <div class="mna-multi-bar" id="mna-multi-bar" style="display:${selCount > 0 ? 'flex' : 'none'}">
+        <div class="mna-multi-info">Đã chọn <b id="mna-multi-count">${selCount}</b></div>
+        <div class="mna-multi-actions">
+          <button class="mna-multi-act" onclick="mnaBulkFav()" title="Yêu thích">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+          <button class="mna-multi-act" onclick="mnaOpenAlbumSheet()" title="Thêm vào bộ sưu tập">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button class="mna-multi-act" onclick="mnaBulkDownload()" title="Tải xuống">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="mna-multi-act" onclick="mnaBulkShare()" title="Chia sẻ">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
+          ${inAlbum ? `
+            <button class="mna-multi-act danger" onclick="mnaBulkRemoveFromAlbum()" title="Xóa khỏi bộ sưu tập">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
 
   document.getElementById('muanon-admin-content').innerHTML = html;
 }
@@ -1516,6 +1620,298 @@ function _mnaFmtDateTime(iso) {
          pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// [v11.9] MULTI-SELECT + BỘ SƯU TẬP (ALBUM)
+// ════════════════════════════════════════════════════════════════════════════
+
+// ─── Multi-select toggle ────────────────────────────────────────────────────
+function mnaToggleSelectMode() {
+  MUANON_ADMIN.selectMode = !MUANON_ADMIN.selectMode;
+  if (!MUANON_ADMIN.selectMode) MUANON_ADMIN.selectedAnh.clear();
+  mnaRenderGallery();
+}
+
+function mnaToggleAnhSelect(anhId, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  if (!MUANON_ADMIN.selectMode) return;
+  const set = MUANON_ADMIN.selectedAnh;
+  if (set.has(anhId)) set.delete(anhId); else set.add(anhId);
+  // Update DOM của item này
+  const el = document.querySelector('.mna-gallery-item[data-anh-id="' + anhId + '"]');
+  if (el) {
+    el.classList.toggle('selected', set.has(anhId));
+    const cb = el.querySelector('.mna-sel-cb');
+    if (cb) cb.classList.toggle('on', set.has(anhId));
+  }
+  _mnaUpdateMultiBar();
+}
+
+function _mnaUpdateMultiBar() {
+  const bar = document.getElementById('mna-multi-bar');
+  const cnt = document.getElementById('mna-multi-count');
+  const n = MUANON_ADMIN.selectedAnh.size;
+  if (bar) bar.style.display = (MUANON_ADMIN.selectMode && n > 0) ? 'flex' : 'none';
+  if (cnt) cnt.textContent = n;
+}
+
+function mnaSelectAllGallery() {
+  MUANON_ADMIN.galleryData.forEach(a => MUANON_ADMIN.selectedAnh.add(a.anh_id));
+  document.querySelectorAll('.mna-gallery-item').forEach(el => {
+    el.classList.add('selected');
+    const cb = el.querySelector('.mna-sel-cb');
+    if (cb) cb.classList.add('on');
+  });
+  _mnaUpdateMultiBar();
+}
+
+function mnaClearSelectAnh() {
+  MUANON_ADMIN.selectedAnh.clear();
+  document.querySelectorAll('.mna-gallery-item').forEach(el => {
+    el.classList.remove('selected');
+    const cb = el.querySelector('.mna-sel-cb');
+    if (cb) cb.classList.remove('on');
+  });
+  _mnaUpdateMultiBar();
+}
+
+// ─── Bulk actions ───────────────────────────────────────────────────────────
+async function mnaBulkFav() {
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  if (!confirm('Đánh dấu yêu thích ' + ids.length + ' ảnh đã chọn?')) return;
+  let ok = 0;
+  for (const id of ids) {
+    try {
+      const { data } = await supa.rpc('fn_muanon_admin_toggle_fav', {
+        p_ma_admin: SESSION.ma, p_anh_id: id
+      });
+      if (data && data.ok && data.is_fav) ok++;
+    } catch (e) {}
+  }
+  showToast('✓ Đã yêu thích ' + ok + ' ảnh', 'ok');
+  MUANON_ADMIN.selectMode = false;
+  MUANON_ADMIN.selectedAnh.clear();
+  mnaLoadGallery();
+}
+
+async function mnaBulkDownload() {
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  const items = MUANON_ADMIN.galleryData.filter(a => ids.includes(a.anh_id));
+  if (items.length === 0) return;
+  if (items.length > 1 && !confirm('Tải ' + items.length + ' ảnh? Trình duyệt có thể hỏi xác nhận từng ảnh.')) return;
+  for (let i = 0; i < items.length; i++) {
+    const a = items[i];
+    const url = a.url_full || a.url;
+    if (!url) continue;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    await new Promise(r => setTimeout(r, 250));  // tránh popup blocker
+  }
+  showToast('✓ Đã bắt đầu tải ' + items.length + ' ảnh', 'ok');
+}
+
+async function mnaBulkShare() {
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  const items = MUANON_ADMIN.galleryData.filter(a => ids.includes(a.anh_id));
+  const urls = items.map(a => a.url_full || a.url).filter(Boolean);
+  if (urls.length === 0) return;
+
+  // Web Share API nếu hỗ trợ (mobile)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Ảnh mẫu nón Nón Sơn',
+        text: 'Chia sẻ ' + items.length + ' ảnh mẫu nón',
+        url: urls[0]
+      });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  // Fallback: copy URLs vào clipboard
+  try {
+    await navigator.clipboard.writeText(urls.join('\n'));
+    showToast('✓ Đã copy ' + urls.length + ' URL vào clipboard', 'ok');
+  } catch (e) {
+    showToast('Trình duyệt không hỗ trợ chia sẻ', 'err');
+  }
+}
+
+// ─── Album sheet ────────────────────────────────────────────────────────────
+async function mnaOpenAlbumSheet() {
+  // Load albums
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_album_list', { p_ma_admin: SESSION.ma });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    MUANON_ADMIN.albums = data.data || [];
+  } catch (err) {
+    showToast('Lỗi tải bộ sưu tập: ' + err.message, 'err');
+    return;
+  }
+
+  const old = document.getElementById('mna-album-sheet');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'mna-album-sheet';
+  overlay.className = 'mna-fs-overlay';
+  overlay.onclick = e => { if (e.target === overlay) mnaCloseAlbumSheet(); };
+
+  const isMulti = MUANON_ADMIN.selectMode && MUANON_ADMIN.selectedAnh.size > 0;
+  const albumsHtml = MUANON_ADMIN.albums.length > 0
+    ? MUANON_ADMIN.albums.map(al => `
+        <div class="mna-album-card" onclick="${isMulti ? 'mnaAddSelToAlbum(' + al.id + ')' : 'mnaOpenAlbum(' + al.id + ', ' + JSON.stringify(al.ten).replace(/"/g, '&quot;') + ')'}">
+          <div class="mna-album-cover">
+            ${al.cover_url ? '<img src="' + _mnaEscAttr(al.cover_url) + '" loading="lazy"/>' : '<div class="mna-album-empty">📁</div>'}
+            <span class="mna-album-count">${al.so_anh}</span>
+          </div>
+          <div class="mna-album-name">${escHtml(al.ten)}</div>
+        </div>
+      `).join('')
+    : '<div class="mna-album-empty-state">Chưa có bộ sưu tập nào</div>';
+
+  overlay.innerHTML = `
+    <div class="mna-fs-sheet" onclick="event.stopPropagation()">
+      <div class="mna-fs-handle"></div>
+      <div class="mna-fs-header">
+        <div class="mna-fs-title">${isMulti ? 'Thêm ' + MUANON_ADMIN.selectedAnh.size + ' ảnh vào...' : 'Bộ sưu tập'}</div>
+        <button class="mna-fs-clear" onclick="mnaCloseAlbumSheet()">Đóng</button>
+      </div>
+      <button class="mna-album-create-btn" onclick="mnaPromptCreateAlbum(${isMulti ? 'true' : 'false'})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tạo bộ sưu tập mới
+      </button>
+      <div class="mna-album-grid">${albumsHtml}</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function mnaCloseAlbumSheet() {
+  const ov = document.getElementById('mna-album-sheet');
+  if (ov) { ov.classList.remove('open'); setTimeout(() => ov.remove(), 220); }
+}
+
+async function mnaPromptCreateAlbum(addAfter) {
+  const ten = prompt('Tên bộ sưu tập:');
+  if (!ten || !ten.trim()) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_album_create', {
+      p_ma_admin: SESSION.ma, p_ten: ten.trim()
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã tạo "' + ten + '"', 'ok');
+    if (addAfter && MUANON_ADMIN.selectedAnh.size > 0) {
+      await mnaAddSelToAlbum(data.album_id);
+    } else {
+      mnaOpenAlbumSheet();
+    }
+  } catch (err) {
+    showToast('Lỗi: ' + err.message, 'err');
+  }
+}
+
+async function mnaAddSelToAlbum(albumId) {
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_album_add', {
+      p_ma_admin: SESSION.ma, p_album_id: albumId, p_anh_ids: ids
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã thêm ' + (data.so_anh_them || ids.length) + ' ảnh', 'ok');
+    mnaCloseAlbumSheet();
+    MUANON_ADMIN.selectMode = false;
+    MUANON_ADMIN.selectedAnh.clear();
+    mnaRenderGallery();
+  } catch (err) {
+    showToast('Lỗi: ' + err.message, 'err');
+  }
+}
+
+async function mnaOpenAlbum(albumId, albumName) {
+  MUANON_ADMIN.currentAlbumId = albumId;
+  MUANON_ADMIN.currentAlbumName = albumName;
+  MUANON_ADMIN.galleryOnlyFav = false;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaCloseAlbumSheet();
+  if (MUANON_ADMIN.currentTab !== 'gallery') {
+    mnaSwitchTab('gallery');
+  } else {
+    mnaLoadGallery();
+  }
+}
+
+function mnaExitAlbum() {
+  MUANON_ADMIN.currentAlbumId = null;
+  MUANON_ADMIN.currentAlbumName = null;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaLoadGallery();
+}
+
+async function mnaRenameCurrentAlbum() {
+  const id = MUANON_ADMIN.currentAlbumId;
+  if (!id) return;
+  const ten = prompt('Đổi tên bộ sưu tập:', MUANON_ADMIN.currentAlbumName || '');
+  if (!ten || !ten.trim()) return;
+  try {
+    const { data } = await supa.rpc('fn_muanon_admin_album_rename', {
+      p_ma_admin: SESSION.ma, p_album_id: id, p_ten_moi: ten.trim()
+    });
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    MUANON_ADMIN.currentAlbumName = ten.trim();
+    showToast('✓ Đã đổi tên', 'ok');
+    mnaRenderGallery();
+  } catch (err) { showToast('Lỗi: ' + err.message, 'err'); }
+}
+
+async function mnaDeleteCurrentAlbum() {
+  const id = MUANON_ADMIN.currentAlbumId;
+  if (!id) return;
+  if (!confirm('Xóa bộ sưu tập "' + MUANON_ADMIN.currentAlbumName + '"?\n\nẢnh gốc vẫn còn, chỉ xóa liên kết album.')) return;
+  try {
+    const { data } = await supa.rpc('fn_muanon_admin_album_delete', {
+      p_ma_admin: SESSION.ma, p_album_id: id
+    });
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã xóa', 'ok');
+    mnaExitAlbum();
+  } catch (err) { showToast('Lỗi: ' + err.message, 'err'); }
+}
+
+// Bulk remove khỏi album (khi đang xem trong album + selectMode)
+async function mnaBulkRemoveFromAlbum() {
+  const id = MUANON_ADMIN.currentAlbumId;
+  if (!id) return;
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  if (!confirm('Xóa ' + ids.length + ' ảnh khỏi bộ sưu tập?\n(Ảnh gốc vẫn còn)')) return;
+  try {
+    const { data } = await supa.rpc('fn_muanon_admin_album_remove', {
+      p_ma_admin: SESSION.ma, p_album_id: id, p_anh_ids: ids
+    });
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã xóa ' + (data.so_anh_xoa || 0), 'ok');
+    MUANON_ADMIN.selectMode = false;
+    MUANON_ADMIN.selectedAnh.clear();
+    mnaLoadGallery();
+  } catch (err) { showToast('Lỗi: ' + err.message, 'err'); }
+}
+
 // ─── GLOBALS ────────────────────────────────────────────────────────────────
 window.moPageMuanonAdmin = moPageMuanonAdmin;
 window.mnaChangeTuan = mnaChangeTuan;
@@ -1553,3 +1949,20 @@ window.mnaSetCplFilter = mnaSetCplFilter;
 window.mnaToggleFav = mnaToggleFav;
 window.mnaLightboxToggleFav = mnaLightboxToggleFav;
 window.mnaToggleOnlyFav = mnaToggleOnlyFav;
+// [v11.9] Album + multi-select
+window.mnaToggleSelectMode = mnaToggleSelectMode;
+window.mnaToggleAnhSelect = mnaToggleAnhSelect;
+window.mnaSelectAllGallery = mnaSelectAllGallery;
+window.mnaClearSelectAnh = mnaClearSelectAnh;
+window.mnaBulkFav = mnaBulkFav;
+window.mnaBulkDownload = mnaBulkDownload;
+window.mnaBulkShare = mnaBulkShare;
+window.mnaBulkRemoveFromAlbum = mnaBulkRemoveFromAlbum;
+window.mnaOpenAlbumSheet = mnaOpenAlbumSheet;
+window.mnaCloseAlbumSheet = mnaCloseAlbumSheet;
+window.mnaPromptCreateAlbum = mnaPromptCreateAlbum;
+window.mnaAddSelToAlbum = mnaAddSelToAlbum;
+window.mnaOpenAlbum = mnaOpenAlbum;
+window.mnaExitAlbum = mnaExitAlbum;
+window.mnaRenameCurrentAlbum = mnaRenameCurrentAlbum;
+window.mnaDeleteCurrentAlbum = mnaDeleteCurrentAlbum;
