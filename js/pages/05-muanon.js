@@ -74,7 +74,8 @@ async function taiMuanonTuan() {
     }
     _muanonTuan = tuanRes;
 
-    // 2. Bài đã gửi
+    // 2. [v11.3] Bài đã gửi tuần này (chỉ để hiện số đếm trên status card)
+    //    KHÔNG load ảnh cũ vào form — form luôn empty, mỗi submit là bài mới
     const { data: bgRes, error: bgErr } = await supa.rpc('fn_muanon_my_baigui', { p_ma_nv: SESSION.ma });
     if (bgErr) throw bgErr;
 
@@ -82,23 +83,9 @@ async function taiMuanonTuan() {
     _muanonBaigui = null;
     _muanonMoTa = '';
 
-    if (bgRes && bgRes.ok) {
-      _muanonBaigui = bgRes.baigui;
-      _muanonMoTa = (bgRes.baigui && bgRes.baigui.mo_ta) || '';
-      if (Array.isArray(bgRes.anh_list)) {
-        _muanonAnhList = bgRes.anh_list.map(a => ({
-          id: a.id,
-          url: a.url || a.thumb_url,
-          tag: a.tag,
-          width: a.width,
-          height: a.height,
-          size_bytes: a.size_bytes,
-          supabase_path: a.supabase_path,
-          ten_file: a.ten_file,
-          thu_tu: a.thu_tu,
-          _existed: true
-        }));
-      }
+    if (bgRes && bgRes.ok && bgRes.so_bai > 0) {
+      // Chỉ lưu meta (số bài, số ảnh tuần) — không lấy ảnh
+      _muanonBaigui = { trang_thai: 'SUBMITTED', so_bai: bgRes.so_bai, so_anh: bgRes.so_anh };
     }
 
     // 3. History 4 tuần (cho lịch sử ngắn ở cuối tab upload)
@@ -163,17 +150,25 @@ function muanonRenderStatusCard() {
   const remainText = remainHrs > 48
     ? Math.floor(remainHrs / 24) + ' ngày ' + (remainHrs % 24) + ' giờ'
     : remainHrs + ' giờ';
-  const submitted = _muanonBaigui && _muanonBaigui.trang_thai === 'SUBMITTED';
-  const numFilled = _muanonAnhList.length;
+
+  // [v11.3] Đếm số bài + tổng ảnh tuần này từ _muanonTuanGroups
+  const tuanThisWeek = (_muanonTuanGroups || []).filter(g => g.tuan_id === _muanonTuan.tuan_id);
+  const soBai = tuanThisWeek.length;
+  const soAnh = tuanThisWeek.reduce((s, g) => s + (g.so_anh || 0), 0);
+  const daGui = soBai > 0;
 
   const iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
   const iconClock = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
 
+  const title = daGui
+    ? 'Đã gửi ' + soBai + ' bài · ' + soAnh + ' ảnh'
+    : 'Chưa gửi tuần này';
+
   return `
-    <div class="muanon-status-card ${submitted ? 'submitted' : 'pending'}">
-      <div class="muanon-status-icon">${submitted ? iconCheck : iconClock}</div>
+    <div class="muanon-status-card ${daGui ? 'submitted' : 'pending'}">
+      <div class="muanon-status-icon">${daGui ? iconCheck : iconClock}</div>
       <div class="muanon-status-info">
-        <div class="muanon-status-title">${submitted ? 'Đã gửi ' + numFilled + ' ảnh' : 'Chưa gửi ảnh tuần này'}</div>
+        <div class="muanon-status-title">${title}</div>
         <div class="muanon-status-sub">${_muanonTuan.tuan_code} · còn <b>${remainText}</b></div>
       </div>
     </div>
@@ -275,7 +270,7 @@ function muanonRenderUploadTab() {
     <div class="muanon-submit-wrap">
       <button class="muanon-submit-btn" id="muanon-submit-btn" onclick="muanonSubmit()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><polyline points="20 6 9 17 4 12"/></svg>
-        ${submitted ? 'Cập nhật bài gửi' : 'Lưu bài gửi'}
+        Lưu bài gửi
       </button>
     </div>
   `;
@@ -831,15 +826,25 @@ async function muanonSubmit() {
     if (!res || !res.ok) throw new Error((res && res.message) || 'Lỗi DB');
 
     showToast('✓ Đã gửi ' + valid.length + ' ảnh', 'ok');
+
+    // [v11.3] Reset form sau submit thành công — mỗi bài là 1 lần gửi độc lập
+    _muanonAnhList = [];
+    _muanonMoTa = '';
+    _muanonBaigui = null;
+
+    // Reload data (cập nhật my_baigui đếm số bài, my_anh_list cho Timeline + Gallery)
     _muanonLoaded = false;
     await taiMuanonTuan();
     _muanonLoaded = true;
+
+    // Sau khi reload, switch sang Timeline để NV xem bài vừa gửi
+    _muanonTab = 'timeline';
+    muanonRender();
   } catch (err) {
     showToast('Lỗi gửi: ' + (err.message || 'unknown'), 'err');
     if (btn) {
       btn.disabled = false;
-      btn.textContent = (_muanonBaigui && _muanonBaigui.trang_thai === 'SUBMITTED')
-        ? 'Cập nhật bài gửi' : 'Lưu bài gửi';
+      btn.textContent = 'Lưu bài gửi';
     }
   }
 }

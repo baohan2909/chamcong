@@ -8,14 +8,22 @@ const MUANON_ADMIN = {
   tuanId: null,
   tuanList: [],
   currentTab: 'tongquan',
-  filters: { kv: null, ch: null, nv: null, tag: null },
+  filters: { kv: null, ch: null, nv: null, tag: null, trang_thai: null },
+  timeRange: { mode: 'all', from: null, to: null },  // 'all' | 'today' | 'week' | 'month' | 'custom'
   gridCols: parseInt(localStorage.getItem('muanon_grid_cols') || '3', 10),
   selectedNV: new Set(),
   galleryData: [],
   galleryTotal: 0,
   galleryOffset: 0,
   galleryLimit: 60,
+  timelineData: [],
+  timelineTotal: 0,
+  timelineOffset: 0,
+  timelineLimit: 20,
   lightboxIdx: -1,
+  lightboxSource: 'gallery', // 'gallery' | 'timeline'
+  lightboxTimelineRef: null, // {baigui_idx, anh_idx}
+  filterSheetOpen: false,
   _loaded: false
 };
 
@@ -111,9 +119,10 @@ function mnaRenderHeader() {
   }).join('');
 
   const tabs = [
-    { id: 'tongquan', label: 'Tổng quan' },
-    { id: 'gallery', label: 'Gallery' },
-    { id: 'chuagui', label: 'Chưa gửi' },
+    { id: 'tongquan',   label: 'Tổng quan' },
+    { id: 'timeline',   label: 'Timeline' },
+    { id: 'gallery',    label: 'Gallery' },
+    { id: 'chuagui',    label: 'Chưa gửi' },
     { id: 'compliance', label: 'Tuân thủ' }
   ];
   const tabsHtml = tabs.map(t =>
@@ -153,6 +162,7 @@ function mnaSwitchTab(tab) {
   el.innerHTML = '<div class="mna-loading">Đang tải...</div>';
 
   if (tab === 'tongquan') mnaLoadTongQuan();
+  else if (tab === 'timeline') mnaLoadTimeline();
   else if (tab === 'gallery') mnaLoadGallery();
   else if (tab === 'chuagui') mnaLoadChuaGui();
   else if (tab === 'compliance') mnaLoadCompliance();
@@ -310,28 +320,24 @@ async function mnaLoadGallery() {
 
 function mnaRenderGallery() {
   const data = MUANON_ADMIN.galleryData;
-  const kvSet = new Set(data.map(d => d.khu_vuc).filter(Boolean));
 
   let html = _mnaRenderActiveFilters();
   html += `
     <div class="mna-filter-sticky">
-      <div class="mna-filter-row">
-        <input type="search" class="mna-search-input" placeholder="Tìm NV / CH..."
-               value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
-               oninput="mnaDebounceSearch(this.value)"/>
-        <select class="mna-filter-sel" onchange="mnaSetFilter('kv', this.value)">
-          <option value="">Tất cả KV</option>
-          ${[...kvSet].map(kv => `<option value="${_mnaEscAttr(kv)}" ${MUANON_ADMIN.filters.kv === kv ? 'selected' : ''}>${escHtml(kv)}</option>`).join('')}
-        </select>
-        <select class="mna-filter-sel" onchange="mnaSetFilter('tag', this.value)">
-          <option value="">Tất cả loại</option>
-          ${MUANON_TAGS_ADMIN.map(t => `<option value="${t.code}" ${MUANON_ADMIN.filters.tag === t.code ? 'selected' : ''}>${t.label}</option>`).join('')}
-        </select>
+      <div class="mna-toolbar">
+        <input type="search" class="mna-search-input"
+          placeholder="Tìm tên NV, mã NV, cửa hàng, khu vực..."
+          value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+          oninput="mnaDebounceSearch(this.value)"/>
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          ${_mnaFilterBadge()}
+        </button>
       </div>
       <div class="mna-zoom-row">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         <input type="range" min="2" max="5" step="1" value="${MUANON_ADMIN.gridCols}" class="mna-zoom-slider" oninput="mnaSetZoom(this.value)"/>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><rect x="3" y="3" width="18" height="18"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         <span class="mna-zoom-label">${MUANON_ADMIN.gridCols} cột</span>
       </div>
       <div class="mna-gallery-info">${MUANON_ADMIN.galleryTotal} ảnh</div>
@@ -353,7 +359,7 @@ function mnaRenderGallery() {
         ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
         <div class="mna-gallery-overlay">
           <div class="mna-gallery-nv">${escHtml(a.ten_nv || a.ma_nv || '')}</div>
-          <div class="mna-gallery-ch">${escHtml(a.ma_ch || '')}</div>
+          <div class="mna-gallery-ch">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''}</div>
         </div>
       </div>`;
   });
@@ -365,8 +371,10 @@ function mnaRenderGallery() {
 function mnaSetFilter(key, val) {
   MUANON_ADMIN.filters[key] = val || null;
   MUANON_ADMIN.galleryOffset = 0;
+  MUANON_ADMIN.timelineOffset = 0;
   if (MUANON_ADMIN.currentTab === 'gallery') mnaLoadGallery();
   else if (MUANON_ADMIN.currentTab === 'chuagui') mnaLoadChuaGui();
+  else if (MUANON_ADMIN.currentTab === 'timeline') mnaLoadTimeline();
 }
 
 // [v11.2] Debounce search NV
@@ -458,20 +466,20 @@ async function mnaLoadChuaGui() {
 }
 
 function mnaRenderChuaGui(list, total) {
-  const kvSet = new Set(list.map(d => d.khu_vuc).filter(Boolean));
   const selected = MUANON_ADMIN.selectedNV;
 
   let html = _mnaRenderActiveFilters();
   html += `
     <div class="mna-filter-sticky">
-      <div class="mna-filter-row">
-        <input type="search" class="mna-search-input" placeholder="Tìm NV / CH..."
-               value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
-               oninput="mnaDebounceSearch(this.value)"/>
-        <select class="mna-filter-sel" onchange="mnaSetFilter('kv', this.value)">
-          <option value="">Tất cả KV</option>
-          ${[...kvSet].map(kv => `<option value="${_mnaEscAttr(kv)}" ${MUANON_ADMIN.filters.kv === kv ? 'selected' : ''}>${escHtml(kv)}</option>`).join('')}
-        </select>
+      <div class="mna-toolbar">
+        <input type="search" class="mna-search-input"
+          placeholder="Tìm tên NV, mã NV, cửa hàng, khu vực..."
+          value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+          oninput="mnaDebounceSearch(this.value)"/>
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          ${_mnaFilterBadge()}
+        </button>
       </div>
       <div class="mna-cg-info">
         <span>${total} người chưa gửi · Đã chọn <b id="mna-cg-count">${selected.size}</b></span>
@@ -637,6 +645,331 @@ function mnaFilterCompliance(q) {
   });
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// [v11.3] TAB TIMELINE — sort theo thời gian DESC, filter phong phú
+// ════════════════════════════════════════════════════════════════════════════
+async function mnaLoadTimeline() {
+  if (!SESSION || !SESSION.ma) return;
+  const tr = _mnaGetTimeRange();
+
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_timeline', {
+      p_ma_admin: SESSION.ma,
+      p_tuan_id: MUANON_ADMIN.tuanId || null,
+      p_search: MUANON_ADMIN.filters.nv || null,
+      p_tag: MUANON_ADMIN.filters.tag || null,
+      p_trang_thai: MUANON_ADMIN.filters.trang_thai || null,
+      p_kv: MUANON_ADMIN.filters.kv || null,
+      p_tu_ngay: tr.from,
+      p_den_ngay: tr.to,
+      p_limit: MUANON_ADMIN.timelineLimit,
+      p_offset: MUANON_ADMIN.timelineOffset
+    });
+
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error((data && data.message) || 'Lỗi tải timeline');
+
+    MUANON_ADMIN.timelineData = data.data || [];
+    MUANON_ADMIN.timelineTotal = data.total || 0;
+    mnaRenderTimeline();
+  } catch (err) {
+    document.getElementById('muanon-admin-content').innerHTML =
+      '<div class="mna-empty">Lỗi: ' + (err.message || 'network') + '</div>';
+  }
+}
+
+function mnaRenderTimeline() {
+  const data = MUANON_ADMIN.timelineData;
+  const total = MUANON_ADMIN.timelineTotal;
+
+  let html = _mnaRenderActiveFilters();
+  html += `
+    <div class="mna-filter-sticky">
+      <div class="mna-toolbar">
+        <input type="search" class="mna-search-input"
+          placeholder="Tìm tên NV, mã NV, cửa hàng, khu vực..."
+          value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+          oninput="mnaDebounceSearch(this.value)"/>
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          ${_mnaFilterBadge()}
+        </button>
+      </div>
+      ${_mnaRenderTimeRangeChips()}
+      <div class="mna-tl-info">${total} bài gửi</div>
+    </div>
+  `;
+
+  if (data.length === 0) {
+    html += '<div class="mna-empty">Không có bài gửi nào phù hợp</div>';
+    document.getElementById('muanon-admin-content').innerHTML = html;
+    return;
+  }
+
+  html += '<div class="mna-tl-list">';
+  data.forEach((bg, idx) => {
+    const ts = bg.ngay_gui ? _mnaRelativeTime(bg.ngay_gui) : '';
+    const tsAbs = bg.ngay_gui ? _mnaFmtDateTime(bg.ngay_gui) : '';
+    const badgeCls = bg.dung_han ? 'ok' : 'late';
+    const badgeText = bg.dung_han ? 'Đúng hạn' : 'Trễ';
+
+    const anhList = bg.anh_list || [];
+    const showMax = 4;
+    const overflow = anhList.length - showMax;
+    const grid = anhList.slice(0, showMax).map((a, ai) => {
+      const tagBadge = a.tag ? `<span class="mna-tl-img-tag">${escHtml(mnaTagLabel(a.tag))}</span>` : '';
+      const overlayN = ai === showMax - 1 && overflow > 0
+        ? '<div class="mna-tl-img-overlay">+' + overflow + '</div>' : '';
+      return `<div class="mna-tl-img-wrap" onclick="mnaOpenTimelineLightbox(${idx}, ${ai})">
+        <img src="${_mnaEscAttr(a.url)}" loading="lazy"/>
+        ${overlayN}${tagBadge}
+      </div>`;
+    }).join('');
+
+    // Tag stats
+    const tagCount = {};
+    anhList.forEach(a => { if (a.tag) tagCount[a.tag] = (tagCount[a.tag] || 0) + 1; });
+    const tagChips = Object.keys(tagCount).map(c =>
+      `<span class="mna-tl-chip">${escHtml(mnaTagLabel(c))} · ${tagCount[c]}</span>`
+    ).join('');
+
+    const initials = (bg.ten_nv || bg.ma_nv || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase();
+
+    html += `
+      <div class="mna-tl-card">
+        <div class="mna-tl-head">
+          <div class="mna-tl-avatar">${escHtml(initials)}</div>
+          <div class="mna-tl-head-info">
+            <div class="mna-tl-name">${escHtml(bg.ten_nv || bg.ma_nv || '')}
+              <span class="mna-tl-ma">· ${escHtml(bg.ma_nv || '')}</span>
+            </div>
+            <div class="mna-tl-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${escHtml(bg.ten_ch || bg.ma_ch || '?')}${bg.khu_vuc ? ' · ' + escHtml(bg.khu_vuc) : ''}
+            </div>
+            <div class="mna-tl-time" title="${escHtml(tsAbs)}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${ts} · ${escHtml(bg.tuan_code || '')}
+            </div>
+          </div>
+          <div class="mna-tl-badge ${badgeCls}">${badgeText}</div>
+        </div>
+        ${bg.mo_ta ? '<div class="mna-tl-mota">' + escHtml(bg.mo_ta) + '</div>' : ''}
+        <div class="mna-tl-grid count-${Math.min(anhList.length, showMax)}">${grid}</div>
+        ${tagChips ? '<div class="mna-tl-chips">' + tagChips + '</div>' : ''}
+      </div>
+    `;
+  });
+  html += '</div>';
+
+  // Pagination
+  if (total > MUANON_ADMIN.timelineLimit) {
+    const cur = Math.floor(MUANON_ADMIN.timelineOffset / MUANON_ADMIN.timelineLimit) + 1;
+    const maxP = Math.ceil(total / MUANON_ADMIN.timelineLimit);
+    html += `
+      <div class="mna-tl-pager">
+        <button class="mna-pager-btn" ${MUANON_ADMIN.timelineOffset === 0 ? 'disabled' : ''} onclick="mnaTimelinePage(-1)">Trước</button>
+        <span>Trang ${cur} / ${maxP}</span>
+        <button class="mna-pager-btn" ${cur >= maxP ? 'disabled' : ''} onclick="mnaTimelinePage(1)">Tiếp</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('muanon-admin-content').innerHTML = html;
+}
+
+function mnaTimelinePage(dir) {
+  MUANON_ADMIN.timelineOffset = Math.max(0, MUANON_ADMIN.timelineOffset + dir * MUANON_ADMIN.timelineLimit);
+  mnaLoadTimeline();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function mnaOpenTimelineLightbox(bgIdx, anhIdx) {
+  // Flatten các ảnh trong timeline (giữ thứ tự) để swipe được
+  const items = [];
+  let startIdx = 0;
+  MUANON_ADMIN.timelineData.forEach((bg, bi) => {
+    (bg.anh_list || []).forEach((a, ai) => {
+      if (bi === bgIdx && ai === anhIdx) startIdx = items.length;
+      items.push({
+        url: a.url, url_full: a.url_full || a.url,
+        tag: a.tag,
+        ten_nv: bg.ten_nv, ma_nv: bg.ma_nv,
+        ma_ch: bg.ma_ch, ten_ch: bg.ten_ch, khu_vuc: bg.khu_vuc,
+        ngay_gui: bg.ngay_gui, tuan_code: bg.tuan_code
+      });
+    });
+  });
+  MUANON_ADMIN.lightboxSource = 'timeline';
+  MUANON_ADMIN.galleryData = items;  // reuse lightbox renderer
+  MUANON_ADMIN.lightboxIdx = startIdx;
+  mnaRenderLightbox();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// [v11.3] FILTER SHEET (bottom sheet) — bộ lọc đầy đủ
+// ════════════════════════════════════════════════════════════════════════════
+function mnaOpenFilterSheet() {
+  const old = document.getElementById('mna-filter-sheet');
+  if (old) old.remove();
+
+  const f = MUANON_ADMIN.filters;
+  const tr = MUANON_ADMIN.timeRange;
+  const tagsHtml = MUANON_TAGS_ADMIN.map(t =>
+    `<button class="mna-fs-chip ${f.tag === t.code ? 'active' : ''}" onclick="mnaFilterSheetSet('tag', '${t.code}')" style="${f.tag === t.code ? '--c:' + t.color : ''}">${t.label}</button>`
+  ).join('');
+  // KV options từ tuanList (lấy từ data hiện có nếu có)
+  const kvSet = new Set();
+  (MUANON_ADMIN.galleryData || []).forEach(d => { if (d.khu_vuc) kvSet.add(d.khu_vuc); });
+  (MUANON_ADMIN.timelineData || []).forEach(d => { if (d.khu_vuc) kvSet.add(d.khu_vuc); });
+  const kvHtml = [...kvSet].sort().map(kv =>
+    `<button class="mna-fs-chip ${f.kv === kv ? 'active' : ''}" onclick="mnaFilterSheetSet('kv', ${JSON.stringify(kv)})">${escHtml(kv)}</button>`
+  ).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'mna-filter-sheet';
+  overlay.className = 'mna-fs-overlay';
+  overlay.onclick = e => { if (e.target === overlay) mnaCloseFilterSheet(); };
+  overlay.innerHTML = `
+    <div class="mna-fs-sheet" onclick="event.stopPropagation()">
+      <div class="mna-fs-handle"></div>
+      <div class="mna-fs-header">
+        <div class="mna-fs-title">Bộ lọc</div>
+        <button class="mna-fs-clear" onclick="mnaClearAllFilters(); mnaCloseFilterSheet();">Xóa tất cả</button>
+      </div>
+
+      <div class="mna-fs-group">
+        <div class="mna-fs-label">Trạng thái gửi</div>
+        <div class="mna-fs-chips">
+          <button class="mna-fs-chip ${!f.trang_thai ? 'active' : ''}" onclick="mnaFilterSheetSet('trang_thai', null)">Tất cả</button>
+          <button class="mna-fs-chip ${f.trang_thai === 'DUNG_HAN' ? 'active' : ''}" onclick="mnaFilterSheetSet('trang_thai', 'DUNG_HAN')">Đúng hạn</button>
+          <button class="mna-fs-chip ${f.trang_thai === 'TRE' ? 'active' : ''}" onclick="mnaFilterSheetSet('trang_thai', 'TRE')">Trễ</button>
+        </div>
+      </div>
+
+      <div class="mna-fs-group">
+        <div class="mna-fs-label">Khoảng thời gian gửi</div>
+        <div class="mna-fs-chips">
+          <button class="mna-fs-chip ${tr.mode === 'all' ? 'active' : ''}" onclick="mnaSetTimeRange('all')">Tất cả</button>
+          <button class="mna-fs-chip ${tr.mode === 'today' ? 'active' : ''}" onclick="mnaSetTimeRange('today')">Hôm nay</button>
+          <button class="mna-fs-chip ${tr.mode === 'week' ? 'active' : ''}" onclick="mnaSetTimeRange('week')">Tuần này</button>
+          <button class="mna-fs-chip ${tr.mode === 'month' ? 'active' : ''}" onclick="mnaSetTimeRange('month')">Tháng này</button>
+        </div>
+      </div>
+
+      ${kvHtml ? `
+      <div class="mna-fs-group">
+        <div class="mna-fs-label">Khu vực</div>
+        <div class="mna-fs-chips">
+          <button class="mna-fs-chip ${!f.kv ? 'active' : ''}" onclick="mnaFilterSheetSet('kv', null)">Tất cả</button>
+          ${kvHtml}
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="mna-fs-group">
+        <div class="mna-fs-label">Loại nón</div>
+        <div class="mna-fs-chips">
+          <button class="mna-fs-chip ${!f.tag ? 'active' : ''}" onclick="mnaFilterSheetSet('tag', null)">Tất cả</button>
+          ${tagsHtml}
+        </div>
+      </div>
+
+      <button class="mna-fs-apply" onclick="mnaCloseFilterSheet()">Đóng</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function mnaCloseFilterSheet() {
+  const ov = document.getElementById('mna-filter-sheet');
+  if (ov) { ov.classList.remove('open'); setTimeout(() => ov.remove(), 220); }
+}
+
+function mnaFilterSheetSet(key, val) {
+  // Click chip lần 2 trên giá trị đang active = bỏ
+  if (MUANON_ADMIN.filters[key] === val) val = null;
+  MUANON_ADMIN.filters[key] = val;
+  MUANON_ADMIN.galleryOffset = 0;
+  MUANON_ADMIN.timelineOffset = 0;
+  // Reload tab hiện tại + refresh sheet
+  if (MUANON_ADMIN.currentTab === 'gallery') mnaLoadGallery();
+  else if (MUANON_ADMIN.currentTab === 'chuagui') mnaLoadChuaGui();
+  else if (MUANON_ADMIN.currentTab === 'timeline') mnaLoadTimeline();
+  mnaOpenFilterSheet(); // re-render
+}
+
+function mnaSetTimeRange(mode) {
+  if (MUANON_ADMIN.timeRange.mode === mode) mode = 'all';
+  MUANON_ADMIN.timeRange.mode = mode;
+  MUANON_ADMIN.galleryOffset = 0;
+  MUANON_ADMIN.timelineOffset = 0;
+  if (MUANON_ADMIN.currentTab === 'timeline') mnaLoadTimeline();
+  // refresh sheet
+  if (document.getElementById('mna-filter-sheet')) mnaOpenFilterSheet();
+}
+
+function _mnaGetTimeRange() {
+  const m = MUANON_ADMIN.timeRange.mode;
+  if (m === 'all') return { from: null, to: null };
+  const now = new Date();
+  let from;
+  if (m === 'today') {
+    from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  } else if (m === 'week') {
+    const dow = (now.getDay() + 6) % 7; // T2=0...CN=6
+    from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+  } else if (m === 'month') {
+    from = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  return { from: from ? from.toISOString() : null, to: null };
+}
+
+function _mnaRenderTimeRangeChips() {
+  const m = MUANON_ADMIN.timeRange.mode;
+  const opts = [
+    { id: 'all', label: 'Tất cả' },
+    { id: 'today', label: 'Hôm nay' },
+    { id: 'week', label: 'Tuần này' },
+    { id: 'month', label: 'Tháng này' }
+  ];
+  return '<div class="mna-time-chips">' + opts.map(o =>
+    `<button class="mna-time-chip ${m === o.id ? 'active' : ''}" onclick="mnaSetTimeRange('${o.id}')">${o.label}</button>`
+  ).join('') + '</div>';
+}
+
+function _mnaFilterBadge() {
+  const f = MUANON_ADMIN.filters;
+  let n = 0;
+  if (f.kv) n++;
+  if (f.tag) n++;
+  if (f.trang_thai) n++;
+  if (MUANON_ADMIN.timeRange.mode !== 'all') n++;
+  return n > 0 ? '<span class="mna-filter-badge">' + n + '</span>' : '';
+}
+
+function _mnaRelativeTime(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return 'Vừa xong';
+  if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+  if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+  if (diff < 604800) return Math.floor(diff / 86400) + ' ngày trước';
+  // Trên 1 tuần: hiện date
+  const pad = n => String(n).padStart(2, '0');
+  return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+}
+
+function _mnaFmtDateTime(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
+         pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
 // ─── GLOBALS ────────────────────────────────────────────────────────────────
 window.moPageMuanonAdmin = moPageMuanonAdmin;
 window.mnaChangeTuan = mnaChangeTuan;
@@ -654,3 +987,10 @@ window.mnaNhacBulk = mnaNhacBulk;
 window.mnaFilterCompliance = mnaFilterCompliance;
 window.mnaDebounceSearch = mnaDebounceSearch;
 window.mnaClearAllFilters = mnaClearAllFilters;
+// [v11.3] Timeline + Filter sheet
+window.mnaTimelinePage = mnaTimelinePage;
+window.mnaOpenTimelineLightbox = mnaOpenTimelineLightbox;
+window.mnaOpenFilterSheet = mnaOpenFilterSheet;
+window.mnaCloseFilterSheet = mnaCloseFilterSheet;
+window.mnaFilterSheetSet = mnaFilterSheetSet;
+window.mnaSetTimeRange = mnaSetTimeRange;
