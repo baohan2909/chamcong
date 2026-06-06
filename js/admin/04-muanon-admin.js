@@ -761,15 +761,19 @@ function mnaRenderChuaGui(list, total) {
           <div class="mna-cg-name">${escHtml(nv.ten_nv || '')}</div>
           <div class="mna-cg-meta">${escHtml(nv.ma_nv)} · ${escHtml(nv.ma_ch || '')} · ${escHtml(nv.khu_vuc || '')}</div>
         </div>
-        ${nv.so_lan_nhac > 0 ? `<span class="mna-cg-reminded">Đã nhắc ${nv.so_lan_nhac}</span>` : ''}
+        ${nv.so_lan_nhac_admin > 0
+          ? `<span class="mna-cg-reminded admin-${Math.min(nv.so_lan_nhac_admin, 3)}">BQL cảnh báo lần ${nv.so_lan_nhac_admin}</span>`
+          : (nv.so_lan_nhac_auto > 0
+              ? `<span class="mna-cg-reminded auto">Tự động nhắc ${nv.so_lan_nhac_auto}x</span>`
+              : '')}
       </div>`;
   }
   html += '</div>';
 
   html += `
     <button class="mna-cg-fab" id="mna-cg-fab" onclick="mnaNhacBulk()" style="display:${selected.size > 0 ? 'flex' : 'none'}">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span>Nhắc <b id="mna-cg-fab-count">${selected.size}</b> người</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>Gửi cảnh báo cho <b id="mna-cg-fab-count">${selected.size}</b> người</span>
     </button>
   `;
 
@@ -822,7 +826,7 @@ function mnaUpdateSelectUI() {
 async function mnaNhacBulk() {
   const list = [...MUANON_ADMIN.selectedNV];
   if (list.length === 0) return;
-  if (!confirm(`Nhắc ${list.length} người chưa gửi?`)) return;
+  if (!confirm('Gửi cảnh báo cho ' + list.length + ' nhân viên chưa gửi mẫu nón tuần này?\n\nMỗi nhân viên sẽ nhận thông báo trong app + tăng số lần BQL cảnh báo.')) return;
 
   const fab = document.getElementById('mna-cg-fab');
   if (fab) { fab.disabled = true; fab.innerHTML = '<span>Đang gửi...</span>'; }

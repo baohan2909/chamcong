@@ -1280,14 +1280,18 @@
   background: #fff;
   border: 1px solid rgba(15,110,86,.06);
   border-radius: 14px;
-  padding: 12px 13px;
-  text-align: left;
+  padding: 14px 13px;
+  text-align: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   position: relative;
   transition: all .15s;
   box-shadow: 0 1px 3px rgba(15,110,86,.05);
   font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .mna-tq-card:active {
   transform: scale(0.97);
@@ -1327,6 +1331,7 @@
 .mna-tq-card-value {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 5px;
   flex-wrap: wrap;
 }
@@ -1384,9 +1389,10 @@
   font-family: inherit;
 }
 .mna-tq-grp-chip.active {
-  background: #1f2d28;
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
   color: #fff;
   border-color: transparent;
+  box-shadow: 0 2px 6px rgba(15,110,86,.25);
 }
 .mna-tq-sort-bar {
   display: flex;
@@ -1443,11 +1449,7 @@
   transform: scale(0.99);
   background: #f8fbfa;
 }
-.mna-tq-item-info {
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  min-width: 0;
-}
+.mna-tq-item-info { min-width: 0; }
 .mna-tq-item-name {
   font-size: 14px;
   font-weight: 700;
@@ -1465,10 +1467,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mna-tq-item-count {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
+.mna-tq-item-count { align-self: center;
   font-size: 20px;
   font-weight: 800;
   color: #0F6E56;
@@ -1535,19 +1534,25 @@
 }
 
 /* Dot accent cho group items */
+/* v11.6 override: explicit grid placement để fix layout vỡ */
 .mna-tq-item {
-  display: grid;
-  grid-template-columns: 8px 1fr auto;
+  display: grid !important;
+  grid-template-columns: 8px 1fr auto !important;
+  grid-template-rows: auto auto !important;
   align-items: center;
-  gap: 10px;
+  gap: 2px 12px !important;
+  padding: 12px 14px;
 }
 .mna-tq-item-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   align-self: center;
+  grid-column: 1;
   grid-row: 1 / -1;
 }
+.mna-tq-item-info { grid-column: 2; grid-row: 1 / span 2; min-width: 0; }
+.mna-tq-item-count { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
 
 /* Sort 2-cấp */
 .mna-tq-sort-stack {
@@ -1883,4 +1888,100 @@
   color: #6b7c75;
   font-weight: 600;
   flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   [v11.6] CANH GIỮA cards + FAB cảnh báo rõ hơn + Badge cảnh báo lần X
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Compliance cards canh giữa */
+.mna-cpl-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.mna-cpl-card-label,
+.mna-cpl-card-value,
+.mna-cpl-card-sub {
+  text-align: center;
+  width: 100%;
+}
+
+/* FAB cảnh báo: nổi bật + cao hơn bottom nav */
+.mna-cg-fab {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 84px;   /* cao hơn bottom nav (~70px) */
+  z-index: 8500;  /* dưới modal/sheet nhưng trên nav */
+  padding: 14px 22px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #F59E0B, #B45309);
+  color: #fff;
+  border: none;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(180,83,9,.4), 0 2px 6px rgba(0,0,0,.1);
+  animation: mnaCgFabIn .25s cubic-bezier(.2,.7,.3,1);
+  white-space: nowrap;
+  max-width: calc(100vw - 28px);
+}
+@keyframes mnaCgFabIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.mna-cg-fab:active {
+  transform: translateX(-50%) scale(0.97);
+}
+.mna-cg-fab b {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* Badge "BQL cảnh báo lần X" — màu theo escalation */
+.mna-cg-reminded {
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mna-cg-reminded.admin-1 {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #F59E0B;
+}
+.mna-cg-reminded.admin-2 {
+  background: #FED7AA;
+  color: #9A3412;
+  border: 1px solid #EA580C;
+}
+.mna-cg-reminded.admin-3 {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #DC2626;
+  animation: mnaPulse 2s infinite;
+}
+.mna-cg-reminded.auto {
+  background: #F1F5F3;
+  color: #4A5B54;
+  border: 1px solid #d8e3df;
+}
+@keyframes mnaPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* Bottom padding cho list để FAB không che item cuối */
+.mna-cg-list {
+  padding-bottom: 120px;
 }
