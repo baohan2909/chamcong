@@ -2021,15 +2021,24 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: transform .15s, color .15s;
+  transition: transform .15s;
   z-index: 5;
   padding: 0;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.55));
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.6));
 }
-.mna-fav-btn svg { width: 16px; height: 16px; }
+.mna-fav-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  transition: fill .18s ease;
+}
+.mna-fav-btn.on svg {
+  fill: #fff;   /* TIM FULL TRẮNG khi yêu thích */
+  stroke: #fff;
+}
 .mna-fav-btn:active { transform: scale(0.78); }
 .mna-fav-btn.on {
-  color: #EF4444;
   animation: mnaHeartPop .35s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes mnaHeartPop {
@@ -2082,9 +2091,17 @@
   z-index: 100;
   padding: 0;
 }
+.mna-lb-fav svg {
+  fill: none;
+  stroke: currentColor;
+  transition: fill .18s ease;
+}
+.mna-lb-fav.on svg {
+  fill: #fff;   /* TIM FULL TRẮNG */
+  stroke: #fff;
+}
 .mna-lb-fav:active { transform: scale(0.92); }
 .mna-lb-fav.on {
-  background: rgba(239,68,68,.95);
   animation: mnaHeartPop .35s cubic-bezier(.34,1.56,.64,1);
 }
 
@@ -2440,4 +2457,20 @@
   -webkit-touch-callout: none;  /* tắt menu long-press iOS */
   -webkit-user-drag: none;
   pointer-events: none;          /* mọi sự kiện touch dồn vào parent .mna-gallery-item */
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   [v11.12] Lightbox smooth swipe + lock body
+   ════════════════════════════════════════════════════════════════════════════ */
+.mna-lb-img {
+  will-change: transform, opacity;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  pointer-events: auto;
+}
+/* Bỏ animation cũ mnaLbFadeIn (đã có inline opacity transition) */
+.mna-lightbox.open .mna-lb-img {
+  animation: none;
 }

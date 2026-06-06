@@ -710,7 +710,7 @@ function mnaRenderGallery() {
         <img src="${_mnaEscAttr(a.url || '')}" alt="${_mnaEscAttr(a.ten_nv || '')}" loading="lazy"/>
         ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
         <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
-          <svg viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
         <div class="mna-sel-cb ${isSel ? 'on' : ''}">${isSel ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>
         <div class="mna-gallery-overlay">
@@ -876,8 +876,14 @@ function mnaSetZoom(val) {
 
 function mnaOpenLightbox(idx) {
   MUANON_ADMIN.lightboxIdx = idx;
-  // [v11.8] Lưu scroll position để restore khi đóng
+  // [v11.8] Lưu scroll position
   MUANON_ADMIN._scrollY = window.scrollY;
+  // [v11.12] Lock body scroll khi lightbox mở → grid sau lưng không giật
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + MUANON_ADMIN._scrollY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
   mnaRenderLightbox();
 }
 
@@ -886,7 +892,17 @@ function mnaCloseLightbox() {
   MUANON_ADMIN.lightboxIdx = -1;
   const lb = document.getElementById('mna-lightbox');
   if (lb) { lb.classList.remove('open'); setTimeout(() => lb.remove(), 250); }
-  // [v11.8] Restore scroll + scroll target item into view
+
+  // [v11.12] Unlock body scroll
+  const sy = MUANON_ADMIN._scrollY || 0;
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  window.scrollTo(0, sy);
+
+  // Restore scroll target item into view
   const items = MUANON_ADMIN.galleryData;
   if (idx >= 0 && items && items[idx]) {
     const anhId = items[idx].anh_id;
@@ -894,8 +910,6 @@ function mnaCloseLightbox() {
       const targetEl = document.querySelector('[data-anh-id="' + anhId + '"]');
       if (targetEl) {
         targetEl.scrollIntoView({ block: 'center', behavior: 'instant' });
-      } else if (MUANON_ADMIN._scrollY != null) {
-        window.scrollTo(0, MUANON_ADMIN._scrollY);
       }
     });
   }
@@ -987,24 +1001,73 @@ function mnaRenderLightbox() {
     document.body.appendChild(lb);
     requestAnimationFrame(() => lb.classList.add('open'));
 
-    // [v11.8] Swipe touch handlers
-    let startX = 0, startY = 0, swiping = false;
+    // [v11.12] Smooth swipe: transform translateX follow finger
+    let startX = 0, startY = 0, dragX = 0, dragging = false, swiping = false;
+    const SWIPE_THRESHOLD = 60;
+
     lb.addEventListener('touchstart', e => {
       if (e.touches.length !== 1) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
-      swiping = true;
-    }, { passive: true });
-    lb.addEventListener('touchend', e => {
-      if (!swiping) return;
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
+      dragX = 0;
+      dragging = true;
       swiping = false;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        mnaLightboxNav(dx < 0 ? 1 : -1);  // swipe trái → next, phải → prev
-      } else if (dy < -80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
-        mnaCloseLightbox();  // swipe up → close
+    }, { passive: true });
+
+    lb.addEventListener('touchmove', e => {
+      if (!dragging || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (!swiping) {
+        // Decide horizontal swipe (vs vertical = close)
+        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+          swiping = true;
+        } else if (Math.abs(dy) > 30 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+          // Vertical: stop drag (cho phép vuốt lên close ở touchend)
+          dragging = false;
+          return;
+        }
       }
+      if (swiping) {
+        dragX = dx;
+        const img = lb.querySelector('.mna-lb-img');
+        if (img) {
+          img.style.transition = 'none';
+          img.style.transform = 'translateX(' + dx + 'px)';
+        }
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    lb.addEventListener('touchend', e => {
+      if (!dragging) {
+        // Có thể là vuốt lên (vertical) → close
+        const dy = e.changedTouches[0].clientY - startY;
+        if (dy < -80) mnaCloseLightbox();
+        return;
+      }
+      dragging = false;
+      const img = lb.querySelector('.mna-lb-img');
+      if (!swiping) { dragX = 0; return; }
+      swiping = false;
+      const w = (img && img.clientWidth) || window.innerWidth;
+      if (Math.abs(dragX) > Math.min(SWIPE_THRESHOLD, w / 4)) {
+        // Đủ ngưỡng → slide ra → next/prev
+        const targetX = dragX < 0 ? -w : w;
+        if (img) {
+          img.style.transition = 'transform .22s cubic-bezier(.2,.7,.3,1), opacity .22s';
+          img.style.transform = 'translateX(' + targetX + 'px)';
+          img.style.opacity = '0';
+        }
+        setTimeout(() => mnaLightboxNav(dragX < 0 ? 1 : -1), 200);
+      } else {
+        // Bounce back
+        if (img) {
+          img.style.transition = 'transform .22s cubic-bezier(.2,.7,.3,1)';
+          img.style.transform = 'translateX(0)';
+        }
+      }
+      dragX = 0;
     });
   }
 
@@ -1022,7 +1085,7 @@ function mnaRenderLightbox() {
       </button>
     </div>
     <button class="mna-lb-fav ${isFav ? 'on' : ''}" onclick="mnaLightboxToggleFav()" title="Yêu thích">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
     <button class="mna-lb-prev" onclick="mnaLightboxNav(-1)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1030,13 +1093,18 @@ function mnaRenderLightbox() {
     <button class="mna-lb-next" onclick="mnaLightboxNav(1)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
-    <img src="${_mnaEscAttr(a.url || '')}" class="mna-lb-img" alt=""/>
+    <img src="${_mnaEscAttr(a.url || '')}" class="mna-lb-img" alt="" style="transform: translateX(0); opacity: 0; transition: opacity .2s"/>
     <div class="mna-lb-info">
       <div class="mna-lb-nv">${escHtml(a.ten_nv || '')} <span style="opacity:0.7">· ${escHtml(a.ma_nv || '')}</span></div>
       <div class="mna-lb-meta">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''} ${a.tag ? '· <b style="color:' + mnaTagColor(a.tag) + '">' + escHtml(mnaTagLabel(a.tag)) + '</b>' : ''}</div>
       <div class="mna-lb-counter">${idx + 1} / ${MUANON_ADMIN.galleryData.length}</div>
     </div>
   `;
+  // [v11.12] Fade in ảnh mới sau khi đã set src
+  requestAnimationFrame(() => {
+    const img = lb.querySelector('.mna-lb-img');
+    if (img) { img.style.opacity = '1'; }
+  });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
