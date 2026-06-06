@@ -703,19 +703,16 @@ function mnaRenderGallery() {
   data.forEach((a, idx) => {
     const tagColor = a.tag ? mnaTagColor(a.tag) : null;
     const isSel = MUANON_ADMIN.selectedAnh.has(a.anh_id);
-    // Click handler: select mode → toggle, normal → lightbox
-    const clickHandler = selMode
-      ? `mnaToggleAnhSelect(${a.anh_id}, event)`
-      : `mnaOpenLightbox(${idx})`;
+    // [v11.10] Render BOTH heart và checkbox — CSS sẽ hide tùy mode
+    // → toggle select mode chỉ cần đổi class .sel-mode trên grid, không re-render
     html += `
-      <div class="mna-gallery-item ${isSel ? 'selected' : ''}" data-anh-id="${a.anh_id}" onclick="${clickHandler}">
+      <div class="mna-gallery-item ${isSel ? 'selected' : ''}" data-anh-id="${a.anh_id}" data-idx="${idx}" onclick="mnaItemClick(${idx}, ${a.anh_id}, event)">
         <img src="${_mnaEscAttr(a.url || '')}" alt="${_mnaEscAttr(a.ten_nv || '')}" loading="lazy"/>
         ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
-        ${selMode
-          ? `<div class="mna-sel-cb ${isSel ? 'on' : ''}">${isSel ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>`
-          : `<button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>`}
+        <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
+          <svg viewBox="0 0 24 24" fill="${a.is_fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="mna-sel-cb ${isSel ? 'on' : ''}">${isSel ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>
         <div class="mna-gallery-overlay">
           <div class="mna-gallery-nv">${escHtml(a.ten_nv || a.ma_nv || '')}</div>
           <div class="mna-gallery-ch">${escHtml(a.ten_ch || a.ma_ch || '')}${a.khu_vuc ? ' · ' + escHtml(a.khu_vuc) : ''}</div>
@@ -724,35 +721,18 @@ function mnaRenderGallery() {
   });
   html += '</div>';
 
-  // [v11.9] Multi-select bottom action bar
-  if (selMode) {
-    html += `
-      <div class="mna-multi-bar" id="mna-multi-bar" style="display:${selCount > 0 ? 'flex' : 'none'}">
-        <div class="mna-multi-info">Đã chọn <b id="mna-multi-count">${selCount}</b></div>
-        <div class="mna-multi-actions">
-          <button class="mna-multi-act" onclick="mnaBulkFav()" title="Yêu thích">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <button class="mna-multi-act" onclick="mnaOpenAlbumSheet()" title="Thêm vào bộ sưu tập">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          </button>
-          <button class="mna-multi-act" onclick="mnaBulkDownload()" title="Tải xuống">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </button>
-          <button class="mna-multi-act" onclick="mnaBulkShare()" title="Chia sẻ">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          </button>
-          ${inAlbum ? `
-            <button class="mna-multi-act danger" onclick="mnaBulkRemoveFromAlbum()" title="Xóa khỏi bộ sưu tập">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }
-
+  // [v11.10] Multi-bar được tạo riêng (DOM ngoài grid) → toggle mượt
   document.getElementById('muanon-admin-content').innerHTML = html;
+  _mnaSyncMultiBar();
+}
+
+// Click handler thống nhất cho gallery item
+function mnaItemClick(idx, anhId, ev) {
+  if (MUANON_ADMIN.selectMode) {
+    mnaToggleAnhSelect(anhId, ev);
+  } else {
+    mnaOpenLightbox(idx);
+  }
 }
 
 function mnaSetFilter(key, val) {
@@ -921,6 +901,14 @@ function mnaRenderLightbox() {
     <button class="mna-lb-close" onclick="mnaCloseLightbox()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
+    <div class="mna-lb-actions">
+      <button class="mna-lb-act" onclick="mnaLightboxDownload()" title="Tải về máy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="mna-lb-act danger" onclick="mnaLightboxDelete()" title="Xóa ảnh">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      </button>
+    </div>
     <button class="mna-lb-fav ${isFav ? 'on' : ''}" onclick="mnaLightboxToggleFav()" title="Yêu thích">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
@@ -1624,11 +1612,114 @@ function _mnaFmtDateTime(iso) {
 // [v11.9] MULTI-SELECT + BỘ SƯU TẬP (ALBUM)
 // ════════════════════════════════════════════════════════════════════════════
 
-// ─── Multi-select toggle ────────────────────────────────────────────────────
+// [v11.10] Toggle select mode CHỈ TOGGLE CSS CLASS — không re-render → mượt 100%
 function mnaToggleSelectMode() {
   MUANON_ADMIN.selectMode = !MUANON_ADMIN.selectMode;
   if (!MUANON_ADMIN.selectMode) MUANON_ADMIN.selectedAnh.clear();
-  mnaRenderGallery();
+
+  // Toggle class trên container Gallery
+  const grid = document.querySelector('.mna-gallery-grid');
+  if (grid) grid.classList.toggle('sel-mode', MUANON_ADMIN.selectMode);
+
+  // Toggle toolbar UI (in-place, không re-render)
+  _mnaRenderToolbarOnly();
+  // Toggle multi-bar
+  _mnaSyncMultiBar();
+}
+
+// Re-render CHỈ toolbar (không động đến grid)
+function _mnaRenderToolbarOnly() {
+  const sticky = document.querySelector('.mna-filter-sticky');
+  if (!sticky) return;
+  const selMode = MUANON_ADMIN.selectMode;
+  const selCount = MUANON_ADMIN.selectedAnh.size;
+  const onlyFav = !!MUANON_ADMIN.galleryOnlyFav;
+  const inAlbum = !!MUANON_ADMIN.currentAlbumId;
+  const albumName = MUANON_ADMIN.currentAlbumName || '';
+
+  let html = '<div class="mna-toolbar">';
+  if (selMode) {
+    html += `
+      <button class="mna-sel-cancel" onclick="mnaToggleSelectMode()">Hủy chọn</button>
+      <div class="mna-sel-count">Đã chọn <b>${selCount}</b></div>
+      <button class="mna-sel-all" onclick="mnaSelectAllGallery()">Chọn tất cả</button>`;
+  } else {
+    html += `
+      <input type="search" class="mna-search-input"
+        placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : (inAlbum ? 'Đang xem bộ sưu tập: ' + escHtml(albumName) : 'Tìm tên NV, mã NV, cửa hàng, khu vực...')}"
+        value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
+        oninput="mnaDebounceSearch(this.value)"
+        ${(onlyFav || inAlbum) ? 'disabled' : ''}/>
+      <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}" ${inAlbum ? 'disabled' : ''}>
+        <svg viewBox="0 0 24 24" fill="${onlyFav ? '#EF4444' : 'none'}" stroke="${onlyFav ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button class="mna-filter-btn" onclick="mnaOpenAlbumSheet()" title="Bộ sưu tập">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="mna-filter-btn" onclick="mnaToggleSelectMode()" title="Chọn nhiều">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      </button>`;
+    if (!inAlbum && !onlyFav) {
+      html += `
+        <button class="mna-filter-btn" onclick="mnaOpenFilterSheet()" title="Bộ lọc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          ${_mnaFilterBadge()}
+        </button>`;
+    }
+  }
+  html += '</div>';
+  // Replace toolbar trong sticky (giữ phần khác như zoom-row)
+  const oldTb = sticky.querySelector('.mna-toolbar');
+  if (oldTb) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    oldTb.replaceWith(tmp.firstElementChild);
+  }
+}
+
+// Hiện/ẩn multi-bar bottom + update count
+function _mnaSyncMultiBar() {
+  let bar = document.getElementById('mna-multi-bar');
+  const selMode = MUANON_ADMIN.selectMode;
+  const selCount = MUANON_ADMIN.selectedAnh.size;
+  const inAlbum = !!MUANON_ADMIN.currentAlbumId;
+
+  if (!selMode || selCount === 0) {
+    if (bar) bar.style.display = 'none';
+    return;
+  }
+  if (!bar) {
+    // Tạo mới (1 lần)
+    bar = document.createElement('div');
+    bar.id = 'mna-multi-bar';
+    bar.className = 'mna-multi-bar';
+    document.body.appendChild(bar);
+  }
+  bar.style.display = 'flex';
+  bar.innerHTML = `
+    <div class="mna-multi-info">Đã chọn <b id="mna-multi-count">${selCount}</b></div>
+    <div class="mna-multi-actions">
+      <button class="mna-multi-act" onclick="mnaBulkFav()" title="Yêu thích">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button class="mna-multi-act" onclick="mnaOpenAlbumSheet()" title="Thêm vào bộ sưu tập">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="mna-multi-act" onclick="mnaBulkDownload()" title="Tải xuống">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="mna-multi-act" onclick="mnaBulkShare()" title="Chia sẻ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+      ${inAlbum ? `
+        <button class="mna-multi-act danger" onclick="mnaBulkRemoveFromAlbum()" title="Xóa khỏi bộ sưu tập">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>` : ''}
+      <button class="mna-multi-act danger" onclick="mnaBulkDelete()" title="Xóa vĩnh viễn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>
+    </div>
+  `;
 }
 
 function mnaToggleAnhSelect(anhId, ev) {
@@ -1636,32 +1727,33 @@ function mnaToggleAnhSelect(anhId, ev) {
   if (!MUANON_ADMIN.selectMode) return;
   const set = MUANON_ADMIN.selectedAnh;
   if (set.has(anhId)) set.delete(anhId); else set.add(anhId);
-  // Update DOM của item này
+  // Update DOM của item này (NO re-render)
   const el = document.querySelector('.mna-gallery-item[data-anh-id="' + anhId + '"]');
   if (el) {
     el.classList.toggle('selected', set.has(anhId));
     const cb = el.querySelector('.mna-sel-cb');
     if (cb) cb.classList.toggle('on', set.has(anhId));
+    if (cb) cb.innerHTML = set.has(anhId)
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '';
   }
-  _mnaUpdateMultiBar();
+  _mnaSyncMultiBar();
 }
 
-function _mnaUpdateMultiBar() {
-  const bar = document.getElementById('mna-multi-bar');
-  const cnt = document.getElementById('mna-multi-count');
-  const n = MUANON_ADMIN.selectedAnh.size;
-  if (bar) bar.style.display = (MUANON_ADMIN.selectMode && n > 0) ? 'flex' : 'none';
-  if (cnt) cnt.textContent = n;
-}
+function _mnaUpdateMultiBar() { _mnaSyncMultiBar(); }
 
 function mnaSelectAllGallery() {
   MUANON_ADMIN.galleryData.forEach(a => MUANON_ADMIN.selectedAnh.add(a.anh_id));
   document.querySelectorAll('.mna-gallery-item').forEach(el => {
     el.classList.add('selected');
     const cb = el.querySelector('.mna-sel-cb');
-    if (cb) cb.classList.add('on');
+    if (cb) {
+      cb.classList.add('on');
+      cb.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
   });
-  _mnaUpdateMultiBar();
+  _mnaRenderToolbarOnly();
+  _mnaSyncMultiBar();
 }
 
 function mnaClearSelectAnh() {
@@ -1669,9 +1761,10 @@ function mnaClearSelectAnh() {
   document.querySelectorAll('.mna-gallery-item').forEach(el => {
     el.classList.remove('selected');
     const cb = el.querySelector('.mna-sel-cb');
-    if (cb) cb.classList.remove('on');
+    if (cb) { cb.classList.remove('on'); cb.innerHTML = ''; }
   });
-  _mnaUpdateMultiBar();
+  _mnaSyncMultiBar();
+  _mnaRenderToolbarOnly();
 }
 
 // ─── Bulk actions ───────────────────────────────────────────────────────────
@@ -1694,27 +1787,106 @@ async function mnaBulkFav() {
   mnaLoadGallery();
 }
 
+// [v11.10] Force download file qua blob (KHÔNG mở link Supabase)
+async function _mnaDownloadFile(url, filename) {
+  try {
+    const r = await fetch(url, { mode: 'cors' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const blob = await r.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+    return true;
+  } catch (e) {
+    // Fallback: mở link mới (CORS fail)
+    window.open(url, '_blank');
+    return false;
+  }
+}
+
 async function mnaBulkDownload() {
   const ids = [...MUANON_ADMIN.selectedAnh];
   if (ids.length === 0) return;
   const items = MUANON_ADMIN.galleryData.filter(a => ids.includes(a.anh_id));
   if (items.length === 0) return;
-  if (items.length > 1 && !confirm('Tải ' + items.length + ' ảnh? Trình duyệt có thể hỏi xác nhận từng ảnh.')) return;
-  for (let i = 0; i < items.length; i++) {
-    const a = items[i];
+
+  // Toast progress
+  showToast('Đang tải ' + items.length + ' ảnh...', 'ok');
+  let ok = 0;
+  for (const a of items) {
     const url = a.url_full || a.url;
     if (!url) continue;
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
-    link.target = '_blank';
-    link.rel = 'noopener';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    await new Promise(r => setTimeout(r, 250));  // tránh popup blocker
+    const filename = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
+    const success = await _mnaDownloadFile(url, filename);
+    if (success) ok++;
+    await new Promise(r => setTimeout(r, 180));
   }
-  showToast('✓ Đã bắt đầu tải ' + items.length + ' ảnh', 'ok');
+  showToast('✓ Đã tải ' + ok + '/' + items.length + ' ảnh', 'ok');
+}
+
+// Tải 1 ảnh trong lightbox
+async function mnaLightboxDownload() {
+  const idx = MUANON_ADMIN.lightboxIdx;
+  if (idx < 0) return;
+  const a = MUANON_ADMIN.galleryData[idx];
+  if (!a) return;
+  const url = a.url_full || a.url;
+  if (!url) return;
+  const filename = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
+  const ok = await _mnaDownloadFile(url, filename);
+  showToast(ok ? '✓ Đã tải về máy' : 'Mở link mới (CORS)', ok ? 'ok' : 'err');
+}
+
+// [v11.10] Xóa nhiều ảnh
+async function mnaBulkDelete() {
+  const ids = [...MUANON_ADMIN.selectedAnh];
+  if (ids.length === 0) return;
+  if (!confirm('Xóa ' + ids.length + ' ảnh đã chọn?\n\n⚠️ Ảnh sẽ bị xóa VĨNH VIỄN khỏi hệ thống (cả tài khoản NV gửi cũng không còn).\nKhông thể hoàn tác.')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_xoa_anh', {
+      p_ma_admin: SESSION.ma, p_anh_ids: ids
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã xóa ' + (data.so_xoa || 0) + ' ảnh', 'ok');
+    MUANON_ADMIN.selectMode = false;
+    MUANON_ADMIN.selectedAnh.clear();
+    mnaLoadGallery();
+  } catch (err) {
+    showToast('Lỗi: ' + (err.message || 'network'), 'err');
+  }
+}
+
+// [v11.10] Xóa 1 ảnh trong lightbox
+async function mnaLightboxDelete() {
+  const idx = MUANON_ADMIN.lightboxIdx;
+  if (idx < 0) return;
+  const a = MUANON_ADMIN.galleryData[idx];
+  if (!a || !a.anh_id) return;
+  if (!confirm('Xóa ảnh này?\n\n⚠️ Ảnh sẽ bị xóa VĨNH VIỄN khỏi hệ thống.')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_muanon_admin_xoa_anh', {
+      p_ma_admin: SESSION.ma, p_anh_ids: [a.anh_id]
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã xóa', 'ok');
+    // Remove khỏi galleryData + đóng/chuyển ảnh
+    MUANON_ADMIN.galleryData.splice(idx, 1);
+    if (MUANON_ADMIN.galleryData.length === 0) {
+      mnaCloseLightbox();
+    } else {
+      MUANON_ADMIN.lightboxIdx = Math.min(idx, MUANON_ADMIN.galleryData.length - 1);
+      mnaRenderLightbox();
+    }
+  } catch (err) {
+    showToast('Lỗi: ' + (err.message || 'network'), 'err');
+  }
 }
 
 async function mnaBulkShare() {
@@ -1966,3 +2138,8 @@ window.mnaOpenAlbum = mnaOpenAlbum;
 window.mnaExitAlbum = mnaExitAlbum;
 window.mnaRenameCurrentAlbum = mnaRenameCurrentAlbum;
 window.mnaDeleteCurrentAlbum = mnaDeleteCurrentAlbum;
+// [v11.10] Xóa ảnh + download + click handler
+window.mnaItemClick = mnaItemClick;
+window.mnaBulkDelete = mnaBulkDelete;
+window.mnaLightboxDelete = mnaLightboxDelete;
+window.mnaLightboxDownload = mnaLightboxDownload;
