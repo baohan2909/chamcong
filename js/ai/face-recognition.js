@@ -253,8 +253,8 @@ async function _startEnrollmentFlow() {
 
   const steps = [
     { goc: 'thang', label: 'Nhìn thẳng vào camera', delay: 0 },
-    { goc: 'trai',  label: 'Quay đầu sang TRÁI nhẹ', delay: 1500 },
-    { goc: 'phai',  label: 'Quay đầu sang PHẢI nhẹ', delay: 1500 }
+    { goc: 'trai',  label: 'Quay nhẹ về vai TRÁI của bạn', delay: 1500 },
+    { goc: 'phai',  label: 'Quay nhẹ về vai PHẢI của bạn', delay: 1500 }
   ];
   const captured = { thang: 0, trai: 0, phai: 0 };
 
@@ -437,13 +437,15 @@ async function _runVerifyAttempt(video, attempt) {
 
   if (result && result.passed) {
     _flashCheck('fv-check');
-    _setEl('fv-status', '✓ Khớp ' + Math.round((result.similarity || 0) * 100) + '%');
+    const matchPct = result.match_pct || Math.round((1 - (result.distance||0)) * 100);
+    _setEl('fv-status', '✓ Xác minh đúng (' + matchPct + '%)');
     _setArc('fv-progress', 100);
     _haptic([30, 50, 30, 50, 60]);
     const cb = _verifyCallback.onSuccess;
-    setTimeout(() => { nsFaceCloseVerify(); if (cb) cb({ similarity: result.similarity }); }, 700);
+    setTimeout(() => { nsFaceCloseVerify(); if (cb) cb({ match_pct: matchPct, distance: result.distance }); }, 700);
   } else {
-    _setEl('fv-status', '✗ Không khớp (' + (attempt + 1) + '/3) — Thử lại');
+    const dist = result && result.distance ? result.distance.toFixed(3) : '?';
+    _setEl('fv-status', '✗ Không khớp (khoảng cách ' + dist + ') — Thử lại');
     _setArc('fv-progress', 0);
     _haptic([100, 50, 100]);
     await new Promise(r => setTimeout(r, 1200));

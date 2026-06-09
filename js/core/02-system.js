@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v12.5',
+  'sys.cache_version': 'v12.6',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1006,7 +1006,9 @@ function _captureFrameAsSelfie(verifyResult) {
   ctx.fillText('Xác minh khuôn mặt', 300, 500);
   ctx.font = '20px -apple-system, sans-serif';
   ctx.fillStyle = '#2BC084';
-  const simPct = Math.round((verifyResult.similarity || 0) * 100);
+  const simPct = verifyResult.match_pct !== undefined
+    ? verifyResult.match_pct
+    : Math.round((1 - (verifyResult.distance || 0)) * 100);
   ctx.fillText('Độ khớp: ' + simPct + '%', 300, 540);
 
   // Timestamp + ma_nv
@@ -1033,7 +1035,7 @@ function _captureFrameAsSelfie(verifyResult) {
   const txt = document.getElementById('selfie-text');
   if (txt) txt.textContent = '✓ Đã xác minh khuôn mặt';
   const sub = document.getElementById('selfie-sub');
-  if (sub) sub.textContent = 'Độ khớp ' + Math.round((verifyResult.similarity||0)*100) + '% · Bấm để quét lại';
+  if (sub) sub.textContent = 'Độ khớp ' + (verifyResult.match_pct !== undefined ? verifyResult.match_pct : Math.round((1 - (verifyResult.distance||0))*100)) + '% · Bấm để quét lại';
   updateSubmitBtn();
 }
 
