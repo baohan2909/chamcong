@@ -1,31 +1,26 @@
 /* ════════════════════════════════════════════════════════════════════════════
- *  Nón Sơn — Face Recognition Module v12.5 (Simple + Reliable)
+ *  Nón Sơn — Face Recognition Module v12.7 (Smooth Premium UX)
  *
- *  Design: KHÔNG dùng yaw detection (yếu, không đáng tin)
- *  Approach: Tuần tự countdown 3-2-1, user quay đầu theo lệnh
- *
- *  Enrollment Flow:
- *   1. "Nhìn thẳng" → đợi face stable → countdown 3-2-1 → capture
- *   2. "Quay đầu sang TRÁI" → delay 2s cho user quay → stable → countdown → capture
- *   3. "Quay đầu sang PHẢI" → delay 2s → stable → countdown → capture
- *   Done. Simple. Reliable.
- *
- *  Verify Flow:
- *   - Mở camera → face stable → countdown 2-1 → capture & verify
+ *  Changes from v12.6:
+ *   - BỎ countdown 3-2-1 giật → smooth continuous ring fill (2.5s)
+ *   - Pulse ring khi đang scan
+ *   - Big success screen full overlay sau verify
+ *   - Câu chữ tinh tế hơn
+ *   - Vòng tròn 92vw (CSS đã setup từ v12.6)
  *  ──────────────────────────────────────────────────────────────────────── */
 
 const NS_FACE = {
   FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
   MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/',
   MIN_FACE_SIZE: 80,
-  STABLE_FRAMES_NEEDED: 4,    // ~0.4s mặt ổn định
-  STABLE_PX: 30
+  STABLE_FRAMES_NEEDED: 3,
+  STABLE_PX: 30,
+  SCAN_DURATION_MS: 2500  // smooth fill 2.5s
 };
 
 let _faceLoaded = false;
 let _faceLoading = false;
 
-// ─── Lazy load face-api.js ───────────────────────────────────────────────
 async function nsFaceEnsureLoaded() {
   if (_faceLoaded) return true;
   if (_faceLoading) { while (_faceLoading) await new Promise(r => setTimeout(r, 100)); return _faceLoaded; }
@@ -78,154 +73,181 @@ async function _detectFace(videoEl) {
   };
 }
 
+function _checkStable(prev, curr) {
+  if (!prev || !curr) return false;
+  return Math.abs(prev.cx - curr.cx) < NS_FACE.STABLE_PX
+      && Math.abs(prev.cy - curr.cy) < NS_FACE.STABLE_PX;
+}
+
+function _avgEmbeddings(arr) {
+  if (!arr.length) return null;
+  const dim = arr[0].length;
+  const out = new Array(dim).fill(0);
+  arr.forEach(e => { for (let i = 0; i < dim; i++) out[i] += e[i]; });
+  for (let i = 0; i < dim; i++) out[i] /= arr.length;
+  return out;
+}
+
 function _haptic(p) { try { if (navigator.vibrate) navigator.vibrate(p || 30); } catch (e) {} }
 
 // ═════════════════════════════════════════════════════════════════════════
-// SHARED MODAL BUILDER
+// SHARED: Build face scan stage (vòng tròn camera + ring + check)
 // ═════════════════════════════════════════════════════════════════════════
-function _buildModal(modalId, title, onClose) {
-  const old = document.getElementById(modalId);
-  if (old) old.remove();
-  const m = document.createElement('div');
-  m.id = modalId;
-  m.className = 'ns-face-modal';
-  m.innerHTML = `
-    <div class="ns-face-header">
-      <button class="ns-face-close" data-close>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <div class="ns-face-title">${title}</div>
-    </div>
-    <div class="ns-face-body" id="${modalId}-body"></div>
-  `;
-  m.querySelector('[data-close]').onclick = onClose;
-  document.body.appendChild(m);
-  requestAnimationFrame(() => m.classList.add('open'));
-  return m;
-}
-
-function _buildScanScene(bodyEl, prefix) {
-  bodyEl.innerHTML = `
-    <div class="ns-face-scan-wrap" id="${prefix}-wrap">
-      <div class="ns-face-scan-video">
+function _buildStage(containerEl, prefix) {
+  containerEl.innerHTML = `
+    <div class="ns-face-stage" id="${prefix}-stage">
+      <div class="ns-face-cam">
         <video id="${prefix}-video" autoplay muted playsinline></video>
-        <div class="ns-face-countdown" id="${prefix}-countdown"></div>
-        <div class="ns-face-check-overlay" id="${prefix}-check">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#2BC084" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="ns-face-cam-overlay">
+        <div class="ns-face-cam-check" id="${prefix}-check">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
       </div>
-      <svg class="ns-face-scan-ring" viewBox="0 0 200 200">
+      <svg class="ns-face-ring" viewBox="0 0 200 200">
         <defs>
-          <linearGradient id="${prefix}Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="nsFaceRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#2BC084"/>
             <stop offset="100%" stop-color="#0F6E56"/>
           </linearGradient>
         </defs>
-        <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(43,192,132,.13)" stroke-width="4"/>
-        <circle id="${prefix}-progress" cx="100" cy="100" r="92" fill="none"
-                stroke="url(#${prefix}Grad)" stroke-width="5" stroke-linecap="round"
-                stroke-dasharray="578" stroke-dashoffset="578"
-                transform="rotate(-90 100 100)"
-                style="transition: stroke-dashoffset .5s cubic-bezier(.2,.7,.3,1)"/>
+        <circle class="ns-face-ring-bg" cx="100" cy="100" r="95"/>
+        <circle class="ns-face-ring-fg" id="${prefix}-ring-fg" cx="100" cy="100" r="95"/>
       </svg>
     </div>
-    <div class="ns-face-big-instruction" id="${prefix}-instruction">Đang khởi động camera...</div>
-    <div class="ns-face-scan-status" id="${prefix}-status"></div>
-    <div class="ns-face-scan-progress" id="${prefix}-progress-text"></div>
+    <div class="ns-face-instruction" id="${prefix}-instruction"></div>
+    <div class="ns-face-substatus" id="${prefix}-substatus"></div>
   `;
 }
 
-function _setEl(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
-function _setArc(id, pct) {
-  const arc = document.getElementById(id);
-  if (arc) arc.setAttribute('stroke-dashoffset', 578 * (1 - pct / 100));
+function _setInstruction(prefix, text) {
+  const el = document.getElementById(prefix + '-instruction');
+  if (el) el.textContent = text;
 }
-function _flashCheck(id) {
-  const el = document.getElementById(id);
+function _setSubstatus(prefix, text, type) {
+  const el = document.getElementById(prefix + '-substatus');
   if (!el) return;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 1000);
+  el.textContent = text || '';
+  el.className = 'ns-face-substatus' + (type ? ' ' + type : '');
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// HELPER: Đợi mặt stable trong N frames
+// CORE: Đợi face stable + smooth ring fill + capture frames
 // ═════════════════════════════════════════════════════════════════════════
-async function _waitForStableFace(video, statusElId, abortRef) {
+async function _waitStable(video, prefix, abortRef) {
   let prev = null, stableCount = 0;
   while (!abortRef.aborted) {
     const r = await _detectFace(video);
     if (!r) {
-      _setEl(statusElId, 'Tìm khuôn mặt...');
+      _setSubstatus(prefix, 'Đang tìm khuôn mặt');
       stableCount = 0; prev = null;
     } else if (r.tooSmall) {
-      _setEl(statusElId, 'Đưa mặt gần hơn');
+      _setSubstatus(prefix, 'Đưa khuôn mặt gần hơn');
       stableCount = 0;
     } else {
-      if (prev && Math.abs(prev.cx - r.box.cx) < NS_FACE.STABLE_PX
-                && Math.abs(prev.cy - r.box.cy) < NS_FACE.STABLE_PX) {
-        stableCount++;
-      } else {
-        stableCount = 0;
-      }
+      if (_checkStable(prev, r.box)) stableCount++;
+      else stableCount = 0;
       prev = r.box;
       if (stableCount >= NS_FACE.STABLE_FRAMES_NEEDED) {
-        _setEl(statusElId, '✓ Sẵn sàng');
         return r.embedding;
       }
-      _setEl(statusElId, 'Giữ yên...');
+      _setSubstatus(prefix, 'Đã định vị, sẵn sàng quét');
     }
     await new Promise(r => setTimeout(r, 100));
   }
   return null;
 }
 
-// ═════════════════════════════════════════════════════════════════════════
-// HELPER: Countdown 3-2-1 visual
-// ═════════════════════════════════════════════════════════════════════════
-async function _runCountdown(countdownElId, progressArcId, video, statusElId, abortRef) {
-  const el = document.getElementById(countdownElId);
-  for (let i = 3; i >= 1; i--) {
-    if (abortRef.aborted) return null;
-    if (el) {
-      el.textContent = i;
-      el.classList.remove('show');
-      void el.offsetWidth;  // force reflow
-      el.classList.add('show');
-    }
-    _setArc(progressArcId, ((4 - i) / 3) * 100);
-    _haptic(20);
-    await new Promise(r => setTimeout(r, 700));
+async function _smoothScan(video, prefix, abortRef) {
+  const initial = await _waitStable(video, prefix, abortRef);
+  if (!initial || abortRef.aborted) return null;
+
+  const stage = document.getElementById(prefix + '-stage');
+  const ringFg = document.getElementById(prefix + '-ring-fg');
+
+  // Reset ring → 0%
+  if (ringFg) {
+    ringFg.classList.remove('animating', 'flash-complete');
+    ringFg.style.strokeDashoffset = '597';
   }
-  if (el) el.classList.remove('show');
-  // Capture final frame
-  const r = await _detectFace(video);
-  if (r && r.embedding) return r.embedding;
-  return null;
+
+  // Start scanning pulse
+  if (stage) stage.classList.add('scanning');
+  _setSubstatus(prefix, 'Đang quét...', 'ok');
+
+  // Force reflow then animate ring fill 0 → 100%
+  if (ringFg) {
+    void ringFg.offsetWidth;
+    ringFg.classList.add('animating');
+    ringFg.style.strokeDashoffset = '0';
+  }
+
+  // Multi-frame capture trong khoảng 2.5s
+  const frames = [initial];
+  const frameCount = 4;
+  const stepMs = Math.floor(NS_FACE.SCAN_DURATION_MS / frameCount);
+  for (let i = 0; i < frameCount; i++) {
+    if (abortRef.aborted) return null;
+    await new Promise(r => setTimeout(r, stepMs));
+    const r = await _detectFace(video);
+    if (r && r.embedding) frames.push(r.embedding);
+  }
+
+  // Complete: flash ring + check icon
+  if (stage) stage.classList.remove('scanning');
+  if (ringFg) ringFg.classList.add('flash-complete');
+
+  const check = document.getElementById(prefix + '-check');
+  if (check) check.classList.add('show');
+  _haptic([40, 60, 40]);
+
+  await new Promise(r => setTimeout(r, 800));
+
+  // Reset for next round
+  if (check) check.classList.remove('show');
+  if (ringFg) ringFg.classList.remove('flash-complete');
+
+  return _avgEmbeddings(frames);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// FLOW 1: ENROLLMENT — 3 góc tuần tự với countdown
+// FLOW 1: ENROLLMENT
 // ═════════════════════════════════════════════════════════════════════════
 let _enrollAbort = { aborted: false };
 let _enrollStream = null;
 
 async function nsFaceOpenEnrollment() {
   _enrollAbort = { aborted: false };
-  const modal = _buildModal('ns-face-modal', 'Đăng ký khuôn mặt', nsFaceCloseEnrollment);
+  const old = document.getElementById('ns-face-modal');
+  if (old) old.remove();
 
-  document.getElementById('ns-face-modal-body').innerHTML = `
-    <div class="ns-face-step active">
-      <div class="ns-face-icon-big">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2BC084" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+  const modal = document.createElement('div');
+  modal.id = 'ns-face-modal';
+  modal.className = 'ns-face-modal';
+  modal.innerHTML = `
+    <div class="ns-face-header">
+      <button class="ns-face-close" onclick="nsFaceCloseEnrollment()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="ns-face-title">Đăng ký khuôn mặt</div>
+    </div>
+    <div class="ns-face-body" id="ns-face-modal-body">
+      <div class="ns-face-step active">
+        <div class="ns-face-icon-big">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2BC084" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <h3>Quét khuôn mặt</h3>
+        <p>Hệ thống sẽ lưu 3 góc nhìn: chính diện, nghiêng trái và nghiêng phải. Mỗi lần quét chỉ mất vài giây.</p>
+        <div class="ns-face-privacy">
+          <b>Bảo mật:</b> Chỉ lưu vector đặc trưng, không lưu ảnh gốc của bạn.
+        </div>
+        <button class="ns-face-btn-primary" id="ns-fe-start">Bắt đầu</button>
       </div>
-      <h3>Quét khuôn mặt</h3>
-      <p>3 góc: thẳng → trái → phải. Hệ thống tự quét khi mặt ổn định.</p>
-      <div class="ns-face-privacy">
-        <b>Bảo mật:</b> Chỉ lưu vector đặc trưng (128 số), không lưu ảnh gốc.
-      </div>
-      <button class="ns-face-btn-primary" id="ns-fe-start">Bắt đầu</button>
     </div>
   `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+
   document.getElementById('ns-fe-start').onclick = _startEnrollmentFlow;
 }
 
@@ -238,72 +260,49 @@ function nsFaceCloseEnrollment() {
 
 async function _startEnrollmentFlow() {
   const body = document.getElementById('ns-face-modal-body');
-  _buildScanScene(body, 'fe');
+  body.innerHTML = '<div class="ns-face-step active" id="fe-step"></div>';
+  const step = document.getElementById('fe-step');
+  _buildStage(step, 'fe');
 
   const ok = await nsFaceEnsureLoaded();
-  if (!ok) { _setEl('fe-instruction', 'Lỗi tải module nhận diện'); return; }
+  if (!ok) { _setInstruction('fe', 'Lỗi tải máy quét'); return; }
 
   const video = document.getElementById('fe-video');
   try {
     _enrollStream = await _openCam(video);
   } catch (e) {
-    _setEl('fe-instruction', 'Cần cấp quyền camera');
+    _setInstruction('fe', 'Cần cấp quyền camera');
     return;
   }
 
   const steps = [
-    { goc: 'thang', label: 'Nhìn thẳng vào camera', delay: 0 },
+    { goc: 'thang', label: 'Nhìn thẳng vào ống kính', delay: 300 },
     { goc: 'trai',  label: 'Quay nhẹ về vai TRÁI của bạn', delay: 1500 },
     { goc: 'phai',  label: 'Quay nhẹ về vai PHẢI của bạn', delay: 1500 }
   ];
-  const captured = { thang: 0, trai: 0, phai: 0 };
 
   for (let i = 0; i < steps.length; i++) {
-    const step = steps[i];
+    const st = steps[i];
     if (_enrollAbort.aborted) return;
 
-    // Hiển thị instruction
-    _setEl('fe-instruction', step.label);
-    _setEl('fe-status', '');
-    _setEl('fe-progress-text', i + ' / 3 góc');
-    _setArc('fe-progress', (i / 3) * 100);
+    _setInstruction('fe', st.label);
+    _setSubstatus('fe', '', '');
+    await new Promise(r => setTimeout(r, st.delay));
 
-    // Delay cho user kịp quay đầu
-    if (step.delay) await new Promise(r => setTimeout(r, step.delay));
+    const embedding = await _smoothScan(video, 'fe', _enrollAbort);
+    if (!embedding || _enrollAbort.aborted) return;
 
-    // Đợi face stable
-    const embedding = await _waitForStableFace(video, 'fe-status', _enrollAbort);
-    if (!embedding) return;  // aborted
-
-    // Countdown 3-2-1
-    _setEl('fe-status', '');
-    const finalEmb = await _runCountdown('fe-countdown', 'fe-progress', video, 'fe-status', _enrollAbort);
-    if (_enrollAbort.aborted) return;
-
-    const embToSave = finalEmb || embedding;
-
-    // Save tới DB
-    _setEl('fe-status', 'Đang lưu...');
-    const saved = await _saveEnroll(step.goc, embToSave);
+    _setSubstatus('fe', 'Đang lưu...', 'ok');
+    const saved = await _saveEnroll(st.goc, embedding);
     if (!saved) {
-      // Cho user retry góc này
-      _setEl('fe-instruction', 'Lưu thất bại, đang thử lại...');
+      _setSubstatus('fe', 'Lưu không thành công, đang thử lại...', 'err');
       await new Promise(r => setTimeout(r, 1500));
-      i--;  // retry same step
-      continue;
+      i--; continue;
     }
 
-    captured[step.goc] = 1;
-    _flashCheck('fe-check');
-    _haptic([40, 60, 40]);
-    _setEl('fe-status', '✓ Đã lưu');
-    await new Promise(r => setTimeout(r, 600));
+    _setSubstatus('fe', '✓ Đã ghi nhận (' + (i+1) + '/3)', 'ok');
+    await new Promise(r => setTimeout(r, 700));
   }
-
-  // Done
-  _setArc('fe-progress', 100);
-  _setEl('fe-progress-text', '3 / 3 góc');
-  await new Promise(r => setTimeout(r, 400));
 
   if (_enrollStream) { _stopCam(_enrollStream); _enrollStream = null; }
   _showEnrollDone();
@@ -312,16 +311,12 @@ async function _startEnrollmentFlow() {
 async function _saveEnroll(goc, embedding) {
   try {
     const { data, error } = await supa.rpc('fn_face_enroll', {
-      p_ma_nv: SESSION.ma,
-      p_embedding: embedding,
-      p_goc: goc,
-      p_chat_luong: 0.9,
-      p_device: navigator.userAgent.substring(0, 100)
+      p_ma_nv: SESSION.ma, p_embedding: embedding, p_goc: goc,
+      p_chat_luong: 0.9, p_device: navigator.userAgent.substring(0, 100)
     });
     if (error) throw error;
     if (!data || !data.ok) {
-      const msg = (data && data.message) || 'unknown';
-      if (typeof showToast === 'function') showToast('Lỗi lưu ' + goc + ': ' + msg, 'err');
+      if (typeof showToast === 'function') showToast('Lỗi: ' + (data && data.message), 'err');
       return false;
     }
     return true;
@@ -336,21 +331,22 @@ function _showEnrollDone() {
   if (!body) return;
   body.innerHTML = `
     <div class="ns-face-step active">
-      <div class="ns-face-icon-big success">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="ns-face-success-stage">
+        <div class="ns-face-icon-big success">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Đăng ký thành công</h3>
+        <p>Khuôn mặt của bạn đã được lưu. Từ giờ bạn có thể chấm công bằng cách quét gương mặt.</p>
+        <button class="ns-face-btn-primary" onclick="nsFaceCloseEnrollment()">Hoàn tất</button>
       </div>
-      <h3>Đăng ký thành công</h3>
-      <p>Từ giờ bạn có thể chấm công bằng cách quét khuôn mặt.</p>
-      <button class="ns-face-btn-primary" onclick="nsFaceCloseEnrollment()">Hoàn tất</button>
     </div>
   `;
-  // Update badge in Tài khoản
   const lbl = document.getElementById('menu-face-status');
   if (lbl) { lbl.textContent = '✓ Đã đăng ký'; lbl.style.color = '#0F6E56'; }
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// FLOW 2: VERIFY — countdown 2-1, không cần quay đầu
+// FLOW 2: VERIFY (chấm công)
 // ═════════════════════════════════════════════════════════════════════════
 let _verifyAbort = { aborted: false };
 let _verifyStream = null;
@@ -359,7 +355,6 @@ let _verifyCallback = { onSuccess: null, onFail: null };
 async function nsFaceStartChamCong(onSuccess, onFail) {
   _verifyCallback = { onSuccess, onFail };
 
-  // Check enrollment
   let enrolled = false;
   try {
     const { data } = await supa.rpc('fn_face_enroll_status', { p_ma_nv: SESSION.ma });
@@ -367,7 +362,7 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
   } catch (e) {}
 
   if (!enrolled) {
-    if (window.confirm('Bạn chưa đăng ký khuôn mặt.\n\nOK để đăng ký ngay, Hủy để chấm công bằng ảnh tay.')) {
+    if (window.confirm('Bạn chưa đăng ký khuôn mặt.\n\nĐăng ký ngay?\nHủy: chấm công bằng ảnh tay.')) {
       nsFaceOpenEnrollment();
     } else {
       if (onFail) onFail({ reason: 'no_enroll', fallback: true });
@@ -376,20 +371,38 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
   }
 
   _verifyAbort = { aborted: false };
-  _buildModal('ns-face-verify-modal', 'Xác minh khuôn mặt', nsFaceCloseVerify);
+  const old = document.getElementById('ns-face-verify-modal');
+  if (old) old.remove();
 
-  const body = document.getElementById('ns-face-verify-modal-body');
-  _buildScanScene(body, 'fv');
-  _setEl('fv-instruction', 'Đặt mặt vào vòng tròn');
+  const modal = document.createElement('div');
+  modal.id = 'ns-face-verify-modal';
+  modal.className = 'ns-face-modal';
+  modal.innerHTML = `
+    <div class="ns-face-header">
+      <button class="ns-face-close" onclick="nsFaceCloseVerify()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="ns-face-title">Xác minh khuôn mặt</div>
+    </div>
+    <div class="ns-face-body" id="ns-face-verify-modal-body">
+      <div class="ns-face-step active" id="fv-step"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+
+  const step = document.getElementById('fv-step');
+  _buildStage(step, 'fv');
+  _setInstruction('fv', 'Đặt khuôn mặt vào khung');
 
   const ok = await nsFaceEnsureLoaded();
-  if (!ok) { _setEl('fv-status', 'Lỗi tải module'); return; }
+  if (!ok) { _setSubstatus('fv', 'Lỗi tải máy quét', 'err'); return; }
 
   const video = document.getElementById('fv-video');
   try {
     _verifyStream = await _openCam(video);
   } catch (e) {
-    _setEl('fv-status', 'Cần cấp quyền camera');
+    _setSubstatus('fv', 'Cần cấp quyền camera', 'err');
     return;
   }
 
@@ -399,67 +412,54 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
 async function _runVerifyAttempt(video, attempt) {
   if (_verifyAbort.aborted) return;
   if (attempt >= 3) {
-    _setEl('fv-instruction', 'Đã thử 3 lần');
-    _setEl('fv-status', 'Bấm "Chấm công bằng ảnh tay" bên dưới');
+    _setInstruction('fv', 'Đã thử 3 lần không thành công');
+    _setSubstatus('fv', 'Bấm bên dưới để chấm công bằng ảnh tay', 'err');
     _addFallbackBtn();
     return;
   }
 
-  // Đợi face stable
-  _setEl('fv-status', '');
-  const embedding = await _waitForStableFace(video, 'fv-status', _verifyAbort);
-  if (!embedding) return;
+  _setInstruction('fv', attempt === 0 ? 'Đặt khuôn mặt vào khung' : 'Vui lòng thử lại');
+  const embedding = await _smoothScan(video, 'fv', _verifyAbort);
+  if (!embedding || _verifyAbort.aborted) return;
 
-  // Countdown 2-1 (nhanh hơn enroll)
-  _setEl('fv-instruction', 'Giữ yên');
-  for (let i = 2; i >= 1; i--) {
-    if (_verifyAbort.aborted) return;
-    const el = document.getElementById('fv-countdown');
-    if (el) { el.textContent = i; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); }
-    _setArc('fv-progress', ((3 - i) / 2) * 100);
-    _haptic(20);
-    await new Promise(r => setTimeout(r, 700));
-  }
-  const cd = document.getElementById('fv-countdown');
-  if (cd) cd.classList.remove('show');
-
-  // Capture multi-frame
-  const frames = [embedding];
-  for (let i = 0; i < 2; i++) {
-    const r = await _detectFace(video);
-    if (r && r.embedding) frames.push(r.embedding);
-    await new Promise(r => setTimeout(r, 80));
-  }
-  const avg = _avgEmbeddings(frames);
-
-  _setEl('fv-status', 'Đang xác minh...');
-  const result = await _submitVerify(avg);
+  _setSubstatus('fv', 'Đang xác thực...', 'ok');
+  const result = await _submitVerify(embedding);
 
   if (result && result.passed) {
-    _flashCheck('fv-check');
-    const matchPct = result.match_pct || Math.round((1 - (result.distance||0)) * 100);
-    _setEl('fv-status', '✓ Xác minh đúng (' + matchPct + '%)');
-    _setArc('fv-progress', 100);
+    const matchPct = result.match_pct !== undefined ? result.match_pct
+                   : Math.round((1 - (result.distance || 0)) * 100);
+    _showVerifySuccess(matchPct);
     _haptic([30, 50, 30, 50, 60]);
     const cb = _verifyCallback.onSuccess;
-    setTimeout(() => { nsFaceCloseVerify(); if (cb) cb({ match_pct: matchPct, distance: result.distance }); }, 700);
+    setTimeout(() => {
+      nsFaceCloseVerify();
+      if (cb) cb({ match_pct: matchPct, distance: result.distance });
+    }, 1400);
   } else {
     const dist = result && result.distance ? result.distance.toFixed(3) : '?';
-    _setEl('fv-status', '✗ Không khớp (khoảng cách ' + dist + ') — Thử lại');
-    _setArc('fv-progress', 0);
+    _setInstruction('fv', 'Không khớp với dữ liệu đã đăng ký');
+    _setSubstatus('fv', 'Khoảng cách ' + dist + ' (cần < 0.6)', 'err');
     _haptic([100, 50, 100]);
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 1500));
     _runVerifyAttempt(video, attempt + 1);
   }
 }
 
-function _avgEmbeddings(arr) {
-  if (!arr.length) return null;
-  const dim = arr[0].length;
-  const out = new Array(dim).fill(0);
-  arr.forEach(e => { for (let i = 0; i < dim; i++) out[i] += e[i]; });
-  for (let i = 0; i < dim; i++) out[i] /= arr.length;
-  return out;
+function _showVerifySuccess(matchPct) {
+  const body = document.getElementById('ns-face-verify-modal-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="ns-face-step active">
+      <div class="ns-face-success-stage">
+        <div class="ns-face-icon-big success">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Xác thực thành công</h3>
+        <p style="font-size:15px;margin-top:4px">Độ tương đồng <b style="color:#2BC084;font-size:18px">${matchPct}%</b></p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:8px">Đang chuyển sang chấm công...</p>
+      </div>
+    </div>
+  `;
 }
 
 async function _submitVerify(embedding) {
@@ -497,7 +497,7 @@ function nsFaceCloseVerify() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// FLOW 3: ADMIN PANEL (giữ nguyên v12.1)
+// FLOW 3: ADMIN PANEL
 // ═════════════════════════════════════════════════════════════════════════
 async function nsFaceOpenAdmin() {
   const old = document.getElementById('ns-face-admin-modal');
@@ -507,7 +507,7 @@ async function nsFaceOpenAdmin() {
     supa.rpc('fn_face_get_config'),
     supa.rpc('fn_face_admin_stats', { p_ma_admin: SESSION.ma, p_days: 7 })
   ]);
-  const cfg = cfgRes.data || { enabled: false, threshold: 0.50 };
+  const cfg = cfgRes.data || { enabled: false, threshold: 0.60 };
   const stats = statsRes.data || {};
 
   const modal = document.createElement('div');
@@ -523,19 +523,15 @@ async function nsFaceOpenAdmin() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-
       <div class="ns-fa-card ns-fa-toggle-card">
         <div class="ns-fa-toggle-info">
           <div class="ns-fa-toggle-label">Bật chấm công bằng khuôn mặt</div>
-          <div class="ns-fa-toggle-sub">${cfg.enabled
-            ? 'Đang hoạt động — NV chấm công bằng quét mặt'
-            : 'Đang tắt — NV vẫn chấm công bằng ảnh tay'}</div>
+          <div class="ns-fa-toggle-sub">${cfg.enabled ? 'Đang hoạt động' : 'Đang tắt — chấm công bằng ảnh tay'}</div>
         </div>
         <button class="ns-fa-toggle ${cfg.enabled ? 'on' : ''}" onclick="nsFaceToggleChamcong(${!cfg.enabled})">
           <span class="ns-fa-toggle-dot"></span>
         </button>
       </div>
-
       <div class="ns-fa-card">
         <div class="ns-fa-section-label">Thống kê 7 ngày qua</div>
         <div class="ns-fa-stats-grid">
@@ -550,25 +546,23 @@ async function nsFaceOpenAdmin() {
             <div class="ns-fa-stat-pct ${stats.pass_rate >= 80 ? 'good' : (stats.pass_rate >= 60 ? 'mid' : 'low')}">${stats.pass_rate || 0}% pass</div>
           </div>
           <div class="ns-fa-stat">
-            <div class="ns-fa-stat-val">${stats.avg_similarity ? Number(stats.avg_similarity).toFixed(3) : '—'}</div>
-            <div class="ns-fa-stat-lbl">Similarity TB</div>
+            <div class="ns-fa-stat-val">${stats.avg_similarity ? Number(stats.avg_similarity).toFixed(2) : '—'}</div>
+            <div class="ns-fa-stat-lbl">Khoảng cách TB</div>
           </div>
         </div>
       </div>
-
       <div class="ns-fa-card">
-        <div class="ns-fa-section-label">Ngưỡng nhận diện</div>
+        <div class="ns-fa-section-label">Ngưỡng nhận diện (Euclidean distance)</div>
         <div class="ns-fa-threshold-row">
-          <input type="range" min="30" max="95" step="5" value="${Math.round((cfg.threshold || 0.5) * 100)}"
+          <input type="range" min="30" max="90" step="5" value="${Math.round((cfg.threshold || 0.6) * 100)}"
             id="ns-fa-threshold-slider" oninput="nsFaceThresholdPreview(this.value)" class="ns-fa-slider"/>
           <div class="ns-fa-threshold-val">
-            <span id="ns-fa-threshold-display">${Math.round((cfg.threshold || 0.5) * 100)}%</span>
-            <span class="ns-fa-threshold-hint" id="ns-fa-threshold-hint">${_threshHint(cfg.threshold || 0.5)}</span>
+            <span id="ns-fa-threshold-display">${(cfg.threshold || 0.6).toFixed(2)}</span>
+            <span class="ns-fa-threshold-hint" id="ns-fa-threshold-hint">${_threshHint(cfg.threshold || 0.6)}</span>
           </div>
         </div>
         <button class="ns-fa-btn-save" onclick="nsFaceSaveThreshold()">Cập nhật ngưỡng</button>
       </div>
-
       <div class="ns-fa-footer">
         <button class="ns-fa-btn-done" onclick="nsFaceCloseAdmin()">Đóng</button>
       </div>
@@ -586,16 +580,16 @@ function nsFaceCloseAdmin() {
 }
 
 function _threshHint(t) {
-  if (t < 0.45) return 'Nới rộng';
-  if (t < 0.55) return 'Dễ pass';
+  if (t < 0.45) return 'Rất chặt';
+  if (t < 0.55) return 'Chặt';
   if (t < 0.65) return 'Cân bằng';
-  if (t < 0.80) return 'Chặt';
-  return 'Rất chặt';
+  if (t < 0.75) return 'Nới';
+  return 'Rất nới';
 }
 
 function nsFaceThresholdPreview(val) {
   const t = val / 100;
-  document.getElementById('ns-fa-threshold-display').textContent = val + '%';
+  document.getElementById('ns-fa-threshold-display').textContent = t.toFixed(2);
   document.getElementById('ns-fa-threshold-hint').textContent = _threshHint(t);
 }
 
@@ -630,15 +624,12 @@ async function nsFaceSaveThreshold() {
     });
     if (error) throw error;
     if (!data || !data.ok) throw new Error(data && data.message);
-    showToast('✓ Đã cập nhật ngưỡng ' + Math.round(newT * 100) + '%', 'ok');
+    showToast('✓ Đã cập nhật ngưỡng ' + newT.toFixed(2), 'ok');
   } catch (err) {
     showToast('Lỗi: ' + err.message, 'err');
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════
-// Check enabled (cache 60s)
-// ═════════════════════════════════════════════════════════════════════════
 async function nsFaceCheckEnabled() {
   if (SESSION && SESSION._faceCfgTs && (Date.now() - SESSION._faceCfgTs < 60000)) {
     return SESSION._faceEnabled === true;
@@ -655,7 +646,7 @@ async function nsFaceCheckEnabled() {
   }
 }
 
-// ─── Globals ─────────────────────────────────────────────────────────────
+// Globals
 window.nsFaceOpenEnrollment = nsFaceOpenEnrollment;
 window.nsFaceCloseEnrollment = nsFaceCloseEnrollment;
 window.nsFaceStartChamCong = nsFaceStartChamCong;
