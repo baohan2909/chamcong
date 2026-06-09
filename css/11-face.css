@@ -1,0 +1,256 @@
+/* ════════════════════════════════════════════════════════════════════════════
+ *  Face Recognition module v12.0 - Premium UI
+ *  ──────────────────────────────────────────────────────────────────────── */
+
+.ns-face-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: #0a0f0d;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity .25s;
+  font-family: inherit;
+}
+.ns-face-modal.open { opacity: 1; }
+
+.ns-face-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px 12px;
+  color: #fff;
+}
+.ns-face-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(8px);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ns-face-close:active { transform: scale(.92); }
+.ns-face-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .2px;
+}
+
+.ns-face-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 18px;
+  overflow-y: auto;
+}
+
+.ns-face-step {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  display: none;
+  animation: nsFaceStepIn .3s cubic-bezier(.2,.7,.3,1);
+}
+.ns-face-step.active { display: block; }
+@keyframes nsFaceStepIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ns-face-icon-big {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: rgba(29,158,117,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ns-face-icon-big.success {
+  background: rgba(29,158,117,.25);
+  color: #2BC084;
+  animation: nsFaceSuccessPop .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes nsFaceSuccessPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ns-face-step h3 {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  letter-spacing: -.3px;
+}
+.ns-face-step p {
+  color: rgba(255,255,255,.7);
+  font-size: 14.5px;
+  line-height: 1.5;
+  margin: 0 0 22px;
+}
+.ns-face-privacy {
+  background: rgba(29,158,117,.1);
+  border: 1px solid rgba(29,158,117,.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.85);
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+.ns-face-privacy b { color: #2BC084; }
+
+.ns-face-btn-primary {
+  width: 100%;
+  padding: 14px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  transition: transform .12s;
+  box-shadow: 0 6px 20px rgba(15,110,86,.4);
+}
+.ns-face-btn-primary:active { transform: scale(.97); }
+.ns-face-btn-primary:disabled {
+  background: rgba(255,255,255,.15);
+  color: rgba(255,255,255,.5);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.ns-face-btn-secondary {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.25);
+  color: rgba(255,255,255,.9);
+  border-radius: 99px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+/* Camera preview wrapper */
+.ns-face-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  margin: 0 auto 18px;
+  background: #000;
+  border-radius: 22px;
+  overflow: hidden;
+  max-width: 320px;
+}
+.ns-face-video-wrap.large { max-width: 360px; aspect-ratio: 1; }
+.ns-face-video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);  /* mirror */
+  display: block;
+}
+
+/* Face guide frame */
+.ns-face-frame {
+  position: absolute;
+  inset: 12%;
+  border: 3px dashed rgba(43, 192, 132, .6);
+  border-radius: 50% 50% 45% 45%;
+  pointer-events: none;
+  animation: nsFaceFramePulse 2.5s ease-in-out infinite;
+}
+@keyframes nsFaceFramePulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.ns-face-status {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 8px 14px;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Progress dots (3 góc) */
+.ns-face-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.ns-face-dot {
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.5);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.ns-face-dot.active {
+  background: rgba(29,158,117,.25);
+  border-color: #2BC084;
+  color: #fff;
+}
+.ns-face-dot.done {
+  background: #0F6E56;
+  border-color: #0F6E56;
+  color: #fff;
+}
+.ns-face-dot.done::before { content: '✓ '; }
+
+.ns-face-instruction {
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: .1px;
+}
+
+.ns-face-attempts {
+  color: rgba(255,180,100,.9);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Animation cho liveness blink hint */
+@keyframes nsFaceBlinkHint {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.ns-face-blink-hint { animation: nsFaceBlinkHint 1.2s ease-in-out infinite; }

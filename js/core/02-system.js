@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v11.12',
+  'sys.cache_version': 'v12.0',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -662,6 +662,23 @@ function khoiDongApp(){
   // Tất cả NV đều cần gửi mẫu nón hàng tuần → đưa ra nav chính
   const nMN = document.getElementById('nav-muanon');
   if (nMN) nMN.style.display = '';
+
+  // [v12.0] Load trạng thái đăng ký khuôn mặt cho Tài khoản tab
+  try {
+    supa.rpc('fn_face_enroll_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
+      if (!data) return;
+      const lbl = document.getElementById('menu-face-status');
+      if (lbl) {
+        if (data.completed) {
+          lbl.textContent = '✓ Đã đăng ký';
+          lbl.style.color = '#0F6E56';
+        } else {
+          lbl.textContent = 'Chưa đăng ký';
+          lbl.style.color = '#EF4444';
+        }
+      }
+    });
+  } catch (e) {}
   if (isAdminAll) {
     // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
     const nA = document.getElementById('nav-admin');
