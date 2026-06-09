@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v12.3',
+  'sys.cache_version': 'v12.4',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -935,16 +935,106 @@ function _isMobile(){
 async function moCamera(){
   if(state.submitted)return;
   _cameraTarget = 'cham_cong';
+
+  // [v12.4] Nếu face.chamcong_enabled BẬT + NV enrolled → mở face verify thay vì camera chụp
+  // Chỉ áp dụng cho role NV (admin/QL vẫn dùng camera thường)
+  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() === 'NV') {
+    const faceOn = await nsFaceCheckEnabled();
+    if (faceOn) {
+      // Mở face verify
+      nsFaceStartChamCong(
+        function onSuccess(r) {
+          // Capture frame từ video face verify làm ảnh xác minh
+          _captureFrameAsSelfie(r);
+        },
+        function onFail(r) {
+          // Fallback: cho user chụp ảnh tay
+          if (typeof showToast === 'function') showToast('Chuyển sang chụp ảnh tay', 'warn');
+          _moCameraNormal();
+        }
+      );
+      return;
+    }
+  }
+
+  // Flow gốc (face TẮT hoặc không phải NV)
+  _moCameraNormal();
+}
+
+// Tách flow camera gốc ra hàm riêng để gọi lại được
+function _moCameraNormal(){
   if(_isMobile()){
-    // Mobile: dùng input capture → mở Camera app gốc
     const inp = document.getElementById('camera-file-input');
     inp.disabled = false;
     inp.value = '';
     inp.click();
   } else {
-    // Desktop: dùng webcam trực tiếp
-    await _moCameraDialog('user');
+    _moCameraDialog('user');
   }
+}
+
+// [v12.4] Sau face verify pass → tạo "ảnh xác minh" tổng hợp (text + similarity)
+function _captureFrameAsSelfie(verifyResult) {
+  // Tạo canvas với watermark face verify
+  const canvas = document.createElement('canvas');
+  canvas.width = 600; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient teal
+  const grad = ctx.createLinearGradient(0, 0, 0, 800);
+  grad.addColorStop(0, '#0F6E56');
+  grad.addColorStop(1, '#1f2d28');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 600, 800);
+
+  // White circle icon
+  ctx.fillStyle = 'rgba(255,255,255,.15)';
+  ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.stroke();
+
+  // Check mark
+  ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(250, 325); ctx.lineTo(290, 365); ctx.lineTo(355, 280);
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 32px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Xác minh khuôn mặt', 300, 500);
+  ctx.font = '20px -apple-system, sans-serif';
+  ctx.fillStyle = '#2BC084';
+  const simPct = Math.round((verifyResult.similarity || 0) * 100);
+  ctx.fillText('Độ khớp: ' + simPct + '%', 300, 540);
+
+  // Timestamp + ma_nv
+  const now = new Date();
+  const ts = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds())
+           + '  ' + pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear();
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px monospace';
+  ctx.fillText(SESSION.ma + '  ·  ' + ts, 300, 720);
+
+  // Save vào state như đã chụp ảnh
+  state.selfieB64 = canvas.toDataURL('image/jpeg', 0.85);
+  state.selfieOk = true;
+  state.selfieCaptureTs = Date.now();
+  state.selfieIsFaceVerified = true;
+
+  // Update UI
+  const preview = document.getElementById('selfie-preview');
+  if (preview) { preview.src = state.selfieB64; preview.style.display = 'block'; }
+  const icon = document.getElementById('selfie-icon');
+  if (icon) icon.style.display = 'none';
+  const btn = document.getElementById('selfie-btn');
+  if (btn) btn.className = 'selfie-btn done face-verified';
+  const txt = document.getElementById('selfie-text');
+  if (txt) txt.textContent = '✓ Đã xác minh khuôn mặt';
+  const sub = document.getElementById('selfie-sub');
+  if (sub) sub.textContent = 'Độ khớp ' + Math.round((verifyResult.similarity||0)*100) + '% · Bấm để quét lại';
+  updateSubmitBtn();
 }
 
 async function _moCameraDialog(facingMode){
@@ -1215,34 +1305,7 @@ function doSubmit(){
     return;
   }
 
-  // [v12.2] Face Recognition Gate
-  // Nếu admin BẬT face.chamcong_enabled + NV không phải QL → mở verify trước
-  // Pass → tiếp tục _doSubmitFinal
-  // Fail/từ chối → fallback _doSubmitFinal (chấm công bằng ảnh tay)
-  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() === 'NV') {
-    nsFaceCheckEnabled().then(enabled => {
-      if (!enabled) {
-        // Face TẮT → flow cũ
-        _doSubmitContinueWithGPS();
-        return;
-      }
-      // Face BẬT → mở verify
-      nsFaceStartChamCong(
-        function onSuccess(r) {
-          if (typeof showToast === 'function') showToast('✓ Khuôn mặt khớp (' + Math.round((r.similarity||0)*100) + '%)', 'ok');
-          _doSubmitContinueWithGPS();
-        },
-        function onFail(r) {
-          // Fallback ảnh tay
-          if (typeof showToast === 'function') showToast('Chuyển sang chấm công bằng ảnh tay', 'warn');
-          _doSubmitContinueWithGPS();
-        }
-      );
-    });
-    return;
-  }
-
-  // QL hoặc face TẮT → tiếp tục flow gốc
+  // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
   _doSubmitContinueWithGPS();
 }
 

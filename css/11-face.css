@@ -539,7 +539,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1);  /* mirror */
+  /* [v12.4] zoom in 1.35x để giảm hiệu ứng góc rộng + mirror */
+  transform: scale(-1.35, 1.35);
+  transform-origin: center;
   display: block;
 }
 .ns-face-scan-ring {
@@ -549,6 +551,63 @@
   height: 100%;
   pointer-events: none;
   filter: drop-shadow(0 0 12px rgba(43,192,132,.25));
+}
+
+/* [v12.4] Arrow indicator chỉ hướng quay đầu */
+.ns-face-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  color: #2BC084;
+  filter: drop-shadow(0 0 10px rgba(43,192,132,.6));
+}
+.ns-face-arrow.show { opacity: 1; }
+.ns-face-arrow.left { left: -8px; animation: arrowPulseLeft 1.4s ease-in-out infinite; }
+.ns-face-arrow.right { right: -8px; animation: arrowPulseRight 1.4s ease-in-out infinite; }
+@keyframes arrowPulseLeft {
+  0%, 100% { transform: translate(0, -50%); }
+  50% { transform: translate(-8px, -50%); }
+}
+@keyframes arrowPulseRight {
+  0%, 100% { transform: translate(0, -50%); }
+  50% { transform: translate(8px, -50%); }
+}
+
+/* [v12.4] Capture pulse — khi đang quét */
+.ns-face-scan-wrap.capturing .ns-face-scan-video {
+  animation: nsFacePulse 0.6s ease-out;
+}
+@keyframes nsFacePulse {
+  0% { box-shadow: 0 0 80px rgba(43,192,132,.18) inset, 0 0 0 0 rgba(43,192,132,.8); }
+  100% { box-shadow: 0 0 80px rgba(43,192,132,.18) inset, 0 0 0 30px rgba(43,192,132,0); }
+}
+
+/* [v12.4] Check overlay khi capture success */
+.ns-face-check-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(43,192,132,.35) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.ns-face-check-overlay.show { opacity: 1; animation: nsFaceCheckIn .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes nsFaceCheckIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* Sweep + dots — KHÔNG dùng nữa (v12.3 simplified) */

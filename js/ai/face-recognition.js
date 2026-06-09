@@ -200,9 +200,18 @@ async function nsFaceStartEnrollScan() {
 
   const scanStep = document.getElementById('ns-face-step-scan');
   scanStep.innerHTML = `
-    <div class="ns-face-scan-wrap">
+    <div class="ns-face-scan-wrap" id="fe-wrap">
       <div class="ns-face-scan-video">
         <video id="fe-video" autoplay muted playsinline></video>
+        <div class="ns-face-check-overlay" id="fe-check">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#2BC084" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="ns-face-arrow" id="fe-arrow-left">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="ns-face-arrow" id="fe-arrow-right">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <svg class="ns-face-scan-ring" viewBox="0 0 200 200">
         <defs>
@@ -262,6 +271,7 @@ async function _runEnrollLoop(video) {
     const target = _enrollState.currentTarget;
     if (!target) break;
     _setFeInstruction(targetInstructions[target]);
+    _setFeArrow(target);
 
     const res = await nsFaceDetect(video);
     if (!res) {
@@ -285,20 +295,31 @@ async function _runEnrollLoop(video) {
       if (matchesAngle && _enrollState.stableCount >= NS_FACE.STABILITY_FRAMES) {
         _enrollState.captureBuffer.push(res.embedding);
         _setFeStatus('Đang quét ' + _enrollState.captureBuffer.length + '/' + NS_FACE.CAPTURE_FRAMES);
+        // Pulse effect
+        const wrap = document.getElementById('fe-wrap');
+        if (wrap) { wrap.classList.add('capturing'); setTimeout(() => wrap.classList.remove('capturing'), 600); }
+
         if (_enrollState.captureBuffer.length >= NS_FACE.CAPTURE_FRAMES) {
           const avg = nsFaceAvg(_enrollState.captureBuffer);
-          await _saveEnrollAngle(target, avg);
+          const saveResult = await _saveEnrollAngle(target, avg);
           _enrollState.captureBuffer = []; _enrollState.stableCount = 0;
-          _haptic([40, 60, 40]);
-          const idx = _enrollState.angles.indexOf(target);
-          if (idx === _enrollState.angles.length - 1) {
-            _enrollState.currentTarget = null;
-            await _onEnrollComplete();
-            return;
-          } else {
-            _enrollState.currentTarget = _enrollState.angles[idx + 1];
-            _setFeStatus('✓ Đã lưu góc');
-            await new Promise(r => setTimeout(r, 900));
+
+          if (saveResult) {
+            // Show check overlay
+            const check = document.getElementById('fe-check');
+            if (check) { check.classList.add('show'); setTimeout(() => check.classList.remove('show'), 900); }
+            _haptic([40, 60, 40]);
+
+            const idx = _enrollState.angles.indexOf(target);
+            if (idx === _enrollState.angles.length - 1) {
+              _enrollState.currentTarget = null;
+              await _onEnrollComplete();
+              return;
+            } else {
+              _enrollState.currentTarget = _enrollState.angles[idx + 1];
+              _setFeStatus('✓ Đã lưu góc');
+              await new Promise(r => setTimeout(r, 1000));
+            }
           }
         }
       } else if (matchesAngle) {
@@ -315,19 +336,33 @@ async function _runEnrollLoop(video) {
   }
 }
 
+function _setFeArrow(target) {
+  const aL = document.getElementById('fe-arrow-left');
+  const aR = document.getElementById('fe-arrow-right');
+  if (!aL || !aR) return;
+  if (target === 'trai') { aL.classList.add('show'); aR.classList.remove('show'); }
+  else if (target === 'phai') { aR.classList.add('show'); aL.classList.remove('show'); }
+  else { aL.classList.remove('show'); aR.classList.remove('show'); }
+}
+
 async function _saveEnrollAngle(goc, embedding) {
   try {
-    const { data } = await supa.rpc('fn_face_enroll', {
+    const { data, error } = await supa.rpc('fn_face_enroll', {
       p_ma_nv: SESSION.ma, p_embedding: embedding, p_goc: goc,
       p_chat_luong: 0.9, p_device: navigator.userAgent.substring(0, 100)
     });
-    if (!data || !data.ok) throw new Error(data && data.message);
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lưu thất bại');
     _enrollState.captured[goc] = true;
     const done = Object.keys(_enrollState.captured).length;
     _setFeProgressArc((done / 3) * 100);
     _setFeProgressText(done + ' / 3 góc');
+    return true;
   } catch (e) {
-    _setFeStatus('Lỗi lưu: ' + (e.message || ''));
+    const msg = e.message || 'Lỗi không xác định';
+    _setFeStatus('✗ Lỗi: ' + msg);
+    if (typeof showToast === 'function') showToast('Lỗi lưu góc: ' + msg, 'err');
+    return false;
   }
 }
 
