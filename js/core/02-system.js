@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v12.0',
+  'sys.cache_version': 'v12.1',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -679,6 +679,28 @@ function khoiDongApp(){
       }
     });
   } catch (e) {}
+
+  // [v12.1] Admin Face Config — show entry "Quản lý chấm công khuôn mặt" cho ADMIN/QLNS
+  if (isAdminAll || (SESSION.role === 'QLNS')) {
+    const adminFaceEl = document.getElementById('menu-face-admin');
+    if (adminFaceEl) adminFaceEl.style.display = '';
+    // Load trạng thái enabled
+    try {
+      supa.rpc('fn_face_get_config').then(({ data }) => {
+        if (!data) return;
+        const lbl = document.getElementById('menu-face-admin-status');
+        if (lbl) {
+          if (data.enabled) {
+            lbl.textContent = '🟢 BẬT';
+            lbl.style.color = '#16a34a';
+          } else {
+            lbl.textContent = '⚪ TẮT';
+            lbl.style.color = '#94A3B8';
+          }
+        }
+      });
+    } catch (e) {}
+  }
   if (isAdminAll) {
     // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
     const nA = document.getElementById('nav-admin');

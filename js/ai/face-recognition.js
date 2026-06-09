@@ -546,3 +546,166 @@ window.nsFaceCaptureNow = nsFaceCaptureNow;
 window.nsFaceStartChamCong = nsFaceStartChamCong;
 window.nsFaceCloseVerify = nsFaceCloseVerify;
 window.nsFaceFallbackChamCong = nsFaceFallbackChamCong;
+
+// ════════════════════════════════════════════════════════════════════════════
+// [v12.1] FACE ADMIN PANEL — bật/tắt + threshold + stats
+// ════════════════════════════════════════════════════════════════════════════
+
+async function nsFaceOpenAdmin() {
+  const old = document.getElementById('ns-face-admin-modal');
+  if (old) old.remove();
+
+  // Load config + stats song song
+  const [cfgRes, statsRes] = await Promise.all([
+    supa.rpc('fn_face_get_config'),
+    supa.rpc('fn_face_admin_stats', { p_ma_admin: SESSION.ma, p_days: 7 })
+  ]);
+
+  const cfg = cfgRes.data || { enabled: false, threshold: 0.50 };
+  const stats = statsRes.data || {};
+
+  const modal = document.createElement('div');
+  modal.id = 'ns-face-admin-modal';
+  modal.className = 'ns-face-admin-modal';
+  modal.innerHTML = `
+    <div class="ns-fa-overlay" onclick="nsFaceCloseAdmin()"></div>
+    <div class="ns-fa-sheet">
+      <div class="ns-fa-handle"></div>
+      <div class="ns-fa-header">
+        <div class="ns-fa-title">Chấm công bằng khuôn mặt</div>
+        <button class="ns-fa-close" onclick="nsFaceCloseAdmin()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Toggle ON/OFF -->
+      <div class="ns-fa-card ns-fa-toggle-card">
+        <div class="ns-fa-toggle-info">
+          <div class="ns-fa-toggle-label">Bật chấm công bằng khuôn mặt</div>
+          <div class="ns-fa-toggle-sub">${cfg.enabled
+            ? 'Đang hoạt động — NV chấm công bằng quét mặt'
+            : 'Đang tắt — NV vẫn chấm công cách cũ (chụp ảnh tay)'}</div>
+        </div>
+        <button class="ns-fa-toggle ${cfg.enabled ? 'on' : ''}" onclick="nsFaceToggleChamcong(${!cfg.enabled})">
+          <span class="ns-fa-toggle-dot"></span>
+        </button>
+      </div>
+
+      <!-- Stats card -->
+      <div class="ns-fa-card">
+        <div class="ns-fa-section-label">Thống kê 7 ngày qua</div>
+        <div class="ns-fa-stats-grid">
+          <div class="ns-fa-stat">
+            <div class="ns-fa-stat-val">${stats.enrolled_nv || 0}<span class="ns-fa-stat-of">/${stats.total_nv || 0}</span></div>
+            <div class="ns-fa-stat-lbl">NV đã đăng ký</div>
+            <div class="ns-fa-stat-pct">${stats.enroll_rate || 0}%</div>
+          </div>
+          <div class="ns-fa-stat">
+            <div class="ns-fa-stat-val">${stats.total || 0}</div>
+            <div class="ns-fa-stat-lbl">Lần xác minh</div>
+            <div class="ns-fa-stat-pct ${stats.pass_rate >= 80 ? 'good' : (stats.pass_rate >= 60 ? 'mid' : 'low')}">${stats.pass_rate || 0}% pass</div>
+          </div>
+          <div class="ns-fa-stat">
+            <div class="ns-fa-stat-val">${stats.avg_similarity ? Number(stats.avg_similarity).toFixed(3) : '—'}</div>
+            <div class="ns-fa-stat-lbl">Similarity TB</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Threshold control -->
+      <div class="ns-fa-card">
+        <div class="ns-fa-section-label">Ngưỡng nhận diện (Threshold)</div>
+        <div class="ns-fa-threshold-row">
+          <input type="range" min="30" max="95" step="5" value="${Math.round((cfg.threshold || 0.5) * 100)}"
+            id="ns-fa-threshold-slider" oninput="nsFaceThresholdPreview(this.value)" class="ns-fa-slider"/>
+          <div class="ns-fa-threshold-val">
+            <span id="ns-fa-threshold-display">${Math.round((cfg.threshold || 0.5) * 100)}%</span>
+            <span class="ns-fa-threshold-hint" id="ns-fa-threshold-hint">${_nsFaceThresholdHint(cfg.threshold || 0.5)}</span>
+          </div>
+        </div>
+        <button class="ns-fa-btn-save" onclick="nsFaceSaveThreshold()">Cập nhật ngưỡng</button>
+      </div>
+
+      ${stats.top_fails && stats.top_fails.length > 0 ? `
+      <div class="ns-fa-card">
+        <div class="ns-fa-section-label">NV xác minh fail nhiều (7 ngày)</div>
+        <div class="ns-fa-fail-list">
+          ${stats.top_fails.slice(0, 5).map(f => `
+            <div class="ns-fa-fail-row">
+              <div class="ns-fa-fail-nv">${escHtml(f.ma_nv)}</div>
+              <div class="ns-fa-fail-cnt">${f.fail_count}× fail</div>
+              <div class="ns-fa-fail-sim">sim ${Number(f.avg_sim).toFixed(2)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="ns-fa-footer">
+        <button class="ns-fa-btn-done" onclick="nsFaceCloseAdmin()">Đóng</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function nsFaceCloseAdmin() {
+  const m = document.getElementById('ns-face-admin-modal');
+  if (!m) return;
+  m.classList.remove('open');
+  setTimeout(() => m.remove(), 250);
+}
+
+function _nsFaceThresholdHint(t) {
+  if (t < 0.45) return 'Nới rộng';
+  if (t < 0.55) return 'Dễ pass (giai đoạn đầu)';
+  if (t < 0.65) return 'Cân bằng';
+  if (t < 0.80) return 'Chặt';
+  return 'Rất chặt';
+}
+
+function nsFaceThresholdPreview(val) {
+  const t = val / 100;
+  document.getElementById('ns-fa-threshold-display').textContent = val + '%';
+  document.getElementById('ns-fa-threshold-hint').textContent = _nsFaceThresholdHint(t);
+}
+
+async function nsFaceToggleChamcong(newState) {
+  try {
+    const { data, error } = await supa.rpc('fn_face_admin_toggle_chamcong', {
+      p_ma_admin: SESSION.ma, p_enabled: newState
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast(newState ? '✓ Đã BẬT chấm công khuôn mặt' : '✓ Đã TẮT — quay về chụp ảnh tay', 'ok');
+    // Reload modal
+    nsFaceCloseAdmin();
+    setTimeout(() => nsFaceOpenAdmin(), 300);
+  } catch (err) {
+    showToast('Lỗi: ' + err.message, 'err');
+  }
+}
+
+async function nsFaceSaveThreshold() {
+  const slider = document.getElementById('ns-fa-threshold-slider');
+  if (!slider) return;
+  const newT = parseInt(slider.value, 10) / 100;
+  try {
+    const { data, error } = await supa.rpc('fn_face_admin_set_threshold', {
+      p_ma_admin: SESSION.ma, p_scope: 'global', p_threshold: newT, p_note: 'Admin tune'
+    });
+    if (error) throw error;
+    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
+    showToast('✓ Đã cập nhật ngưỡng ' + Math.round(newT * 100) + '%', 'ok');
+  } catch (err) {
+    showToast('Lỗi: ' + err.message, 'err');
+  }
+}
+
+// Expose globals
+window.nsFaceOpenAdmin = nsFaceOpenAdmin;
+window.nsFaceCloseAdmin = nsFaceCloseAdmin;
+window.nsFaceToggleChamcong = nsFaceToggleChamcong;
+window.nsFaceSaveThreshold = nsFaceSaveThreshold;
+window.nsFaceThresholdPreview = nsFaceThresholdPreview;
