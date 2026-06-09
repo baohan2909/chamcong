@@ -13,14 +13,14 @@
 const NS_FACE = {
   FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
   MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/',
-  MIN_FACE_SIZE: 100,
-  STABILITY_FRAMES: 5,
-  STABILITY_PX: 22,
-  YAW_STRAIGHT: 0.06,
-  YAW_TURN_MIN: 0.15,
-  YAW_TURN_MAX: 0.45,
-  CAPTURE_FRAMES: 3,
-  VERIFY_STABILITY: 4
+  MIN_FACE_SIZE: 80,
+  STABILITY_FRAMES: 3,   // ~0.3s — dễ hơn
+  STABILITY_PX: 30,      // cho phép dao động nhiều hơn
+  YAW_STRAIGHT: 0.10,    // nới rộng
+  YAW_TURN_MIN: 0.10,    // chỉ cần quay nhẹ
+  YAW_TURN_MAX: 0.60,    // chấp nhận quay nhiều
+  CAPTURE_FRAMES: 2,     // chỉ cần 2 frames
+  VERIFY_STABILITY: 3    // verify nhanh hơn
 };
 
 let _faceLoaded = false;
@@ -57,8 +57,9 @@ async function nsFaceEnsureLoaded() {
 }
 
 async function nsFaceOpenCamera(videoEl) {
+  // Để camera mặc định, không force resolution để tránh kích hoạt ultra-wide
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+    video: { facingMode: 'user' },
     audio: false
   });
   videoEl.srcObject = stream;
@@ -215,18 +216,13 @@ async function nsFaceStartEnrollScan() {
                 stroke="url(#feGrad)" stroke-width="5" stroke-linecap="round"
                 stroke-dasharray="578" stroke-dashoffset="578"
                 transform="rotate(-90 100 100)"
-                style="transition: stroke-dashoffset .4s cubic-bezier(.2,.7,.3,1)"/>
-        <g id="fe-dots"></g>
-        <circle class="ns-face-sweep" cx="100" cy="100" r="92" fill="none"
-                stroke="rgba(43,192,132,.7)" stroke-width="2.5" stroke-linecap="round"
-                stroke-dasharray="50 528" transform="rotate(-90 100 100)"/>
+                style="transition: stroke-dashoffset .5s cubic-bezier(.2,.7,.3,1)"/>
       </svg>
     </div>
     <div class="ns-face-scan-status" id="fe-status">Đang khởi động camera...</div>
     <div class="ns-face-scan-instruction" id="fe-instruction">Vui lòng chờ</div>
     <div class="ns-face-scan-progress" id="fe-progress-text">0 / 3 góc</div>
   `;
-  _nsFaceRenderDots('fe-dots');
 
   _enrollState = {
     angles: ['thang', 'trai', 'phai'],
@@ -330,7 +326,6 @@ async function _saveEnrollAngle(goc, embedding) {
     const done = Object.keys(_enrollState.captured).length;
     _setFeProgressArc((done / 3) * 100);
     _setFeProgressText(done + ' / 3 góc');
-    _nsFaceLightDots('fe-dots', Math.floor((done / 3) * 12));
   } catch (e) {
     _setFeStatus('Lỗi lưu: ' + (e.message || ''));
   }
@@ -338,7 +333,6 @@ async function _saveEnrollAngle(goc, embedding) {
 
 async function _onEnrollComplete() {
   _setFeProgressArc(100);
-  _nsFaceLightDots('fe-dots', 12);
   await new Promise(r => setTimeout(r, 600));
   if (_enrollState && _enrollState.stream) nsFaceStopCamera(_enrollState.stream);
   document.getElementById('ns-face-step-scan').classList.remove('active');
@@ -396,11 +390,7 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
                     stroke="url(#fvGrad)" stroke-width="5" stroke-linecap="round"
                     stroke-dasharray="578" stroke-dashoffset="578"
                     transform="rotate(-90 100 100)"
-                    style="transition: stroke-dashoffset .25s ease"/>
-            <g id="fv-dots"></g>
-            <circle class="ns-face-sweep" cx="100" cy="100" r="92" fill="none"
-                    stroke="rgba(43,192,132,.7)" stroke-width="3" stroke-linecap="round"
-                    stroke-dasharray="60 518" transform="rotate(-90 100 100)"/>
+                    style="transition: stroke-dashoffset .3s ease"/>
           </svg>
         </div>
         <div class="ns-face-scan-status" id="fv-status">Đang tải...</div>
@@ -411,7 +401,6 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
     </div>
   `;
   document.body.appendChild(modal);
-  _nsFaceRenderDots('fv-dots');
   requestAnimationFrame(() => modal.classList.add('open'));
 
   _verifyState = { stream: null, attempts: 0, prevFace: null, stableCount: 0,
@@ -434,7 +423,6 @@ function _setFvInstruction(t) { const el = document.getElementById('fv-instructi
 function _setFvArc(pct) {
   const arc = document.getElementById('fv-progress');
   if (arc) arc.setAttribute('stroke-dashoffset', 578 * (1 - pct / 100));
-  _nsFaceLightDots('fv-dots', Math.floor((pct / 100) * 12));
 }
 
 async function _runVerifyLoop(video) {

@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 14px 12px;
+  padding: max(50px, env(safe-area-inset-top)) 14px 12px;
   color: #fff;
 }
 .ns-face-close {
@@ -551,19 +551,8 @@
   filter: drop-shadow(0 0 12px rgba(43,192,132,.25));
 }
 
-/* Sweep beam — quay xung quanh như radar */
-.ns-face-sweep {
-  animation: nsFaceSweep 2.6s linear infinite;
-  transform-origin: 100px 100px;
-}
-@keyframes nsFaceSweep {
-  from { transform: rotate(-90deg); }
-  to   { transform: rotate(270deg); }
-}
-
-.ns-face-dot-svg {
-  transition: r .28s cubic-bezier(.34,1.56,.64,1), fill .28s;
-}
+/* Sweep + dots — KHÔNG dùng nữa (v12.3 simplified) */
+.ns-face-sweep, .ns-face-dot-svg { display: none; }
 
 .ns-face-scan-status {
   text-align: center;

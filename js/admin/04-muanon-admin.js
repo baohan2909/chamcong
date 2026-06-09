@@ -2275,10 +2275,13 @@ async function mnaLoadCluster() {
   if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
 
   try {
-    const { data, error } = await supa.rpc('fn_muanon_admin_cluster_list', {
-      p_ma_admin: SESSION.ma,
-      p_tuan_id: MUANON_ADMIN.tuanId
-    });
+    // mnaClusterScope: null = tuần hiện tại; 'all' = tất cả tuần
+    const scope = MUANON_ADMIN.clusterScope || 'tuan';
+    const params = { p_ma_admin: SESSION.ma };
+    if (scope === 'tuan') params.p_tuan_id = MUANON_ADMIN.tuanId;
+    // 'all' → không truyền p_tuan_id (RPC default NULL = tất cả)
+
+    const { data, error } = await supa.rpc('fn_muanon_admin_cluster_list', params);
     if (error) throw error;
     if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
 
@@ -2293,12 +2296,17 @@ async function mnaLoadCluster() {
 function mnaRenderCluster() {
   const data = MUANON_ADMIN.clusterData || [];
   const pending = MUANON_ADMIN.clusterPending || 0;
+  const scope = MUANON_ADMIN.clusterScope || 'tuan';
 
   let html = `
+    <div class="mna-cluster-bar">
+      <button class="mna-scope-btn ${scope === 'tuan' ? 'active' : ''}" onclick="mnaSetClusterScope('tuan')">Tuần này</button>
+      <button class="mna-scope-btn ${scope === 'all' ? 'active' : ''}" onclick="mnaSetClusterScope('all')">Tất cả tuần</button>
+    </div>
     <div class="mna-cluster-header">
       <div class="mna-cluster-info">
         <div class="mna-cluster-title">${data.length} nhóm</div>
-        <div class="mna-cluster-sub">${pending > 0 ? '⏳ Đang xử lý <b>' + pending + '</b> ảnh' : '✓ Đã xử lý xong'}</div>
+        <div class="mna-cluster-sub">${pending > 0 ? '⏳ Đang xử lý <b>' + pending + '</b> ảnh' : '✓ Đã xử lý xong · Sắp xếp theo số lượng giảm dần'}</div>
       </div>
       <button class="mna-ai-trigger" onclick="mnaAITriggerNow()" ${pending > 0 ? 'disabled' : ''}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -2333,6 +2341,11 @@ function mnaRenderCluster() {
   html += '</div>';
 
   document.getElementById('muanon-admin-content').innerHTML = html;
+}
+
+function mnaSetClusterScope(scope) {
+  MUANON_ADMIN.clusterScope = scope;
+  mnaLoadCluster();
 }
 
 async function mnaAITriggerNow() {
@@ -2431,6 +2444,7 @@ window.mnaLoadCluster = mnaLoadCluster;
 window.mnaAITriggerNow = mnaAITriggerNow;
 window.mnaOpenCluster = mnaOpenCluster;
 window.mnaRenameCluster = mnaRenameCluster;
+window.mnaSetClusterScope = mnaSetClusterScope;
 
 // ════════════════════════════════════════════════════════════════════════════
 // [v12.0] GLOBALS
