@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v12.1',
+  'sys.cache_version': 'v12.2',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1215,17 +1215,47 @@ function doSubmit(){
     return;
   }
 
+  // [v12.2] Face Recognition Gate
+  // Nếu admin BẬT face.chamcong_enabled + NV không phải QL → mở verify trước
+  // Pass → tiếp tục _doSubmitFinal
+  // Fail/từ chối → fallback _doSubmitFinal (chấm công bằng ảnh tay)
+  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() === 'NV') {
+    nsFaceCheckEnabled().then(enabled => {
+      if (!enabled) {
+        // Face TẮT → flow cũ
+        _doSubmitContinueWithGPS();
+        return;
+      }
+      // Face BẬT → mở verify
+      nsFaceStartChamCong(
+        function onSuccess(r) {
+          if (typeof showToast === 'function') showToast('✓ Khuôn mặt khớp (' + Math.round((r.similarity||0)*100) + '%)', 'ok');
+          _doSubmitContinueWithGPS();
+        },
+        function onFail(r) {
+          // Fallback ảnh tay
+          if (typeof showToast === 'function') showToast('Chuyển sang chấm công bằng ảnh tay', 'warn');
+          _doSubmitContinueWithGPS();
+        }
+      );
+    });
+    return;
+  }
+
+  // QL hoặc face TẮT → tiếp tục flow gốc
+  _doSubmitContinueWithGPS();
+}
+
+// [v12.2] Tách phần GPS pre-check ra thành hàm riêng để gọi sau face verify
+function _doSubmitContinueWithGPS(){
   // [v11.3 GPS-02] Pre-check: nếu user xa CH đã chọn > 200m → tìm CH gần nhất
-  // (nếu có CH khác trong bán kính 200m → hiện modal cho chọn lại)
   const maCH = document.getElementById('sel-cuahang').value;
   const lat = state.lat, lng = state.lng;
   if(lat && lng && maCH){
-    // Tìm CH user đã chọn trong CH_LIST
     const chDaChon = (typeof CH_LIST !== 'undefined' ? CH_LIST.find(c => c.ma === maCH) : null);
     if(chDaChon && chDaChon.lat && chDaChon.lng){
       const dChosen = _distMeters(lat, lng, parseFloat(chDaChon.lat), parseFloat(chDaChon.lng));
       if(dChosen > 200){
-        // Xa khỏi CH đã chọn → kiểm tra có CH nào khác gần không
         let nearest = null;
         let minD = Infinity;
         CH_LIST.forEach(ch => {
@@ -1234,15 +1264,12 @@ function doSubmit(){
           if(d < minD && d <= 200){ minD = d; nearest = {...ch, khoangCach: Math.round(d)}; }
         });
         if(nearest){
-          // Có CH khác gần hơn → hiện modal đề xuất
           gpsShowModal({chDaChon: {...chDaChon, khoangCach: Math.round(dChosen)}, nearest});
           return;
         }
-        // Không có CH nào gần → thực sự sai vị trí, tiếp tục submit như cũ
       }
     }
   }
-
   _doSubmitFinal();
 }
 

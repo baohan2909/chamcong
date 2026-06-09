@@ -516,3 +516,81 @@
 .ns-fa-fail-sim { color: #6b7c75; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .ns-fa-footer { padding: 10px 0 0; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   [v12.2] FACE ID STYLE SCAN - Circular video + ring + sweep
+   ════════════════════════════════════════════════════════════════════════════ */
+.ns-face-scan-wrap {
+  position: relative;
+  width: min(320px, 80vw);
+  height: min(320px, 80vw);
+  margin: 0 auto 24px;
+}
+.ns-face-scan-video {
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a1a16, #050d0b);
+  box-shadow: 0 0 80px rgba(43,192,132,.18) inset,
+              0 4px 20px rgba(0,0,0,.4);
+}
+.ns-face-scan-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);  /* mirror */
+  display: block;
+}
+.ns-face-scan-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 12px rgba(43,192,132,.25));
+}
+
+/* Sweep beam — quay xung quanh như radar */
+.ns-face-sweep {
+  animation: nsFaceSweep 2.6s linear infinite;
+  transform-origin: 100px 100px;
+}
+@keyframes nsFaceSweep {
+  from { transform: rotate(-90deg); }
+  to   { transform: rotate(270deg); }
+}
+
+.ns-face-dot-svg {
+  transition: r .28s cubic-bezier(.34,1.56,.64,1), fill .28s;
+}
+
+.ns-face-scan-status {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  min-height: 24px;
+  letter-spacing: -.2px;
+  transition: color .2s;
+}
+.ns-face-scan-instruction {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 8px;
+  line-height: 1.4;
+  min-height: 20px;
+}
+.ns-face-scan-progress {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2BC084;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* Override cũ — bỏ frame dashed cũ vì giờ dùng SVG ring */
+.ns-face-video-wrap { display: none; }
