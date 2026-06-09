@@ -141,7 +141,6 @@ function mnaRenderHeader() {
     { id: 'tongquan',   label: 'Tổng quan' },
     { id: 'timeline',   label: 'Timeline' },
     { id: 'gallery',    label: 'Gallery' },
-    { id: 'nhom',       label: 'Nhóm AI' },
     { id: 'chuagui',    label: 'Chưa gửi' },
     { id: 'compliance', label: 'Tuân thủ' }
   ];
@@ -184,7 +183,6 @@ function mnaSwitchTab(tab) {
   if (tab === 'tongquan') mnaLoadTongQuan();
   else if (tab === 'timeline') mnaLoadTimeline();
   else if (tab === 'gallery') mnaLoadGallery();
-  else if (tab === 'nhom') mnaLoadCluster();
   else if (tab === 'chuagui') mnaLoadChuaGui();
   else if (tab === 'compliance') mnaLoadCompliance();
 }
@@ -2266,189 +2264,7 @@ async function mnaBulkRemoveFromAlbum() {
   } catch (err) { showToast('Lỗi: ' + err.message, 'err'); }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// [v12.0] TAB "NHÓM AI" — AI Clustering ảnh mẫu nón
-// ════════════════════════════════════════════════════════════════════════════
-
-async function mnaLoadCluster() {
-  const el = document.getElementById('muanon-admin-content');
-  if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
-
-  try {
-    // mnaClusterScope: null = tuần hiện tại; 'all' = tất cả tuần
-    const scope = MUANON_ADMIN.clusterScope || 'tuan';
-    const params = { p_ma_admin: SESSION.ma };
-    if (scope === 'tuan') params.p_tuan_id = MUANON_ADMIN.tuanId;
-    // 'all' → không truyền p_tuan_id (RPC default NULL = tất cả)
-
-    const { data, error } = await supa.rpc('fn_muanon_admin_cluster_list', params);
-    if (error) throw error;
-    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
-
-    MUANON_ADMIN.clusterData = data.data || [];
-    MUANON_ADMIN.clusterPending = data.total_unprocessed || 0;
-    mnaRenderCluster();
-  } catch (err) {
-    if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
-  }
-}
-
-function mnaRenderCluster() {
-  const data = MUANON_ADMIN.clusterData || [];
-  const pending = MUANON_ADMIN.clusterPending || 0;
-  const scope = MUANON_ADMIN.clusterScope || 'tuan';
-
-  let html = `
-    <div class="mna-cluster-bar">
-      <button class="mna-scope-btn ${scope === 'tuan' ? 'active' : ''}" onclick="mnaSetClusterScope('tuan')">Tuần này</button>
-      <button class="mna-scope-btn ${scope === 'all' ? 'active' : ''}" onclick="mnaSetClusterScope('all')">Tất cả tuần</button>
-    </div>
-    <div class="mna-cluster-header">
-      <div class="mna-cluster-info">
-        <div class="mna-cluster-title">${data.length} nhóm</div>
-        <div class="mna-cluster-sub">${pending > 0 ? '⏳ Đang xử lý <b>' + pending + '</b> ảnh' : '✓ Đã xử lý xong · Sắp xếp theo số lượng giảm dần'}</div>
-      </div>
-      <button class="mna-ai-trigger" onclick="mnaAITriggerNow()" ${pending > 0 ? 'disabled' : ''}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>${pending > 0 ? 'AI đang xử lý...' : 'AI xử lý ngay'}</span>
-      </button>
-    </div>
-  `;
-
-  if (data.length === 0) {
-    html += `<div class="mna-empty">
-      <div style="margin-bottom:8px;font-size:28px">🎨</div>
-      Chưa có nhóm nào.<br/>
-      ${pending > 0 ? 'AI đang phân tích ' + pending + ' ảnh...' : 'Khi NV gửi ảnh, AI tự động nhóm các mẫu giống nhau.'}
-    </div>`;
-    document.getElementById('muanon-admin-content').innerHTML = html;
-    return;
-  }
-
-  html += '<div class="mna-cluster-grid">';
-  data.forEach(c => {
-    const label = c.manual_label || c.auto_label || 'Chưa đặt tên';
-    html += `
-      <div class="mna-cluster-card" onclick="mnaOpenCluster(${c.id})">
-        <div class="mna-cluster-cover">
-          ${c.cover_url ? '<img src="' + _mnaEscAttr(c.cover_url) + '" loading="lazy"/>' : '<div class="mna-cluster-empty">📷</div>'}
-          <span class="mna-cluster-count">${c.so_anh}</span>
-        </div>
-        <div class="mna-cluster-label">${escHtml(label)}</div>
-      </div>
-    `;
-  });
-  html += '</div>';
-
-  document.getElementById('muanon-admin-content').innerHTML = html;
-}
-
-function mnaSetClusterScope(scope) {
-  MUANON_ADMIN.clusterScope = scope;
-  mnaLoadCluster();
-}
-
-async function mnaAITriggerNow() {
-  try {
-    showToast('Đang gửi tín hiệu cho AI...', 'ok');
-    const { data, error } = await supa.rpc('fn_muanon_admin_ai_trigger_now', { p_ma_admin: SESSION.ma });
-    if (error) throw error;
-    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
-    showToast('⚡ ' + (data.message || 'AI đang xử lý...'), 'ok');
-    // Reload sau 5s để xem kết quả
-    setTimeout(() => mnaLoadCluster(), 5000);
-  } catch (err) {
-    showToast('Lỗi: ' + (err.message || 'network'), 'err');
-  }
-}
-
-async function mnaOpenCluster(clusterId) {
-  const el = document.getElementById('muanon-admin-content');
-  if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm...</div>';
-
-  try {
-    const { data, error } = await supa.rpc('fn_muanon_admin_cluster_anh', {
-      p_ma_admin: SESSION.ma, p_cluster_id: clusterId, p_limit: 100
-    });
-    if (error) throw error;
-    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
-
-    MUANON_ADMIN.currentClusterId = clusterId;
-    MUANON_ADMIN.galleryData = data.data || [];   // reuse lightbox
-    mnaRenderClusterDetail(data.cluster, data.data);
-  } catch (err) {
-    if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message) + '</div>';
-  }
-}
-
-function mnaRenderClusterDetail(info, items) {
-  const label = info.manual_label || info.auto_label || 'Nhóm ' + info.id;
-  let html = `
-    <div class="mna-album-header">
-      <button class="mna-album-back" onclick="mnaSwitchTab('nhom')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="mna-album-h-info">
-        <div class="mna-album-h-name">${escHtml(label)}</div>
-        <div class="mna-album-h-meta">${items.length} ảnh ${info.auto_label ? '· AI: ' + escHtml(info.auto_label) : ''}</div>
-      </div>
-      <button class="mna-album-h-act" onclick="mnaRenameCluster(${info.id})" title="Đổi tên">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
-    </div>
-  `;
-
-  if (items.length === 0) {
-    html += '<div class="mna-empty">Nhóm trống</div>';
-  } else {
-    html += `<div class="mna-gallery-grid" style="--mna-cols:${MUANON_ADMIN.gridCols || 3}">`;
-    items.forEach((a, idx) => {
-      const tagColor = a.tag ? mnaTagColor(a.tag) : null;
-      html += `
-        <div class="mna-gallery-item" data-anh-id="${a.anh_id}" onclick="mnaOpenLightbox(${idx})">
-          <img src="${_mnaEscAttr(a.url)}" loading="lazy"/>
-          ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
-          <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)">
-            <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <div class="mna-gallery-overlay">
-            <div class="mna-gallery-nv">${escHtml(a.ten_nv || '')}</div>
-            <div class="mna-gallery-ch">${escHtml(a.ten_ch || '')} · ${escHtml(a.khu_vuc || '')}</div>
-          </div>
-        </div>
-      `;
-    });
-    html += '</div>';
-  }
-
-  document.getElementById('muanon-admin-content').innerHTML = html;
-}
-
-async function mnaRenameCluster(clusterId) {
-  const ten = prompt('Đặt tên cho nhóm này:');
-  if (!ten || !ten.trim()) return;
-  try {
-    const { data } = await supa.rpc('fn_muanon_admin_cluster_rename', {
-      p_ma_admin: SESSION.ma, p_cluster_id: clusterId, p_label: ten.trim()
-    });
-    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
-    showToast('✓ Đã đổi tên', 'ok');
-    mnaOpenCluster(clusterId);
-  } catch (err) {
-    showToast('Lỗi: ' + err.message, 'err');
-  }
-}
-
-// ─── Globals ────────────────────────────────────────────────────────────
-window.mnaLoadCluster = mnaLoadCluster;
-window.mnaAITriggerNow = mnaAITriggerNow;
-window.mnaOpenCluster = mnaOpenCluster;
-window.mnaRenameCluster = mnaRenameCluster;
-window.mnaSetClusterScope = mnaSetClusterScope;
-
-// ════════════════════════════════════════════════════════════════════════════
-// [v12.0] GLOBALS
-// ════════════════════════════════════════════════════════════════════════════
+// ─── GLOBALS ────────────────────────────────────────────────────────────────
 window.moPageMuanonAdmin = moPageMuanonAdmin;
 window.mnaChangeTuan = mnaChangeTuan;
 window.mnaReload = mnaReload;
