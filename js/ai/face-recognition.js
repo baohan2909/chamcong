@@ -436,9 +436,10 @@ async function _runVerifyAttempt(video, attempt) {
       if (cb) cb({ match_pct: matchPct, distance: result.distance });
     }, 1400);
   } else {
-    const dist = result && result.distance ? result.distance.toFixed(3) : '?';
-    _setInstruction('fv', 'Không khớp với dữ liệu đã đăng ký');
-    _setSubstatus('fv', 'Khoảng cách ' + dist + ' (cần < 0.6)', 'err');
+    const matchPct2 = result && result.match_pct !== undefined ? result.match_pct : '?';
+    const needPct = result && result.threshold_pct ? result.threshold_pct : 70;
+    _setInstruction('fv', 'Chưa đạt độ chính xác yêu cầu');
+    _setSubstatus('fv', 'Tương đồng ' + matchPct2 + '% — cần tối thiểu ' + needPct + '%', 'err');
     _haptic([100, 50, 100]);
     await new Promise(r => setTimeout(r, 1500));
     _runVerifyAttempt(video, attempt + 1);
@@ -507,7 +508,8 @@ async function nsFaceOpenAdmin() {
     supa.rpc('fn_face_get_config'),
     supa.rpc('fn_face_admin_stats', { p_ma_admin: SESSION.ma, p_days: 7 })
   ]);
-  const cfg = cfgRes.data || { enabled: false, threshold: 0.60 };
+  const cfg = cfgRes.data || { enabled: false, threshold_pct: 70 };
+  const thresholdPct = Math.round(cfg.threshold_pct || 70);
   const stats = statsRes.data || {};
 
   const modal = document.createElement('div');
@@ -518,51 +520,61 @@ async function nsFaceOpenAdmin() {
     <div class="ns-fa-sheet">
       <div class="ns-fa-handle"></div>
       <div class="ns-fa-header">
-        <div class="ns-fa-title">Chấm công bằng khuôn mặt</div>
+        <div class="ns-fa-title">Nhận diện khuôn mặt</div>
         <button class="ns-fa-close" onclick="nsFaceCloseAdmin()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
+
       <div class="ns-fa-card ns-fa-toggle-card">
         <div class="ns-fa-toggle-info">
-          <div class="ns-fa-toggle-label">Bật chấm công bằng khuôn mặt</div>
-          <div class="ns-fa-toggle-sub">${cfg.enabled ? 'Đang hoạt động' : 'Đang tắt — chấm công bằng ảnh tay'}</div>
+          <div class="ns-fa-toggle-label">Chấm công bằng khuôn mặt</div>
+          <div class="ns-fa-toggle-sub">${cfg.enabled
+            ? 'Đang hoạt động — nhân viên xác thực bằng quét gương mặt'
+            : 'Đang tắt — nhân viên chấm công bằng ảnh chụp'}</div>
         </div>
         <button class="ns-fa-toggle ${cfg.enabled ? 'on' : ''}" onclick="nsFaceToggleChamcong(${!cfg.enabled})">
           <span class="ns-fa-toggle-dot"></span>
         </button>
       </div>
+
       <div class="ns-fa-card">
-        <div class="ns-fa-section-label">Thống kê 7 ngày qua</div>
+        <div class="ns-fa-section-label">Hoạt động 7 ngày qua</div>
         <div class="ns-fa-stats-grid">
           <div class="ns-fa-stat">
             <div class="ns-fa-stat-val">${stats.enrolled_nv || 0}<span class="ns-fa-stat-of">/${stats.total_nv || 0}</span></div>
-            <div class="ns-fa-stat-lbl">NV đăng ký</div>
+            <div class="ns-fa-stat-lbl">Đã đăng ký</div>
             <div class="ns-fa-stat-pct">${stats.enroll_rate || 0}%</div>
           </div>
           <div class="ns-fa-stat">
             <div class="ns-fa-stat-val">${stats.total || 0}</div>
-            <div class="ns-fa-stat-lbl">Lần xác minh</div>
-            <div class="ns-fa-stat-pct ${stats.pass_rate >= 80 ? 'good' : (stats.pass_rate >= 60 ? 'mid' : 'low')}">${stats.pass_rate || 0}% pass</div>
+            <div class="ns-fa-stat-lbl">Lượt xác thực</div>
+            <div class="ns-fa-stat-pct ${stats.pass_rate >= 80 ? 'good' : (stats.pass_rate >= 60 ? 'mid' : 'low')}">${stats.pass_rate || 0}% đạt</div>
           </div>
           <div class="ns-fa-stat">
-            <div class="ns-fa-stat-val">${stats.avg_similarity ? Number(stats.avg_similarity).toFixed(2) : '—'}</div>
-            <div class="ns-fa-stat-lbl">Khoảng cách TB</div>
+            <div class="ns-fa-stat-val">${stats.avg_similarity ? Math.round(Number(stats.avg_similarity)) : '—'}<span class="ns-fa-stat-of">${stats.avg_similarity ? '%' : ''}</span></div>
+            <div class="ns-fa-stat-lbl">Tương đồng TB</div>
           </div>
         </div>
       </div>
+
       <div class="ns-fa-card">
-        <div class="ns-fa-section-label">Ngưỡng nhận diện (Euclidean distance)</div>
-        <div class="ns-fa-threshold-row">
-          <input type="range" min="30" max="90" step="5" value="${Math.round((cfg.threshold || 0.6) * 100)}"
-            id="ns-fa-threshold-slider" oninput="nsFaceThresholdPreview(this.value)" class="ns-fa-slider"/>
-          <div class="ns-fa-threshold-val">
-            <span id="ns-fa-threshold-display">${(cfg.threshold || 0.6).toFixed(2)}</span>
-            <span class="ns-fa-threshold-hint" id="ns-fa-threshold-hint">${_threshHint(cfg.threshold || 0.6)}</span>
-          </div>
+        <div class="ns-fa-section-label">Độ chính xác tối thiểu</div>
+        <div class="ns-fa-threshold-display-row">
+          <span class="ns-fa-threshold-big" id="ns-fa-threshold-display">${thresholdPct}</span>
+          <span class="ns-fa-threshold-unit">%</span>
         </div>
-        <button class="ns-fa-btn-save" onclick="nsFaceSaveThreshold()">Cập nhật ngưỡng</button>
+        <div class="ns-fa-threshold-hint" id="ns-fa-threshold-hint">${_threshHint(thresholdPct)}</div>
+        <input type="range" min="50" max="95" step="5" value="${thresholdPct}"
+          id="ns-fa-threshold-slider" oninput="nsFaceThresholdPreview(this.value)" class="ns-fa-slider"/>
+        <div class="ns-fa-slider-marks">
+          <span>50% · Dễ</span>
+          <span>70% · Khuyến nghị</span>
+          <span>95% · Chặt</span>
+        </div>
+        <button class="ns-fa-btn-save" onclick="nsFaceSaveThreshold()">Lưu thay đổi</button>
       </div>
+
       <div class="ns-fa-footer">
         <button class="ns-fa-btn-done" onclick="nsFaceCloseAdmin()">Đóng</button>
       </div>
@@ -579,18 +591,17 @@ function nsFaceCloseAdmin() {
   setTimeout(() => m.remove(), 250);
 }
 
-function _threshHint(t) {
-  if (t < 0.45) return 'Rất chặt';
-  if (t < 0.55) return 'Chặt';
-  if (t < 0.65) return 'Cân bằng';
-  if (t < 0.75) return 'Nới';
-  return 'Rất nới';
+function _threshHint(pct) {
+  if (pct < 60) return 'Dễ vượt qua — phù hợp giai đoạn làm quen';
+  if (pct < 70) return 'Cân bằng giữa tiện lợi và an toàn';
+  if (pct < 80) return 'Khuyến nghị — an toàn cho vận hành';
+  if (pct < 90) return 'Chặt — ánh sáng yếu có thể bị từ chối';
+  return 'Rất chặt — chỉ điều kiện lý tưởng mới đạt';
 }
 
 function nsFaceThresholdPreview(val) {
-  const t = val / 100;
-  document.getElementById('ns-fa-threshold-display').textContent = t.toFixed(2);
-  document.getElementById('ns-fa-threshold-hint').textContent = _threshHint(t);
+  document.getElementById('ns-fa-threshold-display').textContent = val;
+  document.getElementById('ns-fa-threshold-hint').textContent = _threshHint(parseInt(val, 10));
 }
 
 async function nsFaceToggleChamcong(newState) {
@@ -617,14 +628,14 @@ async function nsFaceToggleChamcong(newState) {
 async function nsFaceSaveThreshold() {
   const slider = document.getElementById('ns-fa-threshold-slider');
   if (!slider) return;
-  const newT = parseInt(slider.value, 10) / 100;
+  const pct = parseInt(slider.value, 10);
   try {
     const { data, error } = await supa.rpc('fn_face_admin_set_threshold', {
-      p_ma_admin: SESSION.ma, p_scope: 'global', p_threshold: newT, p_note: 'Admin tune'
+      p_ma_admin: SESSION.ma, p_scope: 'global', p_threshold: pct, p_note: 'Admin tune'
     });
     if (error) throw error;
     if (!data || !data.ok) throw new Error(data && data.message);
-    showToast('✓ Đã cập nhật ngưỡng ' + newT.toFixed(2), 'ok');
+    showToast('✓ Độ chính xác tối thiểu: ' + pct + '%', 'ok');
   } catch (err) {
     showToast('Lỗi: ' + err.message, 'err');
   }
