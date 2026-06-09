@@ -1253,7 +1253,7 @@ body.cc-redesign-active .adm2-action-desc {
 
 /* ═══ Chương trình banner — cam gradient sang trọng (v12.4) ═══ */
 body.cc-redesign-active #page-chuongtrinh .ct-banner {
-  background: linear-gradient(135deg, #FFA94D 0%, #FF6B35 45%, #E04E0F 100%) !important;
+  background: linear-gradient(180deg, #FFA94D 0%, #FF6B35 50%, #E04E0F 100%) !important;
   border-radius: 18px !important;
   padding: 14px 16px !important;
   color: #fff !important;

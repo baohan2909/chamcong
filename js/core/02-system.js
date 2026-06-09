@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v11.12',
+  'sys.cache_version': 'v12.5',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -662,6 +662,45 @@ function khoiDongApp(){
   // Tất cả NV đều cần gửi mẫu nón hàng tuần → đưa ra nav chính
   const nMN = document.getElementById('nav-muanon');
   if (nMN) nMN.style.display = '';
+
+  // [v12.0] Load trạng thái đăng ký khuôn mặt cho Tài khoản tab
+  try {
+    supa.rpc('fn_face_enroll_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
+      if (!data) return;
+      const lbl = document.getElementById('menu-face-status');
+      if (lbl) {
+        if (data.completed) {
+          lbl.textContent = '✓ Đã đăng ký';
+          lbl.style.color = '#0F6E56';
+        } else {
+          lbl.textContent = 'Chưa đăng ký';
+          lbl.style.color = '#EF4444';
+        }
+      }
+    });
+  } catch (e) {}
+
+  // [v12.1] Admin Face Config — show entry "Quản lý chấm công khuôn mặt" cho ADMIN/QLNS
+  if (isAdminAll || (SESSION.role === 'QLNS')) {
+    const adminFaceEl = document.getElementById('menu-face-admin');
+    if (adminFaceEl) adminFaceEl.style.display = '';
+    // Load trạng thái enabled
+    try {
+      supa.rpc('fn_face_get_config').then(({ data }) => {
+        if (!data) return;
+        const lbl = document.getElementById('menu-face-admin-status');
+        if (lbl) {
+          if (data.enabled) {
+            lbl.textContent = '🟢 BẬT';
+            lbl.style.color = '#16a34a';
+          } else {
+            lbl.textContent = '⚪ TẮT';
+            lbl.style.color = '#94A3B8';
+          }
+        }
+      });
+    } catch (e) {}
+  }
   if (isAdminAll) {
     // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
     const nA = document.getElementById('nav-admin');
@@ -896,16 +935,106 @@ function _isMobile(){
 async function moCamera(){
   if(state.submitted)return;
   _cameraTarget = 'cham_cong';
+
+  // [v12.4] Nếu face.chamcong_enabled BẬT + NV enrolled → mở face verify thay vì camera chụp
+  // Chỉ áp dụng cho role NV (admin/QL vẫn dùng camera thường)
+  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() === 'NV') {
+    const faceOn = await nsFaceCheckEnabled();
+    if (faceOn) {
+      // Mở face verify
+      nsFaceStartChamCong(
+        function onSuccess(r) {
+          // Capture frame từ video face verify làm ảnh xác minh
+          _captureFrameAsSelfie(r);
+        },
+        function onFail(r) {
+          // Fallback: cho user chụp ảnh tay
+          if (typeof showToast === 'function') showToast('Chuyển sang chụp ảnh tay', 'warn');
+          _moCameraNormal();
+        }
+      );
+      return;
+    }
+  }
+
+  // Flow gốc (face TẮT hoặc không phải NV)
+  _moCameraNormal();
+}
+
+// Tách flow camera gốc ra hàm riêng để gọi lại được
+function _moCameraNormal(){
   if(_isMobile()){
-    // Mobile: dùng input capture → mở Camera app gốc
     const inp = document.getElementById('camera-file-input');
     inp.disabled = false;
     inp.value = '';
     inp.click();
   } else {
-    // Desktop: dùng webcam trực tiếp
-    await _moCameraDialog('user');
+    _moCameraDialog('user');
   }
+}
+
+// [v12.4] Sau face verify pass → tạo "ảnh xác minh" tổng hợp (text + similarity)
+function _captureFrameAsSelfie(verifyResult) {
+  // Tạo canvas với watermark face verify
+  const canvas = document.createElement('canvas');
+  canvas.width = 600; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient teal
+  const grad = ctx.createLinearGradient(0, 0, 0, 800);
+  grad.addColorStop(0, '#0F6E56');
+  grad.addColorStop(1, '#1f2d28');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 600, 800);
+
+  // White circle icon
+  ctx.fillStyle = 'rgba(255,255,255,.15)';
+  ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.stroke();
+
+  // Check mark
+  ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(250, 325); ctx.lineTo(290, 365); ctx.lineTo(355, 280);
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 32px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Xác minh khuôn mặt', 300, 500);
+  ctx.font = '20px -apple-system, sans-serif';
+  ctx.fillStyle = '#2BC084';
+  const simPct = Math.round((verifyResult.similarity || 0) * 100);
+  ctx.fillText('Độ khớp: ' + simPct + '%', 300, 540);
+
+  // Timestamp + ma_nv
+  const now = new Date();
+  const ts = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds())
+           + '  ' + pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear();
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px monospace';
+  ctx.fillText(SESSION.ma + '  ·  ' + ts, 300, 720);
+
+  // Save vào state như đã chụp ảnh
+  state.selfieB64 = canvas.toDataURL('image/jpeg', 0.85);
+  state.selfieOk = true;
+  state.selfieCaptureTs = Date.now();
+  state.selfieIsFaceVerified = true;
+
+  // Update UI
+  const preview = document.getElementById('selfie-preview');
+  if (preview) { preview.src = state.selfieB64; preview.style.display = 'block'; }
+  const icon = document.getElementById('selfie-icon');
+  if (icon) icon.style.display = 'none';
+  const btn = document.getElementById('selfie-btn');
+  if (btn) btn.className = 'selfie-btn done face-verified';
+  const txt = document.getElementById('selfie-text');
+  if (txt) txt.textContent = '✓ Đã xác minh khuôn mặt';
+  const sub = document.getElementById('selfie-sub');
+  if (sub) sub.textContent = 'Độ khớp ' + Math.round((verifyResult.similarity||0)*100) + '% · Bấm để quét lại';
+  updateSubmitBtn();
 }
 
 async function _moCameraDialog(facingMode){
@@ -1176,17 +1305,20 @@ function doSubmit(){
     return;
   }
 
+  // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
+  _doSubmitContinueWithGPS();
+}
+
+// [v12.2] Tách phần GPS pre-check ra thành hàm riêng để gọi sau face verify
+function _doSubmitContinueWithGPS(){
   // [v11.3 GPS-02] Pre-check: nếu user xa CH đã chọn > 200m → tìm CH gần nhất
-  // (nếu có CH khác trong bán kính 200m → hiện modal cho chọn lại)
   const maCH = document.getElementById('sel-cuahang').value;
   const lat = state.lat, lng = state.lng;
   if(lat && lng && maCH){
-    // Tìm CH user đã chọn trong CH_LIST
     const chDaChon = (typeof CH_LIST !== 'undefined' ? CH_LIST.find(c => c.ma === maCH) : null);
     if(chDaChon && chDaChon.lat && chDaChon.lng){
       const dChosen = _distMeters(lat, lng, parseFloat(chDaChon.lat), parseFloat(chDaChon.lng));
       if(dChosen > 200){
-        // Xa khỏi CH đã chọn → kiểm tra có CH nào khác gần không
         let nearest = null;
         let minD = Infinity;
         CH_LIST.forEach(ch => {
@@ -1195,15 +1327,12 @@ function doSubmit(){
           if(d < minD && d <= 200){ minD = d; nearest = {...ch, khoangCach: Math.round(d)}; }
         });
         if(nearest){
-          // Có CH khác gần hơn → hiện modal đề xuất
           gpsShowModal({chDaChon: {...chDaChon, khoangCach: Math.round(dChosen)}, nearest});
           return;
         }
-        // Không có CH nào gần → thực sự sai vị trí, tiếp tục submit như cũ
       }
     }
   }
-
   _doSubmitFinal();
 }
 
