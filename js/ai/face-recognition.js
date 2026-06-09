@@ -615,8 +615,8 @@ async function nsFaceToggleChamcong(newState) {
     if (SESSION) { SESSION._faceEnabled = newState; SESSION._faceCfgTs = Date.now(); }
     const lbl = document.getElementById('menu-face-admin-status');
     if (lbl) {
-      if (newState) { lbl.textContent = '🟢 BẬT'; lbl.style.color = '#16a34a'; }
-      else { lbl.textContent = '⚪ TẮT'; lbl.style.color = '#94A3B8'; }
+      lbl.textContent = newState ? 'BẬT' : 'TẮT';
+      lbl.className = 'menu-badge-pill ' + (newState ? 'on' : 'off');
     }
     nsFaceCloseAdmin();
     setTimeout(() => nsFaceOpenAdmin(), 300);

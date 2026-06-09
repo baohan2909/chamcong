@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v12.8',
+  'sys.cache_version': 'v12.9',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -690,13 +690,8 @@ function khoiDongApp(){
         if (!data) return;
         const lbl = document.getElementById('menu-face-admin-status');
         if (lbl) {
-          if (data.enabled) {
-            lbl.textContent = '🟢 BẬT';
-            lbl.style.color = '#16a34a';
-          } else {
-            lbl.textContent = '⚪ TẮT';
-            lbl.style.color = '#94A3B8';
-          }
+          lbl.textContent = data.enabled ? 'BẬT' : 'TẮT';
+          lbl.className = 'menu-badge-pill ' + (data.enabled ? 'on' : 'off');
         }
       });
     } catch (e) {}

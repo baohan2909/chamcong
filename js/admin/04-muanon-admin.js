@@ -2275,51 +2275,127 @@ async function mnaLoadCluster() {
   if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
 
   try {
-    // mnaClusterScope: null = tuần hiện tại; 'all' = tất cả tuần
     const scope = MUANON_ADMIN.clusterScope || 'tuan';
     const params = { p_ma_admin: SESSION.ma };
     if (scope === 'tuan') params.p_tuan_id = MUANON_ADMIN.tuanId;
-    // 'all' → không truyền p_tuan_id (RPC default NULL = tất cả)
 
-    const { data, error } = await supa.rpc('fn_muanon_admin_cluster_list', params);
-    if (error) throw error;
+    const [listRes, progRes] = await Promise.all([
+      supa.rpc('fn_muanon_admin_cluster_list', params),
+      supa.rpc('fn_muanon_admin_ai_progress', { p_ma_admin: SESSION.ma })
+    ]);
+    if (listRes.error) throw listRes.error;
+    const data = listRes.data;
     if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
 
     MUANON_ADMIN.clusterData = data.data || [];
-    MUANON_ADMIN.clusterPending = data.total_unprocessed || 0;
+    MUANON_ADMIN.aiProgress = (progRes.data && progRes.data.ok) ? progRes.data : null;
     mnaRenderCluster();
+    _mnaAutoPollProgress();
   } catch (err) {
     if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
   }
 }
 
+// Poll progress 10s khi còn job chạy
+let _mnaProgressTimer = null;
+function _mnaAutoPollProgress() {
+  if (_mnaProgressTimer) { clearInterval(_mnaProgressTimer); _mnaProgressTimer = null; }
+  const p = MUONON_SAFE_PROGRESS();
+  if (!p || (p.pending + p.processing) === 0) return;
+  _mnaProgressTimer = setInterval(async () => {
+    if (document.hidden) return;
+    if (MUANON_ADMIN.currentTab !== 'cluster') { clearInterval(_mnaProgressTimer); _mnaProgressTimer = null; return; }
+    try {
+      const { data } = await supa.rpc('fn_muanon_admin_ai_progress', { p_ma_admin: SESSION.ma });
+      if (data && data.ok) {
+        MUANON_ADMIN.aiProgress = data;
+        _mnaUpdateProgressBar();
+        if ((data.pending + data.processing) === 0) {
+          clearInterval(_mnaProgressTimer); _mnaProgressTimer = null;
+          mnaLoadCluster();  // reload danh sách nhóm khi xong
+        }
+      }
+    } catch (e) {}
+  }, 10000);
+}
+
+function MUONON_SAFE_PROGRESS() { return MUANON_ADMIN.aiProgress || null; }
+
+function _mnaProgressBarHtml(p) {
+  if (!p) return '';
+  const inFlight = p.pending + p.processing;
+  if (inFlight === 0 && p.failed === 0) return '';
+  const etaTxt = p.eta_min ? ('~' + p.eta_min + ' phút') : 'đang tính...';
+  return `
+    <div class="mna-ai-progress" id="mna-ai-progress">
+      <div class="mna-ai-progress-head">
+        <div class="mna-ai-progress-title">${inFlight > 0 ? 'AI đang phân tích' : 'Hoàn tất có lỗi'}</div>
+        <div class="mna-ai-progress-pct">${p.pct}%</div>
+      </div>
+      <div class="mna-ai-progress-track">
+        <div class="mna-ai-progress-fill" style="width:${p.pct}%"></div>
+      </div>
+      <div class="mna-ai-progress-meta">
+        <span>Đã xong <b>${p.embedded}</b>/${p.total_anh} ảnh</span>
+        ${inFlight > 0 ? '<span>Còn lại <b>' + inFlight + '</b> · ' + etaTxt + '</span>' : ''}
+        ${p.failed > 0 ? '<span class="mna-ai-fail-txt">' + p.failed + ' lỗi <a href="javascript:mnaRetryFailed()">Thử lại</a></span>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+function _mnaUpdateProgressBar() {
+  const wrap = document.getElementById('mna-ai-progress');
+  if (!wrap) return;
+  const p = MUANON_ADMIN.aiProgress;
+  if (!p) return;
+  const newHtml = _mnaProgressBarHtml(p);
+  if (newHtml) {
+    wrap.outerHTML = newHtml;
+  } else {
+    wrap.remove();
+  }
+}
+
+async function mnaRetryFailed() {
+  try {
+    const { data } = await supa.rpc('fn_muanon_admin_ai_retry_failed', { p_ma_admin: SESSION.ma });
+    if (data && data.ok) {
+      showToast('✓ Đã đưa ' + data.retried + ' ảnh lỗi vào hàng chờ', 'ok');
+      mnaLoadCluster();
+    }
+  } catch (e) { showToast('Lỗi: ' + e.message, 'err'); }
+}
+
 function mnaRenderCluster() {
   const data = MUANON_ADMIN.clusterData || [];
-  const pending = MUANON_ADMIN.clusterPending || 0;
   const scope = MUANON_ADMIN.clusterScope || 'tuan';
+  const p = MUANON_ADMIN.aiProgress;
+  const inFlight = p ? (p.pending + p.processing) : 0;
 
   let html = `
     <div class="mna-cluster-bar">
       <button class="mna-scope-btn ${scope === 'tuan' ? 'active' : ''}" onclick="mnaSetClusterScope('tuan')">Tuần này</button>
       <button class="mna-scope-btn ${scope === 'all' ? 'active' : ''}" onclick="mnaSetClusterScope('all')">Tất cả tuần</button>
     </div>
+    ${_mnaProgressBarHtml(p)}
     <div class="mna-cluster-header">
       <div class="mna-cluster-info">
         <div class="mna-cluster-title">${data.length} nhóm</div>
-        <div class="mna-cluster-sub">${pending > 0 ? '⏳ Đang xử lý <b>' + pending + '</b> ảnh' : '✓ Đã xử lý xong · Sắp xếp theo số lượng giảm dần'}</div>
+        <div class="mna-cluster-sub">${inFlight > 0 ? 'Kết quả cập nhật dần khi AI xử lý xong' : 'Sắp xếp theo số lượng giảm dần'}</div>
       </div>
-      <button class="mna-ai-trigger" onclick="mnaAITriggerNow()" ${pending > 0 ? 'disabled' : ''}>
+      <button class="mna-ai-trigger" onclick="mnaAITriggerNow()" ${inFlight > 0 ? 'disabled' : ''}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>${pending > 0 ? 'AI đang xử lý...' : 'AI xử lý ngay'}</span>
+        <span>${inFlight > 0 ? 'Đang xử lý...' : 'AI xử lý ngay'}</span>
       </button>
     </div>
   `;
 
   if (data.length === 0) {
     html += `<div class="mna-empty">
-      <div style="margin-bottom:8px;font-size:28px">🎨</div>
-      Chưa có nhóm nào.<br/>
-      ${pending > 0 ? 'AI đang phân tích ' + pending + ' ảnh...' : 'Khi NV gửi ảnh, AI tự động nhóm các mẫu giống nhau.'}
+      ${inFlight > 0
+        ? 'AI đang phân tích — nhóm sẽ xuất hiện ở đây ngay khi sẵn sàng.'
+        : 'Chưa có nhóm nào. Khi nhân viên gửi ảnh, AI tự động gom các mẫu giống nhau.'}
     </div>`;
     document.getElementById('muanon-admin-content').innerHTML = html;
     return;
@@ -2445,6 +2521,7 @@ window.mnaAITriggerNow = mnaAITriggerNow;
 window.mnaOpenCluster = mnaOpenCluster;
 window.mnaRenameCluster = mnaRenameCluster;
 window.mnaSetClusterScope = mnaSetClusterScope;
+window.mnaRetryFailed = mnaRetryFailed;
 
 // ════════════════════════════════════════════════════════════════════════════
 // [v12.0] GLOBALS
