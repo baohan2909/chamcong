@@ -836,19 +836,18 @@ function taiDonNghiACC(){
     // [v12-P3] Supabase RPC
     const tt=document.getElementById('accdnp-f-tt')?.value||'';
     const q=document.getElementById('accdnp-f-search')?.value?.trim()||'';
+    // [v13.05] CH truyền p_ma_ch để RPC filter server-side (thay vì client-side)
+    const maCH = isCH ? (SESSION.cuaHangMa || null) : null;
     supa.rpc('fn_get_don_nghi_list', {
       p_trang_thai: tt || null,
       p_tu_ngay: tu, p_den_ngay: den,
-      p_q: q || null
+      p_q: q || null,
+      p_ma_ch: maCH
     }).then(({ data: res, error }) => {
       if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
       // Adapt: Apps Script trả {tongChoDuyet, theoDon: [{ngay, donList:[]}], theoNV: [...]}
       // RPC mới trả {tongChoDuyet, danhSach: [...]} → group theo ngày
-      let ds = res.danhSach || [];
-      // [v13.03] CH chỉ thấy đơn của NV thuộc CH mình (filter theo maCH backend đã trả)
-      if (isCH && SESSION.cuaHangMa) {
-        ds = ds.filter(d => (d.maCH || '') === SESSION.cuaHangMa);
-      }
+      const ds = res.danhSach || [];
       const map = {};
       ds.forEach(d => {
         if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
@@ -877,9 +876,7 @@ function taiDonNghiACC(){
         soChoDuyet: map[ngay].filter(x => x.trangThai === 'Chờ duyệt').length
       }));
       _accDnpData = {
-        tongChoDuyet: isCH
-          ? ds.filter(d => d.trangThai === 'Chờ duyệt').length
-          : (res.tongChoDuyet || 0),
+        tongChoDuyet: res.tongChoDuyet || 0,
         theoDon, theoNV: []
       };
       _renderACCDnpQL();

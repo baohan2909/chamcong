@@ -1077,10 +1077,11 @@ async function taiLichSuDuyet(){
   try {
     // [v10.85] Đảm bảo NV list đã load để biết đội sale
     if (!_lsdNVList) { await _lsdLoadNVList().catch(()=>{}); }
+    // [v13.05] Truyền p_ma_ch để RPC filter server-side — robust hơn client-side
     const { data, error } = await supa.rpc('fn_get_lich_su_duyet', {
       p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV,
       p_nguoi_duyet: maND, p_loai_cb: loai, p_trang_thai: tt,
-      p_q: q || null, p_limit: 1000
+      p_q: q || null, p_limit: 1000, p_ma_ch: maCH
     });
     if (error || !data) {
       listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải: ' + (error?.message || 'không có dữ liệu') + '</div>';
