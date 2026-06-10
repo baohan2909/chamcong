@@ -823,11 +823,16 @@ function setACCDNPRange(r){
 
 function taiDonNghiACC(){
   const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
-  document.getElementById('accdnp-qlns-filter').style.display=isQL?'':'none';
+  // [v13.03] QLBH cũng có quyền xem list (kiểu QLNS)
+  const _role = String((SESSION && SESSION.vaiTro) || '').toUpperCase();
+  const isQLBH = _role.startsWith('QLBH');
+  const isCH = _role === 'CUA_HANG';
+  const showListView = isQL || isQLBH || isCH;
+  document.getElementById('accdnp-qlns-filter').style.display = showListView ? '' : 'none';
   const listEl=document.getElementById('accdnp-list');
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
   const [tu,den]=_getACCDNPRange();
-  if(isQL){
+  if(showListView){
     // [v12-P3] Supabase RPC
     const tt=document.getElementById('accdnp-f-tt')?.value||'';
     const q=document.getElementById('accdnp-f-search')?.value?.trim()||'';
@@ -839,7 +844,11 @@ function taiDonNghiACC(){
       if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
       // Adapt: Apps Script trả {tongChoDuyet, theoDon: [{ngay, donList:[]}], theoNV: [...]}
       // RPC mới trả {tongChoDuyet, danhSach: [...]} → group theo ngày
-      const ds = res.danhSach || [];
+      let ds = res.danhSach || [];
+      // [v13.03] CH chỉ thấy đơn của NV thuộc CH mình (filter theo maCH backend đã trả)
+      if (isCH && SESSION.cuaHangMa) {
+        ds = ds.filter(d => (d.maCH || '') === SESSION.cuaHangMa);
+      }
       const map = {};
       ds.forEach(d => {
         if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
@@ -847,7 +856,7 @@ function taiDonNghiACC(){
           id: d.id,
           maNV: d.maNV,
           tenNV: d.tenNV,
-          maCH: '', tenCH: d.cuaHang || '',
+          maCH: d.maCH || '', tenCH: d.cuaHang || '',
           khuVuc: d.khuVuc,
           ngay: d.ngayNghi,
           loaiNghi: d.loaiNghi,
@@ -867,7 +876,12 @@ function taiDonNghiACC(){
         soDon: map[ngay].length,
         soChoDuyet: map[ngay].filter(x => x.trangThai === 'Chờ duyệt').length
       }));
-      _accDnpData = { tongChoDuyet: res.tongChoDuyet || 0, theoDon, theoNV: [] };
+      _accDnpData = {
+        tongChoDuyet: isCH
+          ? ds.filter(d => d.trangThai === 'Chờ duyệt').length
+          : (res.tongChoDuyet || 0),
+        theoDon, theoNV: []
+      };
       _renderACCDnpQL();
     }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ '+((e&&e.message)||'Lỗi kết nối')+'</div>';});
   } else {

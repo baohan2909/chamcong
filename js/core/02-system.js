@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.01',
+  'sys.cache_version': 'v13.03',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -656,7 +656,7 @@ function khoiDongApp(){
         supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
           if (!data) return;
           const lbl = document.getElementById('menu-bosung-quota');
-          if (lbl) lbl.textContent = 'Còn ' + (data.quota_bo_sung_con || 0) + '/3';
+          if (lbl) lbl.textContent = 'Còn ' + (data.quota_bo_sung_con || 0) + '/' + (data.quota_max || 3);
         });
       } catch (e) {}
     }

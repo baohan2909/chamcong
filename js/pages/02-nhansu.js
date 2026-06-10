@@ -1048,9 +1048,28 @@ async function taiLichSuDuyet(){
   const loai = document.getElementById('lsd-loaicb').value || null;
   const q   = (document.getElementById('lsd-q').value || '').trim();
   // [v10.85 YC#1] Filter NV / CH / Người duyệt
-  const maNV = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
-  const maCH = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
+  const maNV0 = (document.getElementById('lsd-nv-ma') && document.getElementById('lsd-nv-ma').value) || null;
+  const maCH0 = (document.getElementById('lsd-ch-ma') && document.getElementById('lsd-ch-ma').value) || null;
   const maND = (document.getElementById('lsd-nd-ma') && document.getElementById('lsd-nd-ma').value) || null;
+
+  // [v13.03] Phân quyền theo role:
+  //   - NV/CTV: ép maNV = SESSION.ma → chỉ thấy của mình
+  //   - CUA_HANG: ép maCH = SESSION.cuaHangMa → chỉ thấy NV thuộc CH
+  //   - QLBH/QLNS/ADMIN: giữ nguyên filter user nhập
+  let maNV = maNV0;
+  let maCH = maCH0;
+  try {
+    const _role = String((window.SESSION && SESSION.vaiTro) || '').toUpperCase();
+    const _isQL = _role === 'QLNS' || _role === 'ADMIN' || _role.startsWith('QLBH');
+    if (!_isQL && window.SESSION) {
+      if (_role === 'CUA_HANG') {
+        maCH = SESSION.cuaHangMa || maCH;
+      } else {
+        // NV/CTV: ép theo mã NV của session
+        maNV = SESSION.ma;
+      }
+    }
+  } catch(e){}
 
   if (!document.getElementById('lsd-tu').value)  document.getElementById('lsd-tu').value = tu;
   if (!document.getElementById('lsd-den').value) document.getElementById('lsd-den').value = den;
