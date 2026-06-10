@@ -1083,6 +1083,18 @@ async function taiLichSuDuyet(){
       p_nguoi_duyet: maND, p_loai_cb: loai, p_trang_thai: tt,
       p_q: q || null, p_limit: 1000, p_ma_ch: maCH
     });
+    // [v13.06] DEBUG — paste log này nếu filter sai
+    try {
+      console.log('[LSD v13.06]', {
+        role: window.SESSION && SESSION.vaiTro,
+        ma: window.SESSION && SESSION.ma,
+        cuaHangMa: window.SESSION && SESSION.cuaHangMa,
+        truyenMaNV: maNV, truyenMaCH: maCH,
+        responseCount: (data && data.list && data.list.length) || 0,
+        sampleMaCH: data && data.list && data.list[0] && data.list[0].maCH,
+        sampleTenCH: data && data.list && data.list[0] && data.list[0].tenCH
+      });
+    } catch(_){}
     if (error || !data) {
       listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải: ' + (error?.message || 'không có dữ liệu') + '</div>';
       return;
