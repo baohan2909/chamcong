@@ -1085,7 +1085,7 @@ async function taiLichSuDuyet(){
     });
     // [v13.06] DEBUG — paste log này nếu filter sai
     try {
-      console.log('[LSD v13.06]', {
+      const _dbg = {
         role: window.SESSION && SESSION.vaiTro,
         ma: window.SESSION && SESSION.ma,
         cuaHangMa: window.SESSION && SESSION.cuaHangMa,
@@ -1093,7 +1093,26 @@ async function taiLichSuDuyet(){
         responseCount: (data && data.list && data.list.length) || 0,
         sampleMaCH: data && data.list && data.list[0] && data.list[0].maCH,
         sampleTenCH: data && data.list && data.list[0] && data.list[0].tenCH
-      });
+      };
+      console.log('[LSD v13.07]', _dbg);
+      // [v13.07] Inline UI debug pill — đặt ngay trên list để chụp ảnh paste
+      const _dbgHost = document.querySelector('.lsd-content, .ns-tab-content, #page-nhansu') || listEl.parentNode;
+      let _pill = document.getElementById('lsd-debug-pill');
+      if (!_pill && _dbgHost) {
+        _pill = document.createElement('div');
+        _pill.id = 'lsd-debug-pill';
+        _pill.style.cssText = 'margin:8px 0;padding:8px 12px;background:#FEF3C7;color:#78350F;border:1px solid #F59E0B;border-radius:6px;font:11px/1.4 monospace;word-break:break-all';
+        listEl.parentNode.insertBefore(_pill, listEl);
+      }
+      if (_pill) {
+        _pill.textContent = '[v13.07 LSD] role=' + _dbg.role + ' · ma=' + _dbg.ma
+          + ' · cuaHangMa=' + (_dbg.cuaHangMa || '(null)')
+          + ' · truyenMaNV=' + (_dbg.truyenMaNV || '(null)')
+          + ' · truyenMaCH=' + (_dbg.truyenMaCH || '(null)')
+          + ' · responseCount=' + _dbg.responseCount
+          + ' · sample.maCH=' + (_dbg.sampleMaCH || '(không có)')
+          + ' · sample.tenCH=' + (_dbg.sampleTenCH || '(không có)');
+      }
     } catch(_){}
     if (error || !data) {
       listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải: ' + (error?.message || 'không có dữ liệu') + '</div>';
