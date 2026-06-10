@@ -1383,12 +1383,27 @@ async function adm2LoadSuaLogBody() {
         // [v10.85] Hiển thị value ban đầu: nếu là Đội SALE → tag tím
         const initVal = l.maCH ? ((l.tenCH || l.maCH) + ' (' + l.maCH + ')') : '';
         const initIsDoi = /đội\s*sale/i.test(l.tenCH || '');
+        // [v13.11] Tag Đội SALE PER-RECORD (không lây từ log khác trong ngày):
+        //  - tenCH là đội SALE → tô tím nguyên tên
+        //  - ghiChu chứa "[Đội SALE X] hỗ trợ..." → tag đội + tên CH thực
+        //  - còn lại → chỉ tên CH, KHÔNG tag
+        let chHtml = '';
+        if (l.tenCH) {
+          const mGhi = (l.ghiChu || '').match(/\[(đội\s*sale[^\]]*)\]/i);
+          if (initIsDoi) {
+            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(l.tenCH)}</span>`;
+          } else if (mGhi) {
+            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(mGhi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
+          } else {
+            chHtml = adm2Esc(l.tenCH);
+          }
+        }
         return `
         <div class="adm2-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#F9FAFB;margin-bottom:8px;border-radius:8px;border:1px solid #E5E7EB">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div style="flex:1;min-width:200px">
               <div style="font-weight:600;font-size:13px">${l.loaiText} · ${l.gio}</div>
-              <div style="font-size:11px;color:#6B7280">${l.tenCH ? _fmtChVoiDoiSale(_suaLogState.maNV, l.tenCH, _suaLogState.ngay) : ''} · ${l.xacNhan} · ${l.soCB} CB</div>
+              <div style="font-size:11px;color:#6B7280">${chHtml} · ${l.xacNhan} · ${l.soCB} CB</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
               <input type="time" id="sua-gio-${l.id}" value="${l.gio}" style="padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
