@@ -1056,12 +1056,13 @@ async function taiLichSuDuyet(){
   //   - NV/CTV: ép maNV = SESSION.ma → chỉ thấy của mình
   //   - CUA_HANG: ép maCH = SESSION.cuaHangMa → chỉ thấy NV thuộc CH
   //   - QLBH/QLNS/ADMIN: giữ nguyên filter user nhập
+  // [v13.08] FIX: dùng SESSION trực tiếp (top-level let), KHÔNG dùng window.SESSION
   let maNV = maNV0;
   let maCH = maCH0;
   try {
-    const _role = String((window.SESSION && SESSION.vaiTro) || '').toUpperCase();
+    const _role = String((SESSION && SESSION.vaiTro) || '').toUpperCase();
     const _isQL = _role === 'QLNS' || _role === 'ADMIN' || _role.startsWith('QLBH');
-    if (!_isQL && window.SESSION) {
+    if (!_isQL && SESSION) {
       if (_role === 'CUA_HANG') {
         maCH = SESSION.cuaHangMa || maCH;
       } else {
@@ -1083,36 +1084,33 @@ async function taiLichSuDuyet(){
       p_nguoi_duyet: maND, p_loai_cb: loai, p_trang_thai: tt,
       p_q: q || null, p_limit: 1000, p_ma_ch: maCH
     });
-    // [v13.06] DEBUG — paste log này nếu filter sai
+    // [v13.08] DEBUG — bỏ window.SESSION (sai), dùng SESSION trực tiếp
     try {
       const _dbg = {
-        role: window.SESSION && SESSION.vaiTro,
-        ma: window.SESSION && SESSION.ma,
-        cuaHangMa: window.SESSION && SESSION.cuaHangMa,
+        role: SESSION && SESSION.vaiTro,
+        ma: SESSION && SESSION.ma,
+        cuaHangMa: SESSION && SESSION.cuaHangMa,
         truyenMaNV: maNV, truyenMaCH: maCH,
         responseCount: (data && data.list && data.list.length) || 0,
         sampleMaCH: data && data.list && data.list[0] && data.list[0].maCH,
         sampleTenCH: data && data.list && data.list[0] && data.list[0].tenCH
       };
-      console.log('[LSD v13.07]', _dbg);
-      // [v13.07] Inline UI debug pill — đặt ngay trên list để chụp ảnh paste
-      const _dbgHost = document.querySelector('.lsd-content, .ns-tab-content, #page-nhansu') || listEl.parentNode;
+      console.log('[LSD v13.08]', _dbg);
+      // Inline UI debug pill — đặt ngay trên list để chụp ảnh paste
       let _pill = document.getElementById('lsd-debug-pill');
-      if (!_pill && _dbgHost) {
+      if (!_pill) {
         _pill = document.createElement('div');
         _pill.id = 'lsd-debug-pill';
         _pill.style.cssText = 'margin:8px 0;padding:8px 12px;background:#FEF3C7;color:#78350F;border:1px solid #F59E0B;border-radius:6px;font:11px/1.4 monospace;word-break:break-all';
         listEl.parentNode.insertBefore(_pill, listEl);
       }
-      if (_pill) {
-        _pill.textContent = '[v13.07 LSD] role=' + _dbg.role + ' · ma=' + _dbg.ma
-          + ' · cuaHangMa=' + (_dbg.cuaHangMa || '(null)')
-          + ' · truyenMaNV=' + (_dbg.truyenMaNV || '(null)')
-          + ' · truyenMaCH=' + (_dbg.truyenMaCH || '(null)')
-          + ' · responseCount=' + _dbg.responseCount
-          + ' · sample.maCH=' + (_dbg.sampleMaCH || '(không có)')
-          + ' · sample.tenCH=' + (_dbg.sampleTenCH || '(không có)');
-      }
+      _pill.textContent = '[v13.08 LSD] role=' + (_dbg.role || '(undefined)') + ' · ma=' + (_dbg.ma || '(undefined)')
+        + ' · cuaHangMa=' + (_dbg.cuaHangMa || '(null)')
+        + ' · truyenMaNV=' + (_dbg.truyenMaNV || '(null)')
+        + ' · truyenMaCH=' + (_dbg.truyenMaCH || '(null)')
+        + ' · responseCount=' + _dbg.responseCount
+        + ' · sample.maCH=' + (_dbg.sampleMaCH || '(không có)')
+        + ' · sample.tenCH=' + (_dbg.sampleTenCH || '(không có)');
     } catch(_){}
     if (error || !data) {
       listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải: ' + (error?.message || 'không có dữ liệu') + '</div>';

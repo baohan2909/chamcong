@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.07',
+  'sys.cache_version': 'v13.08',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -124,8 +124,9 @@ window.fetch = function(url, opts){
     url += (url.indexOf('?')>=0 ? '&' : '?') + '_t' + '=' + Date.now();
 
     // [v11] Inject cuaHang filter cho role CUA_HANG (chỉ cho các endpoint liên quan)
+    // [v13.08] FIX: dùng SESSION trực tiếp (window.SESSION undefined vì SESSION là top-level let)
     try {
-      if (window.SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
+      if (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
         // Danh sách endpoint cần lọc theo CH
         const needFilterCH = /type=(nhansu|lichca_ql|don_nghi_phep|dashboard|duyet_yeu_cau|lich_su_duyet)(&|$)/.test(url);
         if (needFilterCH && !/[&?]cuaHang=/.test(url) && !/[&?]maCH=/.test(url)) {

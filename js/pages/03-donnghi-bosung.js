@@ -844,7 +844,7 @@ function taiDonNghiACC(){
       p_q: q || null,
       p_ma_ch: maCH
     }).then(({ data: res, error }) => {
-      // [v13.07] Inline UI debug pill — chụp ảnh paste cho em
+      // [v13.08] DEBUG — dùng SESSION trực tiếp
       try {
         const _dbg = {
           role: SESSION && SESSION.vaiTro,
@@ -856,7 +856,7 @@ function taiDonNghiACC(){
           dsCount: res && res.danhSach && res.danhSach.length,
           sample_maCH: res && res.danhSach && res.danhSach[0] && res.danhSach[0].maCH
         };
-        console.log('[ACC dnp v13.07]', _dbg);
+        console.log('[ACC dnp v13.08]', _dbg);
         let _pill = document.getElementById('accdnp-debug-pill');
         if (!_pill) {
           _pill = document.createElement('div');
@@ -864,7 +864,7 @@ function taiDonNghiACC(){
           _pill.style.cssText = 'margin:8px 0;padding:8px 12px;background:#FEF3C7;color:#78350F;border:1px solid #F59E0B;border-radius:6px;font:11px/1.4 monospace;word-break:break-all';
           listEl.parentNode.insertBefore(_pill, listEl);
         }
-        _pill.textContent = '[v13.07 ACCdnp] role=' + _dbg.role + ' · ma=' + _dbg.ma
+        _pill.textContent = '[v13.08 ACCdnp] role=' + (_dbg.role || '(undefined)') + ' · ma=' + (_dbg.ma || '(undefined)')
           + ' · cuaHangMa=' + (_dbg.cuaHangMa || '(null)')
           + ' · truyenMaCH=' + (_dbg.truyenMaCH || '(null)')
           + ' · isCH=' + _dbg.isCH + ' · isQL=' + _dbg.isQL + ' · isQLBH=' + _dbg.isQLBH
