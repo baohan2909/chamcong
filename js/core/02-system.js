@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.0',
+  'sys.cache_version': 'v13.01',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -127,7 +127,7 @@ window.fetch = function(url, opts){
     try {
       if (window.SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
         // Danh sách endpoint cần lọc theo CH
-        const needFilterCH = /type=(nhansu|lichca_ql|don_nghi_phep|dashboard|duyet_yeu_cau)(&|$)/.test(url);
+        const needFilterCH = /type=(nhansu|lichca_ql|don_nghi_phep|dashboard|duyet_yeu_cau|lich_su_duyet)(&|$)/.test(url);
         if (needFilterCH && !/[&?]cuaHang=/.test(url) && !/[&?]maCH=/.test(url)) {
           url += '&cuaHang=' + encodeURIComponent(SESSION.cuaHangMa);
         }
@@ -645,10 +645,13 @@ function khoiDongApp(){
     // NV: bật bản đồ + chương trình ở bottom nav
     if (nCT) nCT.style.display = '';
     if (nBD) nBD.style.display = '';
+  }
+  // [v13.0] Menu "Xin bổ sung ca" — NV thường + QLBH* (CH/QLNS/ADMIN có lối khác)
+  if (isNV || isQLBH) {
     const mb = document.getElementById('menu-bosung-ca');
     if (mb) {
       mb.style.display = '';
-      // Load quota hiển thị
+      // Load quota hiển thị (QLBH cũng dùng chung quota theo ma)
       try {
         supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
           if (!data) return;
