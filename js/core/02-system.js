@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.09',
+  'sys.cache_version': 'v13.10',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -3480,7 +3480,9 @@ function taiNhanSu(forceRefresh){
 // [v10.85 Yc #6] Chỉ cập nhật badge (banner ns-donnghi-banner đã bị xóa)
 function _silentCheckDonNghi(){
   // [v12-P3] Supabase RPC
-  supa.rpc('fn_get_don_nghi_list', { p_trang_thai: 'Chờ duyệt' })
+  // [v13.10] CH chỉ đếm đơn của CH mình
+  const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? (SESSION.cuaHangMa || null) : null;
+  supa.rpc('fn_get_don_nghi_list', { p_trang_thai: 'Chờ duyệt', p_ma_ch: _maCH })
   .then(({ data, error }) => {
     if(error || !data)return;
     const cho = data.tongChoDuyet || 0;

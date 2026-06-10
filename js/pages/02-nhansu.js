@@ -1565,10 +1565,13 @@ function taiDonNghiPhep(){
   const q=document.getElementById('dnp-f-search')?.value?.trim()||'';
   const [dnpTu,dnpDen]=_getDNPRange();
   // [v12-P3] Supabase RPC
+  // [v13.10] CH chỉ thấy đơn của NV thuộc CH mình — filter server-side
+  const _maCHFilter = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? (SESSION.cuaHangMa || null) : null;
   supa.rpc('fn_get_don_nghi_list', {
     p_trang_thai: tt || null,
     p_tu_ngay: dnpTu, p_den_ngay: dnpDen,
-    p_q: q || null
+    p_q: q || null,
+    p_ma_ch: _maCHFilter
   }).then(({ data: res, error }) => {
     if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
     // Adapt RPC → Apps Script format
@@ -1578,7 +1581,7 @@ function taiDonNghiPhep(){
       if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
       map[d.ngayNghi].push({
         id: d.id, maNV: d.maNV, tenNV: d.tenNV,
-        maCH: '', tenCH: d.cuaHang || '', khuVuc: d.khuVuc,
+        maCH: d.maCH || '', tenCH: d.cuaHang || '', khuVuc: d.khuVuc,
         ngay: d.ngayNghi, loaiNghi: d.loaiNghi, lyDo: d.lyDo,
         anhUrl: d.anhUrl, trangThai: d.trangThai,
         ghiChuQLNS: d.ghiChuQLNS, nguoiDuyet: d.nguoiDuyet,
