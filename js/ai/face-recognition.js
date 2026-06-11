@@ -99,6 +99,23 @@ async function _openCam(videoEl) {
 }
 function _stopCam(stream) { if (stream) stream.getTracks().forEach(t => t.stop()); }
 
+// [v13.14] Capture frame face thực từ video element (mirror để khớp với góc nhìn user)
+function _captureFaceFrame(videoEl) {
+  try {
+    const w = videoEl.videoWidth || 640;
+    const h = videoEl.videoHeight || 480;
+    if (!w || !h) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    // Mirror: video selfie hiển thị mirrored cho user, lưu khớp với những gì user thấy
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(videoEl, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', 0.88);
+  } catch(e) { return null; }
+}
+
 async function _detectFace(videoEl) {
   if (!_faceLoaded) return null;
   const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.45 });
@@ -483,12 +500,14 @@ async function _runVerifyAttempt(video, attempt) {
   if (result && result.passed) {
     const matchPct = result.match_pct !== undefined ? result.match_pct
                    : Math.round((1 - (result.distance || 0)) * 100);
+    // [v13.14] Capture frame face thực TRƯỚC khi đóng modal — để lưu cùng ảnh xác minh
+    const faceImageB64 = _captureFaceFrame(video);
     _showVerifySuccess(matchPct);
     _haptic([30, 50, 30, 50, 60]);
     const cb = _verifyCallback.onSuccess;
     setTimeout(() => {
       nsFaceCloseVerify();
-      if (cb) cb({ match_pct: matchPct, distance: result.distance });
+      if (cb) cb({ match_pct: matchPct, distance: result.distance, faceImage: faceImageB64 });
     }, 1400);
   } else {
     const matchPct2 = result && result.match_pct !== undefined ? result.match_pct : '?';

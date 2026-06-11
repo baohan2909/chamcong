@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.13',
+  'sys.cache_version': 'v13.15',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -973,58 +973,115 @@ function _moCameraNormal(){
 }
 
 // [v12.4] Sau face verify pass → tạo "ảnh xác minh" tổng hợp (text + similarity)
+// [v13.14] Nếu verifyResult.faceImage có → dùng làm background (ảnh face thật)
+//          + overlay dải tối dưới với check icon + similarity + ma_nv + timestamp
+//          Fallback synthetic teal nếu không có faceImage
 function _captureFrameAsSelfie(verifyResult) {
-  // Tạo canvas với watermark face verify
   const canvas = document.createElement('canvas');
   canvas.width = 600; canvas.height = 800;
   const ctx = canvas.getContext('2d');
 
-  // Background gradient teal
+  if (verifyResult && verifyResult.faceImage) {
+    // [v13.14] Async: load ảnh face → crop center fit 600x800 → overlay
+    const img = new Image();
+    img.onload = () => {
+      const iw = img.width, ih = img.height;
+      const targetRatio = 600 / 800;
+      const srcRatio = iw / ih;
+      let sx, sy, sw, sh;
+      if (srcRatio > targetRatio) {
+        // Ảnh rộng hơn target → crop trái/phải
+        sh = ih; sw = ih * targetRatio;
+        sx = (iw - sw) / 2; sy = 0;
+      } else {
+        // Ảnh cao hơn → crop trên/dưới
+        sw = iw; sh = iw / targetRatio;
+        sx = 0; sy = (ih - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 600, 800);
+      _drawSelfieOverlay(ctx, verifyResult);
+      _finalizeSelfie(canvas, verifyResult);
+    };
+    img.onerror = () => {
+      _drawSelfieSynthetic(ctx);
+      _drawSelfieOverlay(ctx, verifyResult);
+      _finalizeSelfie(canvas, verifyResult);
+    };
+    img.src = verifyResult.faceImage;
+  } else {
+    // Không có faceImage → fallback synthetic
+    _drawSelfieSynthetic(ctx);
+    _drawSelfieOverlay(ctx, verifyResult);
+    _finalizeSelfie(canvas, verifyResult);
+  }
+}
+
+// [v13.14] Background synthetic (fallback khi không có ảnh face thật)
+function _drawSelfieSynthetic(ctx) {
   const grad = ctx.createLinearGradient(0, 0, 0, 800);
   grad.addColorStop(0, '#0F6E56');
   grad.addColorStop(1, '#1f2d28');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 600, 800);
-
-  // White circle icon
-  ctx.fillStyle = 'rgba(255,255,255,.15)';
+  // Vòng tròn lớn ở giữa cho fallback synthetic
+  ctx.fillStyle = 'rgba(255,255,255,.12)';
   ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.fill();
   ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 6;
   ctx.beginPath(); ctx.arc(300, 320, 110, 0, 2 * Math.PI); ctx.stroke();
-
-  // Check mark
   ctx.strokeStyle = '#2BC084'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.beginPath();
   ctx.moveTo(250, 325); ctx.lineTo(290, 365); ctx.lineTo(355, 280);
   ctx.stroke();
+}
 
-  // Text
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 32px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Xác minh khuôn mặt', 300, 500);
-  ctx.font = '20px -apple-system, sans-serif';
+// [v13.14] Overlay dải tối ở đáy + check icon nhỏ + similarity + ma_nv + timestamp
+function _drawSelfieOverlay(ctx, verifyResult) {
+  // Gradient tối từ trong suốt → đen ở đáy
+  const overlayGrad = ctx.createLinearGradient(0, 580, 0, 800);
+  overlayGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  overlayGrad.addColorStop(0.35, 'rgba(0,0,0,0.55)');
+  overlayGrad.addColorStop(1, 'rgba(0,0,0,0.88)');
+  ctx.fillStyle = overlayGrad;
+  ctx.fillRect(0, 580, 600, 220);
+
+  // Check icon nhỏ (vòng tròn xanh + dấu V trắng)
   ctx.fillStyle = '#2BC084';
-  const simPct = verifyResult.match_pct !== undefined
-    ? verifyResult.match_pct
-    : Math.round((1 - (verifyResult.distance || 0)) * 100);
-  ctx.fillText('Độ khớp: ' + simPct + '%', 300, 540);
+  ctx.beginPath(); ctx.arc(58, 705, 22, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(47, 706); ctx.lineTo(55, 714); ctx.lineTo(70, 696);
+  ctx.stroke();
 
-  // Timestamp + ma_nv
+  // Tiêu đề
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 22px -apple-system, sans-serif';
+  ctx.fillText('Xác minh khuôn mặt', 95, 700);
+
+  // Độ khớp
+  const simPct = verifyResult && verifyResult.match_pct !== undefined
+    ? verifyResult.match_pct
+    : Math.round((1 - ((verifyResult && verifyResult.distance) || 0)) * 100);
+  ctx.font = '17px -apple-system, sans-serif';
+  ctx.fillStyle = '#2BC084';
+  ctx.fillText('Độ khớp ' + simPct + '%', 95, 725);
+
+  // ma_nv + timestamp
   const now = new Date();
   const ts = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds())
            + '  ' + pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear();
-  ctx.fillStyle = '#fff';
-  ctx.font = '18px monospace';
-  ctx.fillText(SESSION.ma + '  ·  ' + ts, 300, 720);
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = '13px monospace';
+  ctx.fillText(SESSION.ma + '  ·  ' + ts, 95, 750);
+}
 
-  // Save vào state như đã chụp ảnh
+// [v13.14] Finalize: lưu state + update UI (tách ra để gọi từ cả 2 nhánh sync/async)
+function _finalizeSelfie(canvas, verifyResult) {
   state.selfieB64 = canvas.toDataURL('image/jpeg', 0.85);
   state.selfieOk = true;
   state.selfieCaptureTs = Date.now();
   state.selfieIsFaceVerified = true;
 
-  // Update UI
   const preview = document.getElementById('selfie-preview');
   if (preview) { preview.src = state.selfieB64; preview.style.display = 'block'; }
   const icon = document.getElementById('selfie-icon');
@@ -1034,7 +1091,10 @@ function _captureFrameAsSelfie(verifyResult) {
   const txt = document.getElementById('selfie-text');
   if (txt) txt.textContent = '✓ Đã xác minh khuôn mặt';
   const sub = document.getElementById('selfie-sub');
-  if (sub) sub.textContent = 'Độ khớp ' + (verifyResult.match_pct !== undefined ? verifyResult.match_pct : Math.round((1 - (verifyResult.distance||0))*100)) + '% · Bấm để quét lại';
+  const simPct = verifyResult && verifyResult.match_pct !== undefined
+    ? verifyResult.match_pct
+    : Math.round((1 - ((verifyResult && verifyResult.distance) || 0)) * 100);
+  if (sub) sub.textContent = 'Độ khớp ' + simPct + '% · Bấm để quét lại';
   updateSubmitBtn();
 }
 
