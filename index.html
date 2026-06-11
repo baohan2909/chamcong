@@ -23,17 +23,20 @@
 
 <title>Chấm công · Nón Sơn</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="css/00-tokens.css?v=13.21">
-<link rel="stylesheet" href="css/01-base.css?v=13.21">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.21">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.21">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.21">
-<link rel="stylesheet" href="css/05-admin.css?v=13.21">
-<link rel="stylesheet" href="css/06-modules.css?v=13.21">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.21">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.21">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.21">
-<link rel="stylesheet" href="css/11-face.css?v=13.21">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.22">
+<link rel="stylesheet" href="css/01-base.css?v=13.22">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.22">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.22">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.22">
+<link rel="stylesheet" href="css/05-admin.css?v=13.22">
+<link rel="stylesheet" href="css/06-modules.css?v=13.22">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.22">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.22">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.22">
+<link rel="stylesheet" href="css/11-face.css?v=13.22">
 </head>
 <body class="cc-redesign-active">
 
@@ -42,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.21</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.22</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1627,7 +1630,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.21 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.22 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2049,17 +2052,8 @@
           <div class="bg-section-body" id="bg-sec-hang-body"></div>
         </div>
 
-        <!-- Phần IV: Ảnh + Ghi chú + Submit -->
+        <!-- Phần IV: Ghi chú + Submit -->
         <div id="bg-submit-zone" style="display:none">
-          <div class="chk-note-box">
-            <label class="chk-note-label">Ảnh biên bản giấy đã ký (tối đa 6)</label>
-            <div class="bg-photo-row" id="bg-photos"></div>
-            <label class="bg-photo-add" id="bg-photo-add-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Chọn ảnh từ máy & chỉnh sửa</span>
-              <input type="file" accept="image/*" multiple style="display:none" onchange="bgAddPhotos(this)">
-            </label>
-          </div>
           <div class="chk-note-box">
             <label class="chk-note-label">Ghi chú chung (tùy chọn)</label>
             <textarea id="bg-ghichu" class="chk-note-input" rows="2" placeholder="Lưu ý cho ca sau, sự việc phát sinh..."></textarea>
@@ -2880,13 +2874,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.21"></script>
-<script src="js/core/02-system.js?v=13.21"></script>
+<script src="js/core/01-config.js?v=13.22"></script>
+<script src="js/core/02-system.js?v=13.22"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.21">
+<link rel="stylesheet" href="css/07-extras.css?v=13.22">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2921,18 +2915,18 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.21"></script>
-<script src="js/pages/01-lichca.js?v=13.21"></script>
-<script src="js/pages/02-nhansu.js?v=13.21"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.21"></script>
-<script src="js/pages/04-misc.js?v=13.21"></script>
-<script src="js/pages/05-muanon.js?v=13.21"></script>
-<script src="js/lib/camscanner.js?v=13.21"></script>
-<script src="js/pages/06-bangiao.js?v=13.21"></script>
-<script src="js/ai/face-recognition.js?v=13.21"></script>
-<script src="js/admin/01-banhang.js?v=13.21"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.21"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.21"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.21"></script>
+<script src="js/core/03-router.js?v=13.22"></script>
+<script src="js/pages/01-lichca.js?v=13.22"></script>
+<script src="js/pages/02-nhansu.js?v=13.22"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.22"></script>
+<script src="js/pages/04-misc.js?v=13.22"></script>
+<script src="js/pages/05-muanon.js?v=13.22"></script>
+<script src="js/lib/camscanner.js?v=13.22"></script>
+<script src="js/pages/06-bangiao.js?v=13.22"></script>
+<script src="js/ai/face-recognition.js?v=13.22"></script>
+<script src="js/admin/01-banhang.js?v=13.22"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.22"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.22"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.22"></script>
 </body>
 </html>
