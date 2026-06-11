@@ -20,6 +20,7 @@
   let _displayScale = 1;
   let _dragIdx = -1;
   let _onComplete = null, _onCancel = null;
+  let _rafPending = false;
 
   function loadOpenCV(){
     if (_cv) return Promise.resolve(_cv);
@@ -142,15 +143,24 @@
     if (!_imgData) return;
     const img = _imgData.naturalImg;
     const stage = _root.querySelector('#cs-stage');
-    const sw = stage.clientWidth - 16, sh = stage.clientHeight - 16;
+    const stageW = stage.clientWidth - 16, stageH = stage.clientHeight - 100;
+    // Fit ảnh vào stage giữ tỉ lệ
     let dw = img.width, dh = img.height;
-    if (dw > sw) { dh = dh * sw / dw; dw = sw; }
-    if (dh > sh) { dw = dw * sh / dh; dh = sh; }
-    _canvas.width = dw;
-    _canvas.height = dh;
+    const ratio = Math.min(stageW/dw, stageH/dh, 1);
+    dw = Math.round(dw * ratio);
+    dh = Math.round(dh * ratio);
+
+    // DPR scaling cho ảnh sắc nét trên retina
+    const dpr = window.devicePixelRatio || 1;
+    _canvas.width = Math.round(dw * dpr);
+    _canvas.height = Math.round(dh * dpr);
     _canvas.style.width = dw + 'px';
     _canvas.style.height = dh + 'px';
-    _displayScale = dw / img.width;  // ratio display vs natural
+    _ctx.setTransform(1, 0, 0, 1, 0, 0);
+    _ctx.scale(dpr, dpr);
+    _ctx.imageSmoothingEnabled = true;
+    _ctx.imageSmoothingQuality = 'high';
+    _displayScale = dw / img.width;
     _ctx.drawImage(img, 0, 0, dw, dh);
   }
 
@@ -159,10 +169,11 @@
     drawImage();  // base layer
     const c = _corners;
     const sc = _displayScale;
-    // Vẽ polygon
-    _ctx.strokeStyle = '#14B8A6';
-    _ctx.lineWidth = 3;
-    _ctx.fillStyle = 'rgba(20,184,166,.15)';
+    // Vẽ polygon mask phủ vùng ngoài (semi-transparent)
+    _ctx.save();
+    _ctx.fillStyle = 'rgba(15,23,42,.55)';
+    _ctx.fillRect(0, 0, _canvas.width/(window.devicePixelRatio||1), _canvas.height/(window.devicePixelRatio||1));
+    _ctx.globalCompositeOperation = 'destination-out';
     _ctx.beginPath();
     _ctx.moveTo(c.tl.x*sc, c.tl.y*sc);
     _ctx.lineTo(c.tr.x*sc, c.tr.y*sc);
@@ -170,17 +181,34 @@
     _ctx.lineTo(c.bl.x*sc, c.bl.y*sc);
     _ctx.closePath();
     _ctx.fill();
+    _ctx.restore();
+    // Stroke polygon
+    _ctx.strokeStyle = '#10B981';
+    _ctx.lineWidth = 3;
+    _ctx.beginPath();
+    _ctx.moveTo(c.tl.x*sc, c.tl.y*sc);
+    _ctx.lineTo(c.tr.x*sc, c.tr.y*sc);
+    _ctx.lineTo(c.br.x*sc, c.br.y*sc);
+    _ctx.lineTo(c.bl.x*sc, c.bl.y*sc);
+    _ctx.closePath();
     _ctx.stroke();
-    // Handles 4 góc
+    // Handles 4 góc — to hơn 16px, gradient + viền trắng dày
     const pts = [c.tl, c.tr, c.br, c.bl];
     for (const p of pts){
+      const cx = p.x*sc, cy = p.y*sc;
+      // Outer white ring
       _ctx.beginPath();
-      _ctx.arc(p.x*sc, p.y*sc, 12, 0, Math.PI*2);
+      _ctx.arc(cx, cy, 16, 0, Math.PI*2);
       _ctx.fillStyle = '#fff';
       _ctx.fill();
-      _ctx.lineWidth = 3;
-      _ctx.strokeStyle = '#14B8A6';
-      _ctx.stroke();
+      // Inner emerald
+      _ctx.beginPath();
+      _ctx.arc(cx, cy, 11, 0, Math.PI*2);
+      const grd = _ctx.createRadialGradient(cx-2, cy-2, 2, cx, cy, 11);
+      grd.addColorStop(0, '#34D399');
+      grd.addColorStop(1, '#047857');
+      _ctx.fillStyle = grd;
+      _ctx.fill();
     }
   }
 
@@ -260,6 +288,7 @@
   // ─── Drag handles ────────────────────────────────────────────────
   function onPointerDown(e){
     if (!_corners) return;
+    e.preventDefault();
     const rect = _canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) / _displayScale;
     const y = (e.clientY - rect.top) / _displayScale;
@@ -269,20 +298,30 @@
       const d = Math.hypot(pts[i].x-x, pts[i].y-y);
       if (d < minD) { minD = d; mi = i; }
     }
-    if (minD * _displayScale < 30) {
+    // Touch target rộng hơn: 44px theo Apple HIG (chia _displayScale để convert sang natural)
+    const hitRadius = 44 / _displayScale;
+    if (minD < hitRadius) {
       _dragIdx = mi;
-      _canvas.setPointerCapture(e.pointerId);
+      try { _canvas.setPointerCapture(e.pointerId); } catch(_){}
       _canvas.style.cursor = 'grabbing';
     }
   }
   function onPointerMove(e){
     if (_dragIdx < 0 || !_corners) return;
+    e.preventDefault();
     const rect = _canvas.getBoundingClientRect();
     const x = Math.max(0, Math.min(_imgData.naturalImg.width, (e.clientX - rect.left) / _displayScale));
     const y = Math.max(0, Math.min(_imgData.naturalImg.height, (e.clientY - rect.top) / _displayScale));
     const keys = ['tl','tr','br','bl'];
     _corners[keys[_dragIdx]] = { x, y };
-    drawOverlay();
+    // requestAnimationFrame để smooth
+    if (!_rafPending) {
+      _rafPending = true;
+      requestAnimationFrame(()=>{
+        drawOverlay();
+        _rafPending = false;
+      });
+    }
   }
   function onPointerUp(e){
     if (_dragIdx >= 0) {

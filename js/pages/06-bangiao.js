@@ -85,9 +85,9 @@ async function bgXacDinhCH(){
 // Build 6 nhóm: Tiền · KV1 · KV2 · KV4 · Hàng hóa · Ảnh
 function bgBuildGroups(){
   const KV_TITLE = {
-    1: 'Khu vực 1 — Mặt tiền, hạ tầng',
-    2: 'Khu vực 2 — Quầy thu ngân & IT',
-    4: 'Khu vực 4 — Kho, sinh hoạt, công cụ'
+    1: 'Mặt tiền, hạ tầng',
+    2: 'Quầy thu ngân & IT',
+    4: 'Kho, sinh hoạt, công cụ'
   };
   bgGroups = [];
 
@@ -196,29 +196,31 @@ function bgRenderForm(){
 // ─── Group Tiền mặt (3 dòng input + tổng tự tính) ─────────────────────
 function bgRenderGroupTien(g){
   let rows = g.items.map(it => {
-    const v = (bgState[it.id]&&bgState[it.id].so_tien)||0;
+    const stored = bgState[it.id]&&bgState[it.id].so_tien;
+    const v = stored || 0;
+    const displayVal = stored ? bgFmtVN(v) : '';  // empty khi chưa nhập (hiển thị placeholder)
     const note = (bgState[it.id]&&bgState[it.id].ghi_chu)||'';
-    return `<div class="bg-tien-row" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1F5F9">
-      <div style="flex:1;font-size:13px;color:#334155">${escHtml(it.ten)}</div>
+    return `<div class="bg-tien-row" style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F1F5F9">
+      <div style="flex:1;font-size:13.5px;color:#1E293B;font-weight:500">${escHtml(it.ten)}</div>
       <input type="text" inputmode="numeric" class="bg-tien-input" id="bg-tien-${it.id}"
-        style="width:130px;padding:8px 10px;text-align:right;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#1E293B"
-        value="${bgFmtVN(v)}"
-        onfocus="this.value=(bgState['${it.id}']&&bgState['${it.id}'].so_tien)||''"
-        onblur="bgUpdateTien('${it.id}', this.value)">
+        style="width:130px;padding:9px 11px;text-align:right;border:1.5px solid #E2E8F0;border-radius:10px;color:#0F172A;background:#F8FAFC"
+        value="${displayVal}" placeholder="0"
+        onfocus="this.value=(bgState['${it.id}']&&bgState['${it.id}'].so_tien)||''; this.style.background='#fff'; this.style.borderColor='#10B981';"
+        onblur="bgUpdateTien('${it.id}', this.value); this.style.background='#F8FAFC'; this.style.borderColor='#E2E8F0';">
       <button class="bg-note-btn ${note?'has':''}" onclick="bgToggleTienNote('${it.id}')" 
-        style="width:34px;height:34px;border-radius:8px;border:1.5px solid #E2E8F0;background:${note?'#FBBF24':'#fff'};color:${note?'#fff':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        style="width:36px;height:36px;border-radius:10px;border:1.5px solid ${note?'#EAB308':'#E2E8F0'};background:${note?'linear-gradient(135deg,#FDE047,#CA8A04)':'#fff'};color:${note?'#fff':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       </button>
     </div>
-    <div class="bg-tien-note" id="bg-tien-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 10px">
+    <div class="bg-tien-note" id="bg-tien-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 11px">
       <textarea class="chk-vd-textarea" oninput="bgUpdateTienNote('${it.id}', this.value)" 
         placeholder="Ghi chú / giải trình (nếu lệch)..." 
-        style="border-color:#FDE047;background:#FEFCE8">${escHtml(note)}</textarea>
+        style="border-color:#EAB308;background:#FEFCE8">${escHtml(note)}</textarea>
     </div>`;
   }).join('');
-  rows += `<div style="display:flex;align-items:center;padding:14px 0 4px;border-top:2px solid #E2E8F0;margin-top:6px">
-    <div style="flex:1;font-size:13px;font-weight:700;color:#0F2E45">Tổng tiền bàn giao (1 + 2 − 3)</div>
-    <div id="bg-tien-tong" style="width:130px;text-align:right;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:#0F2E45;background:#F1F5F9;border-radius:8px">0</div>
+  rows += `<div style="display:flex;align-items:center;padding:15px 0 5px;border-top:2px solid #D1FAE5;margin-top:6px">
+    <div style="flex:1;font-size:13.5px;font-weight:700;color:#047857;letter-spacing:-0.005em">Tổng tiền bàn giao (1 + 2 − 3)</div>
+    <div id="bg-tien-tong" class="bg-num-display" style="min-width:130px;text-align:right;padding:9px 11px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,#10B981,#047857);border-radius:10px;box-shadow:0 3px 10px rgba(16,185,129,.30)">0</div>
   </div>`;
   return rows;
 }
@@ -447,8 +449,10 @@ function bgRenderGroupHang(g){
     html += `<div class="bg-hang-row" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F8FAFC">
       <div style="flex:1;font-size:13px;color:#1E293B;font-weight:500">${escHtml(it.ten)}</div>
       <input type="number" inputmode="numeric" min="0" 
-        style="width:80px;padding:8px 10px;text-align:right;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13.5px;font-weight:700;font-family:'JetBrains Mono','SF Mono',monospace;color:#0F2E45;background:#fff"
+        style="width:84px;padding:9px 11px;text-align:right;border:1.5px solid #E2E8F0;border-radius:10px;color:#0F172A;background:#F8FAFC"
         value="${sl}" placeholder="—"
+        onfocus="this.style.background='#fff'; this.style.borderColor='#10B981';"
+        onblur="this.style.background='#F8FAFC'; this.style.borderColor='#E2E8F0';"
         onchange="bgUpdateHang('${it.id}', this.value)">
       <button class="${note?'has':''}" onclick="bgToggleHangNote('${it.id}')" 
         style="width:34px;height:34px;border-radius:9px;border:1.5px solid ${note?'#EAB308':'#E2E8F0'};background:${note?'linear-gradient(135deg,#FEF9C3,#FDE047)':'#fff'};color:${note?'#854D0E':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
@@ -482,17 +486,17 @@ window.bgUpdateHangNote = function(id, v){
 // ─── Group Ảnh biên bản giấy ───────────────────────────────────────────
 function bgRenderGroupAnh(g){
   const photos = bgPhotos.map((p,i) => 
-    `<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${p.dataUrl}" style="width:78px;height:78px"><div class="chk-photo-del" onclick="bgDelBienBanPhoto(${i})">×</div></div>`
+    `<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${p.dataUrl}" style="width:84px;height:84px"><div class="chk-photo-del" onclick="bgDelBienBanPhoto(${i})">×</div></div>`
   ).join('');
-  return `<div class="chk-photo-row" id="bg-anh-row">
+  const canAdd = bgPhotos.length < 6;
+  return `<div class="chk-photo-row" id="bg-anh-row" style="padding:6px 0 4px">
     ${photos}
-    <label class="chk-photo-add" style="width:78px;height:78px;border-color:#1B4965;color:#1B4965">
+    ${canAdd ? `<label class="chk-photo-add" style="width:84px;height:84px;border-color:#10B981;color:#047857;background:#ECFDF5;font-weight:700;font-size:11px;border-radius:12px;border-width:2px">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Chọn ảnh
+      <span style="margin-top:4px">Chọn ảnh</span>
       <input type="file" accept="image/*" style="display:none" onchange="bgAddBienBanPhoto(this)">
-    </label>
-  </div>
-  <div style="margin-top:6px;font-size:11px;color:#94A3B8">Chọn ảnh biên bản giấy đã ký, hệ thống sẽ tự cắt theo khung. Tối đa 6 ảnh.</div>`;
+    </label>` : ''}
+  </div>`;
 }
 
 window.bgAddBienBanPhoto = function(input){

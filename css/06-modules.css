@@ -675,145 +675,202 @@
 .bg-sv-tl-when { font-size:11px; color:var(--text-lt); margin-top:2px; }
 
 
+
 /* ═══════════════════════════════════════════════════════════════════════
- *  [v13.20] BÀN GIAO CA — Override scoped #page-bangiao
- *  Tone xanh navy chủ đạo · gradient sắc nét · font sharper
+ *  [v13.21] BÀN GIAO CA — Override scoped #page-bangiao
+ *  Tone EMERALD đúng hệ thống (var(--green), var(--green-m))
+ *  Bỏ viền active · Font số sắc nét · Card CH gradient
  * ═══════════════════════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 
 #page-bangiao {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Card group: shadow đậm hơn, border sắc nét */
+/* Card CH info: gradient emerald vibrant + shadow đẹp */
+#page-bangiao .chk-ch-info {
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 24px -6px rgba(16,185,129,.45);
+  margin-bottom: 12px;
+}
+#page-bangiao .chk-ch-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+#page-bangiao .chk-ch-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,.92);
+  margin-top: 3px;
+}
+
+/* Subtabs: pill segment đẹp hơn */
+#page-bangiao .chk-subtabs {
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+}
+#page-bangiao .chk-subtab {
+  font-weight: 700;
+  font-size: 13px;
+  color: #64748B;
+  letter-spacing: -0.005em;
+}
+#page-bangiao .chk-subtab.active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 2px 8px rgba(15,46,69,.10);
+}
+
+/* Card group: shadow đậm hơn, no border */
 #page-bangiao .chk-group {
-  box-shadow: 0 2px 16px rgba(15,46,69,.10);
-  border: 1.5px solid #E2E8F0;
+  box-shadow: 0 2px 14px rgba(15,46,69,.07);
+  border: 1.5px solid transparent;
 }
 #page-bangiao .chk-group.done-ok {
-  border-color: #1B4965;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F0F7FB 100%);
+  border-color: #A7F3D0;
+  background: linear-gradient(180deg, #FFFFFF 0%, #ECFDF5 100%);
 }
 #page-bangiao .chk-group.done-issue {
-  border-color: #DC2626;
+  border-color: #FCA5A5;
   background: linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%);
 }
 
-/* Group number: gradient navy */
+/* Group number badge: gradient emerald khi done */
 #page-bangiao .chk-group-num {
   background: #F1F5F9;
   color: #475569;
   font-weight: 800;
   border-radius: 9px;
+  font-size: 12.5px;
 }
 #page-bangiao .chk-group.done-ok .chk-group-num {
-  background: linear-gradient(135deg, #1B4965 0%, #0F2E45 100%);
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(15,46,69,.25);
+  box-shadow: 0 2px 8px rgba(16,185,129,.35);
 }
 #page-bangiao .chk-group.done-issue .chk-group-num {
   background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(220,38,38,.30);
+  box-shadow: 0 2px 8px rgba(220,38,38,.30);
 }
 #page-bangiao .chk-group-title {
   font-weight: 700;
+  font-size: 14.5px;
   color: #0F172A;
   letter-spacing: -0.01em;
 }
-#page-bangiao .chk-group.done-ok .chk-group-status { color: #1B4965; font-weight: 700; }
+#page-bangiao .chk-group.done-ok .chk-group-status { color: #047857; font-weight: 700; }
+#page-bangiao .chk-group.done-issue .chk-group-status { color: #DC2626; font-weight: 700; }
 
-/* Nút "Tất cả bình thường": gradient navy */
+/* Nút "Tất cả bình thường": gradient emerald, BỎ viền khi active */
 #page-bangiao .chk-quick-ok {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F0F7FB 100%);
-  border: 1.5px solid #1B4965;
-  color: #0F2E45;
+  background: linear-gradient(180deg, #FFFFFF 0%, #ECFDF5 100%);
+  border: 1.5px solid #6EE7B7;
+  color: #047857;
   font-weight: 700;
-  padding: 10px;
-  font-size: 13px;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(15,46,69,.08);
+  padding: 11px;
+  font-size: 13.5px;
+  border-radius: 11px;
   transition: all .15s;
 }
-#page-bangiao .chk-quick-ok:hover { background: #F0F7FB; }
-#page-bangiao .chk-quick-ok.active,
-#page-bangiao .chk-quick-ok:active {
-  background: linear-gradient(135deg, #1B4965 0%, #0F2E45 100%);
+#page-bangiao .chk-quick-ok:active,
+#page-bangiao .chk-quick-ok.active {
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
   color: #fff;
-  border-color: #0F2E45;
-  box-shadow: 0 4px 12px rgba(15,46,69,.35);
-  transform: scale(.97);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(16,185,129,.40);
+  transform: scale(.98);
 }
 
-/* Toggle BT/VD: gradient sắc nét */
+/* Toggle BT/VD: BỎ VIỀN khi active (anh yêu cầu) */
 #page-bangiao .chk-tg {
   border-width: 1.5px;
-  padding: 6px 13px;
-  font-size: 12px;
+  padding: 7px 14px;
+  font-size: 12.5px;
   font-weight: 700;
-  border-radius: 9px;
+  border-radius: 10px;
   transition: all .15s;
 }
 #page-bangiao .chk-tg.bt.active {
-  background: linear-gradient(135deg, #1B4965 0%, #0F2E45 100%);
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
   color: #fff;
-  border-color: #0F2E45;
-  box-shadow: 0 2px 8px rgba(15,46,69,.30);
+  border-color: transparent;  /* BỎ viền */
+  box-shadow: 0 3px 10px rgba(16,185,129,.35);
 }
 #page-bangiao .chk-tg.vd.active {
   background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
   color: #fff;
-  border-color: #991B1B;
-  box-shadow: 0 2px 8px rgba(220,38,38,.28);
+  border-color: transparent;  /* BỎ viền */
+  box-shadow: 0 3px 10px rgba(220,38,38,.30);
 }
 
-/* Item row: hover nhẹ */
+/* Item name */
 #page-bangiao .chk-item-name {
   font-size: 13.5px;
   font-weight: 500;
   color: #1E293B;
+  letter-spacing: -0.005em;
 }
 
-/* Submit button: gradient navy + đảm bảo trên footer nav */
+/* FONT SỐ SẮC NÉT: dùng Inter + tabular-nums + lining-nums */
+#page-bangiao input[type="number"],
+#page-bangiao input.bg-tien-input,
+#page-bangiao input[inputmode="numeric"],
+#page-bangiao .bg-num-display {
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-size: 14.5px;
+}
+
+/* Submit button gradient emerald + clear footer nav */
 #page-bangiao .chk-submit-btn {
-  background: linear-gradient(135deg, #1B4965 0%, #0F2E45 100%);
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
   color: #fff;
   font-weight: 700;
-  font-size: 14.5px;
-  padding: 14px 20px;
-  border-radius: 12px;
+  font-size: 15px;
+  padding: 15px 20px;
+  border-radius: 13px;
   border: 0;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 16px rgba(15,46,69,.30);
+  box-shadow: 0 8px 20px rgba(16,185,129,.40);
   cursor: pointer;
-  margin-bottom: 90px;  /* để tránh bottom-nav che */
+  margin-bottom: 100px;  /* tránh bottom-nav che */
+  letter-spacing: -0.005em;
 }
 #page-bangiao .chk-submit-btn:disabled {
-  background: #94A3B8;
+  background: linear-gradient(135deg, #CBD5E1 0%, #94A3B8 100%);
   box-shadow: none;
   cursor: not-allowed;
+  opacity: .9;
 }
 #page-bangiao #bg-submit-zone {
   padding-bottom: 0;
 }
 
-/* Subtab sticky khi cuộn */
+/* Sticky subtabs khi scroll */
 #page-bangiao .chk-topbar {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(15,46,69,.06);
-}
-#page-bangiao .chk-subtab.active {
-  color: #0F2E45;
-  font-weight: 700;
-  border-bottom-color: #1B4965;
+  background: #F8FAFC;
+  padding-top: 4px;
+  margin-top: -4px;
 }
 
 /* Mức độ pills */
@@ -823,30 +880,39 @@
   font-size: 11.5px;
 }
 #page-bangiao .chk-mucdo.nhe.active {
-  background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
-  color: #854D0E;
-  border-color: #EAB308;
+  background: linear-gradient(135deg, #FDE047 0%, #CA8A04 100%);
+  color: #fff;
+  border-color: transparent;
 }
 #page-bangiao .chk-mucdo.vua.active {
-  background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%);
-  color: #9A3412;
-  border-color: #F97316;
+  background: linear-gradient(135deg, #FB923C 0%, #C2410C 100%);
+  color: #fff;
+  border-color: transparent;
 }
 #page-bangiao .chk-mucdo.khan.active {
-  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
-  color: #991B1B;
-  border-color: #DC2626;
+  background: linear-gradient(135deg, #EF4444 0%, #991B1B 100%);
+  color: #fff;
+  border-color: transparent;
 }
 
 /* Sub-header trong group hàng hóa (khu vực) */
 .bg-subhead {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  color: #1B4965;
+  color: #047857;
   text-transform: uppercase;
-  letter-spacing: .06em;
-  padding: 12px 0 6px;
-  border-bottom: 1.5px solid #E2E8F0;
-  margin-top: 4px;
+  letter-spacing: .08em;
+  padding: 14px 0 6px;
+  border-bottom: 1.5px solid #D1FAE5;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.bg-subhead:first-child { margin-top: 0; }
+.bg-subhead:first-child { margin-top: 0; padding-top: 8px; }
+.bg-subhead::before {
+  content: '';
+  width: 4px; height: 14px;
+  background: linear-gradient(180deg, #10B981, #047857);
+  border-radius: 2px;
+}
