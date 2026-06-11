@@ -43,39 +43,21 @@
     _onComplete = opts.onComplete || (()=>{});
     _onCancel = opts.onCancel || (()=>{});
     _buildUI();
-    showStatus('Đang xử lý ảnh...');
+    showStatus('Đang tải ảnh...');
     
     try {
       const dataUrl = await readFileAsDataURL(file);
       const img = await loadImage(dataUrl);
       _imgData = { naturalImg: img };
       drawImage();
-      showStatus('Đang nhận diện khung giấy...');
-      
-      try { await loadOpenCV(); } catch(e){ console.warn(e); }
-      
-      if (_cv) {
-        try {
-          const detected = autoDetectCorners(img);
-          if (detected) {
-            _corners = detected;
-            showStatus('Đã nhận diện khung. Kéo các góc để điều chỉnh nếu cần.');
-          } else {
-            _corners = defaultCorners(img.width, img.height);
-            showStatus('Không tự nhận diện được. Vui lòng kéo 4 góc cho khớp với tờ giấy.');
-          }
-        } catch(e){
-          console.warn('detect fail', e);
-          _corners = defaultCorners(img.width, img.height);
-          showStatus('Vui lòng kéo 4 góc cho khớp với tờ giấy.');
-        }
-      } else {
-        _corners = defaultCorners(img.width, img.height);
-        showStatus('Vui lòng kéo 4 góc cho khớp với tờ giấy.');
-      }
+      // Default corners ngay — KHÔNG block chờ OpenCV. User kéo thủ công.
+      _corners = defaultCorners(img.width, img.height);
       drawOverlay();
+      showStatus('Kéo 4 góc cho khớp tờ giấy, hoặc bấm "Phát hiện lại" để tự động');
+      // Lazy preload OpenCV ngầm để khi bấm "Phát hiện lại" sẽ nhanh
+      loadOpenCV().catch(e => console.warn('OpenCV preload failed:', e));
     } catch(e){
-      showStatus('Lỗi xử lý ảnh: ' + e.message, true);
+      showStatus('Lỗi đọc ảnh: ' + e.message, true);
     }
   }
 
@@ -256,13 +238,20 @@
     return result;
   }
 
-  function redoDetect(){
-    if (!_imgData || !_cv){ showStatus('OpenCV chưa sẵn sàng', true); return; }
-    showStatus('Đang phát hiện lại...');
+  async function redoDetect(){
+    if (!_imgData) return;
+    showStatus('Đang tải module nhận diện...');
+    try {
+      await loadOpenCV();
+    } catch(e){
+      showStatus('Không tải được module nhận diện. Kéo thủ công 4 góc.', true);
+      return;
+    }
+    showStatus('Đang phát hiện khung...');
     setTimeout(()=>{
       try {
         const r = autoDetectCorners(_imgData.naturalImg);
-        if (r){ _corners = r; drawOverlay(); showStatus('Đã phát hiện lại. Kéo góc nếu cần.'); }
+        if (r){ _corners = r; drawOverlay(); showStatus('Đã phát hiện. Kéo góc nếu cần.'); }
         else showStatus('Không phát hiện được. Kéo thủ công 4 góc.', true);
       } catch(e){ showStatus('Lỗi: '+e.message, true); }
     }, 30);

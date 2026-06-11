@@ -111,13 +111,23 @@ function bgBuildGroups(){
     });
   }
 
-  // Group 5: Hàng hóa (9 dòng: 3 khu vực × 3 nhóm)
-  const KV_HANG = { 'SANH':'Sảnh trưng bày', 'KHO':'Kho', 'NIEM_PHONG':'Niêm phong' };
-  const NHOM_HANG = ['Nhóm Nón Vải','Nhóm Nón Bảo Hiểm','Nhóm Phụ Kiện (Lưới, kính...)'];
+  // Group 5: Hàng hóa & tồn kho — render thành 3 sub-section theo khu vực
+  const KV_HANG_LABEL = { 'SANH':'Trưng bày', 'KHO':'Kho', 'NIEM_PHONG':'Niêm phong' };
+  const NHOM_HANG = [
+    { key:'NON_VAI', ten:'Nhóm Nón Vải' },
+    { key:'NON_BH',  ten:'Nhóm Nón Bảo Hiểm' },
+    { key:'PHU_KIEN',ten:'Nhóm Phụ Kiện (Lưới, kính...)' }
+  ];
   const hangItems = [];
+  // Sắp xếp: 3 KV × 3 nhóm — KV trước, nhóm sau (anh đã yêu cầu hierarchy KV → nhóm)
   for (const kv of ['SANH','KHO','NIEM_PHONG']) {
     for (const nh of NHOM_HANG) {
-      hangItems.push({ id:'hg_'+kv+'_'+nh, khu_vuc:kv, nhom_hang:nh, ten: nh + ' · ' + KV_HANG[kv] });
+      hangItems.push({
+        id:'hg_'+kv+'_'+nh.key,
+        khu_vuc:kv, khu_vuc_label:KV_HANG_LABEL[kv],
+        nhom_hang:nh.ten, nhom_key:nh.key,
+        ten: nh.ten
+      });
     }
   }
   bgGroups.push({ key:'hang', ten:'Hàng hóa & tồn kho', type:'hang', items: hangItems });
@@ -131,11 +141,11 @@ function bgBuildGroups(){
 // ═════════════════════════════════════════════════════════════════════════
 function bgSwitchSub(sub){
   bgSub = sub;
-  ['new','today','timeline'].forEach(s => {
+  ['new','suvu','timeline'].forEach(s => {
     document.getElementById('bg-subtab-'+s).classList.toggle('active', s===sub);
     document.getElementById('bg-sub-'+s).style.display = s===sub ? '' : 'none';
   });
-  if (sub==='today') bgRenderToday();
+  if (sub==='suvu') bgRenderSuVu();
   if (sub==='timeline') bgRenderTimeline();
 }
 window.bgSwitchSub = bgSwitchSub;
@@ -422,29 +432,36 @@ window.bgToggleGroup = function(key){
   document.getElementById('bg-g-'+key).classList.toggle('open');
 };
 
-// ─── Group Hàng hóa (9 dòng số nguyên + ghi chú) ──────────────────────
+// ─── Group Hàng hóa (3 sub-section KV × 3 nhóm hàng) ──────────────────
 function bgRenderGroupHang(g){
-  return g.items.map(it => {
+  let html = '';
+  let lastKV = null;
+  g.items.forEach(it => {
+    if (it.khu_vuc !== lastKV) {
+      html += `<div class="bg-subhead">Khu vực: ${escHtml(it.khu_vuc_label)}</div>`;
+      lastKV = it.khu_vuc;
+    }
     const st = bgState[it.id] || {};
-    const sl = (st.so_luong!==undefined) ? st.so_luong : '';
+    const sl = (st.so_luong!==undefined && st.so_luong !== null) ? st.so_luong : '';
     const note = st.ghi_chu || '';
-    return `<div class="bg-hang-row" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F8FAFC">
-      <div style="flex:1;font-size:12.5px;color:#334155">${escHtml(it.ten)}</div>
+    html += `<div class="bg-hang-row" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F8FAFC">
+      <div style="flex:1;font-size:13px;color:#1E293B;font-weight:500">${escHtml(it.ten)}</div>
       <input type="number" inputmode="numeric" min="0" 
-        style="width:80px;padding:7px 8px;text-align:right;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace"
-        value="${sl}" placeholder="--"
+        style="width:80px;padding:8px 10px;text-align:right;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13.5px;font-weight:700;font-family:'JetBrains Mono','SF Mono',monospace;color:#0F2E45;background:#fff"
+        value="${sl}" placeholder="—"
         onchange="bgUpdateHang('${it.id}', this.value)">
       <button class="${note?'has':''}" onclick="bgToggleHangNote('${it.id}')" 
-        style="width:32px;height:32px;border-radius:8px;border:1.5px solid #E2E8F0;background:${note?'#FBBF24':'#fff'};color:${note?'#fff':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
+        style="width:34px;height:34px;border-radius:9px;border:1.5px solid ${note?'#EAB308':'#E2E8F0'};background:${note?'linear-gradient(135deg,#FEF9C3,#FDE047)':'#fff'};color:${note?'#854D0E':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       </button>
     </div>
-    <div id="bg-hang-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 9px">
+    <div id="bg-hang-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 10px">
       <textarea class="chk-vd-textarea" oninput="bgUpdateHangNote('${it.id}', this.value)"
         placeholder="Ghi chú / chênh lệch..."
-        style="border-color:#FDE047;background:#FEFCE8">${escHtml(note)}</textarea>
+        style="border-color:#EAB308;background:#FEFCE8">${escHtml(note)}</textarea>
     </div>`;
-  }).join('');
+  });
+  return html;
 }
 window.bgUpdateHang = function(id, raw){
   const v = parseInt(raw, 10);
@@ -768,27 +785,56 @@ async function bgSubmit(){
 window.bgSubmit = bgSubmit;
 
 // ═════════════════════════════════════════════════════════════════════════
-//  TAB 2: HÔM NAY
+//  TAB 2: SỰ VỤ — danh sách sự vụ phát sinh từ biên bản bàn giao
 // ═════════════════════════════════════════════════════════════════════════
-async function bgRenderToday(){
-  const list = document.getElementById('bg-today-list');
+async function bgRenderSuVu(){
+  const list = document.getElementById('bg-suvu-list');
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
   try {
-    const today = new Date().toISOString().slice(0,10);
-    const { data } = await supa.rpc('fn_ban_giao_list', {
-      p_ma_ch: bgCurrentCH.ma, p_limit: 30, p_offset: 0
+    const { data, error } = await supa.rpc('fn_su_vu_list', {
+      p_ma_ch: bgCurrentCH.ma,
+      p_limit: 100, p_offset: 0
     });
-    const todayList = (data || []).filter(b => b.ngay_ban_giao === today);
-    const cnt = document.getElementById('bg-today-count');
-    if (todayList.length === 0){
-      list.innerHTML = '<div class="ns-empty">Chưa có biên bản nào hôm nay.</div>';
+    if (error) throw error;
+    const cnt = document.getElementById('bg-suvu-count');
+    const opened = (data||[]).filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+    if (!data || data.length === 0){
+      list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
       cnt.style.display = 'none';
       return;
     }
-    cnt.style.display = ''; cnt.textContent = todayList.length;
-    list.innerHTML = todayList.map(bgRecHtml).join('');
+    if (opened.length > 0) { cnt.style.display=''; cnt.textContent = opened.length; }
+    else cnt.style.display = 'none';
+    list.innerHTML = data.map(bgSuVuCardHtml).join('');
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
+}
+
+function bgSuVuCardHtml(s){
+  const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
+  const mdCls = s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'vua':'nhe';
+  const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
+  const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
+  const borderColor = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#F97316':'#1B4965';
+  return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:4px solid ${borderColor}">
+    <div class="chk-rec-head">
+      <div class="chk-rec-top">
+        <span class="chk-rec-time">${bgFmtDateTimeShort(s.created_at)}</span>
+        <span class="chk-mucdo-tag ${mdCls}" style="font-weight:700">${mdLbl}</span>
+        <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
+      </div>
+      <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}</div>
+      <div class="chk-rec-by">Tạo: ${escHtml(s.nguoi_tao_ten||'?')}${s.nguoi_phu_trach_ten?' · Phụ trách: '+escHtml(s.nguoi_phu_trach_ten):''}</div>
+      ${s.mo_ta?`<div class="chk-rec-note">${escHtml(s.mo_ta).slice(0,160)}</div>`:''}
+      ${s.phan_hoi_xu_ly?`<div style="margin-top:6px;padding:8px 10px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:6px;font-size:12.5px;color:#0F2E45"><b style="color:#1B4965">Phản hồi:</b> ${escHtml(s.phan_hoi_xu_ly).slice(0,200)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function bgFmtDateTimeShort(s){
+  if (!s) return '';
+  const d = new Date(s);
+  return pad(d.getDate())+'/'+pad(d.getMonth()+1)+' ' + pad(d.getHours())+':'+pad(d.getMinutes());
 }
 
 function bgRecHtml(b){
