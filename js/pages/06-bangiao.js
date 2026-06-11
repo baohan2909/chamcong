@@ -1,1071 +1,853 @@
 /* ═══════════════════════════════════════════════════════════════════════════
- *  NÓN SƠN — BÀN GIAO CA v1.0 — NV VIEW + ACK + BLOCK RA_CA
- *  Module phần NV: tạo biên bản, ack biên bản nhận, đọc sự vụ, đóng sự vụ.
- *  Phần QL nằm ở 06-bangiao-ql.js (admin).
+ *  NÓN SƠN — BÀN GIAO CA v1.0 — NV VIEW (Sprint 1)
+ *
+ *  Kế thừa HOÀN TOÀN UX/UI của module Kiểm tra cửa hàng:
+ *    • Dùng class CSS chk-* có sẵn (không viết CSS mới)
+ *    • Pattern: cc-hero-page banner + chk-topbar subtabs + chk-group accordion
+ *    • Default item: chưa chọn → BT/VD toggle 
+ *    • Nút "Tất cả bình thường" trên đầu mỗi nhóm
+ *    • Item BT collapse → chỉ hiện toggle
+ *    • Item VD expand → mức độ + mô tả + ảnh
+ *    • Ảnh: file picker → CamScanner v2 căn chỉnh perspective
+ *
+ *  Backend: schema 9 bảng `ban_giao*` + `su_vu*` + 17 RPCs đã chạy SQL.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-(function(){
-  // ─── State module ─────────────────────────────────────────────────────
-  const BG = {
-    danhMucCache: null,           // 45 items master (load 1 lần)
-    currentForm: null,            // dữ liệu form đang nhập
-    currentTab: 'tao',            // 'tao' | 'lich-su' | 'su-vu'
-    photoBlobs: []                // array { blob, dataUrl, url, path }
-  };
+// ─── State module (toàn cục, prefix bg*) ─────────────────────────────────
+let bgGroups = [];          // [{key, ten, type:'tien'|'taisan'|'hang'|'anh', items:[...]}]
+let bgState = {};           // {itemKey: {...}}  - varies theo type
+let bgCurrentCH = null;     // {ma, ten, khuVuc}
+let bgSub = 'new';
+let bgDanhMucCache = null;
+let bgPhotos = [];          // [{ blob, dataUrl }]
 
-  // ─── Entry point — register vào router ─────────────────────────────────
-  window.moPageBanGiao = async function(){
-    if (typeof SESSION === 'undefined' || !SESSION) {
-      alert('Vui lòng đăng nhập lại'); return;
-    }
-    showPage('bangiao');
-    await renderBanGiaoPage();
-  };
-
-  function showPage(name){
-    document.querySelectorAll('.page').forEach(p=>p.style.display='none');
-    let page = document.getElementById('page-' + name);
-    if (!page){
-      page = document.createElement('div');
-      page.id = 'page-' + name;
-      page.className = 'page';
-      document.body.appendChild(page);
-    }
-    page.style.display = 'block';
-    currentPage = name;
+// ═════════════════════════════════════════════════════════════════════════
+//  ENTRY POINT
+// ═════════════════════════════════════════════════════════════════════════
+async function bgInitPage(){
+  document.getElementById('bg-ch-name').textContent = 'Đang xác định cửa hàng...';
+  document.getElementById('bg-ch-sub').textContent = '';
+  await bgXacDinhCH();
+  if (!bgCurrentCH) {
+    document.getElementById('bg-ch-name').textContent = 'Chưa xác định được cửa hàng';
+    document.getElementById('bg-ch-sub').textContent = 'Vui lòng chấm công vào ca trước.';
+    document.getElementById('bg-groups').innerHTML = '<div class="ns-empty">Vui lòng chấm công vào ca tại cửa hàng trước.</div>';
+    return;
   }
+  document.getElementById('bg-ch-name').textContent = bgCurrentCH.ten;
+  document.getElementById('bg-ch-sub').textContent = bgCurrentCH.ma + (bgCurrentCH.khuVuc ? ' · ' + bgCurrentCH.khuVuc : '');
 
-  async function renderBanGiaoPage(){
-    const page = document.getElementById('page-bangiao');
-    page.innerHTML = `
-      <div class="bg-hero">
-        <button onclick="goToPage('chamcong')" style="background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer;padding:0;margin-bottom:8px">‹</button>
-        <h2>Bàn giao ca</h2>
-        <div class="subtitle">Biên bản bàn giao & sự vụ vận hành</div>
-        <div class="ch-name" id="bg-ch-name">${escHtml(SESSION.tenCH || SESSION.maCH || '')}</div>
-      </div>
-      <div class="bg-tabs">
-        <div class="bg-tab active" data-tab="tao" onclick="bgSwitchTab('tao')">Tạo bàn giao</div>
-        <div class="bg-tab" data-tab="lich-su" onclick="bgSwitchTab('lich-su')">Lịch sử</div>
-        <div class="bg-tab" data-tab="su-vu" onclick="bgSwitchTab('su-vu')">
-          Sự vụ <span class="badge" id="bg-su-vu-badge" style="display:none"></span>
-        </div>
-      </div>
-      <div id="bg-tab-content"></div>
-    `;
-    await Promise.all([loadDanhMuc(), loadSuVuBadge()]);
-    await renderTabTao();
-  }
-
-  window.bgSwitchTab = async function(tab){
-    BG.currentTab = tab;
-    document.querySelectorAll('.bg-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
-    if (tab === 'tao') await renderTabTao();
-    else if (tab === 'lich-su') await renderTabLichSu();
-    else if (tab === 'su-vu') await renderTabSuVu();
-  };
-
-  // ─── Load 45 items master + cache ─────────────────────────────────────
-  async function loadDanhMuc(){
-    if (BG.danhMucCache) return BG.danhMucCache;
-    const { data, error } = await supa.rpc('fn_get_danh_muc_tai_san');
-    if (error) { console.error(error); BG.danhMucCache = []; return []; }
-    BG.danhMucCache = data || [];
-    return BG.danhMucCache;
-  }
-
-  async function loadSuVuBadge(){
+  // Load danh mục 45 items master (cache)
+  if (!bgDanhMucCache) {
     try {
-      const { data } = await supa.rpc('fn_su_vu_count_unread', { 
-        p_ma_nv: SESSION.maNV, p_ma_ch: SESSION.maCH || SESSION.cuaHangMa
-      });
-      const badge = document.getElementById('bg-su-vu-badge');
-      if (badge && data && data.tong > 0) {
-        badge.style.display = 'inline-block';
-        badge.textContent = data.tong;
-      }
-    } catch(e){ /* silent */ }
-  }
-
-  // ═════════════════════════════════════════════════════════════════════
-  //  TAB 1: TẠO BÀN GIAO
-  // ═════════════════════════════════════════════════════════════════════
-  async function renderTabTao(){
-    // Init form data
-    if (!BG.currentForm) BG.currentForm = newFormData();
-    
-    const items = await loadDanhMuc();
-    const itemsByKv = { 1: [], 2: [], 4: [] };
-    items.forEach(it => { itemsByKv[it.khu_vuc].push(it); });
-    
-    // Populate items vào form nếu chưa có (default Đạt)
-    if (!BG.currentForm.taisan || BG.currentForm.taisan.length === 0) {
-      BG.currentForm.taisan = items.map(it => ({
-        stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
-        dat: true, ghi_chu: ''
-      }));
-    }
-    if (!BG.currentForm.hang || BG.currentForm.hang.length === 0) {
-      const nhom = ['Nhóm Nón Vải','Nhóm Nón Bảo Hiểm','Nhóm Phụ Kiện (Lưới, kính....)'];
-      BG.currentForm.hang = [];
-      for (const kv of ['SANH','KHO','NIEM_PHONG']) {
-        for (const nh of nhom) {
-          BG.currentForm.hang.push({ khu_vuc: kv, nhom_hang: nh, so_luong_thuc_te: 0, ghi_chu: '' });
-        }
-      }
-    }
-    
-    const container = document.getElementById('bg-tab-content');
-    container.innerHTML = `
-      <!-- I. Tiền mặt & Doanh thu -->
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>I. Bàn giao tiền mặt & doanh thu</h3></div>
-        <div class="bg-card-body" id="bg-tien-body"></div>
-      </div>
-
-      <!-- II. Tài sản 45 items -->
-      <div class="bg-card">
-        <div class="bg-card-header">
-          <h3>II. Tài sản & trang thiết bị</h3>
-          <span id="bg-ts-summary" style="font:600 12px 'JetBrains Mono';color:var(--slate-600)"></span>
-        </div>
-        <div class="bg-quick-row">
-          <button class="bg-quick-btn active" data-filter="all" onclick="bgFilterItems('all')">Tất cả</button>
-          <button class="bg-quick-btn" data-filter="kd" onclick="bgFilterItems('kd')">Không đạt</button>
-        </div>
-        <div class="bg-search">
-          <input type="text" id="bg-search-input" placeholder="🔍 Tìm hạng mục..." oninput="bgSearchItems(this.value)">
-        </div>
-        <div id="bg-items-container"></div>
-      </div>
-
-      <!-- III. Hàng hóa Sảnh + Kho + Niêm phong -->
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>III. Hàng hóa & tồn kho</h3></div>
-        <div id="bg-hang-body"></div>
-      </div>
-
-      <!-- IV. Ghi chú chung + mức độ -->
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>IV. Ghi chú phát sinh</h3></div>
-        <div class="bg-card-body">
-          <textarea id="bg-ghichu-chung" rows="3" 
-            style="width:100%;padding:10px;border:1px solid var(--slate-200);border-radius:8px;font:500 13px 'Be Vietnam Pro';resize:vertical"
-            placeholder="Sự việc phát sinh trong ca chưa xử lý xong..."
-            oninput="BG.currentForm.ghi_chu_chung=this.value"
-          >${escHtml(BG.currentForm.ghi_chu_chung || '')}</textarea>
-        </div>
-      </div>
-
-      <!-- V. Ảnh biên bản giấy -->
-      <div class="bg-card">
-        <div class="bg-card-header">
-          <h3>V. Ảnh biên bản giấy đã ký</h3>
-          <span id="bg-photo-count" style="font:500 11px 'Be Vietnam Pro';color:var(--slate-600)">0/6 ảnh</span>
-        </div>
-        <div id="bg-photo-grid" class="bg-photo-grid"></div>
-      </div>
-
-      <div style="height:80px"></div>
-
-      <!-- Sticky bottom: Gửi bàn giao -->
-      <div class="bg-sticky-bottom">
-        <div class="bg-progress-text" id="bg-progress-text">Đang chuẩn bị...</div>
-        <button class="bg-btn bg-btn-primary" id="bg-submit-btn" onclick="bgSubmit()">Gửi bàn giao</button>
-      </div>
-    `;
-    
-    renderTienMat();
-    renderItems('all', '');
-    renderHang();
-    renderPhotos();
-    updateProgress();
-  }
-
-  function newFormData(){
-    return {
-      ma_ch: SESSION.maCH || SESSION.cuaHangMa,
-      ten_ch_snapshot: SESSION.tenCH || '',
-      nguoi_ban_giao_ma_nv: SESSION.maNV,
-      nguoi_ban_giao_ten: SESSION.hoTen || SESSION.tenNV || '',
-      nguoi_ban_giao_chuc_vu: SESSION.vaiTro || 'NV',
-      ngay_ban_giao: new Date().toISOString().slice(0,10),
-      gio_ban_giao: new Date().toTimeString().slice(0,8),
-      thoi_gian_chot_tu: null,
-      thoi_gian_chot_den: null,
-      tien_mat_ket: 0, tien_mat_ket_ghi_chu: '',
-      tien_ban_hang: 0, tien_ban_hang_ghi_chu: '',
-      tien_chi: 0, tien_chi_ghi_chu: '',
-      ghi_chu_chung: '',
-      muc_do_ghi_chu: null,    // KHAN_CAP nếu user pick
-      taisan: [],
-      hang: []
-    };
-  }
-
-  // ─── Render Tiền mặt ──────────────────────────────────────────────────
-  function renderTienMat(){
-    const body = document.getElementById('bg-tien-body');
-    const rows = [
-      { key:'tien_mat_ket', label:'Tiền mặt trong két và trong kho' },
-      { key:'tien_ban_hang', label:'Tiền bán hàng thu trong ca' },
-      { key:'tien_chi', label:'Tiền chi trong ca' }
-    ];
-    body.innerHTML = rows.map((r, i)=>{
-      const hasNote = !!BG.currentForm[r.key + '_ghi_chu'];
-      const val = BG.currentForm[r.key] || 0;
-      return `
-        <div class="bg-tien-row">
-          <div class="label">${r.label}</div>
-          <input type="text" inputmode="numeric" class="val" 
-            value="${formatVND(val)}" 
-            onblur="bgUpdateTien('${r.key}', this.value)"
-            onfocus="this.value=BG.currentForm.${r.key}||''">
-          <button class="note-btn ${hasNote?'has':''}" onclick="bgToggleTienNote(${i})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </button>
-        </div>
-        <div class="bg-note-inline" id="bg-tien-note-${i}">
-          <textarea placeholder="Ghi chú/giải trình (nếu lệch tiền)..." 
-            oninput="BG.currentForm.${r.key}_ghi_chu=this.value">${escHtml(BG.currentForm[r.key+'_ghi_chu']||'')}</textarea>
-        </div>
-      `;
-    }).join('') + `
-      <div class="bg-tien-row total">
-        <div class="label">Tổng tiền mặt bàn giao (1+2-3)</div>
-        <div class="val" id="bg-tien-tong">0</div>
-      </div>
-    `;
-    updateTienTong();
-  }
-
-  window.bgUpdateTien = function(key, str){
-    const v = parseInt(String(str).replace(/[^\d]/g,''), 10) || 0;
-    BG.currentForm[key] = v;
-    document.querySelector(`[onblur*="${key}"]`).value = formatVND(v);
-    updateTienTong();
-    updateProgress();
-  };
-  
-  window.bgToggleTienNote = function(i){
-    document.getElementById('bg-tien-note-'+i).classList.toggle('on');
-  };
-
-  function updateTienTong(){
-    const tong = (BG.currentForm.tien_mat_ket||0) + (BG.currentForm.tien_ban_hang||0) - (BG.currentForm.tien_chi||0);
-    const el = document.getElementById('bg-tien-tong');
-    if (el) el.textContent = formatVND(tong);
-  }
-
-  function formatVND(n){
-    return (n || 0).toLocaleString('vi-VN');
-  }
-
-  // ─── Render 45 items ──────────────────────────────────────────────────
-  function renderItems(filter, search){
-    const container = document.getElementById('bg-items-container');
-    const items = BG.currentForm.taisan || [];
-    const searchLc = (search || '').toLowerCase().trim();
-    
-    const groups = { 1: [], 2: [], 4: [] };
-    items.forEach((it, idx) => {
-      if (filter === 'kd' && it.dat) return;
-      if (searchLc && it.ten.toLowerCase().indexOf(searchLc) < 0) return;
-      groups[it.khu_vuc].push({ ...it, _idx: idx });
-    });
-    
-    const KV_TITLE = {
-      1: 'A. Khu vực 1 — Mặt tiền, hạ tầng & không gian chung',
-      2: 'B. Khu vực 2 — Quầy thu ngân & thiết bị IT',
-      4: 'C. Khu vực 4 — Kho, sinh hoạt & công cụ dụng cụ'
-    };
-    
-    let html = '';
-    for (const kv of [1, 2, 4]) {
-      const arr = groups[kv];
-      if (arr.length === 0 && (filter !== 'all' || searchLc)) continue;
-      const ok = arr.filter(x=>x.dat).length;
-      const bad = arr.length - ok;
-      html += `
-        <div class="bg-section" id="bg-section-${kv}">
-          <div class="bg-section-head" onclick="bgToggleSection(${kv})">
-            <div class="title">${KV_TITLE[kv]}</div>
-            <div class="stats"><span class="ok">${ok}✓</span> ${bad>0?`<span class="bad">${bad}✗</span>`:''}</div>
-            <div class="chevron">▼</div>
-          </div>
-          <div class="bg-items-list">
-            ${arr.map(it=>`
-              <div class="bg-item-row ${it.ghi_chu?'expanded':''}" data-idx="${it._idx}">
-                <div class="stt">${it.stt}</div>
-                <div class="info">
-                  <div class="name">${escHtml(it.ten)}</div>
-                  <div class="unit">${escHtml(it.don_vi||'')}</div>
-                </div>
-                <div class="bg-toggle ${it.dat?'dat':'khong-dat'}" onclick="bgToggleItem(${it._idx})">
-                  ${it.dat?'Đạt':'Không đạt'}
-                </div>
-                <button class="bg-item-note-btn ${it.ghi_chu?'has':''}" 
-                  onclick="bgItemNote(${it._idx})" ${it.dat?'disabled':''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                </button>
-              </div>
-              <div class="bg-item-note ${it.ghi_chu?'on':''}" id="bg-item-note-${it._idx}">
-                <textarea placeholder="Mô tả tình trạng hư hỏng/mất/thiếu..." 
-                  oninput="bgItemNoteInput(${it._idx}, this.value)">${escHtml(it.ghi_chu||'')}</textarea>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
-    updateItemsSummary();
-  }
-
-  function updateItemsSummary(){
-    const items = BG.currentForm.taisan || [];
-    const ok = items.filter(it=>it.dat).length;
-    const bad = items.length - ok;
-    const el = document.getElementById('bg-ts-summary');
-    if (el) el.innerHTML = `<span style="color:var(--emerald-soft)">${ok}✓</span> <span style="color:var(--red-dark)">${bad}✗</span> / ${items.length}`;
-  }
-
-  window.bgToggleItem = function(idx){
-    const it = BG.currentForm.taisan[idx];
-    it.dat = !it.dat;
-    if (it.dat) it.ghi_chu = '';   // chuyển về Đạt → xóa ghi chú
-    renderItems(getCurrentFilter(), document.getElementById('bg-search-input').value);
-    updateProgress();
-  };
-  
-  window.bgItemNote = function(idx){
-    const noteEl = document.getElementById('bg-item-note-'+idx);
-    if (!noteEl) return;
-    noteEl.classList.toggle('on');
-    if (noteEl.classList.contains('on')) {
-      setTimeout(()=>noteEl.querySelector('textarea').focus(), 50);
-    }
-  };
-  
-  window.bgItemNoteInput = function(idx, val){
-    BG.currentForm.taisan[idx].ghi_chu = val;
-    // update icon button highlight
-    const row = document.querySelector(`[data-idx="${idx}"]`);
-    if (row) {
-      const btn = row.querySelector('.bg-item-note-btn');
-      btn.classList.toggle('has', !!val);
-    }
-  };
-  
-  window.bgToggleSection = function(kv){
-    document.getElementById('bg-section-'+kv).classList.toggle('collapsed');
-    document.querySelector(`#bg-section-${kv} .bg-section-head`).classList.toggle('collapsed');
-  };
-
-  function getCurrentFilter(){
-    const active = document.querySelector('.bg-quick-btn.active');
-    return active ? active.dataset.filter : 'all';
-  }
-
-  window.bgFilterItems = function(f){
-    document.querySelectorAll('.bg-quick-btn').forEach(b=>b.classList.toggle('active', b.dataset.filter===f));
-    renderItems(f, document.getElementById('bg-search-input').value);
-  };
-
-  window.bgSearchItems = function(v){
-    renderItems(getCurrentFilter(), v);
-  };
-
-  // ─── Render Hàng hóa ──────────────────────────────────────────────────
-  function renderHang(){
-    const body = document.getElementById('bg-hang-body');
-    const KV_LABEL = { 'SANH':'A. Khu vực sảnh trưng bày', 'KHO':'B. Khu vực kho', 'NIEM_PHONG':'C. Hàng niêm phong' };
-    const rows = BG.currentForm.hang || [];
-    let html = '';
-    for (const kv of ['SANH','KHO','NIEM_PHONG']) {
-      html += `<div class="bg-hang-section">${KV_LABEL[kv]}</div>`;
-      rows.filter(r=>r.khu_vuc===kv).forEach((r, _idx)=>{
-        const globalIdx = rows.indexOf(r);
-        const hasNote = !!r.ghi_chu;
-        html += `
-          <div class="bg-hang-row">
-            <div class="info">
-              <div class="name">${escHtml(r.nhom_hang)}</div>
-              <div class="unit">Cái</div>
-            </div>
-            <input type="number" inputmode="numeric" min="0" class="val" 
-              value="${r.so_luong_thuc_te||0}" 
-              onchange="bgUpdateHang(${globalIdx}, this.value)">
-            <button class="note-btn ${hasNote?'has':''}" onclick="bgToggleHangNote(${globalIdx})">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </button>
-          </div>
-          <div class="bg-note-inline" id="bg-hang-note-${globalIdx}" style="padding:0 16px 12px">
-            <textarea placeholder="Chênh lệch/ghi chú..." 
-              oninput="bgUpdateHangNote(${globalIdx}, this.value)">${escHtml(r.ghi_chu||'')}</textarea>
-          </div>
-        `;
-      });
-    }
-    body.innerHTML = html;
-  }
-
-  window.bgUpdateHang = function(idx, val){
-    BG.currentForm.hang[idx].so_luong_thuc_te = parseInt(val, 10) || 0;
-  };
-  window.bgToggleHangNote = function(idx){
-    document.getElementById('bg-hang-note-'+idx).classList.toggle('on');
-  };
-  window.bgUpdateHangNote = function(idx, val){
-    BG.currentForm.hang[idx].ghi_chu = val;
-    const btn = document.querySelector(`[onclick="bgToggleHangNote(${idx})"]`);
-    if (btn) btn.classList.toggle('has', !!val);
-  };
-
-  // ─── Photo grid + CamScanner ──────────────────────────────────────────
-  function renderPhotos(){
-    const grid = document.getElementById('bg-photo-grid');
-    const photos = BG.photoBlobs;
-    let html = photos.map((p, i)=>`
-      <div class="bg-photo-thumb" onclick="bgPreviewPhoto(${i})">
-        <img src="${p.dataUrl}" alt="">
-        <button class="del" onclick="event.stopPropagation(); bgDelPhoto(${i})">×</button>
-      </div>
-    `).join('');
-    if (photos.length < 6) {
-      html += `
-        <div class="bg-photo-add" onclick="bgAddPhoto()">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span>Chụp biên bản</span>
-        </div>
-      `;
-    }
-    grid.innerHTML = html;
-    document.getElementById('bg-photo-count').textContent = `${photos.length}/6 ảnh`;
-  }
-
-  window.bgAddPhoto = function(){
-    if (BG.photoBlobs.length >= 6) { alert('Tối đa 6 ảnh'); return; }
-    if (typeof csOpen !== 'function') {
-      alert('Module camera chưa sẵn sàng — vui lòng tải lại trang');
+      const { data, error } = await supa.rpc('fn_get_danh_muc_tai_san');
+      if (error) throw error;
+      bgDanhMucCache = data || [];
+    } catch(e){
+      document.getElementById('bg-groups').innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải danh mục: '+e.message+'</div>';
       return;
     }
-    csOpen({
-      onComplete: (blob, dataUrl)=>{
-        BG.photoBlobs.push({ blob, dataUrl, url: null, path: null });
-        renderPhotos();
-        updateProgress();
+  }
+  bgBuildGroups();
+  bgState = {};
+  bgPhotos = [];
+  bgRenderForm();
+  bgSwitchSub('new');
+}
+
+// Xác định CH (giống chkXacDinhCH)
+async function bgXacDinhCH(){
+  bgCurrentCH = null;
+  if (SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
+    bgCurrentCH = { ma:SESSION.cuaHangMa, ten:SESSION.cuaHangTen||SESSION.cuaHangMa, khuVuc:SESSION.khuVuc||'' };
+    return;
+  }
+  try {
+    const now = new Date();
+    const today = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    const { data } = await supa.from('cham_cong')
+      .select('ma_ch, ten_ch_snapshot, thoi_gian')
+      .eq('ma_nv', SESSION.ma).eq('ngay', today).eq('loai','VAO_CA')
+      .order('thoi_gian', { ascending:false }).limit(1);
+    if (data && data.length) {
+      const r = data[0];
+      let kv = '';
+      if (window.CH_LIST) { const f = CH_LIST.find(c=>c.ma===r.ma_ch); if (f) kv = f.khuVuc||''; }
+      bgCurrentCH = { ma:r.ma_ch, ten:r.ten_ch_snapshot||r.ma_ch, khuVuc:kv };
+      return;
+    }
+  } catch(e){}
+  if (SESSION.cuaHangMa) {
+    bgCurrentCH = { ma:SESSION.cuaHangMa, ten:SESSION.cuaHangTen||SESSION.cuaHangMa, khuVuc:SESSION.khuVuc||'' };
+  }
+}
+
+// Build 6 nhóm: Tiền · KV1 · KV2 · KV4 · Hàng hóa · Ảnh
+function bgBuildGroups(){
+  const KV_TITLE = {
+    1: 'Khu vực 1 — Mặt tiền, hạ tầng',
+    2: 'Khu vực 2 — Quầy thu ngân & IT',
+    4: 'Khu vực 4 — Kho, sinh hoạt, công cụ'
+  };
+  bgGroups = [];
+
+  // Group 1: Tiền mặt
+  bgGroups.push({
+    key:'tien', ten:'Tiền mặt & doanh thu', type:'tien',
+    items: [
+      { id:'tien_mat_ket', ten:'Tiền mặt trong két & trong kho' },
+      { id:'tien_ban_hang', ten:'Tiền bán hàng thu trong ca' },
+      { id:'tien_chi', ten:'Tiền chi trong ca' }
+    ]
+  });
+
+  // Groups 2-4: Tài sản 45 items chia theo khu vực
+  const taiSan = bgDanhMucCache || [];
+  for (const kv of [1, 2, 4]) {
+    const items = taiSan.filter(x => x.khu_vuc === kv);
+    bgGroups.push({
+      key:'ts_kv'+kv, ten:KV_TITLE[kv], type:'taisan',
+      items: items.map(it => ({ id:'ts_'+it.stt, stt:it.stt, ten:it.ten, don_vi:it.don_vi||'', khu_vuc:kv }))
+    });
+  }
+
+  // Group 5: Hàng hóa (9 dòng: 3 khu vực × 3 nhóm)
+  const KV_HANG = { 'SANH':'Sảnh trưng bày', 'KHO':'Kho', 'NIEM_PHONG':'Niêm phong' };
+  const NHOM_HANG = ['Nhóm Nón Vải','Nhóm Nón Bảo Hiểm','Nhóm Phụ Kiện (Lưới, kính...)'];
+  const hangItems = [];
+  for (const kv of ['SANH','KHO','NIEM_PHONG']) {
+    for (const nh of NHOM_HANG) {
+      hangItems.push({ id:'hg_'+kv+'_'+nh, khu_vuc:kv, nhom_hang:nh, ten: nh + ' · ' + KV_HANG[kv] });
+    }
+  }
+  bgGroups.push({ key:'hang', ten:'Hàng hóa & tồn kho', type:'hang', items: hangItems });
+
+  // Group 6: Ảnh biên bản giấy
+  bgGroups.push({ key:'anh', ten:'Ảnh biên bản giấy đã ký', type:'anh', items:[] });
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+//  SUBTABS
+// ═════════════════════════════════════════════════════════════════════════
+function bgSwitchSub(sub){
+  bgSub = sub;
+  ['new','today','timeline'].forEach(s => {
+    document.getElementById('bg-subtab-'+s).classList.toggle('active', s===sub);
+    document.getElementById('bg-sub-'+s).style.display = s===sub ? '' : 'none';
+  });
+  if (sub==='today') bgRenderToday();
+  if (sub==='timeline') bgRenderTimeline();
+}
+window.bgSwitchSub = bgSwitchSub;
+
+// ═════════════════════════════════════════════════════════════════════════
+//  TAB 1: TẠO BIÊN BẢN — RENDER FORM
+// ═════════════════════════════════════════════════════════════════════════
+function bgRenderForm(){
+  let html = '';
+  bgGroups.forEach((g, gi) => {
+    let bodyHtml = '';
+    if (g.type === 'tien') {
+      bodyHtml = bgRenderGroupTien(g);
+    } else if (g.type === 'taisan') {
+      bodyHtml = bgRenderGroupTaiSan(g);
+    } else if (g.type === 'hang') {
+      bodyHtml = bgRenderGroupHang(g);
+    } else if (g.type === 'anh') {
+      bodyHtml = bgRenderGroupAnh(g);
+    }
+    const stat = g.items.length>0 ? (g.type==='anh' ? bgPhotos.length+' ảnh' : g.items.length+' mục') : '';
+    html += `<div class="chk-group" id="bg-g-${g.key}" data-key="${g.key}">
+      <div class="chk-group-head" onclick="bgToggleGroup('${g.key}')">
+        <div class="chk-group-num" id="bg-gnum-${g.key}">${gi+1}</div>
+        <div class="chk-group-title">${escHtml(g.ten)}</div>
+        <div class="chk-group-status" id="bg-gstatus-${g.key}">${stat}</div>
+        <svg class="chk-group-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="chk-group-body">
+        ${g.type==='taisan' ? `<div class="chk-group-quick">
+          <button class="chk-quick-ok" id="bg-quick-${g.key}" onclick="bgQuickOK('${g.key}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Tất cả bình thường
+          </button>
+        </div>` : ''}
+        ${bodyHtml}
+      </div>
+    </div>`;
+  });
+  document.getElementById('bg-groups').innerHTML = html;
+  document.getElementById('bg-progress-wrap').style.display = '';
+  document.getElementById('bg-submit-zone').style.display = '';
+  // Mở mặc định group đầu (Tiền mặt)
+  document.getElementById('bg-g-tien').classList.add('open');
+  bgUpdateProgress();
+}
+
+// ─── Group Tiền mặt (3 dòng input + tổng tự tính) ─────────────────────
+function bgRenderGroupTien(g){
+  let rows = g.items.map(it => {
+    const v = (bgState[it.id]&&bgState[it.id].so_tien)||0;
+    const note = (bgState[it.id]&&bgState[it.id].ghi_chu)||'';
+    return `<div class="bg-tien-row" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1F5F9">
+      <div style="flex:1;font-size:13px;color:#334155">${escHtml(it.ten)}</div>
+      <input type="text" inputmode="numeric" class="bg-tien-input" id="bg-tien-${it.id}"
+        style="width:130px;padding:8px 10px;text-align:right;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#1E293B"
+        value="${bgFmtVN(v)}"
+        onfocus="this.value=(bgState['${it.id}']&&bgState['${it.id}'].so_tien)||''"
+        onblur="bgUpdateTien('${it.id}', this.value)">
+      <button class="bg-note-btn ${note?'has':''}" onclick="bgToggleTienNote('${it.id}')" 
+        style="width:34px;height:34px;border-radius:8px;border:1.5px solid #E2E8F0;background:${note?'#FBBF24':'#fff'};color:${note?'#fff':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </button>
+    </div>
+    <div class="bg-tien-note" id="bg-tien-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 10px">
+      <textarea class="chk-vd-textarea" oninput="bgUpdateTienNote('${it.id}', this.value)" 
+        placeholder="Ghi chú / giải trình (nếu lệch)..." 
+        style="border-color:#FDE047;background:#FEFCE8">${escHtml(note)}</textarea>
+    </div>`;
+  }).join('');
+  rows += `<div style="display:flex;align-items:center;padding:14px 0 4px;border-top:2px solid #E2E8F0;margin-top:6px">
+    <div style="flex:1;font-size:13px;font-weight:700;color:#0F2E45">Tổng tiền bàn giao (1 + 2 − 3)</div>
+    <div id="bg-tien-tong" style="width:130px;text-align:right;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:#0F2E45;background:#F1F5F9;border-radius:8px">0</div>
+  </div>`;
+  return rows;
+}
+function bgUpdateTienTong(){
+  const a = (bgState['tien_mat_ket']&&bgState['tien_mat_ket'].so_tien)||0;
+  const b = (bgState['tien_ban_hang']&&bgState['tien_ban_hang'].so_tien)||0;
+  const c = (bgState['tien_chi']&&bgState['tien_chi'].so_tien)||0;
+  const el = document.getElementById('bg-tien-tong');
+  if (el) el.textContent = bgFmtVN(a+b-c);
+}
+window.bgUpdateTien = function(id, raw){
+  const v = parseInt(String(raw).replace(/[^\d]/g,''), 10) || 0;
+  if (!bgState[id]) bgState[id] = {};
+  bgState[id].so_tien = v;
+  const inp = document.getElementById('bg-tien-'+id);
+  if (inp) inp.value = bgFmtVN(v);
+  bgUpdateTienTong();
+  bgUpdateProgress();
+};
+window.bgToggleTienNote = function(id){
+  const el = document.getElementById('bg-tien-note-'+id);
+  if (!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+  if (el.style.display==='block') setTimeout(()=>{ const t = el.querySelector('textarea'); if (t) t.focus(); }, 50);
+};
+window.bgUpdateTienNote = function(id, val){
+  if (!bgState[id]) bgState[id] = {};
+  bgState[id].ghi_chu = val;
+  bgUpdateProgress();
+};
+function bgFmtVN(n){ return (n||0).toLocaleString('vi-VN'); }
+
+// ─── Group Tài sản (45 items, default chưa chọn, BT/VD toggle) ────────
+function bgRenderGroupTaiSan(g){
+  return g.items.map(it => bgItemTaiSanHtml(it)).join('');
+}
+
+function bgItemTaiSanHtml(it){
+  const st = bgState[it.id] || {};
+  const showDetail = st.status === 'VD';
+  return `<div class="chk-item" id="bg-item-${it.id}">
+    <div class="chk-item-row">
+      <div class="chk-item-name">${escHtml(it.ten)}${it.don_vi?` <small style="color:#94A3B8">(${escHtml(it.don_vi)})</small>`:''}</div>
+      <div class="chk-item-toggle">
+        <button class="chk-tg bt ${st.status==='BT'?'active':''}" onclick="bgSetTaiSan('${it.id}','BT')">Bình thường</button>
+        <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có vấn đề</button>
+      </div>
+    </div>
+    <div id="bg-detail-${it.id}">${showDetail?bgItemTaiSanDetailHtml(it):''}</div>
+  </div>`;
+}
+
+function bgItemTaiSanDetailHtml(it){
+  const st = bgState[it.id] || {};
+  const photos = (st.anh_urls||[]).map((url,i)=>`<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${url}"><div class="chk-photo-del" onclick="bgDelTaiSanPhoto('${it.id}',${i})">×</div></div>`).join('');
+  return `<div class="chk-vd-detail">
+    <div class="chk-mucdo-row">
+      <button class="chk-mucdo nhe ${st.muc_do==='CAN_THIET'?'active':''}" onclick="bgSetMucDo('${it.id}','CAN_THIET')">Cần thiết</button>
+      <button class="chk-mucdo vua ${st.muc_do==='QUAN_TRONG'?'active':''}" onclick="bgSetMucDo('${it.id}','QUAN_TRONG')">Quan trọng</button>
+      <button class="chk-mucdo khan ${st.muc_do==='KHAN_CAP'?'active':''}" onclick="bgSetMucDo('${it.id}','KHAN_CAP')">Khẩn cấp</button>
+    </div>
+    <textarea class="chk-vd-textarea" placeholder="Mô tả vấn đề (bắt buộc)..." 
+      oninput="bgUpdateTaiSanMoTa('${it.id}', this.value)">${escHtml(st.mo_ta||'')}</textarea>
+    <div class="chk-photo-row">
+      ${photos}
+      <label class="chk-photo-add">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Ảnh
+        <input type="file" accept="image/*" style="display:none" onchange="bgAddTaiSanPhoto('${it.id}', this)">
+      </label>
+    </div>
+  </div>`;
+}
+
+window.bgSetTaiSan = function(id, status){
+  if (!bgState[id]) bgState[id] = {};
+  bgState[id].status = status;
+  if (status === 'BT') {
+    delete bgState[id].muc_do;
+    delete bgState[id].mo_ta;
+    delete bgState[id].anh_urls;
+  } else if (!bgState[id].muc_do) {
+    bgState[id].muc_do = 'CAN_THIET';
+  }
+  const row = document.getElementById('bg-item-'+id);
+  // Tìm trong group nào để re-render item
+  const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
+  const it = g.items.find(x=>x.id===id);
+  if (row) row.outerHTML = bgItemTaiSanHtml(it);
+  bgUpdateGroupStatusForItem(id);
+  bgUpdateProgress();
+};
+
+window.bgSetMucDo = function(id, m){
+  if (!bgState[id]) bgState[id] = { status:'VD' };
+  bgState[id].muc_do = m;
+  // Re-render only the muc-do row to update active state
+  const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
+  const it = g.items.find(x=>x.id===id);
+  document.getElementById('bg-detail-'+id).innerHTML = bgItemTaiSanDetailHtml(it);
+};
+
+window.bgUpdateTaiSanMoTa = function(id, v){
+  if (!bgState[id]) bgState[id] = { status:'VD' };
+  bgState[id].mo_ta = v;
+  bgUpdateProgress();
+};
+
+window.bgAddTaiSanPhoto = function(id, input){
+  const f = input.files && input.files[0];
+  if (!f) return;
+  // Mở CamScanner perspective crop
+  if (typeof csOpenFromFile === 'function') {
+    csOpenFromFile(f, {
+      onComplete: blob => {
+        const r = new FileReader();
+        r.onload = e => {
+          if (!bgState[id]) bgState[id] = { status:'VD' };
+          if (!bgState[id].anh_urls) bgState[id].anh_urls = [];
+          if (bgState[id].anh_urls.length >= 4) { showToast('Tối đa 4 ảnh / mục', 'warn'); return; }
+          bgState[id].anh_urls.push({ blob, dataUrl: e.target.result });
+          const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
+          const it = g.items.find(x=>x.id===id);
+          document.getElementById('bg-detail-'+id).innerHTML = bgItemTaiSanDetailHtml({
+            ...it,
+            // attach dataUrl-only display for rendering
+          });
+          // Patch state: render lưu dataUrl trong anh_urls
+          // Hiển thị lại detail
+          const det = bgState[id].anh_urls.map((p,i)=>p.dataUrl);
+          // re-render
+          const it2 = it;
+          const stCopy = bgState[id];
+          stCopy._displayUrls = det;
+          document.getElementById('bg-detail-'+id).innerHTML = (function(){
+            const photos = det.map((url,i)=>`<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${url}"><div class="chk-photo-del" onclick="bgDelTaiSanPhoto('${id}',${i})">×</div></div>`).join('');
+            return `<div class="chk-vd-detail">
+              <div class="chk-mucdo-row">
+                <button class="chk-mucdo nhe ${stCopy.muc_do==='CAN_THIET'?'active':''}" onclick="bgSetMucDo('${id}','CAN_THIET')">Cần thiết</button>
+                <button class="chk-mucdo vua ${stCopy.muc_do==='QUAN_TRONG'?'active':''}" onclick="bgSetMucDo('${id}','QUAN_TRONG')">Quan trọng</button>
+                <button class="chk-mucdo khan ${stCopy.muc_do==='KHAN_CAP'?'active':''}" onclick="bgSetMucDo('${id}','KHAN_CAP')">Khẩn cấp</button>
+              </div>
+              <textarea class="chk-vd-textarea" placeholder="Mô tả vấn đề (bắt buộc)..." 
+                oninput="bgUpdateTaiSanMoTa('${id}', this.value)">${escHtml(stCopy.mo_ta||'')}</textarea>
+              <div class="chk-photo-row">
+                ${photos}
+                <label class="chk-photo-add">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Ảnh
+                  <input type="file" accept="image/*" style="display:none" onchange="bgAddTaiSanPhoto('${id}', this)">
+                </label>
+              </div>
+            </div>`;
+          })();
+        };
+        r.readAsDataURL(blob);
       },
       onCancel: ()=>{}
     });
-  };
+  } else {
+    showToast('Module CamScanner chưa tải xong', 'warn');
+  }
+  input.value = '';
+};
 
-  window.bgDelPhoto = function(i){
-    BG.photoBlobs.splice(i, 1);
-    renderPhotos();
-    updateProgress();
-  };
+window.bgDelTaiSanPhoto = function(id, idx){
+  if (bgState[id] && bgState[id].anh_urls){
+    bgState[id].anh_urls.splice(idx, 1);
+    const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
+    const it = g.items.find(x=>x.id===id);
+    const det = bgState[id].anh_urls.map(p=>p.dataUrl);
+    const stCopy = bgState[id];
+    const photos = det.map((url,i)=>`<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${url}"><div class="chk-photo-del" onclick="bgDelTaiSanPhoto('${id}',${i})">×</div></div>`).join('');
+    document.getElementById('bg-detail-'+id).innerHTML = `<div class="chk-vd-detail">
+      <div class="chk-mucdo-row">
+        <button class="chk-mucdo nhe ${stCopy.muc_do==='CAN_THIET'?'active':''}" onclick="bgSetMucDo('${id}','CAN_THIET')">Cần thiết</button>
+        <button class="chk-mucdo vua ${stCopy.muc_do==='QUAN_TRONG'?'active':''}" onclick="bgSetMucDo('${id}','QUAN_TRONG')">Quan trọng</button>
+        <button class="chk-mucdo khan ${stCopy.muc_do==='KHAN_CAP'?'active':''}" onclick="bgSetMucDo('${id}','KHAN_CAP')">Khẩn cấp</button>
+      </div>
+      <textarea class="chk-vd-textarea" placeholder="Mô tả vấn đề (bắt buộc)..." 
+        oninput="bgUpdateTaiSanMoTa('${id}', this.value)">${escHtml(stCopy.mo_ta||'')}</textarea>
+      <div class="chk-photo-row">
+        ${photos}
+        <label class="chk-photo-add">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Ảnh
+          <input type="file" accept="image/*" style="display:none" onchange="bgAddTaiSanPhoto('${id}', this)">
+        </label>
+      </div>
+    </div>`;
+  }
+};
 
-  window.bgPreviewPhoto = function(i){
-    const p = BG.photoBlobs[i];
-    if (!p) return;
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
-    ov.onclick = ()=>ov.remove();
-    ov.innerHTML = `<img src="${p.dataUrl}" style="max-width:95%;max-height:95%;object-fit:contain;border-radius:8px">`;
-    document.body.appendChild(ov);
-  };
+// Quick OK: tick "Bình thường" tất cả items trong nhóm tài sản
+window.bgQuickOK = function(groupKey){
+  const g = bgGroups.find(x=>x.key===groupKey);
+  if (!g || g.type !== 'taisan') return;
+  g.items.forEach(it => { bgState[it.id] = { status:'BT' }; });
+  g.items.forEach(it => {
+    const el = document.getElementById('bg-item-'+it.id);
+    if (el) el.outerHTML = bgItemTaiSanHtml(it);
+  });
+  bgUpdateGroupStatus(groupKey);
+  bgUpdateProgress();
+  // Highlight quick button briefly
+  const btn = document.getElementById('bg-quick-'+groupKey);
+  if (btn){ btn.classList.add('active'); setTimeout(()=>btn.classList.remove('active'), 600); }
+};
 
-  // ─── Progress / Submit ────────────────────────────────────────────────
-  function updateProgress(){
-    const items = BG.currentForm.taisan || [];
-    const totalChecked = items.length;  // tất cả đã default Đạt
-    const photosCount = BG.photoBlobs.length;
-    
-    const el = document.getElementById('bg-progress-text');
-    const btn = document.getElementById('bg-submit-btn');
-    if (!el || !btn) return;
-    
-    // Validate: cần ít nhất 1 ảnh biên bản
-    if (photosCount === 0) {
-      el.innerHTML = '<span class="pending">Cần ít nhất 1 ảnh biên bản giấy</span>';
-      btn.disabled = true;
-    } else {
-      const itemsKD = items.filter(x=>!x.dat).length;
-      el.innerHTML = `<b>${formatVND(BG.currentForm.tien_mat_ket+BG.currentForm.tien_ban_hang-BG.currentForm.tien_chi)}</b> · ${photosCount} ảnh · ${itemsKD} hạng mục không đạt`;
-      btn.disabled = false;
-    }
+window.bgToggleGroup = function(key){
+  document.getElementById('bg-g-'+key).classList.toggle('open');
+};
+
+// ─── Group Hàng hóa (9 dòng số nguyên + ghi chú) ──────────────────────
+function bgRenderGroupHang(g){
+  return g.items.map(it => {
+    const st = bgState[it.id] || {};
+    const sl = (st.so_luong!==undefined) ? st.so_luong : '';
+    const note = st.ghi_chu || '';
+    return `<div class="bg-hang-row" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F8FAFC">
+      <div style="flex:1;font-size:12.5px;color:#334155">${escHtml(it.ten)}</div>
+      <input type="number" inputmode="numeric" min="0" 
+        style="width:80px;padding:7px 8px;text-align:right;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace"
+        value="${sl}" placeholder="--"
+        onchange="bgUpdateHang('${it.id}', this.value)">
+      <button class="${note?'has':''}" onclick="bgToggleHangNote('${it.id}')" 
+        style="width:32px;height:32px;border-radius:8px;border:1.5px solid #E2E8F0;background:${note?'#FBBF24':'#fff'};color:${note?'#fff':'#94A3B8'};cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </button>
+    </div>
+    <div id="bg-hang-note-${it.id}" style="display:${note?'block':'none'};padding:0 0 9px">
+      <textarea class="chk-vd-textarea" oninput="bgUpdateHangNote('${it.id}', this.value)"
+        placeholder="Ghi chú / chênh lệch..."
+        style="border-color:#FDE047;background:#FEFCE8">${escHtml(note)}</textarea>
+    </div>`;
+  }).join('');
+}
+window.bgUpdateHang = function(id, raw){
+  const v = parseInt(raw, 10);
+  if (!bgState[id]) bgState[id] = {};
+  bgState[id].so_luong = isNaN(v) ? null : v;
+  bgUpdateProgress();
+};
+window.bgToggleHangNote = function(id){
+  const el = document.getElementById('bg-hang-note-'+id);
+  if (!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+};
+window.bgUpdateHangNote = function(id, v){
+  if (!bgState[id]) bgState[id] = {};
+  bgState[id].ghi_chu = v;
+};
+
+// ─── Group Ảnh biên bản giấy ───────────────────────────────────────────
+function bgRenderGroupAnh(g){
+  const photos = bgPhotos.map((p,i) => 
+    `<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${p.dataUrl}" style="width:78px;height:78px"><div class="chk-photo-del" onclick="bgDelBienBanPhoto(${i})">×</div></div>`
+  ).join('');
+  return `<div class="chk-photo-row" id="bg-anh-row">
+    ${photos}
+    <label class="chk-photo-add" style="width:78px;height:78px;border-color:#1B4965;color:#1B4965">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Chọn ảnh
+      <input type="file" accept="image/*" style="display:none" onchange="bgAddBienBanPhoto(this)">
+    </label>
+  </div>
+  <div style="margin-top:6px;font-size:11px;color:#94A3B8">Chọn ảnh biên bản giấy đã ký, hệ thống sẽ tự cắt theo khung. Tối đa 6 ảnh.</div>`;
+}
+
+window.bgAddBienBanPhoto = function(input){
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (bgPhotos.length >= 6) { showToast('Tối đa 6 ảnh biên bản', 'warn'); input.value=''; return; }
+  if (typeof csOpenFromFile !== 'function') { showToast('Module xử lý ảnh chưa tải xong', 'warn'); return; }
+  csOpenFromFile(f, {
+    onComplete: blob => {
+      const r = new FileReader();
+      r.onload = e => {
+        bgPhotos.push({ blob, dataUrl: e.target.result });
+        document.getElementById('bg-g-anh').querySelector('.chk-group-body').innerHTML = bgRenderGroupAnh({type:'anh',items:[]});
+        document.getElementById('bg-gstatus-anh').textContent = bgPhotos.length + ' ảnh';
+        bgUpdateProgress();
+      };
+      r.readAsDataURL(blob);
+    },
+    onCancel: ()=>{}
+  });
+  input.value = '';
+};
+window.bgDelBienBanPhoto = function(i){
+  bgPhotos.splice(i,1);
+  document.getElementById('bg-g-anh').querySelector('.chk-group-body').innerHTML = bgRenderGroupAnh({type:'anh',items:[]});
+  document.getElementById('bg-gstatus-anh').textContent = bgPhotos.length + ' ảnh';
+  bgUpdateProgress();
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+//  PROGRESS & GROUP STATUS
+// ═════════════════════════════════════════════════════════════════════════
+function bgUpdateGroupStatusForItem(itemId){
+  const g = bgGroups.find(g=>g.items.some(x=>x.id===itemId));
+  if (g) bgUpdateGroupStatus(g.key);
+}
+function bgUpdateGroupStatus(key){
+  const g = bgGroups.find(x=>x.key===key);
+  if (!g || g.type !== 'taisan') return;
+  const items = g.items;
+  const checked = items.filter(it=>bgState[it.id] && bgState[it.id].status).length;
+  const issues = items.filter(it=>bgState[it.id] && bgState[it.id].status==='VD').length;
+  const gel = document.getElementById('bg-g-'+key);
+  const sel = document.getElementById('bg-gstatus-'+key);
+  gel.classList.remove('done-ok','done-issue');
+  if (checked === items.length) {
+    if (issues > 0) { gel.classList.add('done-issue'); sel.textContent = issues + ' vấn đề'; }
+    else { gel.classList.add('done-ok'); sel.textContent = 'Tất cả bình thường'; }
+  } else {
+    sel.textContent = checked + '/' + items.length;
+  }
+}
+
+function bgUpdateProgress(){
+  // Đếm "phần" hoàn thành (6 groups)
+  let doneCount = 0;
+  let issues = 0;
+
+  // Tiền: cần nhập đủ 3 dòng tiền (>=0 cũng tính là nhập nếu user đã chạm — kiểm bằng key tồn tại)
+  const tienOK = ['tien_mat_ket','tien_ban_hang','tien_chi'].every(k => bgState[k] && bgState[k].so_tien !== undefined);
+  if (tienOK) doneCount++;
+
+  // 3 nhóm tài sản: hết items đã có status
+  for (const kv of [1,2,4]) {
+    const g = bgGroups.find(x=>x.key==='ts_kv'+kv);
+    if (!g) continue;
+    const filled = g.items.every(it=>bgState[it.id] && bgState[it.id].status);
+    if (filled) doneCount++;
+    issues += g.items.filter(it=>bgState[it.id] && bgState[it.id].status==='VD').length;
+    bgUpdateGroupStatus(g.key);
   }
 
-  window.bgSubmit = async function(){
-    const btn = document.getElementById('bg-submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'Đang xử lý...';
-    
-    try {
-      // 1) Upload ảnh lên Supabase Storage
-      const uploadedUrls = [];
-      const uploadedPaths = [];
-      const bucket = 'bien-ban-ban-giao';
-      const ngay = BG.currentForm.ngay_ban_giao;
-      const maCH = BG.currentForm.ma_ch;
-      for (let i = 0; i < BG.photoBlobs.length; i++) {
-        btn.textContent = `Tải ảnh ${i+1}/${BG.photoBlobs.length}...`;
-        const p = BG.photoBlobs[i];
-        const path = `${maCH}/${ngay}/${Date.now()}_${i}_${SESSION.maNV}.jpg`;
-        const { error: upErr } = await supa.storage.from(bucket).upload(path, p.blob, {
-          contentType: 'image/jpeg', upsert: false
-        });
-        if (upErr) throw new Error('Upload ảnh ' + (i+1) + ': ' + upErr.message);
-        const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
-        uploadedUrls.push(pub.publicUrl);
-        uploadedPaths.push(path);
+  // Hàng: cần nhập ít nhất 1 dòng (>=0)
+  const hangG = bgGroups.find(x=>x.key==='hang');
+  if (hangG){
+    const anyHang = hangG.items.some(it=>bgState[it.id] && bgState[it.id].so_luong !== undefined && bgState[it.id].so_luong !== null);
+    if (anyHang) doneCount++;
+  }
+
+  // Ảnh: >= 1
+  if (bgPhotos.length >= 1) doneCount++;
+
+  const txt = document.getElementById('bg-progress-text');
+  const isb = document.getElementById('bg-progress-issues');
+  const fill = document.getElementById('bg-progress-fill');
+  const btn = document.getElementById('bg-submit-btn');
+  if (txt) txt.textContent = 'Hoàn thành '+doneCount+'/6 phần';
+  if (isb) isb.textContent = issues > 0 ? (issues + ' vấn đề') : '';
+  if (fill) fill.style.width = (doneCount/6*100) + '%';
+  if (btn) {
+    // Cần đủ 6 phần để gửi
+    btn.disabled = (doneCount < 6);
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+//  SUBMIT
+// ═════════════════════════════════════════════════════════════════════════
+async function bgSubmit(){
+  const btn = document.getElementById('bg-submit-btn');
+  
+  // Validate items VD cần có mô tả
+  const itemsVD = [];
+  bgGroups.filter(g=>g.type==='taisan').forEach(g => {
+    g.items.forEach(it => {
+      const st = bgState[it.id];
+      if (st && st.status === 'VD' && (!st.mo_ta || !st.mo_ta.trim())) {
+        itemsVD.push(it.ten);
       }
-      
-      // 2) Insert header + items + hàng (atomic)
-      btn.textContent = 'Đang lưu biên bản...';
-      const { data: banGiaoId, error: createErr } = await supa.rpc('fn_ban_giao_create', {
-        p_ma_ch: BG.currentForm.ma_ch,
-        p_ten_ch_snapshot: BG.currentForm.ten_ch_snapshot,
-        p_nguoi_ban_giao_ma_nv: BG.currentForm.nguoi_ban_giao_ma_nv,
-        p_nguoi_ban_giao_ten: BG.currentForm.nguoi_ban_giao_ten,
-        p_nguoi_ban_giao_chuc_vu: BG.currentForm.nguoi_ban_giao_chuc_vu,
-        p_ngay_ban_giao: BG.currentForm.ngay_ban_giao,
-        p_gio_ban_giao: BG.currentForm.gio_ban_giao,
-        p_thoi_gian_chot_tu: BG.currentForm.thoi_gian_chot_tu,
-        p_thoi_gian_chot_den: BG.currentForm.thoi_gian_chot_den,
-        p_tien_mat_ket: BG.currentForm.tien_mat_ket,
-        p_tien_mat_ket_ghi_chu: BG.currentForm.tien_mat_ket_ghi_chu,
-        p_tien_ban_hang: BG.currentForm.tien_ban_hang,
-        p_tien_ban_hang_ghi_chu: BG.currentForm.tien_ban_hang_ghi_chu,
-        p_tien_chi: BG.currentForm.tien_chi,
-        p_tien_chi_ghi_chu: BG.currentForm.tien_chi_ghi_chu,
-        p_ghi_chu_chung: BG.currentForm.ghi_chu_chung,
-        p_anh_urls: uploadedUrls,
-        p_anh_storage_paths: uploadedPaths,
-        p_chi_tiet_tai_san: BG.currentForm.taisan.map(it=>({
+    });
+  });
+  if (itemsVD.length > 0){
+    showToast('Mục "Có vấn đề" cần nhập mô tả: '+itemsVD[0]+(itemsVD.length>1?' và '+(itemsVD.length-1)+' mục khác':''), 'warn');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = 'Đang gửi...';
+
+  try {
+    // 1) Upload ảnh biên bản giấy
+    const anhUrls = [], anhPaths = [];
+    const bucket = 'bien-ban-ban-giao';
+    const ngay = new Date().toISOString().slice(0,10);
+    for (let i = 0; i < bgPhotos.length; i++){
+      btn.innerHTML = 'Tải ảnh '+(i+1)+'/'+bgPhotos.length+'...';
+      const p = bgPhotos[i];
+      const path = `${bgCurrentCH.ma}/${ngay}/${Date.now()}_${i}_${SESSION.ma}.jpg`;
+      const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
+      if (ue) throw new Error('Upload ảnh '+(i+1)+': '+ue.message);
+      const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
+      anhUrls.push(pub.publicUrl);
+      anhPaths.push(path);
+    }
+
+    // 2) Upload ảnh per-item (chỉ items VD)
+    btn.innerHTML = 'Tải ảnh hạng mục...';
+    const itemAnh = {};  // {itemId: [urls]}
+    for (const g of bgGroups.filter(g=>g.type==='taisan')){
+      for (const it of g.items){
+        const st = bgState[it.id];
+        if (st && st.status === 'VD' && st.anh_urls && st.anh_urls.length){
+          const urls = [];
+          for (let i = 0; i < st.anh_urls.length; i++){
+            const p = st.anh_urls[i];
+            if (!p.blob) { urls.push(p.dataUrl || p); continue; }
+            const path = `${bgCurrentCH.ma}/${ngay}/item_${it.stt}_${Date.now()}_${i}_${SESSION.ma}.jpg`;
+            const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
+            if (!ue) {
+              const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
+              urls.push(pub.publicUrl);
+            }
+          }
+          itemAnh[it.id] = urls;
+        }
+      }
+    }
+
+    // 3) Build chi tiết tài sản (45 items)
+    btn.innerHTML = 'Đang lưu biên bản...';
+    const chi_tiet_tai_san = [];
+    bgGroups.filter(g=>g.type==='taisan').forEach(g => {
+      g.items.forEach(it => {
+        const st = bgState[it.id] || {};
+        chi_tiet_tai_san.push({
           stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
-          dat: it.dat, ghi_chu: it.ghi_chu
-        })),
-        p_chi_tiet_hang: BG.currentForm.hang
-      });
-      if (createErr) throw createErr;
-      
-      // 3) Auto-create sự vụ cho từng item không đạt + chênh lệch hàng + ghi chú khẩn
-      btn.textContent = 'Đang tạo sự vụ...';
-      const suVuCreated = await autoCreateSuVu(banGiaoId);
-      
-      // 4) Reset form, jump sang tab lịch sử
-      BG.currentForm = null;
-      BG.photoBlobs = [];
-      alert(`✓ Đã gửi biên bản thành công.\n${suVuCreated} sự vụ phát sinh đã được tạo và gửi đến quản lý.`);
-      await renderBanGiaoPage();
-      bgSwitchTab('lich-su');
-    } catch(e){
-      console.error(e);
-      alert('Lỗi: ' + e.message);
-      btn.disabled = false;
-      btn.textContent = 'Gửi bàn giao';
-    }
-  };
-
-  async function autoCreateSuVu(banGiaoId){
-    let count = 0;
-    const itemsKD = (BG.currentForm.taisan || []).filter(it => !it.dat);
-    for (const it of itemsKD) {
-      // Mức độ default = QUAN_TRONG, NV có thể edit sau
-      await supa.rpc('fn_su_vu_create', {
-        p_ban_giao_id: banGiaoId,
-        p_loai: 'TAI_SAN_KHONG_DAT',
-        p_ma_ch: BG.currentForm.ma_ch,
-        p_ten_ch_snapshot: BG.currentForm.ten_ch_snapshot,
-        p_nguoi_tao_ma_nv: BG.currentForm.nguoi_ban_giao_ma_nv,
-        p_nguoi_tao_ten: BG.currentForm.nguoi_ban_giao_ten,
-        p_nguoi_tao_chuc_vu: BG.currentForm.nguoi_ban_giao_chuc_vu,
-        p_tieu_de: it.ten + ' — Không đạt',
-        p_mo_ta: it.ghi_chu || '',
-        p_so_lieu: { stt: it.stt, khu_vuc: it.khu_vuc },
-        p_anh_urls: [],
-        p_muc_do: 'QUAN_TRONG'
-      });
-      count++;
-    }
-    // Chênh lệch hàng (chỉ tạo sự vụ nếu CÓ ghi chú — nghĩa là có chênh lệch)
-    const hangChenh = (BG.currentForm.hang || []).filter(h => h.ghi_chu && h.ghi_chu.trim());
-    for (const h of hangChenh) {
-      await supa.rpc('fn_su_vu_create', {
-        p_ban_giao_id: banGiaoId,
-        p_loai: 'HANG_CHENH',
-        p_ma_ch: BG.currentForm.ma_ch,
-        p_ten_ch_snapshot: BG.currentForm.ten_ch_snapshot,
-        p_nguoi_tao_ma_nv: BG.currentForm.nguoi_ban_giao_ma_nv,
-        p_nguoi_tao_ten: BG.currentForm.nguoi_ban_giao_ten,
-        p_nguoi_tao_chuc_vu: BG.currentForm.nguoi_ban_giao_chuc_vu,
-        p_tieu_de: h.nhom_hang + ' (' + h.khu_vuc + ') — Chênh lệch',
-        p_mo_ta: h.ghi_chu,
-        p_so_lieu: { khu_vuc: h.khu_vuc, nhom: h.nhom_hang, sl: h.so_luong_thuc_te },
-        p_anh_urls: [],
-        p_muc_do: 'QUAN_TRONG'
-      });
-      count++;
-    }
-    // Tiền lệch (nếu có ghi chú)
-    for (const k of ['tien_mat_ket','tien_ban_hang','tien_chi']) {
-      const note = BG.currentForm[k + '_ghi_chu'];
-      if (note && note.trim()) {
-        await supa.rpc('fn_su_vu_create', {
-          p_ban_giao_id: banGiaoId,
-          p_loai: 'TIEN_LECH',
-          p_ma_ch: BG.currentForm.ma_ch,
-          p_ten_ch_snapshot: BG.currentForm.ten_ch_snapshot,
-          p_nguoi_tao_ma_nv: BG.currentForm.nguoi_ban_giao_ma_nv,
-          p_nguoi_tao_ten: BG.currentForm.nguoi_ban_giao_ten,
-          p_nguoi_tao_chuc_vu: BG.currentForm.nguoi_ban_giao_chuc_vu,
-          p_tieu_de: ({tien_mat_ket:'Tiền két',tien_ban_hang:'Tiền bán hàng',tien_chi:'Tiền chi'}[k]) + ' — Có ghi chú/lệch',
-          p_mo_ta: note,
-          p_so_lieu: { loai: k, so_tien: BG.currentForm[k] },
-          p_anh_urls: [],
-          p_muc_do: 'KHAN_CAP'
+          dat: st.status !== 'VD',
+          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : null
         });
-        count++;
-      }
-    }
-    return count;
-  }
-
-  // ═════════════════════════════════════════════════════════════════════
-  //  TAB 2: LỊCH SỬ BÀN GIAO
-  // ═════════════════════════════════════════════════════════════════════
-  async function renderTabLichSu(){
-    const container = document.getElementById('bg-tab-content');
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate-400)">Đang tải...</div>';
-    
-    const { data: list, error } = await supa.rpc('fn_ban_giao_list', {
-      p_ma_ch: SESSION.maCH || SESSION.cuaHangMa,
-      p_limit: 50, p_offset: 0
-    });
-    if (error) { container.innerHTML = '<div style="padding:20px;color:var(--red-dark)">Lỗi: '+error.message+'</div>'; return; }
-    if (!list || list.length === 0) {
-      container.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--slate-400)">Chưa có biên bản nào.</div>'; return;
-    }
-    container.innerHTML = list.map(b => `
-      <div class="sv-card" onclick="bgOpenDetail('${b.id}')">
-        <div class="top">
-          <div class="title">${escHtml(b.ten_ch_snapshot || b.ma_ch)} — ${formatDate(b.ngay_ban_giao)}</div>
-          <span class="status ${b.trang_thai}">${b.trang_thai==='DA_GUI'?'Đã gửi':b.trang_thai==='DA_TIEP_NHAN'?'Đã tiếp nhận':b.trang_thai}</span>
-        </div>
-        <div class="meta">
-          <b>Người giao:</b> ${escHtml(b.nguoi_ban_giao_ten||'?')} · 
-          <b>Tiền:</b> ${formatVND(b.tien_tong)}đ · 
-          <b>Ảnh:</b> ${b.so_anh} · 
-          <b>Không đạt:</b> ${b.so_item_khong_dat}
-          ${b.so_su_vu_khan > 0 ? `· <span style="color:var(--red-dark);font-weight:700">${b.so_su_vu_khan} sự vụ khẩn</span>` : ''}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  window.bgOpenDetail = async function(id){
-    const { data, error } = await supa.rpc('fn_ban_giao_get', { p_id: id });
-    if (error || !data) { alert('Không tải được'); return; }
-    showBanGiaoDetail(data);
-  };
-
-  function showBanGiaoDetail(data){
-    const h = data.header || {};
-    const anh = data.anh || [];
-    const ts = data.tai_san || [];
-    const tsKD = ts.filter(t=>!t.dat);
-    const hg = data.hang || [];
-    const sv = data.su_vu || [];
-    const ackArr = data.ack || [];
-    
-    const ov = document.createElement('div');
-    ov.className = 'sv-detail';
-    ov.innerHTML = `
-      <div class="head">
-        <button class="back" onclick="this.closest('.sv-detail').remove()">‹</button>
-        <div class="title">Biên bản ${formatDate(h.ngay_ban_giao)} — ${h.gio_ban_giao||''}</div>
-      </div>
-      <div class="bg-card">
-        <div class="bg-card-body">
-          <div style="font:600 14px;color:var(--slate-800);margin-bottom:6px">${escHtml(h.ten_ch_snapshot||h.ma_ch||'')}</div>
-          <div style="font:500 12px;color:var(--slate-600)">Người giao: <b>${escHtml(h.nguoi_ban_giao_ten||'?')}</b></div>
-          <div style="font:500 12px;color:var(--slate-600)">Người nhận: <b>${escHtml(h.nguoi_nhan_ten||'(chưa)')}</b></div>
-        </div>
-      </div>
-      
-      <!-- Tiền mặt -->
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>Tiền mặt</h3></div>
-        <div class="bg-card-body" style="font:500 13px 'JetBrains Mono'">
-          Két: ${formatVND(h.tien_mat_ket)}đ${h.tien_mat_ket_ghi_chu?` <span style="color:var(--amber)">— ${escHtml(h.tien_mat_ket_ghi_chu)}</span>`:''}<br>
-          Bán hàng: ${formatVND(h.tien_ban_hang)}đ${h.tien_ban_hang_ghi_chu?` <span style="color:var(--amber)">— ${escHtml(h.tien_ban_hang_ghi_chu)}</span>`:''}<br>
-          Chi: ${formatVND(h.tien_chi)}đ${h.tien_chi_ghi_chu?` <span style="color:var(--amber)">— ${escHtml(h.tien_chi_ghi_chu)}</span>`:''}<br>
-          <b style="font-size:15px;color:var(--bg-navy-deep)">Tổng: ${formatVND(h.tien_tong)}đ</b>
-        </div>
-      </div>
-      
-      <!-- Ảnh -->
-      ${anh.length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>${anh.length} ảnh biên bản giấy</h3></div>
-        <div class="bg-photo-grid">
-          ${anh.map(a=>`<div class="bg-photo-thumb" onclick="bgViewImg('${a.anh_url}')"><img src="${a.anh_url}" loading="lazy" onerror="this.src='${a.anh_url_drive||''}'"></div>`).join('')}
-        </div>
-      </div>` : ''}
-      
-      <!-- Items không đạt -->
-      ${tsKD.length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3 style="color:var(--red-dark)">${tsKD.length} hạng mục không đạt</h3></div>
-        <div>
-          ${tsKD.map(t=>`
-            <div class="bg-item-row">
-              <div class="stt">${t.stt_chuan||'+'}</div>
-              <div class="info">
-                <div class="name">${escHtml(t.ten_hang_muc)}</div>
-                ${t.ghi_chu?`<div class="unit" style="color:var(--red-dark)">${escHtml(t.ghi_chu)}</div>`:''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
-      
-      <!-- Hàng có ghi chú -->
-      ${hg.filter(x=>x.ghi_chu).length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>Hàng hóa có chênh lệch/ghi chú</h3></div>
-        <div>
-          ${hg.filter(x=>x.ghi_chu).map(x=>`
-            <div class="bg-item-row">
-              <div class="info">
-                <div class="name">${escHtml(x.nhom_hang)} — ${x.khu_vuc}</div>
-                <div class="unit">Số lượng: ${x.so_luong_thuc_te} · ${escHtml(x.ghi_chu)}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
-      
-      ${h.ghi_chu_chung ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>Ghi chú chung</h3></div>
-        <div class="bg-card-body">${escHtml(h.ghi_chu_chung)}</div>
-      </div>` : ''}
-      
-      ${sv.length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>${sv.length} sự vụ phát sinh</h3></div>
-        <div>
-          ${sv.map(s=>`
-            <div class="sv-card ${s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'quan':'can'}" style="margin:8px" onclick="bgOpenSuVu('${s.id}')">
-              <div class="top">
-                <div class="title">${escHtml(s.tieu_de)}</div>
-                <span class="status ${s.trang_thai}">${suVuStatusLabel(s.trang_thai)}</span>
-              </div>
-              <div class="meta">${mucDoLabel(s.muc_do)}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
-      
-      ${ackArr.length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>${ackArr.length} người đã ack</h3></div>
-        <div>
-          ${ackArr.map(a=>`<div class="bg-item-row"><div class="info"><div class="name">${escHtml(a.ten_nv||a.ma_nv)}</div><div class="unit">${formatDateTime(a.ack_at)}</div></div></div>`).join('')}
-        </div>
-      </div>` : ''}
-      
-      <div style="height:40px"></div>
-    `;
-    document.body.appendChild(ov);
-  }
-
-  window.bgViewImg = function(url){
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
-    ov.onclick = ()=>ov.remove();
-    ov.innerHTML = `<img src="${url}" style="max-width:95%;max-height:95%;object-fit:contain">`;
-    document.body.appendChild(ov);
-  };
-
-  // ═════════════════════════════════════════════════════════════════════
-  //  TAB 3: SỰ VỤ — NV view
-  // ═════════════════════════════════════════════════════════════════════
-  async function renderTabSuVu(){
-    const container = document.getElementById('bg-tab-content');
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate-400)">Đang tải...</div>';
-    const { data, error } = await supa.rpc('fn_su_vu_list', {
-      p_ma_ch: SESSION.maCH || SESSION.cuaHangMa,
-      p_limit: 100, p_offset: 0
-    });
-    if (error) { container.innerHTML = '<div style="padding:20px;color:var(--red-dark)">'+error.message+'</div>'; return; }
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--slate-400)">Chưa có sự vụ.</div>'; return;
-    }
-    container.innerHTML = data.map(s=>`
-      <div class="sv-card ${s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'quan':'can'}" onclick="bgOpenSuVu('${s.id}')">
-        <div class="top">
-          <div class="title">${escHtml(s.tieu_de)}</div>
-          <span class="status ${s.trang_thai}">${suVuStatusLabel(s.trang_thai)}</span>
-        </div>
-        <div class="meta">
-          ${mucDoLabel(s.muc_do)} · <b>${escHtml(s.nguoi_tao_ten||'?')}</b> · ${formatDateTime(s.created_at)}
-          ${s.nguoi_phu_trach_ten?`· Phụ trách: <b>${escHtml(s.nguoi_phu_trach_ten)}</b>`:''}
-        </div>
-        ${s.mo_ta?`<div class="meta" style="font-style:italic">"${escHtml(s.mo_ta).slice(0,140)}"</div>`:''}
-        <div class="seen">${s.so_nguoi_xem||0} người đã xem</div>
-      </div>
-    `).join('');
-  }
-
-  // ─── Sự vụ chi tiết ──────────────────────────────────────────────────
-  window.bgOpenSuVu = async function(id){
-    // Log view
-    try {
-      await supa.rpc('fn_su_vu_log_view', {
-        p_su_vu_id: id,
-        p_ma_nv: SESSION.maNV,
-        p_ten_nv: SESSION.hoTen || SESSION.tenNV,
-        p_ma_ch: SESSION.maCH || SESSION.cuaHangMa,
-        p_vai_tro: SESSION.vaiTro || 'NV'
       });
-    } catch(e){}
-    
-    const { data, error } = await supa.rpc('fn_su_vu_get', { p_id: id });
-    if (error || !data) { alert('Không tải được'); return; }
-    showSuVuDetail(data);
-  };
-
-  function showSuVuDetail(data){
-    const s = data.su_vu || {};
-    const audit = data.audit || [];
-    const nguoiXem = data.nguoi_xem || [];
-    const role = (SESSION.vaiTro||'').toUpperCase();
-    const canClose = (role === 'TAI_KHOAN_CH' || role === 'CUA_HANG' || /TRUONG.*CA/i.test(SESSION.chucVu||'') || /TC/i.test(SESSION.chucVu||''));
-    
-    const ov = document.createElement('div');
-    ov.className = 'sv-detail';
-    ov.innerHTML = `
-      <div class="head">
-        <button class="back" onclick="this.closest('.sv-detail').remove()">‹</button>
-        <div class="title">Sự vụ</div>
-        <span class="status ${s.trang_thai}" style="padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.16);font:700 11px;color:#fff">${suVuStatusLabel(s.trang_thai)}</span>
-      </div>
-      
-      <div class="bg-card" style="border-left:4px solid ${s.muc_do==='KHAN_CAP'?'var(--red-dark)':s.muc_do==='QUAN_TRONG'?'var(--amber)':'var(--slate-400)'}">
-        <div class="bg-card-body">
-          <div style="font:600 16px 'Be Vietnam Pro';color:var(--slate-800);margin-bottom:6px">${escHtml(s.tieu_de||'')}</div>
-          <div style="font:500 12px;color:var(--slate-600);margin-bottom:8px">
-            ${mucDoLabel(s.muc_do)} · ${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}
-          </div>
-          ${s.mo_ta?`<div style="font:500 13px;color:var(--slate-800);background:var(--slate-50);padding:10px;border-radius:8px;margin-top:8px">${escHtml(s.mo_ta)}</div>`:''}
-        </div>
-      </div>
-      
-      <div class="seen-bar">
-        <div class="progress"><div class="fill" id="sv-seen-fill" style="width:0%"></div></div>
-        <div class="text" id="sv-seen-text">--/--</div>
-      </div>
-      
-      ${s.phan_hoi_xu_ly ? `
-      <div class="bg-card" style="border-left:3px solid var(--teal)">
-        <div class="bg-card-header"><h3 style="color:var(--teal)">Phản hồi từ quản lý</h3></div>
-        <div class="bg-card-body">
-          <div style="font:500 13px;color:var(--slate-800);white-space:pre-wrap">${escHtml(s.phan_hoi_xu_ly)}</div>
-          <div style="font:400 11px;color:var(--slate-400);margin-top:8px">${formatDateTime(s.thoi_gian_phan_hoi)} bởi ${escHtml(s.nguoi_phu_trach_ten||'?')}</div>
-        </div>
-      </div>` : ''}
-      
-      <div class="sv-timeline">
-        <div style="font:600 13px 'Be Vietnam Pro';color:var(--slate-800);margin-bottom:8px">Diễn biến</div>
-        ${audit.length===0 ? '<div style="color:var(--slate-400);font:500 12px">Chưa có hoạt động</div>' :
-          audit.map(a=>`
-            <div class="item">
-              <div class="dot" style="background:${actionColor(a.action)}"></div>
-              <div class="body">
-                <div class="who">${escHtml(a.ten_nv||a.ma_nv||'?')}</div>
-                <div class="what">${actionLabel(a.action)}${a.noi_dung&&a.noi_dung.phan_hoi?': '+escHtml(a.noi_dung.phan_hoi).slice(0,80):''}</div>
-                <div class="when">${formatDateTime(a.created_at)}</div>
-              </div>
-            </div>
-          `).join('')}
-      </div>
-      
-      ${nguoiXem.length ? `
-      <div class="bg-card">
-        <div class="bg-card-header"><h3>${nguoiXem.length} người đã xem</h3></div>
-        <div>
-          ${nguoiXem.slice(0,20).map(n=>`<div class="bg-item-row"><div class="info"><div class="name">${escHtml(n.ten_nv||n.ma_nv)}</div><div class="unit">${formatDateTime(n.xem_lan_dau)} · ${n.so_lan_xem} lần</div></div></div>`).join('')}
-        </div>
-      </div>` : ''}
-      
-      ${s.trang_thai === 'DA_PHAN_HOI' && canClose ? `
-      <div class="sv-actions">
-        <button class="sv-action-btn success" onclick="bgCloseSuVu('${s.id}')">✓ Xác nhận hoàn tất</button>
-      </div>` : ''}
-      
-      <div style="height:40px"></div>
-    `;
-    document.body.appendChild(ov);
-    
-    // Load % seen
-    loadPercentSeen(s.id);
-  }
-
-  async function loadPercentSeen(id){
-    try {
-      const { data } = await supa.rpc('fn_su_vu_percent_seen', { p_su_vu_id: id });
-      if (data && !data.error) {
-        document.getElementById('sv-seen-text').textContent = `${data.da_xem}/${data.tong_nv} (${data.phan_tram}%)`;
-        document.getElementById('sv-seen-fill').style.width = data.phan_tram + '%';
-      }
-    } catch(e){}
-  }
-
-  window.bgCloseSuVu = async function(id){
-    if (!confirm('Xác nhận sự vụ đã hoàn tất tại CH?\nSau khi đóng không thể mở lại (trừ ADMIN).')) return;
-    const role = (SESSION.vaiTro||'').toUpperCase();
-    const vaiTroDong = (role==='CUA_HANG'||role==='TAI_KHOAN_CH') ? 'TAI_KHOAN_CH' : 'TRUONG_CA';
-    const { data, error } = await supa.rpc('fn_su_vu_dong', {
-      p_id: id, p_ma_nv: SESSION.maNV, p_ten_nv: SESSION.hoTen||SESSION.tenNV,
-      p_vai_tro_dong: vaiTroDong, p_ghi_chu: null
     });
-    if (error) { alert('Lỗi: '+error.message); return; }
-    if (data && data.ok === false) { alert(data.error); return; }
-    alert('✓ Đã đóng sự vụ');
-    document.querySelector('.sv-detail').remove();
-    if (BG.currentTab==='su-vu') renderTabSuVu();
-  };
 
-  // ═════════════════════════════════════════════════════════════════════
-  //  ACK FLOW — gọi khi NV chấm VAO_CA + bật cờ Trưởng ca
-  // ═════════════════════════════════════════════════════════════════════
-  window.bgCheckAckOnVaoCa = async function(){
-    // Gọi từ flow chấm công sau khi VAO_CA + có cờ TC
-    if (!SESSION) return { has_blocking: false };
-    const { data, error } = await supa.rpc('fn_ban_giao_check_blocking', {
-      p_ma_nv: SESSION.maNV,
-      p_ma_ch: SESSION.maCH || SESSION.cuaHangMa
-    });
-    if (error || !data || !data.has_blocking) return { has_blocking: false };
-    
-    // Hiện modal force ack
-    return new Promise(resolve => {
-      showAckModal(data.items, resolve);
-    });
-  };
-
-  function showAckModal(items, resolve){
-    const ov = document.createElement('div');
-    ov.className = 'bg-block-modal';
-    ov.innerHTML = `
-      <div class="bg-block-sheet">
-        <h3>⚠ Có ${items.length} biên bản chờ tiếp nhận</h3>
-        <div class="desc">Là trưởng ca, bạn cần xem và xác nhận đã tiếp nhận các biên bản dưới đây trước khi tiếp tục.</div>
-        ${items.map(it=>`
-          <div class="bg-block-item">
-            <div class="h">Biên bản ${formatDate(it.ngay)} ${it.gio}</div>
-            <div class="m">Người giao: <b>${escHtml(it.nguoi_giao||'?')}</b> · ${it.so_item_khong_dat} hạng mục không đạt</div>
-            <button class="sv-action-btn primary" style="margin-top:8px;width:100%" onclick="bgViewAndAck('${it.id}', this)">Xem chi tiết</button>
-          </div>
-        `).join('')}
-        <div class="sv-actions" style="margin-top:12px;padding:0">
-          <button class="sv-action-btn ghost" onclick="this.closest('.bg-block-modal').remove(); window._bgAckResolve && window._bgAckResolve({has_blocking:true,cancelled:true})">Để sau</button>
-          <button class="sv-action-btn primary" id="bg-ack-finish" disabled onclick="this.closest('.bg-block-modal').remove(); window._bgAckResolve && window._bgAckResolve({has_blocking:false,completed:true})">Xong</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(ov);
-    window._bgAckResolve = resolve;
-    window._bgAckItemsCount = items.length;
-    window._bgAckedCount = 0;
-  }
-
-  window.bgViewAndAck = async function(id, btn){
-    const { data, error } = await supa.rpc('fn_ban_giao_get', { p_id: id });
-    if (error || !data) { alert('Không tải được'); return; }
-    showBanGiaoDetail(data);
-    // Thêm nút ack vào cuối detail
-    const ackBtn = document.createElement('div');
-    ackBtn.className = 'sv-actions';
-    ackBtn.style.cssText = 'position:sticky;bottom:0;background:#fff;padding:14px 16px;box-shadow:0 -2px 12px rgba(0,0,0,.1)';
-    ackBtn.innerHTML = `<button class="sv-action-btn success" style="width:100%" onclick="bgAckBienBan('${id}', this)">Đã đọc — Xác nhận tiếp nhận biên bản</button>`;
-    document.querySelector('.sv-detail').appendChild(ackBtn);
-  };
-
-  window.bgAckBienBan = async function(id, btn){
-    btn.disabled = true; btn.textContent = 'Đang xác nhận...';
-    const { error } = await supa.rpc('fn_ban_giao_ack', {
-      p_ban_giao_id: id,
-      p_ma_nv: SESSION.maNV,
-      p_ten_nv: SESSION.hoTen||SESSION.tenNV,
-      p_thiet_bi: navigator.userAgent.slice(0,200)
-    });
-    if (error) { alert('Lỗi: '+error.message); btn.disabled = false; return; }
-    document.querySelector('.sv-detail').remove();
-    window._bgAckedCount = (window._bgAckedCount||0) + 1;
-    if (window._bgAckedCount >= window._bgAckItemsCount) {
-      const fin = document.getElementById('bg-ack-finish');
-      if (fin) fin.disabled = false;
+    // 4) Build hàng
+    const chi_tiet_hang = [];
+    const hangG = bgGroups.find(g=>g.key==='hang');
+    if (hangG){
+      hangG.items.forEach(it => {
+        const st = bgState[it.id] || {};
+        if (st.so_luong !== undefined && st.so_luong !== null){
+          chi_tiet_hang.push({
+            khu_vuc: it.khu_vuc,
+            nhom_hang: it.nhom_hang,
+            so_luong_thuc_te: st.so_luong,
+            ghi_chu: st.ghi_chu || null
+          });
+        }
+      });
     }
-    // Update từng nút "Xem chi tiết" → "✓ Đã xem"
-    const blockItems = document.querySelectorAll('.bg-block-item button');
-    blockItems.forEach(b => {
-      if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf(id) >= 0) {
-        b.disabled = true; b.textContent = '✓ Đã xác nhận'; b.style.background = 'var(--emerald-soft)';
+
+    // 5) Gọi RPC tạo biên bản
+    const { data: banGiaoId, error: ce } = await supa.rpc('fn_ban_giao_create', {
+      p_ma_ch: bgCurrentCH.ma,
+      p_ten_ch_snapshot: bgCurrentCH.ten,
+      p_nguoi_ban_giao_ma_nv: SESSION.ma,
+      p_nguoi_ban_giao_ten: SESSION.ten || SESSION.hoTen || '',
+      p_nguoi_ban_giao_chuc_vu: SESSION.vaiTro || 'NV',
+      p_ngay_ban_giao: ngay,
+      p_gio_ban_giao: new Date().toTimeString().slice(0,8),
+      p_thoi_gian_chot_tu: null,
+      p_thoi_gian_chot_den: null,
+      p_tien_mat_ket: (bgState['tien_mat_ket']&&bgState['tien_mat_ket'].so_tien)||0,
+      p_tien_mat_ket_ghi_chu: (bgState['tien_mat_ket']&&bgState['tien_mat_ket'].ghi_chu)||null,
+      p_tien_ban_hang: (bgState['tien_ban_hang']&&bgState['tien_ban_hang'].so_tien)||0,
+      p_tien_ban_hang_ghi_chu: (bgState['tien_ban_hang']&&bgState['tien_ban_hang'].ghi_chu)||null,
+      p_tien_chi: (bgState['tien_chi']&&bgState['tien_chi'].so_tien)||0,
+      p_tien_chi_ghi_chu: (bgState['tien_chi']&&bgState['tien_chi'].ghi_chu)||null,
+      p_ghi_chu_chung: document.getElementById('bg-ghichu').value || null,
+      p_anh_urls: anhUrls,
+      p_anh_storage_paths: anhPaths,
+      p_chi_tiet_tai_san: chi_tiet_tai_san,
+      p_chi_tiet_hang: chi_tiet_hang
+    });
+    if (ce) throw ce;
+
+    // 6) Auto tạo sự vụ cho từng item VD + chênh tiền + chênh hàng
+    btn.innerHTML = 'Tạo sự vụ...';
+    let svCount = 0;
+    for (const g of bgGroups.filter(g=>g.type==='taisan')){
+      for (const it of g.items){
+        const st = bgState[it.id];
+        if (st && st.status === 'VD'){
+          await supa.rpc('fn_su_vu_create', {
+            p_ban_giao_id: banGiaoId,
+            p_loai: 'TAI_SAN_KHONG_DAT',
+            p_ma_ch: bgCurrentCH.ma,
+            p_ten_ch_snapshot: bgCurrentCH.ten,
+            p_nguoi_tao_ma_nv: SESSION.ma,
+            p_nguoi_tao_ten: SESSION.ten || SESSION.hoTen || '',
+            p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
+            p_tieu_de: it.ten + ' — Có vấn đề',
+            p_mo_ta: st.mo_ta || '',
+            p_so_lieu: { stt:it.stt, khu_vuc:it.khu_vuc, nhom_hang:null },
+            p_anh_urls: itemAnh[it.id] || [],
+            p_muc_do: st.muc_do || 'CAN_THIET'
+          });
+          svCount++;
+        }
       }
-    });
-  };
+    }
+    // Tiền lệch
+    for (const k of ['tien_mat_ket','tien_ban_hang','tien_chi']){
+      const note = bgState[k] && bgState[k].ghi_chu;
+      if (note && note.trim()){
+        const LBL = { tien_mat_ket:'Tiền két', tien_ban_hang:'Tiền bán hàng', tien_chi:'Tiền chi' }[k];
+        await supa.rpc('fn_su_vu_create', {
+          p_ban_giao_id: banGiaoId, p_loai:'TIEN_LECH',
+          p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
+          p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
+          p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
+          p_tieu_de: LBL + ' — Có ghi chú',
+          p_mo_ta: note,
+          p_so_lieu: { loai:k, so_tien: bgState[k].so_tien||0 },
+          p_anh_urls: [], p_muc_do: 'KHAN_CAP'
+        });
+        svCount++;
+      }
+    }
+    // Hàng có ghi chú
+    if (hangG){
+      for (const it of hangG.items){
+        const st = bgState[it.id];
+        if (st && st.ghi_chu && st.ghi_chu.trim()){
+          await supa.rpc('fn_su_vu_create', {
+            p_ban_giao_id: banGiaoId, p_loai:'HANG_CHENH',
+            p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
+            p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
+            p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
+            p_tieu_de: it.nhom_hang + ' (' + it.khu_vuc + ') — Chênh lệch',
+            p_mo_ta: st.ghi_chu,
+            p_so_lieu: { khu_vuc:it.khu_vuc, nhom:it.nhom_hang, sl:st.so_luong||0 },
+            p_anh_urls: [], p_muc_do: 'QUAN_TRONG'
+          });
+          svCount++;
+        }
+      }
+    }
 
-  // ═════════════════════════════════════════════════════════════════════
-  //  BLOCK RA_CA — gọi trước khi NV chấm RA_CA
-  // ═════════════════════════════════════════════════════════════════════
-  window.bgCheckBlockRaCa = async function(){
-    if (!SESSION) return { allow: true };
-    const { data } = await supa.rpc('fn_ban_giao_check_blocking', {
-      p_ma_nv: SESSION.maNV,
-      p_ma_ch: SESSION.maCH || SESSION.cuaHangMa
-    });
-    if (!data || !data.has_blocking) return { allow: true };
-    
-    // Hiển thị modal block — hard block, không cho qua
-    return new Promise(resolve=>{
-      const ov = document.createElement('div');
-      ov.className = 'bg-block-modal';
-      ov.innerHTML = `
-        <div class="bg-block-sheet">
-          <h3>🚫 Không thể ra ca</h3>
-          <div class="desc">Có ${data.items.length} biên bản bàn giao chưa được tiếp nhận. Bạn phải xem và xác nhận trước khi ra ca.</div>
-          ${data.items.map(it=>`
-            <div class="bg-block-item">
-              <div class="h">${formatDate(it.ngay)} ${it.gio}</div>
-              <div class="m">Người giao: <b>${escHtml(it.nguoi_giao||'?')}</b></div>
-              <button class="sv-action-btn primary" style="margin-top:8px;width:100%" onclick="bgViewAndAck('${it.id}', this)">Xem & xác nhận</button>
-            </div>
-          `).join('')}
-          <div style="margin-top:12px">
-            <button class="sv-action-btn ghost" style="width:100%" onclick="this.closest('.bg-block-modal').remove(); window._bgBlockResolve && window._bgBlockResolve({allow:false})">Đóng</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(ov);
-      window._bgBlockResolve = resolve;
-    });
-  };
+    showToast(`✓ Đã gửi biên bản${svCount?' · '+svCount+' sự vụ':''}`, 'ok');
+    // Reset
+    bgState = {}; bgPhotos = [];
+    document.getElementById('bg-ghichu').value = '';
+    bgRenderForm();
+    bgSwitchSub('today');
+  } catch(e){
+    console.error(e);
+    showToast('⚠ ' + (e.message||'Lỗi gửi'), 'warn');
+    btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Hoàn tất & gửi';
+  }
+}
+window.bgSubmit = bgSubmit;
 
-  // ─── Utility ──────────────────────────────────────────────────────────
-  function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function formatDate(d){ if(!d) return ''; const dt = new Date(d); return dt.getDate().toString().padStart(2,'0')+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getFullYear(); }
-  function formatDateTime(d){ if(!d) return ''; const dt = new Date(d); return formatDate(d)+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0'); }
-  function mucDoLabel(m){ return {KHAN_CAP:'<b style="color:var(--red-dark)">Khẩn cấp</b>',QUAN_TRONG:'<b style="color:var(--amber)">Quan trọng</b>',CAN_THIET:'<b style="color:var(--slate-600)">Cần thiết</b>'}[m] || m; }
-  function suVuStatusLabel(s){ return {MOI_TAO:'Mới tạo',DA_TIEP_NHAN:'Đã tiếp nhận',DANG_XU_LY:'Đang xử lý',DA_PHAN_HOI:'Đã phản hồi',HOAN_TAT:'Hoàn tất',HUY:'Hủy'}[s]||s; }
-  function actionLabel(a){ return {CREATE:'Tạo sự vụ',ACK_RECEIVE:'Tiếp nhận',START:'Bắt đầu xử lý',RESPOND:'Gửi phản hồi',CONFIRM:'Xác nhận',CLOSE:'Đóng sự vụ',REOPEN:'Mở lại',EDIT:'Chỉnh sửa',CANCEL:'Hủy',ASSIGN:'Phân công'}[a]||a; }
-  function actionColor(a){ return {CREATE:'var(--red-dark)',ACK_RECEIVE:'var(--amber)',START:'var(--bg-navy)',RESPOND:'var(--teal)',CLOSE:'var(--emerald-soft)',CANCEL:'var(--slate-400)'}[a]||'var(--slate-400)'; }
-  
-  // Expose for debugging
-  window.BG = BG;
-  
-})();
+// ═════════════════════════════════════════════════════════════════════════
+//  TAB 2: HÔM NAY
+// ═════════════════════════════════════════════════════════════════════════
+async function bgRenderToday(){
+  const list = document.getElementById('bg-today-list');
+  list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+  if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const { data } = await supa.rpc('fn_ban_giao_list', {
+      p_ma_ch: bgCurrentCH.ma, p_limit: 30, p_offset: 0
+    });
+    const todayList = (data || []).filter(b => b.ngay_ban_giao === today);
+    const cnt = document.getElementById('bg-today-count');
+    if (todayList.length === 0){
+      list.innerHTML = '<div class="ns-empty">Chưa có biên bản nào hôm nay.</div>';
+      cnt.style.display = 'none';
+      return;
+    }
+    cnt.style.display = ''; cnt.textContent = todayList.length;
+    list.innerHTML = todayList.map(bgRecHtml).join('');
+  } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
+}
+
+function bgRecHtml(b){
+  const t = b.gio_ban_giao ? b.gio_ban_giao.slice(0,5) : '';
+  const hasIssue = (b.so_su_vu||0) > 0 || (b.so_item_khong_dat||0) > 0;
+  return `<div class="chk-rec ${hasIssue?'has-issue':''}">
+    <div class="chk-rec-head">
+      <div class="chk-rec-top">
+        <span class="chk-rec-time">${t}</span>
+        <span class="chk-rec-badge ${hasIssue?'issue':'ok'}">
+          ${hasIssue ? ((b.so_su_vu||0) + ' sự vụ' + (b.so_su_vu_khan>0 ? ' · '+b.so_su_vu_khan+' khẩn':'')) : 'Bình thường'}
+        </span>
+      </div>
+      <div class="chk-rec-by">${escHtml(b.nguoi_ban_giao_ten||'?')} · ${bgFmtVN(b.tien_tong||0)}đ · ${b.so_anh||0} ảnh</div>
+    </div>
+  </div>`;
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+//  TAB 3: TIMELINE (Sprint 1 stub — Sprint 2 sẽ làm đầy đủ Gallery + Filter)
+// ═════════════════════════════════════════════════════════════════════════
+async function bgRenderTimeline(){
+  const list = document.getElementById('bg-timeline-list');
+  list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+  if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
+  try {
+    const { data } = await supa.rpc('fn_ban_giao_list', {
+      p_ma_ch: bgCurrentCH.ma, p_limit: 50, p_offset: 0
+    });
+    if (!data || data.length === 0){
+      list.innerHTML = '<div class="ns-empty">Chưa có biên bản nào.</div>';
+      return;
+    }
+    // Group theo ngày
+    const byDay = {};
+    data.forEach(b => {
+      const d = b.ngay_ban_giao;
+      if (!byDay[d]) byDay[d] = [];
+      byDay[d].push(b);
+    });
+    const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
+    list.innerHTML = days.map(d => `
+      <div style="margin:14px 0 8px;padding:0 4px;font-size:12px;font-weight:700;color:#0F2E45;text-transform:uppercase;letter-spacing:.04em">
+        ${bgFmtDayVN(d)}
+      </div>
+      ${byDay[d].map(bgRecHtml).join('')}
+    `).join('');
+  } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
+}
+
+function bgFmtDayVN(d){
+  if (!d) return '';
+  const dt = new Date(d);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+  if (dt.getTime() === today.getTime()) return 'Hôm nay · ' + pad(dt.getDate()) + '/' + pad(dt.getMonth()+1);
+  if (dt.getTime() === yesterday.getTime()) return 'Hôm qua · ' + pad(dt.getDate()) + '/' + pad(dt.getMonth()+1);
+  return pad(dt.getDate()) + '/' + pad(dt.getMonth()+1) + '/' + dt.getFullYear();
+}
+
+// ─── Utility ──────────────────────────────────────────────────────────
+// (pad, escHtml, showToast là global từ core/02-system.js)

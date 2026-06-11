@@ -1,43 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
- *  NÓN SƠN — CAMSCANNER v1.0
- *  Detect 4 góc tờ A4 → perspective transform → enhance → output JPEG
+ *  NÓN SƠN — CAMSCANNER v2 (FILE PICKER MODE)
+ *  Public API:  csOpenFromFile(file, { onComplete:(blob)=>{}, onCancel })
  *  
- *  Stack:
- *    - OpenCV.js WASM (lazy load 3MB) — image processing
- *    - Native MediaDevices.getUserMedia — camera stream
+ *  Flow:
+ *    1. Nhận File object (từ <input type="file">)
+ *    2. Load vào <img>, detect 4 góc auto (OpenCV.js lazy)
+ *    3. User có thể kéo 4 góc handle để điều chỉnh
+ *    4. Apply: perspective transform + CLAHE enhance → output JPEG blob
  *
- *  Public API:
- *    csOpen({ onComplete: (blob, dataUrl)=>{}, onCancel: ()=>{} })
- *    csClose()
+ *  KHÔNG mở camera trực tiếp — chỉ xử lý ảnh đã chọn.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 (function(global){
   const CV_URL = 'https://docs.opencv.org/4.8.0/opencv.js';
   let _cv = null, _cvLoading = null;
-  let _stream = null, _container = null;
+  let _root = null, _imgEl = null, _canvas = null, _ctx = null;
+  let _corners = null;
+  let _imgData = null; // { width, height, naturalImg }
+  let _displayScale = 1;
+  let _dragIdx = -1;
   let _onComplete = null, _onCancel = null;
-  let _corners = null;        // {tl, tr, br, bl} sau detect
-  let _videoEl = null, _canvasOverlay = null;
-  let _capturedImageData = null;
 
-  /** Lazy load OpenCV.js WASM */
   function loadOpenCV(){
     if (_cv) return Promise.resolve(_cv);
     if (_cvLoading) return _cvLoading;
     _cvLoading = new Promise((resolve, reject)=>{
-      // Đã load rồi trong window?
-      if (global.cv && global.cv.imread) {
-        _cv = global.cv; return resolve(_cv);
-      }
+      if (global.cv && global.cv.imread){ _cv = global.cv; return resolve(_cv); }
       const s = document.createElement('script');
-      s.src = CV_URL;
-      s.async = true;
+      s.src = CV_URL; s.async = true;
       s.onload = ()=>{
-        // OpenCV cần thời gian init WASM
-        if (global.cv) {
-          if (global.cv.imread) { _cv = global.cv; resolve(_cv); }
-          else global.cv.onRuntimeInitialized = ()=>{ _cv = global.cv; resolve(_cv); };
-        } else reject(new Error('OpenCV load fail'));
+        if (!global.cv) return reject(new Error('OpenCV load fail'));
+        if (global.cv.imread) { _cv = global.cv; resolve(_cv); }
+        else global.cv.onRuntimeInitialized = ()=>{ _cv = global.cv; resolve(_cv); };
       };
       s.onerror = ()=> reject(new Error('Không tải được OpenCV.js'));
       document.head.appendChild(s);
@@ -45,309 +39,361 @@
     return _cvLoading;
   }
 
-  /** Public: mở camera + UI */
-  async function csOpen(opts){
+  async function csOpenFromFile(file, opts){
     _onComplete = opts.onComplete || (()=>{});
     _onCancel = opts.onCancel || (()=>{});
     _buildUI();
-    showStatus('Đang khởi động camera...');
+    showStatus('Đang xử lý ảnh...');
+    
     try {
-      // Start camera trước (UX), load OpenCV song song
-      const [stream] = await Promise.all([
-        navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width:{ideal:1920}, height:{ideal:1080} },
-          audio: false
-        }),
-        loadOpenCV().catch(e => { console.warn('OpenCV fail:', e); return null; })
-      ]);
-      _stream = stream;
-      _videoEl.srcObject = stream;
-      await _videoEl.play();
-      showStatus('Đưa tờ giấy vào khung hình, giữ thẳng và đủ sáng');
-      if (_cv) startDetectLoop();
+      const dataUrl = await readFileAsDataURL(file);
+      const img = await loadImage(dataUrl);
+      _imgData = { naturalImg: img };
+      drawImage();
+      showStatus('Đang nhận diện khung giấy...');
+      
+      try { await loadOpenCV(); } catch(e){ console.warn(e); }
+      
+      if (_cv) {
+        try {
+          const detected = autoDetectCorners(img);
+          if (detected) {
+            _corners = detected;
+            showStatus('Đã nhận diện khung. Kéo các góc để điều chỉnh nếu cần.');
+          } else {
+            _corners = defaultCorners(img.width, img.height);
+            showStatus('Không tự nhận diện được. Vui lòng kéo 4 góc cho khớp với tờ giấy.');
+          }
+        } catch(e){
+          console.warn('detect fail', e);
+          _corners = defaultCorners(img.width, img.height);
+          showStatus('Vui lòng kéo 4 góc cho khớp với tờ giấy.');
+        }
+      } else {
+        _corners = defaultCorners(img.width, img.height);
+        showStatus('Vui lòng kéo 4 góc cho khớp với tờ giấy.');
+      }
+      drawOverlay();
     } catch(e){
-      showStatus('Không truy cập được camera: ' + e.message, true);
+      showStatus('Lỗi xử lý ảnh: ' + e.message, true);
     }
   }
 
   function csClose(){
-    if (_stream) { _stream.getTracks().forEach(t=>t.stop()); _stream = null; }
-    if (_container) { _container.remove(); _container = null; }
-    _videoEl = _canvasOverlay = _corners = _capturedImageData = null;
+    if (_root){ _root.remove(); _root = null; }
+    _imgEl = _canvas = _ctx = _corners = _imgData = null;
   }
 
   function _buildUI(){
-    _container = document.createElement('div');
-    _container.id = 'cs-root';
-    _container.innerHTML = `
+    _root = document.createElement('div');
+    _root.id = 'cs-root';
+    _root.innerHTML = `
       <style>
-        #cs-root { position:fixed; inset:0; z-index:99999; background:#000; display:flex; flex-direction:column }
-        #cs-top { padding:12px 16px; background:rgba(0,0,0,.75); color:#fff; display:flex; justify-content:space-between; align-items:center; font:600 14px/1.3 'Be Vietnam Pro',sans-serif }
-        #cs-close { background:transparent; border:0; color:#fff; font-size:24px; cursor:pointer; padding:4px 12px }
-        #cs-stage { flex:1; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center }
-        #cs-video, #cs-overlay { position:absolute; inset:0; width:100%; height:100% }
-        #cs-overlay { pointer-events:none }
-        #cs-status { position:absolute; top:16px; left:50%; transform:translateX(-50%); background:rgba(15,46,69,.92); color:#fff; padding:8px 16px; border-radius:99px; font:500 13px 'Be Vietnam Pro'; backdrop-filter:blur(8px); white-space:nowrap }
+        #cs-root { position:fixed; inset:0; z-index:9999; background:#0F172A; display:flex; flex-direction:column; font-family:inherit }
+        #cs-top { padding:12px 14px; background:#1E293B; color:#fff; display:flex; justify-content:space-between; align-items:center; }
+        #cs-top .ttl { font-size:14px; font-weight:700 }
+        #cs-close { background:transparent; border:0; color:#fff; font-size:22px; cursor:pointer; padding:4px 12px }
+        #cs-stage { flex:1; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:8px; touch-action:none }
+        #cs-canvas { max-width:100%; max-height:100%; border-radius:6px; box-shadow:0 8px 32px rgba(0,0,0,.5); touch-action:none; cursor:grab; background:#fff }
+        #cs-status { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(30,41,59,.95); color:#fff; padding:8px 14px; border-radius:99px; font-size:12px; font-weight:600; backdrop-filter:blur(8px); white-space:nowrap; max-width:90%; text-align:center }
         #cs-status.err { background:#B91C1C }
-        #cs-bottom { padding:16px; background:rgba(0,0,0,.85); display:flex; justify-content:center; align-items:center; gap:24px }
-        #cs-shutter { width:72px; height:72px; border-radius:50%; background:#fff; border:4px solid #1B4965; cursor:pointer; transition:transform .15s }
-        #cs-shutter:active { transform:scale(.92) }
-        #cs-preview-stage { position:absolute; inset:0; background:#000; display:none; align-items:center; justify-content:center; flex-direction:column; padding:16px; gap:12px }
-        #cs-preview-stage.on { display:flex }
-        #cs-preview-img { max-width:100%; max-height:70vh; object-fit:contain; box-shadow:0 8px 24px rgba(0,0,0,.5); border-radius:4px }
-        .cs-action-row { display:flex; gap:12px; width:100%; max-width:480px }
-        .cs-btn { flex:1; padding:14px 20px; border:0; border-radius:12px; font:600 15px 'Be Vietnam Pro'; cursor:pointer }
-        .cs-btn-primary { background:#1B4965; color:#fff }
-        .cs-btn-secondary { background:#374151; color:#fff }
+        #cs-bottom { padding:14px; padding-bottom:max(14px, env(safe-area-inset-bottom)); background:#1E293B; display:flex; gap:10px; align-items:center; justify-content:space-between }
+        .cs-btn { padding:11px 18px; border-radius:10px; border:0; font-size:13.5px; font-weight:700; cursor:pointer; flex:1 }
+        .cs-btn-secondary { background:#475569; color:#fff }
+        .cs-btn-primary { background:linear-gradient(180deg,#1B4965,#0F2E45); color:#fff }
+        .cs-btn-redo { background:#334155; color:#fff }
       </style>
       <div id="cs-top">
-        <span>Chụp biên bản bàn giao</span>
+        <div class="ttl">Căn chỉnh biên bản</div>
         <button id="cs-close">✕</button>
       </div>
       <div id="cs-stage">
-        <video id="cs-video" playsinline muted></video>
-        <canvas id="cs-overlay"></canvas>
-        <div id="cs-status">Đang khởi động...</div>
-        <div id="cs-preview-stage">
-          <img id="cs-preview-img" alt="">
-          <div class="cs-action-row">
-            <button class="cs-btn cs-btn-secondary" id="cs-retake">Chụp lại</button>
-            <button class="cs-btn cs-btn-primary" id="cs-use">Dùng ảnh này</button>
-          </div>
-        </div>
+        <canvas id="cs-canvas"></canvas>
+        <div id="cs-status">Đang tải...</div>
       </div>
       <div id="cs-bottom">
-        <button id="cs-shutter" aria-label="Chụp"></button>
+        <button class="cs-btn cs-btn-redo" id="cs-redo">Phát hiện lại</button>
+        <button class="cs-btn cs-btn-primary" id="cs-apply">Lưu ảnh</button>
       </div>
     `;
-    document.body.appendChild(_container);
-    _videoEl = _container.querySelector('#cs-video');
-    _canvasOverlay = _container.querySelector('#cs-overlay');
-    _container.querySelector('#cs-close').onclick = ()=>{ csClose(); _onCancel(); };
-    _container.querySelector('#cs-shutter').onclick = capture;
-    _container.querySelector('#cs-retake').onclick = retake;
-    _container.querySelector('#cs-use').onclick = useImage;
+    document.body.appendChild(_root);
+    _canvas = _root.querySelector('#cs-canvas');
+    _ctx = _canvas.getContext('2d');
+    _root.querySelector('#cs-close').onclick = ()=>{ csClose(); _onCancel(); };
+    _root.querySelector('#cs-apply').onclick = apply;
+    _root.querySelector('#cs-redo').onclick = redoDetect;
+
+    // Touch/mouse handlers cho kéo góc
+    const stage = _root.querySelector('#cs-stage');
+    _canvas.addEventListener('pointerdown', onPointerDown);
+    _canvas.addEventListener('pointermove', onPointerMove);
+    _canvas.addEventListener('pointerup', onPointerUp);
+    _canvas.addEventListener('pointercancel', onPointerUp);
   }
 
   function showStatus(msg, isError){
-    const el = _container && _container.querySelector('#cs-status');
+    const el = _root && _root.querySelector('#cs-status');
     if (!el) return;
     el.textContent = msg;
     el.classList.toggle('err', !!isError);
   }
 
-  /** Vòng lặp detect 4 góc realtime trên overlay */
-  let _detectTimer = null;
-  function startDetectLoop(){
-    if (!_cv || !_videoEl) return;
-    const tick = ()=>{
-      if (!_videoEl || _videoEl.paused) return;
-      try { detectCornersFrame(); } catch(e){ /* skip frame */ }
-    };
-    _detectTimer = setInterval(tick, 350);  // 3 fps đủ
-  }
-  function stopDetectLoop(){
-    if (_detectTimer) { clearInterval(_detectTimer); _detectTimer = null; }
+  function readFileAsDataURL(file){
+    return new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
   }
 
-  function detectCornersFrame(){
+  function loadImage(src){
+    return new Promise((res, rej)=>{
+      const img = new Image();
+      img.onload = ()=> res(img);
+      img.onerror = rej;
+      img.src = src;
+    });
+  }
+
+  function drawImage(){
+    if (!_imgData) return;
+    const img = _imgData.naturalImg;
+    const stage = _root.querySelector('#cs-stage');
+    const sw = stage.clientWidth - 16, sh = stage.clientHeight - 16;
+    let dw = img.width, dh = img.height;
+    if (dw > sw) { dh = dh * sw / dw; dw = sw; }
+    if (dh > sh) { dw = dw * sh / dh; dh = sh; }
+    _canvas.width = dw;
+    _canvas.height = dh;
+    _canvas.style.width = dw + 'px';
+    _canvas.style.height = dh + 'px';
+    _displayScale = dw / img.width;  // ratio display vs natural
+    _ctx.drawImage(img, 0, 0, dw, dh);
+  }
+
+  function drawOverlay(){
+    if (!_corners) return;
+    drawImage();  // base layer
+    const c = _corners;
+    const sc = _displayScale;
+    // Vẽ polygon
+    _ctx.strokeStyle = '#14B8A6';
+    _ctx.lineWidth = 3;
+    _ctx.fillStyle = 'rgba(20,184,166,.15)';
+    _ctx.beginPath();
+    _ctx.moveTo(c.tl.x*sc, c.tl.y*sc);
+    _ctx.lineTo(c.tr.x*sc, c.tr.y*sc);
+    _ctx.lineTo(c.br.x*sc, c.br.y*sc);
+    _ctx.lineTo(c.bl.x*sc, c.bl.y*sc);
+    _ctx.closePath();
+    _ctx.fill();
+    _ctx.stroke();
+    // Handles 4 góc
+    const pts = [c.tl, c.tr, c.br, c.bl];
+    for (const p of pts){
+      _ctx.beginPath();
+      _ctx.arc(p.x*sc, p.y*sc, 12, 0, Math.PI*2);
+      _ctx.fillStyle = '#fff';
+      _ctx.fill();
+      _ctx.lineWidth = 3;
+      _ctx.strokeStyle = '#14B8A6';
+      _ctx.stroke();
+    }
+  }
+
+  function defaultCorners(w, h){
+    const pad = Math.min(w, h) * 0.08;
+    return {
+      tl: { x: pad, y: pad },
+      tr: { x: w-pad, y: pad },
+      br: { x: w-pad, y: h-pad },
+      bl: { x: pad, y: h-pad }
+    };
+  }
+
+  function autoDetectCorners(img){
     const cv = _cv;
-    const vw = _videoEl.videoWidth, vh = _videoEl.videoHeight;
-    if (!vw || !vh) return;
-    
-    // Resize overlay match video
-    _canvasOverlay.width = vw; _canvasOverlay.height = vh;
-    
-    // Snapshot frame to temp canvas
-    const tmp = document.createElement('canvas');
-    tmp.width = vw; tmp.height = vh;
-    tmp.getContext('2d').drawImage(_videoEl, 0, 0);
-    
-    let src = cv.imread(tmp), gray = new cv.Mat(), blur = new cv.Mat(), edges = new cv.Mat();
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    let src = cv.imread(c), gray = new cv.Mat(), blur = new cv.Mat(), edges = new cv.Mat();
     let contours = new cv.MatVector(), hier = new cv.Mat();
-    
+    let result = null;
     try {
       cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
       cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0);
       cv.Canny(blur, edges, 75, 200);
       cv.findContours(edges, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-      // Tìm contour lớn nhất là tứ giác
+      const minArea = img.width * img.height * 0.15;
       let bestQuad = null, bestArea = 0;
-      const minArea = vw * vh * 0.15;
       for (let i = 0; i < contours.size(); i++){
-        const c = contours.get(i);
-        const area = cv.contourArea(c);
-        if (area < minArea) { c.delete(); continue; }
-        const peri = cv.arcLength(c, true);
+        const cnt = contours.get(i);
+        const area = cv.contourArea(cnt);
+        if (area < minArea){ cnt.delete(); continue; }
+        const peri = cv.arcLength(cnt, true);
         const approx = new cv.Mat();
-        cv.approxPolyDP(c, approx, 0.02 * peri, true);
+        cv.approxPolyDP(cnt, approx, 0.02*peri, true);
         if (approx.rows === 4 && area > bestArea){
           if (bestQuad) bestQuad.delete();
           bestQuad = approx;
           bestArea = area;
         } else approx.delete();
-        c.delete();
+        cnt.delete();
       }
-
       if (bestQuad){
-        _corners = extractCorners(bestQuad);
-        drawOverlay(_corners, vw, vh);
+        const pts = [];
+        for (let i = 0; i < 4; i++) pts.push({ x: bestQuad.data32S[i*2], y: bestQuad.data32S[i*2+1] });
+        const sumS = pts.slice().sort((a,b)=>(a.x+a.y)-(b.x+b.y));
+        const diffS = pts.slice().sort((a,b)=>(a.x-a.y)-(b.x-b.y));
+        result = { tl: sumS[0], br: sumS[3], tr: diffS[3], bl: diffS[0] };
         bestQuad.delete();
-        showStatus('Đã thấy biên bản — bấm chụp');
-      } else {
-        clearOverlay();
-        _corners = null;
-        showStatus('Đưa toàn bộ tờ giấy vào khung hình');
       }
     } finally {
       src.delete(); gray.delete(); blur.delete(); edges.delete();
       contours.delete(); hier.delete();
     }
+    return result;
   }
 
-  function extractCorners(approxMat){
-    // approxMat.data32S [x0,y0,x1,y1,x2,y2,x3,y3]
-    const pts = [];
-    for (let i = 0; i < 4; i++) pts.push({ x: approxMat.data32S[i*2], y: approxMat.data32S[i*2+1] });
-    // Sort thành tl, tr, br, bl
-    const sumS = pts.slice().sort((a,b)=>(a.x+a.y)-(b.x+b.y));
-    const diffS = pts.slice().sort((a,b)=>(a.x-a.y)-(b.x-b.y));
-    return { tl: sumS[0], br: sumS[3], tr: diffS[3], bl: diffS[0] };
-  }
-
-  function drawOverlay(c, w, h){
-    const ctx = _canvasOverlay.getContext('2d');
-    ctx.clearRect(0,0,w,h);
-    ctx.strokeStyle = '#10B981';
-    ctx.lineWidth = Math.max(3, w / 400);
-    ctx.beginPath();
-    ctx.moveTo(c.tl.x, c.tl.y);
-    ctx.lineTo(c.tr.x, c.tr.y);
-    ctx.lineTo(c.br.x, c.br.y);
-    ctx.lineTo(c.bl.x, c.bl.y);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(16,185,129,.15)';
-    ctx.fill();
-  }
-  function clearOverlay(){
-    const ctx = _canvasOverlay.getContext('2d');
-    if (_canvasOverlay.width && _canvasOverlay.height)
-      ctx.clearRect(0,0,_canvasOverlay.width,_canvasOverlay.height);
-  }
-
-  /** Chụp + warp + enhance */
-  function capture(){
-    if (!_videoEl) return;
-    stopDetectLoop();
-    const vw = _videoEl.videoWidth, vh = _videoEl.videoHeight;
-    const tmp = document.createElement('canvas');
-    tmp.width = vw; tmp.height = vh;
-    tmp.getContext('2d').drawImage(_videoEl, 0, 0);
-
-    if (_cv && _corners){
+  function redoDetect(){
+    if (!_imgData || !_cv){ showStatus('OpenCV chưa sẵn sàng', true); return; }
+    showStatus('Đang phát hiện lại...');
+    setTimeout(()=>{
       try {
-        const result = warpAndEnhance(tmp, _corners);
-        showPreview(result);
-        return;
-      } catch(e){ console.error('warp fail:', e); }
-    }
-    // Fallback: chụp thường nếu không detect được
-    showPreview(tmp);
+        const r = autoDetectCorners(_imgData.naturalImg);
+        if (r){ _corners = r; drawOverlay(); showStatus('Đã phát hiện lại. Kéo góc nếu cần.'); }
+        else showStatus('Không phát hiện được. Kéo thủ công 4 góc.', true);
+      } catch(e){ showStatus('Lỗi: '+e.message, true); }
+    }, 30);
   }
 
-  function warpAndEnhance(srcCanvas, corners){
-    const cv = _cv;
-    const src = cv.imread(srcCanvas);
-    
-    // Calculate target dimensions (A4 ratio 1:1.414)
-    const widthA = dist(corners.tl, corners.tr);
-    const widthB = dist(corners.bl, corners.br);
-    const heightA = dist(corners.tl, corners.bl);
-    const heightB = dist(corners.tr, corners.br);
-    const maxW = Math.max(widthA, widthB);
-    const maxH = Math.max(heightA, heightB);
-    const tw = Math.round(maxW), th = Math.round(maxH);
+  // ─── Drag handles ────────────────────────────────────────────────
+  function onPointerDown(e){
+    if (!_corners) return;
+    const rect = _canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / _displayScale;
+    const y = (e.clientY - rect.top) / _displayScale;
+    const pts = [_corners.tl, _corners.tr, _corners.br, _corners.bl];
+    let minD = Infinity, mi = -1;
+    for (let i = 0; i < 4; i++){
+      const d = Math.hypot(pts[i].x-x, pts[i].y-y);
+      if (d < minD) { minD = d; mi = i; }
+    }
+    if (minD * _displayScale < 30) {
+      _dragIdx = mi;
+      _canvas.setPointerCapture(e.pointerId);
+      _canvas.style.cursor = 'grabbing';
+    }
+  }
+  function onPointerMove(e){
+    if (_dragIdx < 0 || !_corners) return;
+    const rect = _canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(_imgData.naturalImg.width, (e.clientX - rect.left) / _displayScale));
+    const y = Math.max(0, Math.min(_imgData.naturalImg.height, (e.clientY - rect.top) / _displayScale));
+    const keys = ['tl','tr','br','bl'];
+    _corners[keys[_dragIdx]] = { x, y };
+    drawOverlay();
+  }
+  function onPointerUp(e){
+    if (_dragIdx >= 0) {
+      _dragIdx = -1;
+      _canvas.style.cursor = 'grab';
+      try { _canvas.releasePointerCapture(e.pointerId); } catch(_){}
+    }
+  }
 
-    const srcMat = cv.matFromArray(4, 1, cv.CV_32FC2, [
+  // ─── Apply: warp + enhance + output blob ──────────────────────────
+  async function apply(){
+    if (!_corners){ showStatus('Chưa có vùng để cắt', true); return; }
+    showStatus('Đang xử lý...');
+    const btn = _root.querySelector('#cs-apply');
+    btn.disabled = true;
+    try {
+      let outCanvas;
+      if (_cv){
+        outCanvas = warpAndEnhance();
+      } else {
+        // Fallback: crop bounding box, không perspective
+        outCanvas = cropBBoxFallback();
+      }
+      // Downscale nếu > 1600
+      if (outCanvas.width > 1600){
+        const r = 1600/outCanvas.width;
+        const c2 = document.createElement('canvas');
+        c2.width = 1600; c2.height = Math.round(outCanvas.height*r);
+        c2.getContext('2d').drawImage(outCanvas, 0, 0, c2.width, c2.height);
+        outCanvas = c2;
+      }
+      outCanvas.toBlob(blob => {
+        csClose();
+        _onComplete(blob);
+      }, 'image/jpeg', 0.85);
+    } catch(e){
+      console.error(e);
+      showStatus('Lỗi: ' + e.message, true);
+      btn.disabled = false;
+    }
+  }
+
+  function warpAndEnhance(){
+    const cv = _cv;
+    const img = _imgData.naturalImg;
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    const src = cv.imread(c);
+    const corners = _corners;
+    const widthA = Math.hypot(corners.tr.x-corners.tl.x, corners.tr.y-corners.tl.y);
+    const widthB = Math.hypot(corners.br.x-corners.bl.x, corners.br.y-corners.bl.y);
+    const heightA = Math.hypot(corners.bl.x-corners.tl.x, corners.bl.y-corners.tl.y);
+    const heightB = Math.hypot(corners.br.x-corners.tr.x, corners.br.y-corners.tr.y);
+    const tw = Math.round(Math.max(widthA, widthB));
+    const th = Math.round(Math.max(heightA, heightB));
+    const srcMat = cv.matFromArray(4,1,cv.CV_32FC2,[
       corners.tl.x, corners.tl.y, corners.tr.x, corners.tr.y,
       corners.br.x, corners.br.y, corners.bl.x, corners.bl.y
     ]);
-    const dstMat = cv.matFromArray(4, 1, cv.CV_32FC2, [
-      0, 0, tw, 0, tw, th, 0, th
-    ]);
+    const dstMat = cv.matFromArray(4,1,cv.CV_32FC2,[ 0,0, tw,0, tw,th, 0,th ]);
     const M = cv.getPerspectiveTransform(srcMat, dstMat);
     const warped = new cv.Mat();
     cv.warpPerspective(src, warped, M, new cv.Size(tw, th));
 
-    // Enhance: grayscale CLAHE + light sharpen
-    const enhanced = enhanceImage(warped);
-    
-    const outCanvas = document.createElement('canvas');
-    outCanvas.width = tw; outCanvas.height = th;
-    cv.imshow(outCanvas, enhanced);
-    
-    src.delete(); srcMat.delete(); dstMat.delete(); M.delete(); warped.delete(); enhanced.delete();
-    return outCanvas;
-  }
-
-  function enhanceImage(mat){
-    const cv = _cv;
-    // Convert to gray for CLAHE
+    // CLAHE enhance
     const lab = new cv.Mat();
-    cv.cvtColor(mat, lab, cv.COLOR_RGBA2RGB);
+    cv.cvtColor(warped, lab, cv.COLOR_RGBA2RGB);
     cv.cvtColor(lab, lab, cv.COLOR_RGB2Lab);
-    const channels = new cv.MatVector();
-    cv.split(lab, channels);
-    const L = channels.get(0);
+    const ch = new cv.MatVector();
+    cv.split(lab, ch);
+    const L = ch.get(0);
     const clahe = new cv.CLAHE(2.0, new cv.Size(8,8));
     clahe.apply(L, L);
-    channels.set(0, L);
-    cv.merge(channels, lab);
+    ch.set(0, L);
+    cv.merge(ch, lab);
     const out = new cv.Mat();
     cv.cvtColor(lab, out, cv.COLOR_Lab2RGB);
     cv.cvtColor(out, out, cv.COLOR_RGB2RGBA);
-    lab.delete(); channels.delete(); clahe.delete();
-    return out;
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = tw; outCanvas.height = th;
+    cv.imshow(outCanvas, out);
+    src.delete(); srcMat.delete(); dstMat.delete(); M.delete(); warped.delete();
+    lab.delete(); ch.delete(); clahe.delete(); out.delete();
+    return outCanvas;
   }
 
-  function dist(a, b){ return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
-
-  function showPreview(canvas){
-    const previewStage = _container.querySelector('#cs-preview-stage');
-    const img = _container.querySelector('#cs-preview-img');
-    // Downscale nếu quá to (>1600 width)
-    const maxW = 1600;
-    let outCanvas = canvas;
-    if (canvas.width > maxW) {
-      const ratio = maxW / canvas.width;
-      outCanvas = document.createElement('canvas');
-      outCanvas.width = maxW;
-      outCanvas.height = Math.round(canvas.height * ratio);
-      outCanvas.getContext('2d').drawImage(canvas, 0, 0, outCanvas.width, outCanvas.height);
-    }
-    const dataUrl = outCanvas.toDataURL('image/jpeg', 0.85);
-    img.src = dataUrl;
-    previewStage.classList.add('on');
-    _capturedImageData = { dataUrl, canvas: outCanvas };
+  function cropBBoxFallback(){
+    const img = _imgData.naturalImg;
+    const c = _corners;
+    const xs = [c.tl.x, c.tr.x, c.br.x, c.bl.x];
+    const ys = [c.tl.y, c.tr.y, c.br.y, c.bl.y];
+    const x = Math.min(...xs), y = Math.min(...ys);
+    const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, x, y, w, h, 0, 0, w, h);
+    return cv;
   }
 
-  function retake(){
-    _container.querySelector('#cs-preview-stage').classList.remove('on');
-    _capturedImageData = null;
-    if (_cv) startDetectLoop();
-  }
-
-  function useImage(){
-    if (!_capturedImageData) return;
-    _capturedImageData.canvas.toBlob(blob=>{
-      const dataUrl = _capturedImageData.dataUrl;
-      csClose();
-      _onComplete(blob, dataUrl);
-    }, 'image/jpeg', 0.85);
-  }
-
-  global.csOpen = csOpen;
+  global.csOpenFromFile = csOpenFromFile;
   global.csClose = csClose;
 })(window);

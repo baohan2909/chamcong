@@ -23,18 +23,17 @@
 
 <title>Chấm công · Nón Sơn</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="css/00-tokens.css?v=11.0">
-<link rel="stylesheet" href="css/01-base.css?v=11.0">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=11.0">
-<link rel="stylesheet" href="css/03-banhang.css?v=11.0">
-<link rel="stylesheet" href="css/04-responsive.css?v=11.0">
-<link rel="stylesheet" href="css/05-admin.css?v=11.0">
-<link rel="stylesheet" href="css/06-modules.css?v=11.0">
-<link rel="stylesheet" href="css/08-redesign.css?v=11.0">
-<link rel="stylesheet" href="css/09-muanon.css?v=11.0">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=11.0">
-<link rel="stylesheet" href="css/11-face.css?v=12.0">
-<link rel="stylesheet" href="css/12-bangiao.css?v=13.17">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.19">
+<link rel="stylesheet" href="css/01-base.css?v=13.19">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.19">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.19">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.19">
+<link rel="stylesheet" href="css/05-admin.css?v=13.19">
+<link rel="stylesheet" href="css/06-modules.css?v=13.19">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.19">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.19">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.19">
+<link rel="stylesheet" href="css/11-face.css?v=13.19">
 </head>
 <body class="cc-redesign-active">
 
@@ -43,7 +42,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.17</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.19</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1516,28 +1515,6 @@
         <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-bosung-quota">--</span>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-checklist" onclick="goToPage('checklist')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#175CD3,#1849A9)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <div class="menu-label">Kiểm tra cửa hàng</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" onclick="moDonNghiPhep()">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#175CD3,#1849A9)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        </div>
-        <div class="menu-label">Đơn nghỉ phép</div>
-        <span class="nav-badge" id="acc-dnp-badge" style="display:none;position:static;margin-right:8px"></span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-banhang" onclick="goToPage('banhang')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#175CD3,#1849A9)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        </div>
-        <div class="menu-label">Phiên bán hàng</div>
-        <div class="menu-arrow">›</div>
-      </div>
       <div class="menu-section-label">Mẫu nón & Khuyến mãi</div>
       <div class="menu-item" id="menu-muanon" onclick="moPageMuanon()">
         <div class="menu-icon" style="background:linear-gradient(135deg,#12805C,#0B5C42)">
@@ -1547,15 +1524,19 @@
         <span class="menu-badge-pill" id="muanon-menu-badge" style="display:none;font-size:10px;background:#EF4444;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px">Chưa gửi</span>
         <div class="menu-arrow">›</div>
       </div>
-            <div class="menu-item" id="menu-bangiao" onclick="moPageBanGiao()">
-        <div class="menu-icon" style="background:linear-gradient(180deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/><polyline points="9 7 12 4 15 7"/><line x1="12" y1="4" x2="12" y2="14"/></svg>
+        <div class="menu-label">Bàn giao ca</div>
+        <span class="menu-badge-pill" id="bangiao-menu-badge" style="display:none;font-size:10px;background:#B91C1C;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" id="menu-bangiao" onclick="goToPage('bangiao')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div class="menu-label">Bàn giao ca</div>
         <span class="menu-badge-pill" id="bangiao-menu-badge" style="display:none;font-size:10px;background:#B91C1C;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-chuongtrinh" onclick="goToPage('chuongtrinh')">
+            <div class="menu-item" id="menu-chuongtrinh" onclick="goToPage('chuongtrinh')">
         <div class="menu-icon" style="background:linear-gradient(135deg,#12805C,#0B5C42)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
         </div>
@@ -1594,21 +1575,6 @@
         <div class="menu-label">Quản lý nhân sự</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-checklist-ql" onclick="goToPage('checklist-ql')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <div class="menu-label">Sự cố cửa hàng</div>
-        <span class="nav-badge" id="acc-checklist-badge" style="display:none;position:static;margin-right:8px"></span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-lichca-ql" onclick="goToPage('lichca-ql')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h8M8 18h5"/></svg>
-        </div>
-        <div class="menu-label">Lịch ca hệ thống</div>
-        <div class="menu-arrow">›</div>
-      </div>
       <div class="menu-item" id="menu-face-admin" onclick="nsFaceOpenAdmin()" style="display:none">
         <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -1622,13 +1588,6 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         </div>
         <div class="menu-label">Hình ảnh sản phẩm hàng tuần</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-bangiao-ql" onclick="moPageBanGiaoQL()" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(180deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div class="menu-label">Bàn giao — Quản lý</div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" id="menu-admin" onclick="goToPage('admin')" style="display:none">
@@ -1672,7 +1631,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.17 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.19 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -1990,7 +1949,7 @@
     <!-- [v11.0] Hero card -->
     <div class="cc-hero-page">
       <div class="cc-hero-page-label">SỰ CỐ CỬA HÀNG</div>
-      <div class="cc-hero-page-title">Quản lý sự cố</div>
+      <div class="cc-hero-page-title">Quản lý bàn giao</div>
       <div class="cc-hero-page-sub">Theo dõi & xử lý sự cố cửa hàng</div>
     </div>
     <div class="chkql-wrap">
@@ -2022,6 +1981,175 @@
       <!-- Thống kê -->
       <div id="chkql-pane-thongke" style="display:none">
         <div id="chkql-thongke"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- [v13.19] BÀN GIAO CA — thay thế cho Kiểm tra cửa hàng -->
+  <div class="page" id="page-bangiao">
+    <!-- Hero card kế thừa pattern checklist -->
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-label">BIÊN BẢN BÀN GIAO</div>
+      <div class="cc-hero-page-title">Bàn giao ca</div>
+      <div class="cc-hero-page-sub">Tài sản · Tiền mặt · Hàng hóa · Sự vụ</div>
+    </div>
+    <div class="chk-wrap">
+      <div class="chk-topbar">
+        <div class="chk-ch-info" id="bg-ch-info">
+          <div class="chk-ch-name" id="bg-ch-name">Đang xác định cửa hàng...</div>
+          <div class="chk-ch-sub" id="bg-ch-sub"></div>
+        </div>
+        <div class="chk-subtabs">
+          <button class="chk-subtab active" id="bg-subtab-new" onclick="bgSwitchSub('new')">Tạo bàn giao</button>
+          <button class="chk-subtab" id="bg-subtab-timeline" onclick="bgSwitchSub('timeline')">Timeline</button>
+          <button class="chk-subtab" id="bg-subtab-suvu" onclick="bgSwitchSub('suvu')">
+            Sự vụ <span class="chk-subtab-count" id="bg-suvu-count" style="display:none">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB: Tạo bàn giao -->
+      <div id="bg-sub-new">
+        <div id="bg-handover"></div>
+        <div class="chk-progress-wrap" id="bg-progress-wrap" style="display:none">
+          <div class="chk-progress-info">
+            <span id="bg-progress-text">Đã đánh giá 0/45 mục</span>
+            <span id="bg-progress-issues" class="chk-progress-issues"></span>
+          </div>
+          <div class="chk-progress-bar"><div class="chk-progress-fill" id="bg-progress-fill"></div></div>
+        </div>
+
+        <!-- Nút "Tất cả bình thường" GLOBAL -->
+        <div id="bg-global-quick" style="display:none">
+          <button class="bg-global-ok" onclick="bgGlobalAllOK()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Toàn bộ 45 mục bình thường
+          </button>
+        </div>
+
+        <!-- Phần I: Tiền mặt -->
+        <div class="bg-section" id="bg-sec-tien" style="display:none">
+          <div class="bg-section-head" onclick="bgToggleSection('tien')">
+            <div class="bg-section-num">I</div>
+            <div class="bg-section-title">Tiền mặt & doanh thu</div>
+            <div class="bg-section-status" id="bg-sec-tien-status">—</div>
+            <svg class="bg-section-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="bg-section-body" id="bg-sec-tien-body"></div>
+        </div>
+
+        <!-- Phần II: 45 hạng mục (groups động render) -->
+        <div id="bg-groups"><div class="ns-empty">⏳ Đang tải danh mục...</div></div>
+
+        <!-- Phần III: Hàng hóa -->
+        <div class="bg-section" id="bg-sec-hang" style="display:none">
+          <div class="bg-section-head" onclick="bgToggleSection('hang')">
+            <div class="bg-section-num">III</div>
+            <div class="bg-section-title">Hàng hóa & tồn kho</div>
+            <div class="bg-section-status" id="bg-sec-hang-status">—</div>
+            <svg class="bg-section-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="bg-section-body" id="bg-sec-hang-body"></div>
+        </div>
+
+        <!-- Phần IV: Ảnh + Ghi chú + Submit -->
+        <div id="bg-submit-zone" style="display:none">
+          <div class="chk-note-box">
+            <label class="chk-note-label">Ảnh biên bản giấy đã ký (tối đa 6)</label>
+            <div class="bg-photo-row" id="bg-photos"></div>
+            <label class="bg-photo-add" id="bg-photo-add-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Chọn ảnh từ máy & chỉnh sửa</span>
+              <input type="file" accept="image/*" multiple style="display:none" onchange="bgAddPhotos(this)">
+            </label>
+          </div>
+          <div class="chk-note-box">
+            <label class="chk-note-label">Ghi chú chung (tùy chọn)</label>
+            <textarea id="bg-ghichu" class="chk-note-input" rows="2" placeholder="Lưu ý cho ca sau, sự việc phát sinh..."></textarea>
+          </div>
+          <button class="chk-submit-btn" id="bg-submit-btn" onclick="bgSubmit()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Hoàn tất & gửi bàn giao
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB: Timeline -->
+      <div id="bg-sub-timeline" style="display:none">
+        <div id="bg-timeline-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+
+      <!-- SUB: Sự vụ -->
+      <div id="bg-sub-suvu" style="display:none">
+        <div id="bg-suvu-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [v13.19] BÀN GIAO — QUẢN LÝ (QLNS/QLBH/ADMIN) -->
+  <div class="page" id="page-bangiao-ql">
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-label">QUẢN LÝ BÀN GIAO</div>
+      <div class="cc-hero-page-title">Dashboard bàn giao</div>
+      <div class="cc-hero-page-sub">Tổng quan · Sự vụ · Timeline</div>
+    </div>
+    <div class="chkql-wrap">
+      <div class="chkql-subtabs">
+        <button class="chkql-subtab active" id="bgql-tab-tongquan" onclick="bgqlSwitch('tongquan')">Tổng quan</button>
+        <button class="chkql-subtab" id="bgql-tab-suvu" onclick="bgqlSwitch('suvu')">Sự vụ</button>
+        <button class="chkql-subtab" id="bgql-tab-timeline" onclick="bgqlSwitch('timeline')">Timeline</button>
+      </div>
+
+      <!-- Pane: Tổng quan -->
+      <div id="bgql-pane-tongquan">
+        <div class="bgql-daterange">
+          <input type="date" id="bgql-tq-tu" class="chkql-inp" onchange="bgqlLoadTongQuan()">
+          <span style="color:#94A3B8">→</span>
+          <input type="date" id="bgql-tq-den" class="chkql-inp" onchange="bgqlLoadTongQuan()">
+        </div>
+        <div id="bgql-tq-stats" class="bgql-stats-grid"></div>
+        <div id="bgql-tq-detail"></div>
+      </div>
+
+      <!-- Pane: Sự vụ -->
+      <div id="bgql-pane-suvu" style="display:none">
+        <div class="chkql-filters">
+          <div class="chkql-filter-row">
+            <input type="date" id="bgql-sv-tu" class="chkql-inp" onchange="bgqlLoadSuVu()">
+            <span style="color:#94A3B8">→</span>
+            <input type="date" id="bgql-sv-den" class="chkql-inp" onchange="bgqlLoadSuVu()">
+          </div>
+          <div class="chkql-chips" id="bgql-mucdo-chips">
+            <button class="chkql-chip active" data-md="" onclick="bgqlSetMucDo('',this)">Tất cả</button>
+            <button class="chkql-chip" data-md="KHAN_CAP" onclick="bgqlSetMucDo('KHAN_CAP',this)">🔴 Khẩn cấp</button>
+            <button class="chkql-chip" data-md="QUAN_TRONG" onclick="bgqlSetMucDo('QUAN_TRONG',this)">🟠 Quan trọng</button>
+            <button class="chkql-chip" data-md="CAN_THIET" onclick="bgqlSetMucDo('CAN_THIET',this)">🟡 Cần thiết</button>
+            <button class="chkql-chip" data-md="MOI_TAO" onclick="bgqlSetMucDo('MOI_TAO',this)">⏳ Chưa xử lý</button>
+          </div>
+        </div>
+        <div id="bgql-sv-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+
+      <!-- Pane: Timeline -->
+      <div id="bgql-pane-timeline" style="display:none">
+        <div class="chkql-filters">
+          <div class="chkql-filter-row">
+            <input type="date" id="bgql-tl-tu" class="chkql-inp" onchange="bgqlLoadTimeline()">
+            <span style="color:#94A3B8">→</span>
+            <input type="date" id="bgql-tl-den" class="chkql-inp" onchange="bgqlLoadTimeline()">
+          </div>
+          <div class="chkql-filter-row">
+            <select id="bgql-tl-ch" class="chkql-inp" onchange="bgqlLoadTimeline()" style="flex:1">
+              <option value="">Tất cả cửa hàng</option>
+            </select>
+          </div>
+          <div class="bgql-view-toggle">
+            <button class="bgql-vt active" id="bgql-vt-list" onclick="bgqlSetView('list',this)">List</button>
+            <button class="bgql-vt" id="bgql-vt-gallery" onclick="bgqlSetView('gallery',this)">Gallery</button>
+          </div>
+        </div>
+        <div id="bgql-tl-list"><div class="ns-empty">⏳ Đang tải...</div></div>
       </div>
     </div>
   </div>
@@ -2644,6 +2772,59 @@
     </div>
   </div>
 
+  <!-- [v13.19] BÀN GIAO CA — thay thế Kiểm tra cửa hàng -->
+  <div class="page" id="page-bangiao">
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-label">BÀN GIAO CA</div>
+      <div class="cc-hero-page-title">Biên bản bàn giao</div>
+      <div class="cc-hero-page-sub">Tiền · tài sản · hàng hóa · biên bản giấy</div>
+    </div>
+    <div class="chk-wrap">
+      <div class="chk-topbar">
+        <div class="chk-ch-info" id="bg-ch-info">
+          <div class="chk-ch-name" id="bg-ch-name">Đang xác định cửa hàng...</div>
+          <div class="chk-ch-sub" id="bg-ch-sub"></div>
+        </div>
+        <div class="chk-subtabs">
+          <button class="chk-subtab active" id="bg-subtab-new" onclick="bgSwitchSub('new')">Tạo biên bản</button>
+          <button class="chk-subtab" id="bg-subtab-today" onclick="bgSwitchSub('today')">
+            Hôm nay <span class="chk-subtab-count" id="bg-today-count" style="display:none">0</span>
+          </button>
+          <button class="chk-subtab" id="bg-subtab-timeline" onclick="bgSwitchSub('timeline')">Timeline</button>
+        </div>
+      </div>
+
+      <div id="bg-sub-new">
+        <div id="bg-banner-prev"></div>
+        <div class="chk-progress-wrap" id="bg-progress-wrap" style="display:none">
+          <div class="chk-progress-info">
+            <span id="bg-progress-text">Hoàn thành 0/6 phần</span>
+            <span id="bg-progress-issues" class="chk-progress-issues"></span>
+          </div>
+          <div class="chk-progress-bar"><div class="chk-progress-fill" id="bg-progress-fill"></div></div>
+        </div>
+        <div id="bg-groups"><div class="ns-empty">⏳ Đang tải...</div></div>
+        <div id="bg-submit-zone" style="display:none">
+          <div class="chk-note-box">
+            <label class="chk-note-label">Ghi chú bàn giao (tùy chọn)</label>
+            <textarea id="bg-ghichu" class="chk-note-input" rows="2" placeholder="Lưu ý cho ca sau..."></textarea>
+          </div>
+          <button class="chk-submit-btn" id="bg-submit-btn" onclick="bgSubmit()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Hoàn tất &amp; gửi
+          </button>
+        </div>
+      </div>
+
+      <div id="bg-sub-today" style="display:none">
+        <div id="bg-today-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+      <div id="bg-sub-timeline" style="display:none">
+        <div id="bg-timeline-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV [v11.0 modern liquid glass] -->
   <div class="bottom-nav cc-nav-modern" id="bottom-nav">
     <div class="cc-nav-inner">
@@ -2703,13 +2884,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=11.0"></script>
-<script src="js/core/02-system.js?v=11.0"></script>
+<script src="js/core/01-config.js?v=13.19"></script>
+<script src="js/core/02-system.js?v=13.19"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=11.0">
+<link rel="stylesheet" href="css/07-extras.css?v=13.19">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2744,19 +2925,18 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=11.0"></script>
-<script src="js/pages/01-lichca.js?v=11.0"></script>
-<script src="js/pages/02-nhansu.js?v=11.0"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=11.0"></script>
-<script src="js/pages/04-misc.js?v=11.0"></script>
-<script src="js/pages/05-muanon.js?v=11.0"></script>
-<script src="js/ai/face-recognition.js?v=12.0"></script>
-<script src="js/admin/01-banhang.js?v=11.0"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=11.0"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=11.0"></script>
-<script src="js/admin/04-muanon-admin.js?v=11.0"></script>
-<script src="js/lib/camscanner.js?v=13.17"></script>
-<script src="js/pages/06-bangiao.js?v=13.17"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.17"></script>
+<script src="js/core/03-router.js?v=13.19"></script>
+<script src="js/pages/01-lichca.js?v=13.19"></script>
+<script src="js/pages/02-nhansu.js?v=13.19"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.19"></script>
+<script src="js/pages/04-misc.js?v=13.19"></script>
+<script src="js/pages/05-muanon.js?v=13.19"></script>
+<script src="js/lib/camscanner.js?v=13.19"></script>
+<script src="js/pages/06-bangiao.js?v=13.19"></script>
+<script src="js/ai/face-recognition.js?v=13.19"></script>
+<script src="js/admin/01-banhang.js?v=13.19"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.19"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.19"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.19"></script>
 </body>
 </html>

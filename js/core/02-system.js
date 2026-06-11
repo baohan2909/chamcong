@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.17',
+  'sys.cache_version': 'v13.19',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -352,6 +352,9 @@ const PAGE_TITLES={
   // [v11 muanon]
   'muanon':       'MẪU NÓN HÀNG TUẦN',
   'muanon-admin': 'QUẢN LÝ MẪU NÓN',
+  // [v13.19 bàn giao] thay thế checklist
+  'bangiao':    'BÀN GIAO CA',
+  'bangiao-ql': 'QUẢN LÝ BÀN GIAO',
 };
 function goToPage(page){
   currentPage=page;
@@ -395,8 +398,10 @@ function goToPage(page){
   if(page==='giaodien')    _capNhatGDUI(); // [v10.85]
   if(page==='banhang')     bhInitPage();    // [v11] Init module bán hàng
   if(page==='admin')       adm2InitPage(); // [v12 v2]
-  if(page==='checklist')   chkInitPage();   // [v10.85] Checklist cửa hàng
-  if(page==='checklist-ql') chkqlInitPage(); // [v10.85] Quản lý sự cố
+  if(page==='checklist')   chkInitPage();   // [v10.85] Checklist cửa hàng (retire — fallback)
+  if(page==='checklist-ql') chkqlInitPage(); // [v10.85] Quản lý sự cố (retire — fallback)
+  if(page==='bangiao')      bgInitPage();    // [v13.19] Bàn giao ca
+  if(page==='bangiao-ql')   bgqlInitPage();  // [v13.19] QL bàn giao
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
 }
@@ -639,8 +644,11 @@ function khoiDongApp(){
   const nCT = document.getElementById('nav-chuongtrinh');
   const nBD = document.getElementById('nav-bandochidung');
   if (isNV || isCH) {
+    // [v13.19] Menu Bàn giao ca thay thế hoàn toàn "Kiểm tra cửa hàng" cũ
     const mChk = document.getElementById('menu-checklist');
-    if (mChk) mChk.style.display = '';
+    if (mChk) mChk.style.display = 'none';
+    const mBG = document.getElementById('menu-bangiao');
+    if (mBG) mBG.style.display = '';
   }
   if (isNV) {
     // NV: bật bản đồ + chương trình ở bottom nav
@@ -713,21 +721,12 @@ function khoiDongApp(){
     // [v11 muanon] menu Hình ảnh sản phẩm hàng tuần
     const mMNA = document.getElementById('menu-muanon-admin');
     if (mMNA) mMNA.style.display = '';
-    // [v13.17 bangiao] menu Bàn giao - Quản lý cho ADMIN
-    const mBGQL = document.getElementById('menu-bangiao-ql');
-    if (mBGQL) mBGQL.style.display = '';
   }
 
   // [v11 muanon] QL (QLNS/QLBH) cũng thấy menu-muanon-admin
   if (isQL || isQLBH || isCH) {
     const mMNA = document.getElementById('menu-muanon-admin');
     if (mMNA) mMNA.style.display = '';
-  }
-  
-  // [v13.17 bangiao] menu Bàn giao - Quản lý cho QL/QLBH (không cho CH)
-  if (isQL || isQLBH) {
-    const mBGQL = document.getElementById('menu-bangiao-ql');
-    if (mBGQL) mBGQL.style.display = '';
   }
 
   if(isQL){
@@ -736,7 +735,9 @@ function khoiDongApp(){
     document.getElementById('menu-lichca-ql').style.display='';
     document.getElementById('menu-dashboard').style.display=''; // [FIX v9 #12]
     document.getElementById('menu-duyetyc').style.display='';   // [v10 Yc #5]
-    document.getElementById('menu-checklist-ql').style.display=''; // [v10.85] Sự cố CH
+    document.getElementById('menu-checklist-ql').style.display=''; // [v10.85] Sự cố CH (retire)
+    const mBGQL = document.getElementById('menu-bangiao-ql');
+    if (mBGQL) mBGQL.style.display = ''; // [v13.19] QL bàn giao
   }
 
   // [v11] Phân quyền CỬA HÀNG
@@ -1381,25 +1382,6 @@ function doSubmit(){
 
 // [v12.2] Tách phần GPS pre-check ra thành hàm riêng để gọi sau face verify
 function _doSubmitContinueWithGPS(){
-  // [v13.17 BÀN GIAO] BLOCK RA_CA: nếu có biên bản bàn giao chưa ack → hard block
-  if (state.loai === 'Ra ca' && typeof bgCheckBlockRaCa === 'function') {
-    bgCheckBlockRaCa().then(r => {
-      if (r && r.allow === false) {
-        // User chưa ack → KHÔNG cho ra ca. Reset state để user thử lại sau khi ack.
-        state.submitting = false;
-        state.submitted = false;
-        showToast('Bạn cần xem & xác nhận các biên bản bàn giao trước khi ra ca', 'warn');
-        return;
-      }
-      // Allow → tiếp tục flow GPS-precheck
-      _doSubmitContinueWithGPS_inner();
-    });
-    return;
-  }
-  _doSubmitContinueWithGPS_inner();
-}
-
-function _doSubmitContinueWithGPS_inner(){
   // [v11.3 GPS-02] Pre-check: nếu user xa CH đã chọn > 200m → tìm CH gần nhất
   const maCH = document.getElementById('sel-cuahang').value;
   const lat = state.lat, lng = state.lng;
@@ -1624,10 +1606,6 @@ function _doSubmitFinal(){
       hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
       startCountdown(30);
     } else {
-      // [v13.17 BÀN GIAO] Sau VAO_CA của Trưởng ca → tự động popup ack
-      if (state.loai === 'Vào ca' && truongCa && typeof bgCheckAckOnVaoCa === 'function') {
-        try { bgCheckAckOnVaoCa(); } catch(e) { console.warn('Ack check fail:', e); }
-      }
       startCountdown(30);
     }
   })().catch(() => {
