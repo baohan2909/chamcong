@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.15',
+  'sys.cache_version': 'v13.16',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -3996,3 +3996,40 @@ function _hideBusy(){
   const ov=document.getElementById('_busy');
   if(ov)ov.classList.remove('on');
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// [v13.16] GLOBAL IMAGE FALLBACK: Supabase 404 → Drive URL
+// Khi ảnh đã bị xóa khỏi Supabase (theo chu kỳ cleanup tháng), <img> load fail
+// → interceptor tự gọi RPC fn_resolve_drive_url → swap src sang Drive.
+// Phủ TOÀN BỘ app không cần sửa từng chỗ render.
+// ═══════════════════════════════════════════════════════════════════════════
+(function(){
+  const _resolveCache = {};  // url → driveUrl | 'NONE' (tránh gọi lặp)
+
+  async function _resolveDrive(url){
+    if (_resolveCache[url] !== undefined) return _resolveCache[url] === 'NONE' ? null : _resolveCache[url];
+    try {
+      const { data, error } = await supa.rpc('fn_resolve_drive_url', { p_url: url });
+      const result = (!error && data) ? data : null;
+      _resolveCache[url] = result || 'NONE';
+      return result;
+    } catch(e) {
+      _resolveCache[url] = 'NONE';
+      return null;
+    }
+  }
+
+  // Capture-phase error listener — bắt mọi img error toàn document
+  document.addEventListener('error', async function(ev){
+    const img = ev.target;
+    if (!img || img.tagName !== 'IMG') return;
+    if (img._driveFallbackTried) return;            // tránh loop
+    const src = img.src || '';
+    if (src.indexOf('/storage/v1/object/public/') < 0) return;  // chỉ ảnh Supabase
+    img._driveFallbackTried = true;
+    const driveUrl = await _resolveDrive(src);
+    if (driveUrl) {
+      img.src = driveUrl;
+    }
+  }, true);  // useCapture = true: error không bubble, phải capture
+})();
