@@ -1385,15 +1385,20 @@ async function adm2LoadSuaLogBody() {
         const initIsDoi = /đội\s*sale/i.test(l.tenCH || '');
         // [v13.11] Tag Đội SALE PER-RECORD (không lây từ log khác trong ngày):
         //  - tenCH là đội SALE → tô tím nguyên tên
-        //  - ghiChu chứa "[Đội SALE X] hỗ trợ..." → tag đội + tên CH thực
+        //  - ghiChu chứa "[Đội SALE X] hỗ trợ..." (format mới) → tag đội + tên CH thực
+        //  - [v13.12] deviceInfo chứa "[SALE_ORIGIN:ma|ten]" / "[SALE_TARGET:ma|ten]" (format CŨ) → tag đội + tên CH thực
         //  - còn lại → chỉ tên CH, KHÔNG tag
         let chHtml = '';
         if (l.tenCH) {
           const mGhi = (l.ghiChu || '').match(/\[(đội\s*sale[^\]]*)\]/i);
+          const di = l.deviceInfo || '';
+          const mDi = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
           if (initIsDoi) {
             chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(l.tenCH)}</span>`;
           } else if (mGhi) {
             chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(mGhi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
+          } else if (mDi) {
+            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(mDi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
           } else {
             chHtml = adm2Esc(l.tenCH);
           }

@@ -50,12 +50,51 @@ async function nsFaceEnsureLoaded() {
 }
 
 async function _openCam(videoEl) {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user' }, audio: false
-  });
+  // [v13.13] Stop stream cũ trên element nếu còn — tránh leak/conflict
+  if (videoEl.srcObject) {
+    try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(_){}
+    videoEl.srcObject = null;
+  }
+
+  // [v13.13] Relax constraints: facingMode `ideal` (không `exact`) + fallback `video:true`
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    });
+  } catch (e1) {
+    // Một số Android cũ không có front cam → thử bất kỳ camera nào
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  }
+
   videoEl.srcObject = stream;
-  await new Promise(r => videoEl.onloadedmetadata = r);
-  await videoEl.play();
+
+  // [v13.13] FIX BUG CHÍNH: tránh race condition onloadedmetadata
+  // Bug cũ: nếu metadata đã load TRƯỚC khi set handler → Promise hang forever → camera đen.
+  // Fix: check readyState trước, dùng addEventListener once + timeout 5s phòng treo.
+  if (videoEl.readyState < 1) {
+    await new Promise((resolve, reject) => {
+      const tid = setTimeout(() => reject(new Error('cam-timeout-metadata')), 5000);
+      videoEl.addEventListener('loadedmetadata', () => { clearTimeout(tid); resolve(); }, { once: true });
+    });
+  }
+
+  // [v13.13] play() có thể reject AbortError trên iOS Safari khi stream mới attach — retry 1 lần
+  try {
+    await videoEl.play();
+  } catch (e) {
+    await new Promise(r => setTimeout(r, 150));
+    try { await videoEl.play(); } catch(_) {}
+  }
+
+  // [v13.13] Verify track còn active sau khi play
+  const track = stream.getVideoTracks()[0];
+  if (!track || track.readyState !== 'live') {
+    try { stream.getTracks().forEach(t => t.stop()); } catch(_){}
+    throw new Error('cam-stream-not-live');
+  }
+
   return stream;
 }
 function _stopCam(stream) { if (stream) stream.getTracks().forEach(t => t.stop()); }
@@ -271,7 +310,14 @@ async function _startEnrollmentFlow() {
   try {
     _enrollStream = await _openCam(video);
   } catch (e) {
-    _setInstruction('fe', 'Cần cấp quyền camera');
+    // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
+    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
+    if (isPerm) {
+      _setInstruction('fe', 'Cần cấp quyền camera');
+    } else {
+      _setInstruction('fe', 'Không mở được camera — bấm "Thử lại"');
+      _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
+    }
     return;
   }
 
@@ -402,7 +448,16 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
   try {
     _verifyStream = await _openCam(video);
   } catch (e) {
-    _setSubstatus('fv', 'Cần cấp quyền camera', 'err');
+    // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
+    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
+    if (isPerm) {
+      _setSubstatus('fv', 'Cần cấp quyền camera', 'err');
+    } else {
+      _setInstruction('fv', 'Không mở được camera');
+      _setSubstatus('fv', 'Bấm "Thử lại" hoặc chấm công bằng ảnh tay', 'err');
+      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
+      _addFallbackBtn();
+    }
     return;
   }
 
@@ -487,6 +542,18 @@ function _addFallbackBtn() {
     nsFaceCloseVerify();
     if (cb) cb({ reason: 'low_sim', fallback: true });
   };
+  body.appendChild(btn);
+}
+
+// [v13.13] Nút "Thử lại" khi camera mở thất bại (không phải lỗi quyền)
+function _addRetryBtn(prefix, onClick) {
+  const modalId = prefix === 'fe' ? 'ns-face-modal-body' : 'ns-face-verify-modal-body';
+  const body = document.getElementById(modalId);
+  if (!body || body.querySelector('.ns-face-btn-retry')) return;
+  const btn = document.createElement('button');
+  btn.className = 'ns-face-btn-secondary ns-face-btn-retry';
+  btn.textContent = '↻ Thử lại';
+  btn.onclick = onClick;
   body.appendChild(btn);
 }
 
