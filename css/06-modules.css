@@ -1392,78 +1392,143 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
- *  [v13.27] PRINT STYLES — @media print
- *  Mỗi CH = 1 sheet 2 mặt cố định (4 ảnh layout — 2 mặt giấy A4)
+ *  [v13.31] PRINT STYLES — A4 letterhead chuyên nghiệp
+ *  Fix lỗi: trang trắng + nội dung app lộ → dùng visibility cascade mạnh
  * ═══════════════════════════════════════════════════════════════════════ */
 #bgql-print-root { display: none; }
 
 @media print {
-  /* Hide tất cả trừ print root */
-  body.printing > *:not(#bgql-print-root) { display: none !important; }
-  body.printing #bgql-print-root { display: block !important; }
-  body.printing {
-    background: #fff !important;
-    margin: 0; padding: 0;
+  /* CÁCH 1: visibility cascade — HIDE TẤT CẢ trừ print root */
+  body.printing { visibility: hidden !important; }
+  body.printing #bgql-print-root,
+  body.printing #bgql-print-root * { visibility: visible !important; }
+  
+  /* CÁCH 2: defensive display:none cho overlay/modal/banner/toast */
+  body.printing nav,
+  body.printing .bottom-nav,
+  body.printing .ns-modal,
+  body.printing .ns-toast,
+  body.printing .toast,
+  body.printing .toast-container,
+  body.printing .modal,
+  body.printing .modal-overlay,
+  body.printing .bg-respond-modal,
+  body.printing .pwa-banner,
+  body.printing .pwa-install-banner,
+  body.printing .pwa-update-banner,
+  body.printing .ns-suggest-overlay,
+  body.printing .suggest-list,
+  body.printing #app-banner,
+  body.printing [class*="banner"],
+  body.printing [class*="overlay"] { display: none !important; }
+  
+  /* Position print root tại top */
+  body.printing #bgql-print-root {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important; top: 0 !important; right: 0 !important;
+    width: 100% !important;
+    margin: 0 !important; padding: 0 !important;
+    background: white !important;
   }
   
-  @page {
-    size: A4;
-    margin: 1cm;
-  }
+  body.printing { background: white !important; }
+  
+  @page { size: A4; margin: 12mm 14mm; }
   
   .print-page {
     page-break-after: always;
+    break-after: page;
     width: 100%;
-    height: 100vh;
+    min-height: 250mm;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+    background: white;
+    display: flex; flex-direction: column;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #000;
   }
-  .print-page:last-child { page-break-after: auto; }
+  .print-page:last-child { page-break-after: auto; break-after: auto; }
   
+  /* Header letterhead — tên CH + mã + ngày */
   .print-header {
-    display: flex; justify-content: space-between;
-    padding-bottom: 8mm;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding-bottom: 6mm;
     margin-bottom: 6mm;
-    border-bottom: 1pt solid #000;
+    border-bottom: 1.5pt solid #0F2E45;
   }
-  .print-ch-name { font-size: 14pt; font-weight: 800; color: #000; }
-  .print-ch-sub { font-size: 9pt; color: #555; font-weight: 600; }
-  .print-header-r { text-align: right; font-size: 9pt; color: #333; font-weight: 600; }
+  .print-header-l { flex: 1; }
+  .print-ch-name {
+    font-size: 16pt; font-weight: 800;
+    color: #0F2E45;
+    letter-spacing: -.01em;
+    line-height: 1.15;
+    margin-bottom: 2mm;
+  }
+  .print-ch-sub {
+    font-size: 10pt; font-weight: 600;
+    color: #475569;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .print-header-r { 
+    text-align: right; font-size: 9.5pt; color: #475569; 
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .print-header-r b { color: #0F2E45; font-weight: 800; }
   
-  .print-grid {
-    flex: 1;
-    display: grid;
-    gap: 5mm;
-  }
+  /* Grid 1/2/4 ảnh per trang */
+  .print-grid { flex: 1; display: grid; gap: 6mm; }
   .print-layout-1 .print-grid { grid-template-columns: 1fr; grid-template-rows: 1fr; }
   .print-layout-2 .print-grid { grid-template-columns: 1fr; grid-template-rows: repeat(2, 1fr); }
   .print-layout-4 .print-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
   
   .print-cell {
     display: flex; flex-direction: column;
-    border: 1pt solid #ccc;
-    border-radius: 3pt;
+    background: #fff;
+    border-radius: 2pt;
     overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   .print-cell-img {
     flex: 1;
-    background: #f5f5f5;
     overflow: hidden;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0;
   }
   .print-cell-img img {
-    width: 100%; height: 100%;
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
     object-fit: contain;
+    display: block;
   }
+  /* Layout 1: ảnh chiếm full + có khung nhẹ */
+  .print-layout-1 .print-cell { border: 0.5pt solid #94A3B8; }
+  .print-layout-1 .print-cell-img { padding: 4mm; }
+  
   .print-cell-meta {
-    padding: 2mm 3mm;
-    font-size: 8pt;
-    background: #fafafa;
-    border-top: 0.5pt solid #ddd;
-    color: #222;
+    padding: 2.5mm 4mm;
+    font-size: 8.5pt;
+    color: #1E293B;
+    background: #F1F5F9;
+    border-top: 0.5pt solid #CBD5E1;
     flex-shrink: 0;
+    font-weight: 500;
   }
+  .print-cell-meta b { color: #0F2E45; font-weight: 700; }
+  
+  /* Footer */
+  .print-footer {
+    margin-top: 5mm;
+    padding-top: 3mm;
+    border-top: 0.5pt solid #CBD5E1;
+    display: flex; justify-content: space-between;
+    font-size: 8.5pt; color: #64748B;
+    font-weight: 500;
+  }
+  .print-footer b { color: #0F2E45; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1768,3 +1833,59 @@
   line-height: 1.45;
   border-left: 2px solid #10B981;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.31] STATUS PALETTE — Trạng thái sự vụ
+ *  - Slate (mới tạo), Blue (tiếp nhận), Amber (đang xử lý)
+ *  - Emerald (hoàn tất), Red (hủy), Teal (có phản hồi)
+ *  - KHÔNG dùng purple/violet, đồng bộ hệ navy/emerald
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-st-MOI_TAO,
+.bgql-st--moi_tao,
+.bgql-status[data-st="MOI_TAO"] {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #CBD5E1;
+}
+.bgql-st-DA_TIEP_NHAN,
+.bgql-st--da_tiep_nhan,
+.bgql-status[data-st="DA_TIEP_NHAN"] {
+  background: #DBEAFE !important;
+  color: #1D4ED8 !important;
+  border: 1px solid #93C5FD;
+}
+.bgql-st-DANG_XU_LY,
+.bgql-st--dang_xu_ly,
+.bgql-status[data-st="DANG_XU_LY"] {
+  background: #FEF3C7 !important;
+  color: #B45309 !important;
+  border: 1px solid #FCD34D;
+}
+.bgql-st-HOAN_TAT,
+.bgql-st--hoan_tat,
+.bgql-status[data-st="HOAN_TAT"] {
+  background: #D1FAE5 !important;
+  color: #047857 !important;
+  border: 1px solid #6EE7B7;
+}
+.bgql-st-HUY,
+.bgql-st--huy,
+.bgql-status[data-st="HUY"] {
+  background: #FEE2E2 !important;
+  color: #B91C1C !important;
+  border: 1px solid #FCA5A5;
+}
+/* Có phản hồi từ QL — teal (KHÔNG dùng purple) */
+.bgql-st-phan-hoi,
+.bgql-has-reply {
+  background: #CCFBF1 !important;
+  color: #0F766E !important;
+  border: 1px solid #5EEAD4;
+}
+
+/* Áp dụng cho bgql-sv-mini-st (Stats drill-down) */
+.bgql-sv-mini-st[data-st="MOI_TAO"] { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+.bgql-sv-mini-st[data-st="DA_TIEP_NHAN"] { background: #DBEAFE; color: #1D4ED8; border-color: #93C5FD; }
+.bgql-sv-mini-st[data-st="DANG_XU_LY"] { background: #FEF3C7; color: #B45309; border-color: #FCD34D; }
+.bgql-sv-mini-st[data-st="HOAN_TAT"] { background: #D1FAE5; color: #047857; border-color: #6EE7B7; }
+.bgql-sv-mini-st[data-st="HUY"] { background: #FEE2E2; color: #B91C1C; border-color: #FCA5A5; }

@@ -18,7 +18,7 @@ let bgqlSub = 'suvu';
 let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
 let bgqlTienChiCache = null;
-let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d' };
+let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d', customFrom:null, customTo:null };
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -119,12 +119,17 @@ function bgqlRenderSuVuFilters(){
           <option value="today"${bgqlSuVuFilter.range==='today'?' selected':''}>Hôm nay</option>
           <option value="7d"${bgqlSuVuFilter.range==='7d'?' selected':''}>7 ngày qua</option>
           <option value="30d"${bgqlSuVuFilter.range==='30d'?' selected':''}>30 ngày qua</option>
+          <option value="custom"${bgqlSuVuFilter.range==='custom'?' selected':''}>Tự chọn khoảng…</option>
         </select>
         ${tcKhuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
           <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
           ${tcKhuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
         </select>` : ''}
       </div>
+      ${bgqlSuVuFilter.range === 'custom' ? `<div class="bgql-flt-row">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlSuVuFilter.customFrom||''}" onchange="bgqlSetTcCustomFrom(this.value)">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlSuVuFilter.customTo||''}" onchange="bgqlSetTcCustomTo(this.value)">
+      </div>` : ''}
       ${tcChList.length>5 ? `<div class="bgql-flt-row">
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('ma_ch', this.value)">
           <option value="">Mọi cửa hàng</option>
@@ -160,12 +165,23 @@ window.bgqlSetFilterDD = function(key, value){
   else if (key === 'range') {
     bgqlSuVuFilter.range = value;
     bgqlTienChiCache = null;
-    bgqlLoadTienChi();
+    if (value !== 'custom') bgqlLoadTienChi();
+    else bgqlRenderSuVuFilters();  // Hiện datepicker
     return;
   }
   bgqlRenderSuVuFilters();
   if (bgqlInnerTab === 'suvu') bgqlRenderSuVuList();
   else bgqlRenderTienChiList();
+};
+
+// [v13.31] Datepicker custom cho Tiền chi
+window.bgqlSetTcCustomFrom = function(v){ 
+  bgqlSuVuFilter.customFrom = v; 
+  if (bgqlSuVuFilter.customTo) bgqlLoadTienChi();
+};
+window.bgqlSetTcCustomTo = function(v){ 
+  bgqlSuVuFilter.customTo = v; 
+  if (bgqlSuVuFilter.customFrom) bgqlLoadTienChi();
 };
 
 window.bgqlSwitchInnerTab = function(t){
@@ -657,7 +673,7 @@ function bgqlSvDetailHtml(sv){
     <div class="bgql-sv-mini">
       <div class="bgql-sv-mini-head">
         <span class="bgql-sv-mini-md ${mdClass}">${mdMap[sv.muc_do]||sv.muc_do}</span>
-        <span class="bgql-sv-mini-st">${stMap[sv.trang_thai]||sv.trang_thai}</span>
+        <span class="bgql-sv-mini-st" data-st="${sv.trang_thai||''}">${stMap[sv.trang_thai]||sv.trang_thai}</span>
         <span class="bgql-sv-mini-time">${t}</span>
       </div>
       <div class="bgql-sv-mini-title">${escHtml(sv.tieu_de||'')}</div>
@@ -680,6 +696,8 @@ let bgqlPrintCache = null;        // Map<ma_ch, {ten_ch, bg_list: [{id, ngay, ti
 let bgqlPrintRange = '7d';        // 'today' | '7d' | '30d' | 'custom'
 let bgqlPrintCustomFrom = null;
 let bgqlPrintCustomTo = null;
+let bgqlPrintFilterKV = null;     // [v13.31] khu vực filter
+let bgqlPrintFilterCH = null;     // [v13.31] CH filter
 let bgqlPrintSelectedCH = new Set();  // CH đã tick chọn
 let bgqlPrintLayout = '1';        // [v13.30] '1' default — 1 ảnh/trang, 2 mặt cố định
 
@@ -733,11 +751,25 @@ function bgqlPrintGetRange(){
   if (bgqlPrintRange === 'today') from = to;
   else if (bgqlPrintRange === '7d') { const d = new Date(today); d.setDate(d.getDate()-7); from = d.toISOString().slice(0,10); }
   else if (bgqlPrintRange === '30d') { const d = new Date(today); d.setDate(d.getDate()-30); from = d.toISOString().slice(0,10); }
-  else { return { from: bgqlPrintCustomFrom || to, to: bgqlPrintCustomTo || to }; }
+  else if (bgqlPrintRange === 'custom') {
+    // [v13.31] Custom range
+    return { 
+      from: bgqlPrintCustomFrom || to, 
+      to: bgqlPrintCustomTo || to 
+    };
+  }
+  else { from = to; }
   return { from, to };
 }
 
 function bgqlRenderPrintHeader(){
+  // Lấy khu_vuc + ma_ch distinct từ cache (nếu đã load)
+  const cache = bgqlPrintCache || {};
+  const allCh = Object.values(cache);
+  const khuVucs = [...new Set(allCh.map(c => c.khu_vuc).filter(k=>k))].sort();
+  const chList = allCh.map(c => [c.ma_ch, c.ten_ch||c.ma_ch])
+    .sort((a,b) => a[1].localeCompare(b[1], 'vi'));
+  
   return `
     <div class="bgql-print-bar">
       <div class="bgql-print-bar-left">
@@ -745,6 +777,7 @@ function bgqlRenderPrintHeader(){
           <option value="today"${bgqlPrintRange==='today'?' selected':''}>Hôm nay</option>
           <option value="7d"${bgqlPrintRange==='7d'?' selected':''}>7 ngày qua</option>
           <option value="30d"${bgqlPrintRange==='30d'?' selected':''}>30 ngày qua</option>
+          <option value="custom"${bgqlPrintRange==='custom'?' selected':''}>Tự chọn khoảng…</option>
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlPrintSetLayout(this.value)">
           <option value="1"${bgqlPrintLayout==='1'?' selected':''}>1 ảnh / trang (mặc định)</option>
@@ -752,7 +785,23 @@ function bgqlRenderPrintHeader(){
           <option value="4"${bgqlPrintLayout==='4'?' selected':''}>4 ảnh / trang</option>
         </select>
       </div>
-      <div class="bgql-print-bar-right">
+      ${bgqlPrintRange === 'custom' ? `
+      <div class="bgql-print-bar-left" style="margin-top:8px">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlPrintCustomFrom||''}" onchange="bgqlPrintSetCustomFrom(this.value)" placeholder="Từ ngày">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlPrintCustomTo||''}" onchange="bgqlPrintSetCustomTo(this.value)" placeholder="Đến ngày">
+      </div>` : ''}
+      ${khuVucs.length>1 || chList.length>1 ? `
+      <div class="bgql-print-bar-left" style="margin-top:8px">
+        ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlPrintSetKV(this.value)">
+          <option value="">Mọi khu vực</option>
+          ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlPrintFilterKV===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+        </select>` : ''}
+        ${chList.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlPrintSetCH(this.value)">
+          <option value="">Mọi cửa hàng</option>
+          ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlPrintFilterCH===k?' selected':''}>${escHtml(v)}</option>`).join('')}
+        </select>` : ''}
+      </div>` : ''}
+      <div class="bgql-print-bar-right" style="margin-top:8px">
         <button class="bgql-act bgql-act-ghost" onclick="bgqlPrintToggleAll()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Chọn tất cả
@@ -766,10 +815,26 @@ function bgqlRenderPrintHeader(){
   `;
 }
 
+window.bgqlPrintSetCustomFrom = function(v){ bgqlPrintCustomFrom = v; if (bgqlPrintCustomTo) bgqlLoadPrint(); };
+window.bgqlPrintSetCustomTo = function(v){ bgqlPrintCustomTo = v; if (bgqlPrintCustomFrom) bgqlLoadPrint(); };
+window.bgqlPrintSetKV = function(v){ 
+  bgqlPrintFilterKV = v || null; 
+  bgqlPrintSelectedCH.clear();
+  bgqlRenderPrintList(); 
+};
+window.bgqlPrintSetCH = function(v){ 
+  bgqlPrintFilterCH = v || null; 
+  bgqlPrintSelectedCH.clear();
+  bgqlRenderPrintList(); 
+};
+
 function bgqlRenderPrintList(){
   const cont = document.getElementById('bgql-print-content');
   const cache = bgqlPrintCache || {};
-  const arr = Object.values(cache);
+  // [v13.31] Apply filter KV + CH
+  let arr = Object.values(cache);
+  if (bgqlPrintFilterKV) arr = arr.filter(c => c.khu_vuc === bgqlPrintFilterKV);
+  if (bgqlPrintFilterCH) arr = arr.filter(c => c.ma_ch === bgqlPrintFilterCH);
   
   if (arr.length === 0){
     cont.innerHTML = bgqlRenderPrintHeader() + 
@@ -853,12 +918,11 @@ function bgqlPrintUpdateBtnState(){
   btn.style.opacity = totalAnh === 0 ? '.5' : '1';
 }
 
-// ─── DO PRINT — render print HTML + window.print() ────────────────────────
-window.bgqlDoPrint = function(){
+// ─── DO PRINT — render print HTML letterhead + đợi ảnh load + window.print() ──
+window.bgqlDoPrint = async function(){
   const cache = bgqlPrintCache || {};
-  const layout = parseInt(bgqlPrintLayout, 10) || 4;
+  const layout = parseInt(bgqlPrintLayout, 10) || 1;
   
-  // Build print HTML
   const chList = Array.from(bgqlPrintSelectedCH)
     .map(m => cache[m])
     .filter(Boolean)
@@ -873,58 +937,79 @@ window.bgqlDoPrint = function(){
     return d;
   })();
   
-  // Render: mỗi CH có nhiều page. Mỗi page chứa `layout` ảnh.
+  // Build pages
   const pages = [];
   chList.forEach(ch => {
     const allImgs = [];
     ch.bg_list.forEach(bg => {
-      bg.anh_urls.forEach(url => allImgs.push({ url, bg }));
+      (bg.anh_urls || []).forEach(url => allImgs.push({ url, bg }));
     });
     if (allImgs.length === 0) return;
-    
-    // Chia thành pages, mỗi page `layout` ảnh
     for (let i = 0; i < allImgs.length; i += layout) {
       const pageImgs = allImgs.slice(i, i + layout);
-      pages.push({ ch, imgs: pageImgs, pageNum: Math.floor(i/layout) + 1, totalPages: Math.ceil(allImgs.length/layout) });
+      pages.push({ 
+        ch, imgs: pageImgs, 
+        pageNum: Math.floor(i/layout) + 1, 
+        totalPages: Math.ceil(allImgs.length/layout) 
+      });
     }
   });
   
-  printRoot.innerHTML = pages.map((p, idx) => `
+  const printDateStr = new Date().toLocaleDateString('vi-VN', { 
+    day:'2-digit', month:'2-digit', year:'numeric' 
+  });
+  
+  printRoot.innerHTML = pages.map(p => `
     <div class="print-page print-layout-${layout}">
       <div class="print-header">
         <div class="print-header-l">
           <div class="print-ch-name">${escHtml(p.ch.ten_ch||p.ch.ma_ch)}</div>
-          <div class="print-ch-sub">${escHtml(p.ch.ma_ch)} · BIÊN BẢN BÀN GIAO CA</div>
+          <div class="print-ch-sub">${escHtml(p.ch.ma_ch)} · Biên bản bàn giao ca</div>
         </div>
         <div class="print-header-r">
-          <div>Trang ${p.pageNum}/${p.totalPages}</div>
-          <div>${new Date().toLocaleDateString('vi-VN')}</div>
+          <div>Ngày in: <b>${printDateStr}</b></div>
+          <div>Trang <b>${p.pageNum}/${p.totalPages}</b></div>
         </div>
       </div>
       <div class="print-grid">
         ${p.imgs.map(({url, bg}) => `
           <div class="print-cell">
-            <div class="print-cell-img"><img src="${url}" crossorigin="anonymous"></div>
+            <div class="print-cell-img"><img src="${escHtml(url)}" crossorigin="anonymous" loading="eager"></div>
             <div class="print-cell-meta">
-              <b>${escHtml(bg.by||'')}</b> · ${(bg.time||'').slice(0,5)} · ${bg.ngay}
-              ${bg.so_su_vu>0?` · ${bg.so_su_vu} sự vụ${bg.so_khan>0?` (${bg.so_khan} khẩn)`:''}`:''}
+              <b>${escHtml(bg.by||'—')}</b> · Lúc ${(bg.time||'').slice(0,5)} ngày ${bg.ngay}
+              ${bg.so_su_vu>0?` · <b style="color:#9A3412">${bg.so_su_vu} sự vụ${bg.so_khan>0?` (${bg.so_khan} khẩn)`:''}</b>`:''}
             </div>
           </div>
         `).join('')}
       </div>
+      <div class="print-footer">
+        <span>Nón Sơn · Hệ thống chấm công & bàn giao</span>
+        <span>Cửa hàng: <b>${escHtml(p.ch.ma_ch)}</b></span>
+      </div>
     </div>
   `).join('');
   
-  // Activate print mode + trigger
+  // [v13.31] Wait for ALL images to load trước khi mở print dialog
+  showToast('⏳ Đang chuẩn bị bản in...', 'info');
+  const allImgEls = printRoot.querySelectorAll('img');
+  await Promise.all(Array.from(allImgEls).map(img => {
+    if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+    return new Promise(resolve => {
+      img.addEventListener('load', resolve, { once: true });
+      img.addEventListener('error', resolve, { once: true });  // Resolve cả khi error để không stuck
+      setTimeout(resolve, 5000);  // Timeout safety 5s/ảnh
+    });
+  }));
+  
   document.body.classList.add('printing');
-  // Wait for images to load
+  // Đợi 1 frame để CSS apply
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  window.print();
+  // Cleanup
   setTimeout(() => {
-    window.print();
-    // Cleanup sau khi print dialog đóng
-    setTimeout(() => {
-      document.body.classList.remove('printing');
-    }, 500);
-  }, 800);
+    document.body.classList.remove('printing');
+    printRoot.innerHTML = '';  // Clear để tránh phình memory
+  }, 1500);
 };
 
 
@@ -945,13 +1030,24 @@ async function bgqlLoadTienChi(){
     else if (bgqlSuVuFilter.range === '30d') {
       const d = new Date(today); d.setDate(d.getDate()-30);
       fromStr = d.toISOString().slice(0,10);
+    } else if (bgqlSuVuFilter.range === 'custom') {
+      // [v13.31] Custom range
+      if (!bgqlSuVuFilter.customFrom || !bgqlSuVuFilter.customTo) {
+        // Chưa chọn ngày → return empty
+        bgqlTienChiCache = [];
+        bgqlRenderSuVuFilters();
+        bgqlRenderTienChiList();
+        return;
+      }
+      fromStr = bgqlSuVuFilter.customFrom;
     } else {
       const d = new Date(today); d.setDate(d.getDate()-7);
       fromStr = d.toISOString().slice(0,10);
     }
+    const denStr = bgqlSuVuFilter.range === 'custom' ? (bgqlSuVuFilter.customTo || toStr) : toStr;
     const { data, error } = await supa.rpc('fn_bg_tien_chi_list', {
       p_tu_ngay: fromStr,
-      p_den_ngay: toStr,
+      p_den_ngay: denStr,
       p_ma_ch: bgqlSuVuFilter.ma_ch || null,
       p_khu_vuc: (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc !== 'all') ? bgqlSuVuFilter.khu_vuc : null,
       p_limit: 200
