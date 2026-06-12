@@ -243,7 +243,7 @@ window.bgqlTiepNhan = async function(id){
 };
 window.bgqlBatDau = async function(id){
   try {
-    const { data, error } = await supa.rpc('fn_su_vu_bat_dau', {
+    const { data, error } = await supa.rpc('fn_su_vu_bat_dau_xu_ly', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen, p_vai_tro: SESSION.vaiTro
     });
     if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
@@ -255,9 +255,9 @@ window.bgqlHoanTat = async function(id){
   const note = prompt('Ghi chú đóng sự vụ (tùy chọn):', '');
   if (note === null) return;
   try {
-    const { data, error } = await supa.rpc('fn_su_vu_hoan_tat', {
+    const { data, error } = await supa.rpc('fn_su_vu_dong', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
-      p_vai_tro: SESSION.vaiTro, p_ghi_chu: note || null
+      p_vai_tro_dong: SESSION.vaiTro, p_ghi_chu: note || null
     });
     if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
     showToast('✓ Đã đóng sự vụ', 'ok');
