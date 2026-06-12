@@ -858,36 +858,144 @@ function bgRecHtml(b){
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-//  TAB 3: TIMELINE (Sprint 1 stub — Sprint 2 sẽ làm đầy đủ Gallery + Filter)
+//  TAB 3: TIMELINE — "bản tin" biên bản bàn giao
+//  Filter chip: Tất cả / Có ảnh / Có sự vụ / Khẩn cấp
+//  Card visual: thumbnail ảnh + tóm tắt (tiền, items VD, sự vụ)
+//  Group theo ngày: Hôm nay / Hôm qua / DD/MM
 // ═════════════════════════════════════════════════════════════════════════
+let bgTimelineFilter = 'all';   // 'all' | 'co_anh' | 'co_su_vu' | 'khan_cap'
+let bgTimelineCache = null;
+
 async function bgRenderTimeline(){
   const list = document.getElementById('bg-timeline-list');
-  list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
-  if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
-  try {
-    const { data } = await supa.rpc('fn_ban_giao_list', {
-      p_ma_ch: bgCurrentCH.ma, p_limit: 50, p_offset: 0
-    });
-    if (!data || data.length === 0){
-      list.innerHTML = '<div class="ns-empty">Chưa có biên bản nào.</div>';
+  // Header filter chips
+  if (!bgTimelineCache) {
+    list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+    if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
+    try {
+      const { data, error } = await supa.rpc('fn_ban_giao_list', {
+        p_ma_ch: bgCurrentCH.ma, p_limit: 100, p_offset: 0
+      });
+      if (error) throw error;
+      bgTimelineCache = data || [];
+    } catch(e){
+      list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>';
       return;
     }
-    // Group theo ngày
-    const byDay = {};
-    data.forEach(b => {
-      const d = b.ngay_ban_giao;
-      if (!byDay[d]) byDay[d] = [];
-      byDay[d].push(b);
-    });
-    const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
-    list.innerHTML = days.map(d => `
-      <div style="margin:14px 0 8px;padding:0 4px;font-size:12px;font-weight:700;color:#0F2E45;text-transform:uppercase;letter-spacing:.04em">
-        ${bgFmtDayVN(d)}
-      </div>
-      ${byDay[d].map(bgRecHtml).join('')}
-    `).join('');
-  } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
+  }
+  bgRenderTimelineFiltered();
 }
+
+function bgRenderTimelineFiltered(){
+  const list = document.getElementById('bg-timeline-list');
+  const all = bgTimelineCache || [];
+  // Apply filter
+  const filtered = all.filter(b => {
+    if (bgTimelineFilter === 'co_anh') return (b.so_anh||0) > 0;
+    if (bgTimelineFilter === 'co_su_vu') return (b.so_su_vu||0) > 0;
+    if (bgTimelineFilter === 'khan_cap') return (b.so_su_vu_khan||0) > 0;
+    return true;
+  });
+
+  // Filter chips header
+  const filterChips = `
+    <div class="bg-tl-filters">
+      ${[
+        {k:'all', label:'Tất cả', count: all.length},
+        {k:'co_anh', label:'Có ảnh', count: all.filter(b=>(b.so_anh||0)>0).length},
+        {k:'co_su_vu', label:'Có sự vụ', count: all.filter(b=>(b.so_su_vu||0)>0).length},
+        {k:'khan_cap', label:'Khẩn cấp', count: all.filter(b=>(b.so_su_vu_khan||0)>0).length},
+      ].map(f => `<button class="bg-tl-chip ${bgTimelineFilter===f.k?'active':''}" onclick="bgSetTimelineFilter('${f.k}')">
+        ${f.label}${f.count>0?`<span class="bg-tl-chip-c">${f.count}</span>`:''}
+      </button>`).join('')}
+    </div>
+  `;
+
+  if (filtered.length === 0){
+    list.innerHTML = filterChips + '<div class="ns-empty">Không có biên bản phù hợp.</div>';
+    return;
+  }
+
+  // Group theo ngày
+  const byDay = {};
+  filtered.forEach(b => {
+    const d = b.ngay_ban_giao;
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(b);
+  });
+  const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
+
+  list.innerHTML = filterChips + days.map(d => `
+    <div class="bg-tl-daysep">${bgFmtDayVN(d)}</div>
+    ${byDay[d].map(bgTimelineCardHtml).join('')}
+  `).join('');
+}
+
+function bgTimelineCardHtml(b){
+  const time = b.gio_ban_giao ? b.gio_ban_giao.slice(0,5) : '';
+  const tien = bgFmtVN(b.tien_tong||0);
+  const soAnh = b.so_anh || 0;
+  const soSV = b.so_su_vu || 0;
+  const soKhan = b.so_su_vu_khan || 0;
+  const soKD = b.so_item_khong_dat || 0;
+  const hasIssue = soSV > 0 || soKD > 0;
+  const accent = soKhan > 0 ? '#DC2626' : soSV > 0 ? '#F97316' : '#10B981';
+  
+  // Thumbnail strip
+  let thumbsHtml = '';
+  if (b.anh_urls && b.anh_urls.length > 0){
+    const show = b.anh_urls.slice(0, 3);
+    thumbsHtml = `<div class="bg-tl-thumbs">
+      ${show.map((url, i) => `<div class="bg-tl-thumb" onclick="event.stopPropagation(); bgViewImage('${url}')"><img src="${url}" loading="lazy"></div>`).join('')}
+      ${b.anh_urls.length > 3 ? `<div class="bg-tl-thumb bg-tl-thumb-more">+${b.anh_urls.length-3}</div>` : ''}
+    </div>`;
+  }
+
+  return `<div class="bg-tl-card" onclick="bgOpenBanGiaoDetail('${b.id}')" style="border-left:4px solid ${accent}">
+    <div class="bg-tl-head">
+      <div class="bg-tl-time">${time}</div>
+      <div class="bg-tl-by">${escHtml(b.nguoi_ban_giao_ten||'?')}</div>
+      ${soKhan>0?`<div class="bg-tl-tag khan">${soKhan} khẩn</div>`:''}
+    </div>
+    <div class="bg-tl-metrics">
+      <div class="bg-tl-metric">
+        <div class="bg-tl-metric-v">${tien}<span style="font-size:11px;font-weight:600;opacity:.7"> đ</span></div>
+        <div class="bg-tl-metric-l">Tổng tiền</div>
+      </div>
+      <div class="bg-tl-metric">
+        <div class="bg-tl-metric-v" style="${soKD>0?'color:#DC2626':''}">${soKD}</div>
+        <div class="bg-tl-metric-l">Không đạt</div>
+      </div>
+      <div class="bg-tl-metric">
+        <div class="bg-tl-metric-v" style="${soSV>0?'color:#F97316':''}">${soSV}</div>
+        <div class="bg-tl-metric-l">Sự vụ</div>
+      </div>
+      <div class="bg-tl-metric">
+        <div class="bg-tl-metric-v">${soAnh}</div>
+        <div class="bg-tl-metric-l">Ảnh</div>
+      </div>
+    </div>
+    ${thumbsHtml}
+  </div>`;
+}
+
+window.bgSetTimelineFilter = function(f){
+  bgTimelineFilter = f;
+  bgRenderTimelineFiltered();
+};
+
+window.bgViewImage = function(url){
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  ov.onclick = ()=>ov.remove();
+  ov.innerHTML = `<img src="${url}" style="max-width:96%;max-height:96%;object-fit:contain;border-radius:6px">`;
+  document.body.appendChild(ov);
+};
+
+window.bgOpenBanGiaoDetail = async function(id){
+  // Sprint 2 sẽ deep dive — tạm thời show toast
+  showToast('Chi tiết biên bản — Sprint 2 sẽ làm', 'ok');
+};
 
 function bgFmtDayVN(d){
   if (!d) return '';
