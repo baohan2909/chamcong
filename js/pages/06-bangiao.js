@@ -858,147 +858,78 @@ function bgRecHtml(b){
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-//  TAB 3: TIMELINE — bản tin bàn giao
-//  Hai mode chính: ĐƠN (cards) và ẢNH (gallery)
-//  Filter: tình trạng (Bình thường/Có sự vụ/Khẩn cấp) + thời gian
+//  TAB 3: TIMELINE — "bản tin" biên bản bàn giao
+//  Filter chip: Tất cả / Có ảnh / Có sự vụ / Khẩn cấp
+//  Card visual: thumbnail ảnh + tóm tắt (tiền, items VD, sự vụ)
+//  Group theo ngày: Hôm nay / Hôm qua / DD/MM
 // ═════════════════════════════════════════════════════════════════════════
-let bgTimelineMode = 'don';       // 'don' | 'anh'
-let bgTimelineCond = 'all';       // 'all' | 'binh_thuong' | 'co_su_vu' | 'KHAN_CAP'
-let bgTimelineDay = 'all';        // 'all' | 'today' | '7d' | '30d'
+let bgTimelineFilter = 'all';   // 'all' | 'co_anh' | 'co_su_vu' | 'khan_cap'
 let bgTimelineCache = null;
 
 async function bgRenderTimeline(){
   const list = document.getElementById('bg-timeline-list');
+  // Header filter chips
   if (!bgTimelineCache) {
     list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
     if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
     try {
       const { data, error } = await supa.rpc('fn_ban_giao_list', {
-        p_ma_ch: bgCurrentCH.ma, p_limit: 200, p_offset: 0
+        p_ma_ch: bgCurrentCH.ma, p_limit: 100, p_offset: 0
       });
       if (error) throw error;
       bgTimelineCache = data || [];
     } catch(e){
-      list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+escHtml(e.message)+'</div>';
+      list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>';
       return;
     }
   }
-  bgRenderTimelineMode();
+  bgRenderTimelineFiltered();
 }
 
-function bgRenderTimelineMode(){
+function bgRenderTimelineFiltered(){
   const list = document.getElementById('bg-timeline-list');
   const all = bgTimelineCache || [];
+  // Apply filter
+  const filtered = all.filter(b => {
+    if (bgTimelineFilter === 'co_anh') return (b.so_anh||0) > 0;
+    if (bgTimelineFilter === 'co_su_vu') return (b.so_su_vu||0) > 0;
+    if (bgTimelineFilter === 'khan_cap') return (b.so_su_vu_khan||0) > 0;
+    return true;
+  });
 
-  // Apply filters
-  let arr = all.slice();
-  if (bgTimelineCond === 'binh_thuong') arr = arr.filter(b => (b.so_su_vu||0) === 0);
-  else if (bgTimelineCond === 'co_su_vu') arr = arr.filter(b => (b.so_su_vu||0) > 0);
-  else if (bgTimelineCond === 'KHAN_CAP') arr = arr.filter(b => (b.so_su_vu_khan||0) > 0);
-
-  if (bgTimelineDay !== 'all') {
-    const now = new Date(); now.setHours(0,0,0,0);
-    let from;
-    if (bgTimelineDay === 'today') from = now.toISOString().slice(0,10);
-    else if (bgTimelineDay === '7d') {
-      const d = new Date(now); d.setDate(d.getDate()-7);
-      from = d.toISOString().slice(0,10);
-    } else {
-      const d = new Date(now); d.setDate(d.getDate()-30);
-      from = d.toISOString().slice(0,10);
-    }
-    arr = arr.filter(b => b.ngay_ban_giao >= from);
-  }
-
-  // Counts cho mode tabs
-  const tongDon = all.length;
-  const tongAnh = all.reduce((s, b) => s + ((b.anh_urls && b.anh_urls.length) || 0), 0);
-
-  const header = `
-    <div class="bg-tl-mode-tabs">
-      <button class="bg-tl-mode ${bgTimelineMode==='don'?'active':''}" onclick="bgSetTimelineMode('don')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Đơn <span class="bg-tl-mode-c">${tongDon}</span>
-      </button>
-      <button class="bg-tl-mode ${bgTimelineMode==='anh'?'active':''}" onclick="bgSetTimelineMode('anh')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Ảnh <span class="bg-tl-mode-c">${tongAnh}</span>
-      </button>
-    </div>
-    <div class="bg-tl-filters-row">
-      <select class="bg-tl-dropdown" onchange="bgSetTimelineCond(this.value)">
-        <option value="all"${bgTimelineCond==='all'?' selected':''}>Tình trạng: Tất cả</option>
-        <option value="binh_thuong"${bgTimelineCond==='binh_thuong'?' selected':''}>Bình thường</option>
-        <option value="co_su_vu"${bgTimelineCond==='co_su_vu'?' selected':''}>Có sự vụ</option>
-        <option value="KHAN_CAP"${bgTimelineCond==='KHAN_CAP'?' selected':''}>Khẩn cấp</option>
-      </select>
-      <select class="bg-tl-dropdown" onchange="bgSetTimelineDay(this.value)">
-        <option value="all"${bgTimelineDay==='all'?' selected':''}>Mọi thời gian</option>
-        <option value="today"${bgTimelineDay==='today'?' selected':''}>Hôm nay</option>
-        <option value="7d"${bgTimelineDay==='7d'?' selected':''}>7 ngày qua</option>
-        <option value="30d"${bgTimelineDay==='30d'?' selected':''}>30 ngày qua</option>
-      </select>
+  // Filter chips header
+  const filterChips = `
+    <div class="bg-tl-filters">
+      ${[
+        {k:'all', label:'Tất cả', count: all.length},
+        {k:'co_anh', label:'Có ảnh', count: all.filter(b=>(b.so_anh||0)>0).length},
+        {k:'co_su_vu', label:'Có sự vụ', count: all.filter(b=>(b.so_su_vu||0)>0).length},
+        {k:'khan_cap', label:'Khẩn cấp', count: all.filter(b=>(b.so_su_vu_khan||0)>0).length},
+      ].map(f => `<button class="bg-tl-chip ${bgTimelineFilter===f.k?'active':''}" onclick="bgSetTimelineFilter('${f.k}')">
+        ${f.label}${f.count>0?`<span class="bg-tl-chip-c">${f.count}</span>`:''}
+      </button>`).join('')}
     </div>
   `;
 
-  let body;
-  if (bgTimelineMode === 'anh') {
-    body = bgRenderTimelineAnh(arr.filter(b => b.anh_urls && b.anh_urls.length));
-  } else {
-    body = bgRenderTimelineDon(arr);
+  if (filtered.length === 0){
+    list.innerHTML = filterChips + '<div class="ns-empty">Không có biên bản phù hợp.</div>';
+    return;
   }
-  list.innerHTML = header + body;
-}
 
-function bgRenderTimelineDon(arr) {
-  if (arr.length === 0) return '<div class="ns-empty">Không có biên bản phù hợp.</div>';
+  // Group theo ngày
   const byDay = {};
-  arr.forEach(b => {
+  filtered.forEach(b => {
     const d = b.ngay_ban_giao;
     if (!byDay[d]) byDay[d] = [];
     byDay[d].push(b);
   });
   const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
-  return days.map(d => `
+
+  list.innerHTML = filterChips + days.map(d => `
     <div class="bg-tl-daysep">${bgFmtDayVN(d)}</div>
     ${byDay[d].map(bgTimelineCardHtml).join('')}
   `).join('');
 }
-
-function bgRenderTimelineAnh(arr) {
-  // Flatten tất cả ảnh kèm metadata biên bản
-  const items = [];
-  arr.forEach(b => {
-    if (!b.anh_urls) return;
-    b.anh_urls.forEach(url => items.push({
-      url, ban_giao_id: b.id, ngay: b.ngay_ban_giao,
-      time: b.gio_ban_giao, by: b.nguoi_ban_giao_ten,
-      khan: (b.so_su_vu_khan||0) > 0
-    }));
-  });
-  if (items.length === 0) return '<div class="ns-empty">Không có ảnh phù hợp.</div>';
-  const byDay = {};
-  items.forEach(it => {
-    if (!byDay[it.ngay]) byDay[it.ngay] = [];
-    byDay[it.ngay].push(it);
-  });
-  const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
-  return days.map(d => `
-    <div class="bg-tl-daysep">${bgFmtDayVN(d)} · ${byDay[d].length} ảnh</div>
-    <div class="bg-tl-anh-grid">
-      ${byDay[d].map(it => `
-        <div class="bg-tl-anh-cell${it.khan?' khan':''}" onclick="bgViewImage('${it.url}')">
-          <img src="${it.url}" loading="lazy">
-          <div class="bg-tl-anh-meta">${(it.time||'').slice(0,5)} · ${escHtml((it.by||'?').slice(0,14))}</div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-window.bgSetTimelineMode = function(m){ bgTimelineMode = m; bgRenderTimelineMode(); };
-window.bgSetTimelineCond = function(c){ bgTimelineCond = c; bgRenderTimelineMode(); };
-window.bgSetTimelineDay = function(d){ bgTimelineDay = d; bgRenderTimelineMode(); };
 
 function bgTimelineCardHtml(b){
   const time = b.gio_ban_giao ? b.gio_ban_giao.slice(0,5) : '';
@@ -1047,6 +978,11 @@ function bgTimelineCardHtml(b){
     ${thumbsHtml}
   </div>`;
 }
+
+window.bgSetTimelineFilter = function(f){
+  bgTimelineFilter = f;
+  bgRenderTimelineFiltered();
+};
 
 window.bgViewImage = function(url){
   const ov = document.createElement('div');
