@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.27">
-<link rel="stylesheet" href="css/01-base.css?v=13.27">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.27">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.27">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.27">
-<link rel="stylesheet" href="css/05-admin.css?v=13.27">
-<link rel="stylesheet" href="css/06-modules.css?v=13.27">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.27">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.27">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.27">
-<link rel="stylesheet" href="css/11-face.css?v=13.27">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.28">
+<link rel="stylesheet" href="css/01-base.css?v=13.28">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.28">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.28">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.28">
+<link rel="stylesheet" href="css/05-admin.css?v=13.28">
+<link rel="stylesheet" href="css/06-modules.css?v=13.28">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.28">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.28">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.28">
+<link rel="stylesheet" href="css/11-face.css?v=13.28">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.27</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.28</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1638,7 +1638,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.27 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.28 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2721,8 +2721,24 @@
       </div>
 
       <div id="bgql-sub-suvu">
+        <!-- [v13.28] Inner subtabs: Sự vụ / Tiền chi -->
+        <div class="bgql-inner-tabs">
+          <button class="bgql-inner-tab active" id="bgql-itab-suvu" onclick="bgqlSwitchInnerTab('suvu')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Sự vụ <span class="bgql-itab-c" id="bgql-itab-suvu-c" style="display:none">0</span>
+          </button>
+          <button class="bgql-inner-tab" id="bgql-itab-tienchi" onclick="bgqlSwitchInnerTab('tienchi')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Tiền chi <span class="bgql-itab-c" id="bgql-itab-tienchi-c" style="display:none">0</span>
+          </button>
+        </div>
         <div class="bgql-filter-row" id="bgql-suvu-filters"></div>
-        <div id="bgql-suvu-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+        <div id="bgql-inner-suvu">
+          <div id="bgql-suvu-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+        </div>
+        <div id="bgql-inner-tienchi" style="display:none">
+          <div id="bgql-tienchi-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+        </div>
       </div>
       <div id="bgql-sub-timeline" style="display:none">
         <div id="bgql-timeline-list"><div class="ns-empty">⏳ Đang tải...</div></div>
@@ -2795,13 +2811,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.27"></script>
-<script src="js/core/02-system.js?v=13.27"></script>
+<script src="js/core/01-config.js?v=13.28"></script>
+<script src="js/core/02-system.js?v=13.28"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.27">
+<link rel="stylesheet" href="css/07-extras.css?v=13.28">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2836,19 +2852,19 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.27"></script>
-<script src="js/pages/01-lichca.js?v=13.27"></script>
-<script src="js/pages/02-nhansu.js?v=13.27"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.27"></script>
-<script src="js/pages/04-misc.js?v=13.27"></script>
-<script src="js/pages/05-muanon.js?v=13.27"></script>
-<script src="js/lib/camscanner.js?v=13.27"></script>
-<script src="js/pages/06-bangiao.js?v=13.27"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.27"></script>
-<script src="js/ai/face-recognition.js?v=13.27"></script>
-<script src="js/admin/01-banhang.js?v=13.27"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.27"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.27"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.27"></script>
+<script src="js/core/03-router.js?v=13.28"></script>
+<script src="js/pages/01-lichca.js?v=13.28"></script>
+<script src="js/pages/02-nhansu.js?v=13.28"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.28"></script>
+<script src="js/pages/04-misc.js?v=13.28"></script>
+<script src="js/pages/05-muanon.js?v=13.28"></script>
+<script src="js/lib/camscanner.js?v=13.28"></script>
+<script src="js/pages/06-bangiao.js?v=13.28"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.28"></script>
+<script src="js/ai/face-recognition.js?v=13.28"></script>
+<script src="js/admin/01-banhang.js?v=13.28"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.28"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.28"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.28"></script>
 </body>
 </html>

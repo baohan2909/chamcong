@@ -1517,3 +1517,149 @@
     flex-shrink: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.28] INNER TABS Sự vụ / Tiền chi trong QL
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-inner-tabs {
+  display: flex; gap: 0;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 11px;
+  margin: 8px 0 12px;
+}
+.bgql-inner-tab {
+  flex: 1;
+  padding: 9px 8px;
+  border: 0; background: transparent;
+  font-weight: 700; font-size: 12.5px;
+  color: #64748B;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: inherit;
+  transition: all .15s;
+}
+.bgql-inner-tab.active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 2px 6px rgba(15,46,69,.10);
+}
+.bgql-itab-c {
+  background: rgba(0,0,0,.06);
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 10.5px; font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.bgql-inner-tab.active .bgql-itab-c { background: #ECFDF5; color: #047857; }
+
+/* Filter row (replace bgql-fselect cũ) */
+.bgql-flt-row {
+  display: flex; gap: 8px; padding: 0 2px 8px;
+}
+.bgql-flt-row .bg-tl-dropdown {
+  flex: 1; min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.28] TIỀN CHI cards — tag "Chi phí" xanh nhạt, KHÔNG có badge mức độ
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-tc-summary {
+  display: flex; align-items: baseline; gap: 10px;
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #A7F3D0;
+}
+.bgql-tc-summary-l {
+  font-size: 11px; font-weight: 800;
+  color: #047857;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.bgql-tc-summary-v {
+  font-size: 22px; font-weight: 800;
+  color: #064E3B;
+  font-family: 'Inter', 'SF Pro Display', sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.02em;
+  margin-left: auto;
+}
+.bgql-tc-summary-s {
+  font-size: 11px; font-weight: 600;
+  color: #047857;
+}
+
+.bgql-tienchi-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 12px rgba(15,46,69,.06), 0 1px 3px rgba(15,46,69,.04);
+  cursor: pointer;
+  transition: all .15s;
+  border-left: 4px solid #10B981;
+}
+.bgql-tienchi-card:active { transform: scale(.99); }
+.bgql-tc-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.bgql-tienchi-tag {
+  font-size: 10px; font-weight: 800;
+  background: #ECFDF5;
+  color: #047857;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: .05em;
+  flex-shrink: 0;
+}
+.bgql-tc-ch {
+  flex: 1; min-width: 0;
+  font-size: 12.5px; font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bgql-tc-time {
+  font-size: 11.5px; font-weight: 700;
+  color: #64748B;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.bgql-tienchi-amount {
+  font-size: 24px; font-weight: 800;
+  color: #064E3B;
+  font-family: 'Inter', 'SF Pro Display', sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.02em;
+  margin-bottom: 6px;
+  line-height: 1.1;
+}
+.bgql-tc-amount-dvi {
+  font-size: 13px; font-weight: 600;
+  opacity: .65;
+  margin-left: 2px;
+}
+.bgql-tc-note {
+  font-size: 13px; color: #334155;
+  line-height: 1.5;
+  padding: 8px 11px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.bgql-tc-note-empty { color: #94A3B8; font-style: italic; }
+.bgql-tc-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11.5px; color: #64748B; font-weight: 500;
+}
+.bgql-tc-kv {
+  background: #F1F5F9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10.5px; font-weight: 700;
+  color: #475569;
+}

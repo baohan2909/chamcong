@@ -15,8 +15,10 @@
 
 // State
 let bgqlSub = 'suvu';
+let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
-let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null };
+let bgqlTienChiCache = null;
+let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d' };
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -77,42 +79,66 @@ function bgqlRenderSuVuFilters(){
   if (!cont) return;
   const all = bgqlSuVuCache || [];
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  const khan = all.filter(s => s.muc_do === 'KHAN_CAP' && !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  const closed = all.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
-  
-  // Khu vực distinct
-  const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
-  // CH distinct
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
+  const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
 
-  cont.innerHTML = `
-    <div class="bg-tl-filters" style="padding:8px 2px 6px">
-      <button class="bg-tl-chip ${bgqlSuVuFilter.trang_thai==='open'?'active':''}" onclick="bgqlSetFilter('trang_thai','open')">
-        Đang xử lý <span class="bg-tl-chip-c">${open.length}</span>
-      </button>
-      <button class="bg-tl-chip ${bgqlSuVuFilter.muc_do==='KHAN_CAP'?'active':''}" onclick="bgqlSetFilter('muc_do','KHAN_CAP')">
-        Khẩn cấp <span class="bg-tl-chip-c">${khan.length}</span>
-      </button>
-      <button class="bg-tl-chip ${bgqlSuVuFilter.trang_thai==='closed'?'active':''}" onclick="bgqlSetFilter('trang_thai','closed')">
-        Đã đóng <span class="bg-tl-chip-c">${closed.length}</span>
-      </button>
-      <button class="bg-tl-chip ${bgqlSuVuFilter.trang_thai==='all' && bgqlSuVuFilter.muc_do==='all'?'active':''}" onclick="bgqlSetFilter('reset','all')">
-        Tất cả <span class="bg-tl-chip-c">${all.length}</span>
-      </button>
-    </div>
-    ${khuVucs.length || chList.length ? `
-    <div class="bg-tl-filters" style="padding:0 2px 10px">
-      ${khuVucs.length>1 ? `<select class="bgql-fselect" onchange="bgqlSetFilter('khu_vuc', this.value)">
-        <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
-        ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
-      </select>` : ''}
-      ${chList.length>5 ? `<select class="bgql-fselect" onchange="bgqlSetFilter('ma_ch', this.value)">
-        <option value="">Mọi cửa hàng</option>
-        ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
-      </select>` : ''}
-    </div>` : ''}
-  `;
-  // Update badges
+  if (bgqlInnerTab === 'suvu') {
+    cont.innerHTML = `
+      <div class="bgql-flt-row">
+        <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('muc_do', this.value)">
+          <option value="all"${bgqlSuVuFilter.muc_do==='all'?' selected':''}>Mức độ: Tất cả</option>
+          <option value="KHAN_CAP"${bgqlSuVuFilter.muc_do==='KHAN_CAP'?' selected':''}>🔴 Khẩn cấp</option>
+          <option value="QUAN_TRONG"${bgqlSuVuFilter.muc_do==='QUAN_TRONG'?' selected':''}>⚠️ Quan trọng</option>
+          <option value="CAN_THIET"${bgqlSuVuFilter.muc_do==='CAN_THIET'?' selected':''}>📋 Cần thiết</option>
+        </select>
+        <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
+          <option value="open"${bgqlSuVuFilter.trang_thai==='open'?' selected':''}>Đang xử lý (${open.length})</option>
+          <option value="closed"${bgqlSuVuFilter.trang_thai==='closed'?' selected':''}>Đã đóng</option>
+          <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
+        </select>
+      </div>
+      ${(khuVucs.length>1 || chList.length>5) ? `
+      <div class="bgql-flt-row">
+        ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
+          <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
+          ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+        </select>` : ''}
+        ${chList.length>5 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('ma_ch', this.value)">
+          <option value="">Mọi cửa hàng</option>
+          ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
+        </select>` : ''}
+      </div>` : ''}
+    `;
+  } else if (bgqlInnerTab === 'tienchi') {
+    const tc = bgqlTienChiCache || [];
+    const tcChList = [...new Map(tc.map(t => [t.ma_ch, t.ten_ch_snapshot||t.ma_ch])).entries()];
+    const tcKhuVucs = [...new Set(tc.map(t => t.khu_vuc).filter(k=>k))].sort();
+    cont.innerHTML = `
+      <div class="bgql-flt-row">
+        <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('range', this.value)">
+          <option value="today"${bgqlSuVuFilter.range==='today'?' selected':''}>Hôm nay</option>
+          <option value="7d"${bgqlSuVuFilter.range==='7d'?' selected':''}>7 ngày qua</option>
+          <option value="30d"${bgqlSuVuFilter.range==='30d'?' selected':''}>30 ngày qua</option>
+        </select>
+        ${tcKhuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
+          <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
+          ${tcKhuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+        </select>` : ''}
+      </div>
+      ${tcChList.length>5 ? `<div class="bgql-flt-row">
+        <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('ma_ch', this.value)">
+          <option value="">Mọi cửa hàng</option>
+          ${tcChList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
+        </select>
+      </div>` : ''}
+    `;
+  }
+
+  const itabSV = document.getElementById('bgql-itab-suvu-c');
+  if (itabSV) {
+    if (open.length > 0) { itabSV.style.display = ''; itabSV.textContent = open.length; }
+    else itabSV.style.display = 'none';
+  }
   const badge = document.getElementById('bgql-menu-badge');
   if (badge) {
     const urgentOpen = open.filter(s=>s.muc_do==='KHAN_CAP').length;
@@ -126,22 +152,47 @@ function bgqlRenderSuVuFilters(){
   }
 }
 
-window.bgqlSetFilter = function(k, v){
-  if (k === 'reset') { bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null }; }
-  else if (k === 'trang_thai') {
-    bgqlSuVuFilter.trang_thai = bgqlSuVuFilter.trang_thai === v ? 'all' : v;
-    if (bgqlSuVuFilter.trang_thai !== 'all') bgqlSuVuFilter.muc_do = 'all';
-  } else if (k === 'muc_do') {
-    bgqlSuVuFilter.muc_do = bgqlSuVuFilter.muc_do === v ? 'all' : v;
-    if (bgqlSuVuFilter.muc_do !== 'all') bgqlSuVuFilter.trang_thai = 'all';
-  } else if (k === 'khu_vuc') {
-    bgqlSuVuFilter.khu_vuc = v || 'all';
-  } else if (k === 'ma_ch') {
-    bgqlSuVuFilter.ma_ch = v || null;
+window.bgqlSetFilterDD = function(key, value){
+  if (key === 'muc_do') bgqlSuVuFilter.muc_do = value;
+  else if (key === 'trang_thai') bgqlSuVuFilter.trang_thai = value;
+  else if (key === 'khu_vuc') bgqlSuVuFilter.khu_vuc = value || 'all';
+  else if (key === 'ma_ch') bgqlSuVuFilter.ma_ch = value || null;
+  else if (key === 'range') {
+    bgqlSuVuFilter.range = value;
+    bgqlTienChiCache = null;
+    bgqlLoadTienChi();
+    return;
   }
+  bgqlRenderSuVuFilters();
+  if (bgqlInnerTab === 'suvu') bgqlRenderSuVuList();
+  else bgqlRenderTienChiList();
+};
+
+window.bgqlSwitchInnerTab = function(t){
+  bgqlInnerTab = t;
+  document.getElementById('bgql-itab-suvu').classList.toggle('active', t==='suvu');
+  document.getElementById('bgql-itab-tienchi').classList.toggle('active', t==='tienchi');
+  document.getElementById('bgql-inner-suvu').style.display = t==='suvu' ? '' : 'none';
+  document.getElementById('bgql-inner-tienchi').style.display = t==='tienchi' ? '' : 'none';
+  bgqlRenderSuVuFilters();
+  if (t === 'suvu') bgqlRenderSuVuList();
+  else {
+    if (bgqlTienChiCache === null) bgqlLoadTienChi();
+    else bgqlRenderTienChiList();
+  }
+};
+
+// Legacy compat (cho code khác có thể gọi)
+window.bgqlSetFilter = function(k, v){
+  if (k === 'reset') bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d' };
+  else if (k === 'trang_thai') bgqlSuVuFilter.trang_thai = bgqlSuVuFilter.trang_thai === v ? 'all' : v;
+  else if (k === 'muc_do') bgqlSuVuFilter.muc_do = bgqlSuVuFilter.muc_do === v ? 'all' : v;
+  else if (k === 'khu_vuc') bgqlSuVuFilter.khu_vuc = v || 'all';
+  else if (k === 'ma_ch') bgqlSuVuFilter.ma_ch = v || null;
   bgqlRenderSuVuFilters();
   bgqlRenderSuVuList();
 };
+
 
 function bgqlRenderSuVuList(){
   const list = document.getElementById('bgql-suvu-list');
@@ -784,3 +835,107 @@ window.bgqlDoPrint = function(){
     }, 500);
   }, 800);
 };
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.28] TIỀN CHI — inner tab thứ 2 trong tab "Sự vụ" QL
+//  RPC fn_bg_tien_chi_list — cross-CH, WHERE tien_chi > 0
+// ═════════════════════════════════════════════════════════════════════════
+async function bgqlLoadTienChi(){
+  const list = document.getElementById('bgql-tienchi-list');
+  if (!list) return;
+  list.innerHTML = '<div class="ns-empty">⏳ Đang tải tiền chi...</div>';
+  try {
+    // Derive range từ bgqlSuVuFilter.range
+    const today = new Date();
+    const toStr = today.toISOString().slice(0,10);
+    let fromStr;
+    if (bgqlSuVuFilter.range === 'today') fromStr = toStr;
+    else if (bgqlSuVuFilter.range === '30d') {
+      const d = new Date(today); d.setDate(d.getDate()-30);
+      fromStr = d.toISOString().slice(0,10);
+    } else {
+      const d = new Date(today); d.setDate(d.getDate()-7);
+      fromStr = d.toISOString().slice(0,10);
+    }
+    const { data, error } = await supa.rpc('fn_bg_tien_chi_list', {
+      p_tu_ngay: fromStr,
+      p_den_ngay: toStr,
+      p_ma_ch: bgqlSuVuFilter.ma_ch || null,
+      p_khu_vuc: (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc !== 'all') ? bgqlSuVuFilter.khu_vuc : null,
+      p_limit: 200
+    });
+    if (error) throw error;
+    bgqlTienChiCache = Array.isArray(data) ? data : [];
+    bgqlRenderSuVuFilters();  // Refresh filters với cache mới
+    bgqlRenderTienChiList();
+  } catch(e){
+    list.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function bgqlRenderTienChiList(){
+  const list = document.getElementById('bgql-tienchi-list');
+  if (!list) return;
+  let arr = bgqlTienChiCache || [];
+  // Client-side filter cho khu_vuc + ma_ch (RPC đã filter, đây là double-safe)
+  if (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(t => t.khu_vuc === bgqlSuVuFilter.khu_vuc);
+  if (bgqlSuVuFilter.ma_ch) arr = arr.filter(t => t.ma_ch === bgqlSuVuFilter.ma_ch);
+
+  // Update badge inner tab Tiền chi
+  const itabTC = document.getElementById('bgql-itab-tienchi-c');
+  if (itabTC) {
+    if (arr.length > 0) { itabTC.style.display = ''; itabTC.textContent = arr.length; }
+    else itabTC.style.display = 'none';
+  }
+
+  if (arr.length === 0){
+    list.innerHTML = '<div class="ns-empty">Không có khoản chi trong khoảng thời gian này.</div>';
+    return;
+  }
+  // Tổng tiền chi
+  const tongChi = arr.reduce((s, t) => s + (Number(t.tien_chi)||0), 0);
+
+  const groupByDay = {};
+  arr.forEach(t => {
+    const d = t.ngay_ban_giao;
+    if (!groupByDay[d]) groupByDay[d] = [];
+    groupByDay[d].push(t);
+  });
+  const days = Object.keys(groupByDay).sort((a,b)=>b.localeCompare(a));
+
+  list.innerHTML = `
+    <div class="bgql-tc-summary">
+      <div class="bgql-tc-summary-l">Tổng chi</div>
+      <div class="bgql-tc-summary-v">${bgFmtVN(tongChi)}<span style="font-size:13px;font-weight:600;opacity:.7"> đ</span></div>
+      <div class="bgql-tc-summary-s">${arr.length} khoản</div>
+    </div>
+    ${days.map(d => `
+      <div class="bg-tl-daysep">${bgqlFmtDayVN(d)} · ${groupByDay[d].length} khoản</div>
+      ${groupByDay[d].map(bgqlTienChiCardHtml).join('')}
+    `).join('')}
+  `;
+}
+
+function bgqlTienChiCardHtml(t){
+  const time = t.gio_ban_giao ? String(t.gio_ban_giao).slice(0,5) : '';
+  const tienChi = bgFmtVN(t.tien_chi || 0);
+  const ghiChu = t.tien_chi_ghi_chu || '';
+  return `
+    <div class="bgql-tienchi-card" onclick="bgOpenBanGiaoDetail('${t.id}')">
+      <div class="bgql-tc-head">
+        <span class="bgql-tienchi-tag">CHI PHÍ</span>
+        <div class="bgql-tc-ch">${escHtml(t.ten_ch_snapshot || t.ma_ch)}</div>
+        <div class="bgql-tc-time">${time}</div>
+      </div>
+      <div class="bgql-tienchi-amount">
+        ${tienChi}<span class="bgql-tc-amount-dvi">đ</span>
+      </div>
+      ${ghiChu ? `<div class="bgql-tc-note">${escHtml(ghiChu)}</div>` : '<div class="bgql-tc-note bgql-tc-note-empty">(không có ghi chú)</div>'}
+      <div class="bgql-tc-foot">
+        <span>${escHtml(t.nguoi_ban_giao_ten || '')}${t.nguoi_ban_giao_chuc_vu ? ' · ' + escHtml(t.nguoi_ban_giao_chuc_vu) : ''}</span>
+        ${t.khu_vuc ? `<span class="bgql-tc-kv">${escHtml(t.khu_vuc)}</span>` : ''}
+      </div>
+    </div>
+  `;
+}
