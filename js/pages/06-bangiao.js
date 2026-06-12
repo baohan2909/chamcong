@@ -993,9 +993,132 @@ window.bgViewImage = function(url){
 };
 
 window.bgOpenBanGiaoDetail = async function(id){
-  // Sprint 2 sẽ deep dive — tạm thời show toast
-  showToast('Chi tiết biên bản — Sprint 2 sẽ làm', 'ok');
+  // Modal full-screen với loading
+  const m = document.createElement('div');
+  m.className = 'bgql-modal-bg bgdetail-bg';
+  m.innerHTML = `<div class="bgql-modal bgdetail-modal">
+    <div class="bgql-modal-head">
+      <div class="bgql-modal-ttl">Chi tiết biên bản</div>
+      <button class="bgql-modal-x" onclick="this.closest('.bgql-modal-bg').remove()">✕</button>
+    </div>
+    <div class="bgql-modal-body" id="bgdetail-body"><div class="ns-empty">⏳ Đang tải...</div></div>
+  </div>`;
+  document.body.appendChild(m);
+  try {
+    const { data, error } = await supa.rpc('fn_ban_giao_detail', { p_id: id });
+    if (error) throw error;
+    if (!data || data.ok === false) throw new Error((data&&data.error)||'Lỗi');
+    document.getElementById('bgdetail-body').innerHTML = bgDetailRenderHtml(data);
+  } catch(e){
+    document.getElementById('bgdetail-body').innerHTML = 
+      `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message||'')}</div>`;
+  }
 };
+
+function bgDetailRenderHtml(d){
+  const h = d.header || {};
+  const dt = new Date(h.created_at);
+  const dateStr = pad(dt.getDate())+'/'+pad(dt.getMonth()+1)+'/'+dt.getFullYear()
+    +' · '+pad(dt.getHours())+':'+pad(dt.getMinutes());
+  const fmt = n => (n||0).toLocaleString('vi-VN');
+  
+  // Tiền section
+  const tienHtml = `<div class="bgd-section">
+    <div class="bgd-section-l">Tiền mặt & doanh thu</div>
+    <div class="bgd-tien-row"><span>Tiền mặt két & kho</span><b>${fmt(h.tien_mat_ket)} đ</b></div>
+    ${h.tien_mat_ket_ghi_chu?`<div class="bgd-note">${escHtml(h.tien_mat_ket_ghi_chu)}</div>`:''}
+    <div class="bgd-tien-row"><span>Tiền bán hàng trong ca</span><b>${fmt(h.tien_ban_hang)} đ</b></div>
+    ${h.tien_ban_hang_ghi_chu?`<div class="bgd-note">${escHtml(h.tien_ban_hang_ghi_chu)}</div>`:''}
+    <div class="bgd-tien-row"><span>Tiền chi trong ca</span><b>${fmt(h.tien_chi)} đ</b></div>
+    ${h.tien_chi_ghi_chu?`<div class="bgd-note">${escHtml(h.tien_chi_ghi_chu)}</div>`:''}
+    <div class="bgd-tien-tong"><span>Tổng bàn giao</span><b>${fmt(h.tien_tong)} đ</b></div>
+  </div>`;
+
+  // Items không đạt
+  const itemsKD = Array.isArray(d.items_kd) ? d.items_kd : [];
+  const itemsHtml = itemsKD.length === 0 
+    ? `<div class="bgd-section">
+        <div class="bgd-section-l">Tài sản · ${d.so_item_dat||0} mục bình thường, ${d.so_item_kd||0} có vấn đề</div>
+        <div class="bgd-allok">✓ Tất cả ${d.so_item_dat||0} tài sản đều bình thường</div>
+       </div>`
+    : `<div class="bgd-section">
+        <div class="bgd-section-l">Tài sản có vấn đề · ${itemsKD.length}/${(d.so_item_dat||0)+(d.so_item_kd||0)}</div>
+        ${itemsKD.map(it => `<div class="bgd-kd-row">
+          <div class="bgd-kd-name">${escHtml(it.ten||'')}<small style="color:#94A3B8"> · KV${it.khu_vuc||''}</small></div>
+          ${it.ghi_chu?`<div class="bgd-kd-note">${escHtml(it.ghi_chu)}</div>`:''}
+        </div>`).join('')}
+       </div>`;
+
+  // Hàng hóa
+  const hang = Array.isArray(d.hang) ? d.hang : [];
+  let hangHtml = '';
+  if (hang.length > 0) {
+    const KV_L = { SANH:'Trưng bày', KHO:'Kho', NIEM_PHONG:'Niêm phong' };
+    const byKV = {};
+    hang.forEach(r => { if (!byKV[r.khu_vuc]) byKV[r.khu_vuc] = []; byKV[r.khu_vuc].push(r); });
+    hangHtml = `<div class="bgd-section">
+      <div class="bgd-section-l">Hàng hóa & tồn kho</div>
+      ${Object.keys(byKV).map(kv => `
+        <div class="bgd-hang-kv">${KV_L[kv]||kv}</div>
+        ${byKV[kv].map(r => `<div class="bgd-tien-row">
+          <span>${escHtml(r.nhom_hang||'')}</span>
+          <b>${r.so_luong_thuc_te ?? '—'}</b>
+        </div>${r.ghi_chu?`<div class="bgd-note">${escHtml(r.ghi_chu)}</div>`:''}`).join('')}
+      `).join('')}
+    </div>`;
+  }
+
+  // Ảnh
+  const anhArr = Array.isArray(d.anh) ? d.anh : [];
+  const anhHtml = anhArr.length === 0 ? '' : `<div class="bgd-section">
+    <div class="bgd-section-l">Ảnh biên bản giấy · ${anhArr.length}</div>
+    <div class="bgd-anh-grid">
+      ${anhArr.map(url => `<div class="bgd-anh-cell" onclick="bgViewImage('${url}')"><img src="${url}" loading="lazy"></div>`).join('')}
+    </div>
+  </div>`;
+
+  // Sự vụ
+  const sv = Array.isArray(d.su_vu) ? d.su_vu : [];
+  const svHtml = sv.length === 0 ? '' : `<div class="bgd-section">
+    <div class="bgd-section-l">Sự vụ phát sinh · ${sv.length}</div>
+    ${sv.map(s => {
+      const accent = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#F97316':'#1B4965';
+      const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
+      const stLbl = {
+        MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý',
+        DA_PHAN_HOI:'Đã phản hồi', HOAN_TAT:'Hoàn tất', HUY:'Đã hủy'
+      }[s.trang_thai]||s.trang_thai;
+      let dl = '';
+      if (s.deadline_xu_ly) {
+        const ddt = new Date(s.deadline_xu_ly);
+        const past = ddt < new Date() && !['HOAN_TAT','HUY'].includes(s.trang_thai);
+        dl = `<div class="bgql-deadline${past?' past':''}">Deadline: ${pad(ddt.getDate())}/${pad(ddt.getMonth()+1)} ${pad(ddt.getHours())}:${pad(ddt.getMinutes())}${past?' · QUÁ HẠN':''}</div>`;
+      }
+      return `<div class="bgd-sv" style="border-left:3px solid ${accent}">
+        <div class="bgd-sv-h"><b>${escHtml(s.tieu_de||'')}</b>
+          <span style="background:${accent}15;color:${accent};font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:8px">${mdLbl}</span>
+          <span style="color:#64748B;font-size:11px;margin-left:6px">· ${stLbl}</span>
+        </div>
+        ${s.mo_ta?`<div class="bgd-sv-mt">${escHtml(s.mo_ta)}</div>`:''}
+        ${s.phan_hoi_xu_ly?`<div class="bgd-sv-rep"><b style="color:#047857">PHẢN HỒI:</b> ${escHtml(s.phan_hoi_xu_ly)}${dl}</div>`:dl}
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  return `
+    <div class="bgd-head">
+      <div class="bgd-h-ch">${escHtml(h.ten_ch_snapshot||h.ma_ch||'?')}</div>
+      <div class="bgd-h-by">${escHtml(h.nguoi_ban_giao_ten||'?')} · ${escHtml(h.nguoi_ban_giao_chuc_vu||'')}</div>
+      <div class="bgd-h-time">${dateStr}</div>
+    </div>
+    ${tienHtml}
+    ${itemsHtml}
+    ${hangHtml}
+    ${anhHtml}
+    ${svHtml}
+    ${h.ghi_chu_chung?`<div class="bgd-section"><div class="bgd-section-l">Ghi chú</div><div style="font-size:13px;line-height:1.5;color:#334155">${escHtml(h.ghi_chu_chung)}</div></div>`:''}
+  `;
+}
 
 function bgFmtDayVN(d){
   if (!d) return '';

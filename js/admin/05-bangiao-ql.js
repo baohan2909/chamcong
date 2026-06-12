@@ -73,8 +73,13 @@ function bgqlRenderSuVuFilters(){
   const khan = all.filter(s => s.muc_do === 'KHAN_CAP' && !['HOAN_TAT','HUY'].includes(s.trang_thai));
   const closed = all.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
   
+  // Khu vực distinct
+  const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
+  // CH distinct
+  const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
+
   cont.innerHTML = `
-    <div class="bg-tl-filters" style="padding:8px 2px 10px">
+    <div class="bg-tl-filters" style="padding:8px 2px 6px">
       <button class="bg-tl-chip ${bgqlSuVuFilter.trang_thai==='open'?'active':''}" onclick="bgqlSetFilter('trang_thai','open')">
         Đang xử lý <span class="bg-tl-chip-c">${open.length}</span>
       </button>
@@ -87,8 +92,20 @@ function bgqlRenderSuVuFilters(){
       <button class="bg-tl-chip ${bgqlSuVuFilter.trang_thai==='all' && bgqlSuVuFilter.muc_do==='all'?'active':''}" onclick="bgqlSetFilter('reset','all')">
         Tất cả <span class="bg-tl-chip-c">${all.length}</span>
       </button>
-    </div>`;
-  // Update menu badge
+    </div>
+    ${khuVucs.length || chList.length ? `
+    <div class="bg-tl-filters" style="padding:0 2px 10px">
+      ${khuVucs.length>1 ? `<select class="bgql-fselect" onchange="bgqlSetFilter('khu_vuc', this.value)">
+        <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
+        ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+      </select>` : ''}
+      ${chList.length>5 ? `<select class="bgql-fselect" onchange="bgqlSetFilter('ma_ch', this.value)">
+        <option value="">Mọi cửa hàng</option>
+        ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
+      </select>` : ''}
+    </div>` : ''}
+  `;
+  // Update badges
   const badge = document.getElementById('bgql-menu-badge');
   if (badge) {
     const urgentOpen = open.filter(s=>s.muc_do==='KHAN_CAP').length;
@@ -110,6 +127,10 @@ window.bgqlSetFilter = function(k, v){
   } else if (k === 'muc_do') {
     bgqlSuVuFilter.muc_do = bgqlSuVuFilter.muc_do === v ? 'all' : v;
     if (bgqlSuVuFilter.muc_do !== 'all') bgqlSuVuFilter.trang_thai = 'all';
+  } else if (k === 'khu_vuc') {
+    bgqlSuVuFilter.khu_vuc = v || 'all';
+  } else if (k === 'ma_ch') {
+    bgqlSuVuFilter.ma_ch = v || null;
   }
   bgqlRenderSuVuFilters();
   bgqlRenderSuVuList();
@@ -122,6 +143,7 @@ function bgqlRenderSuVuList(){
   if (bgqlSuVuFilter.trang_thai === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   else if (bgqlSuVuFilter.trang_thai === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
   if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
+  if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
 
   // Sort: KHAN_CAP first, then created_at desc

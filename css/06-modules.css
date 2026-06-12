@@ -1271,3 +1271,166 @@
   font-weight: 800;
   color: #0F172A;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.25] FILTER SELECT QL + MODAL CHI TIẾT BIÊN BẢN
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-fselect {
+  flex-shrink: 0;
+  padding: 8px 32px 8px 14px;
+  border-radius: 99px;
+  border: 1.5px solid #E2E8F0;
+  background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 12px center;
+  color: #1E293B;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 220px;
+}
+
+/* Modal chi tiết biên bản — fullscreen */
+.bgdetail-bg { align-items: flex-start; }
+.bgdetail-modal {
+  border-radius: 0;
+  max-height: 100vh;
+  height: 100vh;
+  max-width: 100%;
+}
+.bgd-head {
+  padding: 14px 0 16px;
+  border-bottom: 1.5px solid #ECFDF5;
+  margin-bottom: 14px;
+}
+.bgd-h-ch { font-size: 17px; font-weight: 800; color: #0F172A; letter-spacing: -0.01em; }
+.bgd-h-by { font-size: 12.5px; color: #475569; margin-top: 3px; font-weight: 500; }
+.bgd-h-time {
+  font-size: 11.5px;
+  color: #94A3B8;
+  margin-top: 5px;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.bgd-section {
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.bgd-section-l {
+  font-size: 10.5px; font-weight: 800;
+  color: #047857;
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #D1FAE5;
+}
+.bgd-tien-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0;
+  font-size: 13.5px;
+  border-bottom: 1px solid #F8FAFC;
+}
+.bgd-tien-row:last-child { border-bottom: 0; }
+.bgd-tien-row span { color: #475569; }
+.bgd-tien-row b {
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #0F172A;
+}
+.bgd-tien-tong {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #047857, #10B981);
+  border-radius: 10px;
+  color: #fff;
+}
+.bgd-tien-tong span { font-size: 13px; font-weight: 700; }
+.bgd-tien-tong b {
+  font-size: 17px; font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.bgd-note {
+  font-size: 12px;
+  color: #92400E;
+  background: #FEFCE8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #EAB308;
+  margin: -2px 0 6px;
+}
+.bgd-allok {
+  background: #ECFDF5;
+  color: #047857;
+  padding: 14px;
+  text-align: center;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+.bgd-kd-row {
+  padding: 9px 12px;
+  background: #FEF2F2;
+  border-left: 3px solid #DC2626;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.bgd-kd-row:last-child { margin-bottom: 0; }
+.bgd-kd-name { font-size: 13px; font-weight: 700; color: #991B1B; }
+.bgd-kd-note {
+  font-size: 12.5px;
+  color: #1E293B;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.bgd-hang-kv {
+  font-size: 10px; font-weight: 800;
+  color: #1B4965;
+  text-transform: uppercase; letter-spacing: .07em;
+  padding: 10px 0 4px;
+  margin-top: 4px;
+}
+.bgd-hang-kv:first-child { margin-top: 0; padding-top: 0; }
+.bgd-anh-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.bgd-anh-cell {
+  aspect-ratio: 1 / 1.3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #F1F5F9;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.bgd-anh-cell img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.bgd-sv {
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.bgd-sv-h { font-size: 13px; color: #0F172A; }
+.bgd-sv-mt {
+  font-size: 12.5px; color: #475569;
+  margin-top: 6px; line-height: 1.5;
+}
+.bgd-sv-rep {
+  background: #ECFDF5;
+  border-left: 3px solid #10B981;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #064E3B;
+  line-height: 1.5;
+}
