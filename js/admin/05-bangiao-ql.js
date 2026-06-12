@@ -498,31 +498,37 @@ function bgqlFmtDayVN(d){
 // ═════════════════════════════════════════════════════════════════════════
 //  TAB 3: THỐNG KÊ
 // ═════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.30] TAB THỐNG KÊ — Interactive dashboard
+//   - Bộ lọc đầy đủ: range ngày + khu vực + cửa hàng
+//   - 3 cards compact 60% chiều cao, click → filter
+//   - List CH với badge sự vụ
+//   - Click CH → drawer chi tiết sự vụ
+// ═════════════════════════════════════════════════════════════════════════
+let bgqlStatsData = null;        // jsonb từ fn_bg_thong_ke_ch
+let bgqlStatsKhuVuc = null;      // filter khu vực
+let bgqlStatsMaCh = null;        // filter ma_ch
+let bgqlStatsCardFilter = 'all'; // 'all' | 'da_gui' | 'chua_gui' | 'co_sv'
+let bgqlStatsOpenedCh = null;    // ma_ch đang xem chi tiết sự vụ
+
 async function bgqlLoadStats(){
   const cont = document.getElementById('bgql-stats-content');
-  cont.innerHTML = `
-    <div class="bgql-stats-rangepicker">
-      ${[
-        {k:'today', label:'Hôm nay'},
-        {k:'week', label:'7 ngày'},
-        {k:'month', label:'30 ngày'}
-      ].map(r => `<button class="bg-tl-chip ${bgqlStatsRange===r.k?'active':''}" onclick="bgqlSetStatsRange('${r.k}')">${r.label}</button>`).join('')}
-    </div>
-    <div id="bgql-stats-cards"><div class="ns-empty">⏳ Đang tính...</div></div>
-  `;
+  if (!cont) return;
+  cont.innerHTML = bgqlRenderStatsTopBar() + '<div class="ns-empty">⏳ Đang tính...</div>';
   try {
     const { from, to } = bgqlRangeToDates(bgqlStatsRange);
-    const { data, error } = await supa.rpc('fn_ban_giao_thong_ke', {
-      p_tu_ngay: from, p_den_ngay: to
+    const { data, error } = await supa.rpc('fn_bg_thong_ke_ch', {
+      p_tu_ngay: from, p_den_ngay: to,
+      p_khu_vuc: bgqlStatsKhuVuc, p_ma_ch: bgqlStatsMaCh
     });
     if (error) throw error;
-    bgqlRenderStatsCards(data || {}, from, to);
+    bgqlStatsData = data || {};
+    bgqlRenderStats();
   } catch(e){
-    document.getElementById('bgql-stats-cards').innerHTML = `<div class="ns-empty" style="color:#DC2626">RPC fn_ban_giao_thong_ke chưa có (Sprint sau).<br><small>${escHtml(e.message)}</small></div>`;
+    cont.innerHTML = bgqlRenderStatsTopBar() + 
+      `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
   }
 }
-
-window.bgqlSetStatsRange = function(r){ bgqlStatsRange = r; bgqlLoadStats(); };
 
 function bgqlRangeToDates(r){
   const today = new Date();
@@ -534,44 +540,129 @@ function bgqlRangeToDates(r){
   return { from, to };
 }
 
-function bgqlRenderStatsCards(stats, from, to){
-  const tongCH = stats.tong_ch || 0;
-  const daGui = stats.da_gui || 0;
-  const chuaGui = stats.chua_gui || 0;
-  const phatSinh = stats.phat_sinh_su_co || 0;
-  const tongSV = stats.tong_su_vu || 0;
-  const svKhan = stats.su_vu_khan || 0;
-  const cont = document.getElementById('bgql-stats-cards');
-  cont.innerHTML = `
-    <div class="bgql-stats-grid">
-      <div class="bgql-stat-card" style="background:linear-gradient(135deg,#047857,#10B981)">
-        <div class="bgql-stat-icon">✓</div>
-        <div class="bgql-stat-v">${daGui}<span class="bgql-stat-sub">/${tongCH}</span></div>
-        <div class="bgql-stat-l">Cửa hàng đã gửi</div>
+function bgqlRenderStatsTopBar(){
+  // Lấy khu_vuc + ma_ch distinct từ data hiện tại (nếu có)
+  const ds = (bgqlStatsData && bgqlStatsData.ds_ch) || [];
+  const khuVucs = [...new Set(ds.map(c => c.khu_vuc).filter(k=>k))].sort();
+  const chList = ds.map(c => [c.ma_ch, c.ten_ch||c.ma_ch]);
+  return `
+    <div class="bgql-flt-row">
+      <select class="bg-tl-dropdown" onchange="bgqlSetStatsRange(this.value)">
+        <option value="today"${bgqlStatsRange==='today'?' selected':''}>Hôm nay</option>
+        <option value="week"${bgqlStatsRange==='week'?' selected':''}>7 ngày qua</option>
+        <option value="month"${bgqlStatsRange==='month'?' selected':''}>30 ngày qua</option>
+      </select>
+      ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetStatsKV(this.value)">
+        <option value="">Mọi khu vực</option>
+        ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlStatsKhuVuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+      </select>` : ''}
+    </div>
+    ${chList.length>5 ? `<div class="bgql-flt-row">
+      <select class="bg-tl-dropdown" onchange="bgqlSetStatsCh(this.value)">
+        <option value="">Mọi cửa hàng</option>
+        ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlStatsMaCh===k?' selected':''}>${escHtml(v)}</option>`).join('')}
+      </select>
+    </div>` : ''}
+  `;
+}
+
+window.bgqlSetStatsRange = function(r){ bgqlStatsRange = r; bgqlLoadStats(); };
+window.bgqlSetStatsKV = function(v){ bgqlStatsKhuVuc = v || null; bgqlLoadStats(); };
+window.bgqlSetStatsCh = function(v){ bgqlStatsMaCh = v || null; bgqlLoadStats(); };
+window.bgqlSetStatsCard = function(c){ 
+  bgqlStatsCardFilter = bgqlStatsCardFilter === c ? 'all' : c;
+  bgqlStatsOpenedCh = null;
+  bgqlRenderStats();
+};
+window.bgqlOpenChDetail = function(ma_ch){
+  bgqlStatsOpenedCh = bgqlStatsOpenedCh === ma_ch ? null : ma_ch;
+  bgqlRenderStats();
+};
+
+function bgqlRenderStats(){
+  const cont = document.getElementById('bgql-stats-content');
+  if (!cont || !bgqlStatsData) return;
+  const tt = bgqlStatsData.tom_tat || {};
+  const ds = bgqlStatsData.ds_ch || [];
+  
+  // Filter ds theo card đang chọn
+  let dsFiltered = ds;
+  if (bgqlStatsCardFilter === 'da_gui') dsFiltered = ds.filter(c => c.so_bg > 0);
+  else if (bgqlStatsCardFilter === 'chua_gui') dsFiltered = ds.filter(c => c.so_bg === 0);
+  else if (bgqlStatsCardFilter === 'co_sv') dsFiltered = ds.filter(c => c.so_su_vu > 0);
+
+  cont.innerHTML = bgqlRenderStatsTopBar() + `
+    <div class="bgql-stats-compact">
+      <div class="bgql-stat-c ${bgqlStatsCardFilter==='da_gui'?'active':''} stat-ok" onclick="bgqlSetStatsCard('da_gui')">
+        <div class="bgql-stat-c-v">${tt.da_gui||0}<span class="bgql-stat-c-vs">/${tt.tong_ch||0}</span></div>
+        <div class="bgql-stat-c-l">Đã gửi</div>
       </div>
-      <div class="bgql-stat-card" style="background:linear-gradient(135deg,#92400E,#F59E0B)">
-        <div class="bgql-stat-icon">⚠</div>
-        <div class="bgql-stat-v">${chuaGui}</div>
-        <div class="bgql-stat-l">Chưa gửi</div>
+      <div class="bgql-stat-c ${bgqlStatsCardFilter==='chua_gui'?'active':''} stat-warn" onclick="bgqlSetStatsCard('chua_gui')">
+        <div class="bgql-stat-c-v">${tt.chua_gui||0}</div>
+        <div class="bgql-stat-c-l">Chưa gửi</div>
       </div>
-      <div class="bgql-stat-card" style="background:linear-gradient(135deg,#991B1B,#DC2626)">
-        <div class="bgql-stat-icon">🔴</div>
-        <div class="bgql-stat-v">${phatSinh}</div>
-        <div class="bgql-stat-l">CH phát sinh sự cố</div>
+      <div class="bgql-stat-c ${bgqlStatsCardFilter==='co_sv'?'active':''} stat-bad" onclick="bgqlSetStatsCard('co_sv')">
+        <div class="bgql-stat-c-v">${tt.co_su_vu||0}</div>
+        <div class="bgql-stat-c-l">Có sự vụ</div>
       </div>
     </div>
-    <div class="bgql-stats-sub">
-      <div class="bgql-stat-sub-row">
-        <span>Tổng sự vụ phát sinh</span>
-        <b>${tongSV}</b>
+    <div class="bgql-stats-chlist">
+      ${dsFiltered.length === 0 
+        ? '<div class="ns-empty">Không có cửa hàng phù hợp.</div>'
+        : dsFiltered.map(c => bgqlChRowHtml(c, c.ma_ch === bgqlStatsOpenedCh)).join('')
+      }
+    </div>
+  `;
+}
+
+function bgqlChRowHtml(c, opened){
+  const isChuaGui = c.so_bg === 0;
+  const isKhan = c.so_su_vu_khan > 0;
+  const hasSV = c.so_su_vu > 0;
+  
+  let statusBadge;
+  if (isChuaGui) {
+    statusBadge = '<span class="bgql-ch-badge bgql-ch-badge-warn">Chưa gửi</span>';
+  } else if (isKhan) {
+    statusBadge = `<span class="bgql-ch-badge bgql-ch-badge-khan">🔴 ${c.so_su_vu_khan} khẩn · ${c.so_su_vu} sự vụ</span>`;
+  } else if (hasSV) {
+    statusBadge = `<span class="bgql-ch-badge bgql-ch-badge-sv">${c.so_su_vu} sự vụ</span>`;
+  } else {
+    statusBadge = '<span class="bgql-ch-badge bgql-ch-badge-ok">✓ Bình thường</span>';
+  }
+  
+  return `
+    <div class="bgql-ch-row${opened?' opened':''}" onclick="bgqlOpenChDetail('${c.ma_ch}')">
+      <div class="bgql-ch-row-head">
+        <div class="bgql-ch-row-info">
+          <div class="bgql-ch-row-name">${escHtml(c.ten_ch||c.ma_ch)}</div>
+          <div class="bgql-ch-row-meta">${escHtml(c.ma_ch)}${c.khu_vuc?' · '+escHtml(c.khu_vuc):''}</div>
+        </div>
+        ${statusBadge}
+        ${hasSV ? `<svg class="bgql-ch-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>` : ''}
       </div>
-      <div class="bgql-stat-sub-row" style="color:#DC2626">
-        <span>Trong đó khẩn cấp</span>
-        <b>${svKhan}</b>
+      ${opened && hasSV ? `<div class="bgql-ch-row-detail">
+        ${(c.su_vu_ds||[]).map(sv => bgqlSvDetailHtml(sv)).join('')}
+      </div>` : ''}
+    </div>
+  `;
+}
+
+function bgqlSvDetailHtml(sv){
+  const mdMap = { 'KHAN_CAP':'🔴 Khẩn cấp', 'QUAN_TRONG':'⚠️ Quan trọng', 'CAN_THIET':'📋 Cần thiết' };
+  const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
+  const mdClass = sv.muc_do === 'KHAN_CAP' ? 'khan' : sv.muc_do === 'QUAN_TRONG' ? 'qt' : 'ct';
+  const t = sv.created_at ? new Date(sv.created_at).toLocaleString('vi-VN', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  return `
+    <div class="bgql-sv-mini">
+      <div class="bgql-sv-mini-head">
+        <span class="bgql-sv-mini-md ${mdClass}">${mdMap[sv.muc_do]||sv.muc_do}</span>
+        <span class="bgql-sv-mini-st">${stMap[sv.trang_thai]||sv.trang_thai}</span>
+        <span class="bgql-sv-mini-time">${t}</span>
       </div>
-      <div class="bgql-stat-sub-row" style="color:#64748B;font-size:11px;font-weight:500">
-        Khoảng: ${from} → ${to}
-      </div>
+      <div class="bgql-sv-mini-title">${escHtml(sv.tieu_de||'')}</div>
+      ${sv.mo_ta ? `<div class="bgql-sv-mini-desc">${escHtml(sv.mo_ta)}</div>` : ''}
+      ${sv.phan_hoi_xu_ly ? `<div class="bgql-sv-mini-reply"><b>QL phản hồi:</b> ${escHtml(sv.phan_hoi_xu_ly)}${sv.deadline_xu_ly?` · ⏰ ${new Date(sv.deadline_xu_ly).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:''}</div>` : ''}
     </div>
   `;
 }
@@ -590,7 +681,7 @@ let bgqlPrintRange = '7d';        // 'today' | '7d' | '30d' | 'custom'
 let bgqlPrintCustomFrom = null;
 let bgqlPrintCustomTo = null;
 let bgqlPrintSelectedCH = new Set();  // CH đã tick chọn
-let bgqlPrintLayout = '4';        // '1' | '2' | '4' (ảnh/trang)
+let bgqlPrintLayout = '1';        // [v13.30] '1' default — 1 ảnh/trang, 2 mặt cố định
 
 async function bgqlLoadPrint(){
   const cont = document.getElementById('bgql-print-content');
@@ -656,9 +747,9 @@ function bgqlRenderPrintHeader(){
           <option value="30d"${bgqlPrintRange==='30d'?' selected':''}>30 ngày qua</option>
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlPrintSetLayout(this.value)">
-          <option value="1"${bgqlPrintLayout==='1'?' selected':''}>1 ảnh / trang</option>
+          <option value="1"${bgqlPrintLayout==='1'?' selected':''}>1 ảnh / trang (mặc định)</option>
           <option value="2"${bgqlPrintLayout==='2'?' selected':''}>2 ảnh / trang</option>
-          <option value="4"${bgqlPrintLayout==='4'?' selected':''}>4 ảnh / trang (mặc định)</option>
+          <option value="4"${bgqlPrintLayout==='4'?' selected':''}>4 ảnh / trang</option>
         </select>
       </div>
       <div class="bgql-print-bar-right">

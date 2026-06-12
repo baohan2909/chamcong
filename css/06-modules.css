@@ -951,58 +951,6 @@
 }
 .bgql-modal-act .bgql-act { padding: 13px; font-size: 14px; }
 
-/* Stats */
-.bgql-stats-rangepicker {
-  display: flex; gap: 8px; padding: 8px 2px 14px;
-}
-.bgql-stats-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-}
-.bgql-stat-card {
-  padding: 16px 12px;
-  border-radius: 14px;
-  color: #fff;
-  text-align: center;
-  box-shadow: 0 6px 16px rgba(15,46,69,.20);
-}
-.bgql-stat-icon { font-size: 18px; opacity: .9; margin-bottom: 4px; }
-.bgql-stat-v {
-  font-size: 24px; font-weight: 800;
-  font-family: 'Inter', sans-serif;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -.02em;
-  line-height: 1.1;
-}
-.bgql-stat-sub {
-  font-size: 13px; font-weight: 600; opacity: .8; margin-left: 2px;
-}
-.bgql-stat-l {
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .05em;
-  opacity: .92;
-  margin-top: 6px;
-}
-.bgql-stats-sub {
-  background: #fff;
-  margin-top: 12px;
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 2px 12px rgba(15,46,69,.06);
-}
-.bgql-stat-sub-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1E293B;
-}
-.bgql-stat-sub-row b {
-  font-family: 'Inter', sans-serif;
-  font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  color: #0F172A;
-}
 
 /* ═══════════════════════════════════════════════════════════════════════
  *  [v13.25] FILTER SELECT QL + MODAL CHI TIẾT BIÊN BẢN
@@ -1662,4 +1610,161 @@
   border-radius: 6px;
   font-size: 10.5px; font-weight: 700;
   color: #475569;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.30] TAB THỐNG KÊ — Interactive dashboard
+ *  Cards compact 60% chiều cao + list CH + chi tiết sự vụ
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-stats-compact {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.bgql-stat-c {
+  padding: 10px 8px;
+  border-radius: 11px;
+  text-align: center;
+  cursor: pointer;
+  color: #fff;
+  transition: all .15s;
+  box-shadow: 0 3px 10px rgba(15,46,69,.18);
+  position: relative;
+  overflow: hidden;
+}
+.bgql-stat-c:active { transform: scale(.97); }
+.bgql-stat-c.stat-ok { background: linear-gradient(135deg, #047857 0%, #10B981 100%); }
+.bgql-stat-c.stat-warn { background: linear-gradient(135deg, #92400E 0%, #F59E0B 100%); }
+.bgql-stat-c.stat-bad { background: linear-gradient(135deg, #991B1B 0%, #DC2626 100%); }
+.bgql-stat-c.active {
+  outline: 3px solid rgba(255,255,255,.7);
+  outline-offset: -3px;
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(15,46,69,.32);
+}
+.bgql-stat-c-v {
+  font-size: 22px; font-weight: 800;
+  font-family: 'Inter', 'SF Pro Display', sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.bgql-stat-c-vs {
+  font-size: 11px; font-weight: 600; opacity: .85; margin-left: 1px;
+}
+.bgql-stat-c-l {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  opacity: .95;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+/* List CH */
+.bgql-stats-chlist {
+  display: flex; flex-direction: column; gap: 7px;
+}
+.bgql-ch-row {
+  background: #fff;
+  border-radius: 11px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 8px rgba(15,46,69,.05);
+  cursor: pointer;
+  transition: all .15s;
+}
+.bgql-ch-row:active { transform: scale(.99); }
+.bgql-ch-row.opened {
+  box-shadow: 0 4px 14px rgba(15,46,69,.10);
+}
+.bgql-ch-row-head {
+  display: flex; align-items: center; gap: 8px;
+}
+.bgql-ch-row-info { flex: 1; min-width: 0; }
+.bgql-ch-row-name {
+  font-size: 13.5px; font-weight: 700; color: #0F172A;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bgql-ch-row-meta {
+  font-size: 10.5px; font-weight: 500; color: #94A3B8;
+  margin-top: 1px;
+}
+
+/* Status badges */
+.bgql-ch-badge {
+  font-size: 10.5px; font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.bgql-ch-badge-ok { background: #ECFDF5; color: #047857; }
+.bgql-ch-badge-warn { background: #FEF3C7; color: #92400E; }
+.bgql-ch-badge-sv { background: #FED7AA; color: #9A3412; }
+.bgql-ch-badge-khan { background: #FEE2E2; color: #991B1B; }
+
+.bgql-ch-chev {
+  color: #94A3B8;
+  transition: transform .15s;
+  flex-shrink: 0;
+}
+.bgql-ch-row.opened .bgql-ch-chev { transform: rotate(180deg); color: #047857; }
+
+/* Chi tiết sự vụ trong CH row */
+.bgql-ch-row-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #E2E8F0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bgql-sv-mini {
+  background: #F8FAFC;
+  border-radius: 9px;
+  padding: 9px 11px;
+  border-left: 3px solid #94A3B8;
+}
+.bgql-sv-mini-head {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+.bgql-sv-mini-md {
+  font-size: 10px; font-weight: 800;
+  padding: 2px 7px; border-radius: 99px;
+  letter-spacing: .03em;
+}
+.bgql-sv-mini-md.khan { background: #FEE2E2; color: #991B1B; }
+.bgql-sv-mini-md.qt { background: #FEF3C7; color: #92400E; }
+.bgql-sv-mini-md.ct { background: #E0F2FE; color: #075985; }
+.bgql-sv-mini-st {
+  font-size: 10px; font-weight: 700; color: #475569;
+  background: #fff;
+  padding: 2px 7px;
+  border-radius: 99px;
+  border: 1px solid #E2E8F0;
+}
+.bgql-sv-mini-time {
+  font-size: 10px; color: #94A3B8;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+.bgql-sv-mini-title {
+  font-size: 12.5px; font-weight: 700; color: #0F172A;
+  margin-bottom: 3px;
+}
+.bgql-sv-mini-desc {
+  font-size: 11.5px; color: #475569;
+  line-height: 1.45;
+}
+.bgql-sv-mini-reply {
+  margin-top: 6px;
+  padding: 6px 9px;
+  background: #ECFDF5;
+  border-radius: 7px;
+  font-size: 11px;
+  color: #064E3B;
+  line-height: 1.45;
+  border-left: 2px solid #10B981;
 }
