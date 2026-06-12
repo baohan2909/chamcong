@@ -12,7 +12,7 @@
  *   4. User bấm → skipWaiting + reload
  */
 
-const CACHE_VERSION = 'nonson-v13.25';
+const CACHE_VERSION = 'nonson-v13.27';
 const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
 
 // Files cần precache cho offline (chỉ static assets quan trọng)
@@ -29,6 +29,9 @@ const PRECACHE_ASSETS = [
 
 // ─── INSTALL ──────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
+  // [v13.26] AUTO skipWaiting — iOS Safari PWA standalone không tự update
+  // nếu chờ user bấm banner. Force takeover ngay → controllerchange → reload.
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_ASSETS).catch(err => {
