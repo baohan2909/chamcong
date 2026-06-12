@@ -736,7 +736,7 @@ async function bgSubmit(){
             p_nguoi_tao_ma_nv: SESSION.ma,
             p_nguoi_tao_ten: SESSION.ten || SESSION.hoTen || '',
             p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-            p_tieu_de: it.ten + ' — Có vấn đề',
+            p_tieu_de: it.ten + ' - Có vấn đề',
             p_mo_ta: st.mo_ta || '',
             p_so_lieu: { stt:it.stt, khu_vuc:it.khu_vuc, nhom_hang:null },
             p_anh_urls: itemAnh[it.id] || [],
@@ -756,7 +756,7 @@ async function bgSubmit(){
           p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
           p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
           p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-          p_tieu_de: LBL + ' — Có ghi chú',
+          p_tieu_de: LBL + ' - Có ghi chú',
           p_mo_ta: note,
           p_so_lieu: { loai:k, so_tien: bgState[k].so_tien||0 },
           p_anh_urls: [], p_muc_do: 'KHAN_CAP'
@@ -774,7 +774,7 @@ async function bgSubmit(){
             p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
             p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
             p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-            p_tieu_de: it.nhom_hang + ' (' + it.khu_vuc + ') — Chênh lệch',
+            p_tieu_de: it.nhom_hang + ' (' + it.khu_vuc + ') - Chênh lệch',
             p_mo_ta: st.ghi_chu,
             p_so_lieu: { khu_vuc:it.khu_vuc, nhom:it.nhom_hang, sl:st.so_luong||0 },
             p_anh_urls: [], p_muc_do: 'QUAN_TRONG'
@@ -1195,3 +1195,120 @@ function bgFmtDayVN(d){
 
 // ─── Utility ──────────────────────────────────────────────────────────
 // (pad, escHtml, showToast là global từ core/02-system.js)
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.35] CONFIRM SCREEN — tổng hợp CÓ/KHÔNG trước khi gửi
+// ═════════════════════════════════════════════════════════════════════════
+window.bgOpenConfirmSubmit = function(){
+  // Tổng hợp items theo trạng thái
+  const groupsTS = bgGroups.filter(g => g.type === 'taisan');
+  const allItems = [];
+  groupsTS.forEach(g => g.items.forEach(it => allItems.push({ g, it })));
+  
+  const itemsDat = [];     // DAT
+  const itemsKhongCo = []; // KHONG_CO
+  const itemsVD = [];      // VAN_DE
+  const itemsChua = [];    // chưa chọn
+  
+  allItems.forEach(({g, it}) => {
+    const st = bgState[it.id];
+    if (!st || !st.status) { itemsChua.push({ g, it }); return; }
+    if (st.status === 'D') itemsDat.push({ g, it });
+    else if (st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO') itemsKhongCo.push({ g, it });
+    else if (st.status === 'VD' || st.status === 'KD' || st.status === 'KHONG_DAT') itemsVD.push({ g, it, mota: st.mo_ta });
+  });
+  
+  const groupItems = items => {
+    const byKV = {};
+    items.forEach(({ g, it, mota }) => {
+      const kv = g.khu_vuc || '?';
+      if (!byKV[kv]) byKV[kv] = [];
+      byKV[kv].push({ ten: it.ten, mota });
+    });
+    return byKV;
+  };
+  const datByKV = groupItems(itemsDat);
+  const khongByKV = groupItems(itemsKhongCo);
+  const vdByKV = groupItems(itemsVD);
+  
+  const kvLabel = kv => kv === 1 ? 'Khu vực 1 — Mặt tiền' 
+    : kv === 2 ? 'Khu vực 2 — Quầy thu ngân' 
+    : kv === 4 ? 'Khu vực 4 — Kho/Sinh hoạt' 
+    : `Khu vực ${kv}`;
+  
+  const renderKVList = (byKV, color, showMota) => {
+    if (Object.keys(byKV).length === 0) return '<div class="bg-cf-empty">Không có hạng mục nào</div>';
+    return Object.keys(byKV).sort().map(kv => `
+      <div class="bg-cf-kv">
+        <div class="bg-cf-kv-l">${escHtml(kvLabel(parseInt(kv,10)))}</div>
+        <div class="bg-cf-items">
+          ${byKV[kv].map(it => `<div class="bg-cf-item" style="border-color:${color}">
+            <span>${escHtml(it.ten)}</span>
+            ${showMota && it.mota?`<small style="color:#991B1B">${escHtml(it.mota)}</small>`:''}
+          </div>`).join('')}
+        </div>
+      </div>`).join('');
+  };
+  
+  // Build modal
+  const m = document.createElement('div');
+  m.className = 'bgql-modal-bg';
+  m.innerHTML = `
+    <div class="bgql-modal bg-cf-modal">
+      <div class="bgql-modal-head">
+        <div class="bgql-modal-ttl">Xác nhận trước khi gửi</div>
+        <button class="bgql-modal-x" onclick="this.closest('.bgql-modal-bg').remove()">✕</button>
+      </div>
+      <div class="bgql-modal-body bg-cf-body">
+        <div class="bg-cf-summary">
+          <div class="bg-cf-stat dat">
+            <div class="bg-cf-stat-v">${itemsDat.length}</div>
+            <div class="bg-cf-stat-l">Đạt</div>
+          </div>
+          <div class="bg-cf-stat khong">
+            <div class="bg-cf-stat-v">${itemsKhongCo.length}</div>
+            <div class="bg-cf-stat-l">Không có</div>
+          </div>
+          <div class="bg-cf-stat vd">
+            <div class="bg-cf-stat-v">${itemsVD.length}</div>
+            <div class="bg-cf-stat-l">Có vấn đề</div>
+          </div>
+          ${itemsChua.length>0?`<div class="bg-cf-stat chua">
+            <div class="bg-cf-stat-v">${itemsChua.length}</div>
+            <div class="bg-cf-stat-l">Chưa chọn</div>
+          </div>`:''}
+        </div>
+        
+        ${itemsChua.length > 0 ? `<div class="bg-cf-warn">
+          ⚠ Còn ${itemsChua.length} hạng mục chưa chọn trạng thái. Vẫn có thể gửi (mặc định "Không có").
+        </div>` : ''}
+        
+        ${itemsVD.length > 0 ? `<div class="bg-cf-sec">
+          <div class="bg-cf-sec-l bg-cf-sec-vd">Hạng mục có vấn đề · ${itemsVD.length}</div>
+          ${renderKVList(vdByKV, '#DC2626', true)}
+        </div>` : ''}
+        
+        ${itemsKhongCo.length > 0 ? `<div class="bg-cf-sec">
+          <div class="bg-cf-sec-l bg-cf-sec-khong">Hạng mục cửa hàng KHÔNG có · ${itemsKhongCo.length}</div>
+          ${renderKVList(khongByKV, '#94A3B8', false)}
+        </div>` : ''}
+        
+        ${itemsDat.length > 0 ? `<div class="bg-cf-sec">
+          <div class="bg-cf-sec-l bg-cf-sec-dat">Hạng mục đạt · ${itemsDat.length}</div>
+          ${renderKVList(datByKV, '#10B981', false)}
+        </div>` : ''}
+        
+        <div class="bg-cf-note">
+          Sau khi xác nhận, hệ thống sẽ tạo biên bản + ${itemsVD.length} sự vụ (nếu có) và thông báo cho quản lý.
+        </div>
+        
+        <div class="bgql-modal-act">
+          <button class="bgql-act bgql-act-ghost" onclick="this.closest('.bgql-modal-bg').remove()">Xem lại</button>
+          <button class="bgql-act bgql-act-primary" onclick="this.closest('.bgql-modal-bg').remove(); bgSubmit()">Đồng ý gửi</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+};

@@ -795,8 +795,6 @@
   padding: 3px 9px; border-radius: 99px;
   text-transform: uppercase; letter-spacing: .04em;
 }
-.bgql-st-tag.open { background: #FEF3C7; color: #92400E; }
-.bgql-st-tag.closed { background: #E5E7EB; color: #4B5563; }
 .bgql-time { font-size: 11px; color: #94A3B8; margin-left: auto; font-weight: 600;
   font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
 .bgql-card-title { font-size: 14.5px; font-weight: 700; color: #0F172A; line-height: 1.3; margin-bottom: 5px; }
@@ -808,34 +806,47 @@
   border-radius: 8px;
   margin-bottom: 10px;
 }
+/* [v13.34] Box phản hồi từ QL — redesign sạch hơn */
 .bgql-reply {
-  margin: 10px 0;
-  padding: 10px 12px;
-  background: #ECFDF5;
-  border-left: 3px solid #10B981;
-  border-radius: 8px;
+  margin: 10px 0 0;
+  padding: 11px 13px 12px;
+  background: #F0F9FF;
+  border-left: 3px solid #0E7490;
+  border-radius: 9px;
   font-size: 13px;
-  color: #064E3B;
+  color: #0C4A6E;
   line-height: 1.5;
 }
 .bgql-reply-l {
   font-size: 10px; font-weight: 800;
-  color: #047857;
+  color: #0E7490;
   text-transform: uppercase; letter-spacing: .07em;
   margin-bottom: 5px;
 }
+.bgql-reply-txt {
+  font-size: 13px;
+  color: #0C4A6E;
+  line-height: 1.55;
+  word-break: break-word;
+}
+/* [v13.34] Deadline — block thay vì inline-flex để KHÔNG tràn */
 .bgql-deadline {
-  display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 6px;
-  padding: 5px 10px;
+  display: block;
+  margin-top: 8px;
+  padding: 7px 11px;
   border-radius: 8px;
   font-size: 12px; font-weight: 700;
   background: #FEF3C7;
   color: #92400E;
+  border: 1px solid #FDE68A;
+  word-break: break-word;
+  line-height: 1.45;
 }
+.bgql-deadline svg { display: none; } /* Bỏ icon đồng hồ — anh không thích icon */
 .bgql-deadline.past {
   background: #FEE2E2;
   color: #991B1B;
+  border-color: #FCA5A5;
 }
 
 /* Actions */
@@ -859,15 +870,17 @@
   color: #fff;
   box-shadow: 0 3px 10px rgba(16,185,129,.30);
 }
+/* [v13.34] Cập nhật/Phản hồi — gradient cam đậm trái → nhạt phải (giống chương trình KM) */
 .bgql-act-secondary {
-  background: linear-gradient(135deg, #1E40AF, #3B82F6);
+  background: linear-gradient(135deg, #C2410C 0%, #F97316 70%, #FB923C 100%);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(59,130,246,.30);
+  box-shadow: 0 3px 10px rgba(249,115,22,.28);
 }
+/* [v13.34] Đóng hoàn tất — xanh giống Tiếp nhận, gradient nhẹ */
 .bgql-act-success {
-  background: linear-gradient(135deg, #15803D, #22C55E);
+  background: linear-gradient(135deg, #0E7490 0%, #0891B2 100%);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(34,197,94,.30);
+  box-shadow: 0 3px 10px rgba(14,116,144,.28);
 }
 .bgql-act-ghost {
   background: #fff;
@@ -895,7 +908,7 @@
 @keyframes bgqlSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .bgql-modal-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 18px 12px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 18px 12px;
   border-bottom: 1px solid #F1F5F9;
   position: sticky; top: 0; background: #fff; z-index: 2;
 }
@@ -1398,14 +1411,14 @@
 #bgql-print-root { display: none; }
 
 @media print {
-  /* CÁCH 1: visibility cascade — HIDE TẤT CẢ trừ print root */
-  body.printing { visibility: hidden !important; }
-  body.printing #bgql-print-root,
-  body.printing #bgql-print-root * { visibility: visible !important; }
+  /* [v13.34] Fix lỗi in 4 trang: dùng display:none cho TẤT CẢ direct child
+     của body trừ #bgql-print-root. visibility:hidden vẫn chiếm space →
+     browser tạo page-break tự nhiên cho page-chamcong/page-banhang → +2-3 trang trống. */
+  body.printing > * { display: none !important; }
+  body.printing > #bgql-print-root { display: block !important; }
+  body.printing { background: white !important; margin: 0 !important; padding: 0 !important; }
   
-  /* CÁCH 2: defensive display:none cho overlay/modal/banner/toast */
-  body.printing nav,
-  body.printing .bottom-nav,
+  /* Defensive cho element nằm sâu (modal/toast fixed-position) */
   body.printing .ns-modal,
   body.printing .ns-toast,
   body.printing .toast,
@@ -1416,17 +1429,10 @@
   body.printing .pwa-banner,
   body.printing .pwa-install-banner,
   body.printing .pwa-update-banner,
-  body.printing .ns-suggest-overlay,
-  body.printing .suggest-list,
-  body.printing #app-banner,
-  body.printing [class*="banner"],
-  body.printing [class*="overlay"] { display: none !important; }
+  body.printing .bgql-svd-modal { display: none !important; }
   
-  /* Position print root tại top */
   body.printing #bgql-print-root {
-    display: block !important;
-    position: absolute !important;
-    left: 0 !important; top: 0 !important; right: 0 !important;
+    position: static !important;
     width: 100% !important;
     margin: 0 !important; padding: 0 !important;
     background: white !important;
@@ -2188,3 +2194,311 @@
 .bgql-svd-ev-processing .bgql-svd-ev-dot { background: #1E3A8A; box-shadow: 0 0 0 1px #BFDBFE; }
 .bgql-svd-ev-reply .bgql-svd-ev-dot { background: #075985; box-shadow: 0 0 0 1px #BAE6FD; }
 .bgql-svd-ev-closed .bgql-svd-ev-dot { background: #92400E; box-shadow: 0 0 0 1px #FDE68A; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.34] TAG MỨC ĐỘ — KHÔNG icon, chỉ màu nền + chữ
+ *  Slate/Amber/Red palette nhẹ — không tươi không chói
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-md-tag {
+  font-size: 10.5px; font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.bgql-md-KHAN_CAP   { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
+.bgql-md-QUAN_TRONG { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+.bgql-md-CAN_THIET  { background: #E0F2FE; color: #075985; border-color: #BAE6FD; }
+
+/* Status tag — tone nhẹ */
+.bgql-st-tag {
+  font-size: 10.5px; font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.bgql-st-tag.open   { background: #F1F5F9; color: #475569; border-color: #E2E8F0; }
+.bgql-st-tag.closed { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.35] Mã sự vụ + Người xử lý autocomplete + Stats search gộp
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Mã sự vụ badge */
+.bgql-masv {
+  display: inline-block;
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-size: 10.5px; font-weight: 800;
+  color: #0F2E45;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  padding: 2px 8px;
+  border-radius: 5px;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.bgql-svd-masv {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 800;
+  color: #fff;
+  background: #0F2E45;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: .03em;
+}
+
+/* Người xử lý — hiển thị trong modal chi tiết header */
+.bgql-svd-xl {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px;
+  margin-top: 6px;
+  font-size: 12.5px; color: #475569;
+  font-weight: 500;
+}
+.bgql-svd-xl-l {
+  font-size: 10.5px; font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.bgql-svd-xl b { color: #0F172A; }
+.bgql-svd-xl small {
+  font-size: 10px;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+/* Autocomplete người xử lý — wrap + dropdown */
+.bgql-xl-wrap { position: relative; }
+.bgql-xl-search { padding-right: 36px !important; }
+.bgql-xl-dropdown {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15,46,69,.12);
+  margin-top: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 100;
+}
+.bgql-xl-item {
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #F1F5F9;
+}
+.bgql-xl-item:last-child { border-bottom: 0; }
+.bgql-xl-item:hover, .bgql-xl-item:active {
+  background: #F1F5F9;
+}
+.bgql-xl-it-name {
+  font-size: 13px; font-weight: 700;
+  color: #0F172A;
+  display: flex; align-items: center; gap: 6px;
+}
+.bgql-xl-it-tag {
+  font-size: 9.5px; font-weight: 800;
+  padding: 1.5px 6px;
+  border-radius: 99px;
+  background: #DBEAFE; color: #1E40AF;
+  letter-spacing: .04em;
+}
+.bgql-xl-it-sub {
+  font-size: 11px; color: #64748B;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.bgql-xl-empty {
+  padding: 14px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 12.5px;
+}
+.bgql-xl-selected {
+  margin-top: 6px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: 8px;
+  padding: 7px 11px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12.5px;
+  color: #064E3B;
+}
+.bgql-xl-selected b { color: #064E3B; }
+.bgql-xl-selected small { color: #047857; font-weight: 600; }
+.bgql-xl-clear {
+  width: 22px; height: 22px;
+  border: 0;
+  background: rgba(255,255,255,0.7);
+  color: #047857;
+  border-radius: 99px;
+  cursor: pointer;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Stats search gộp KV/CH */
+.bgql-stats-search {
+  flex: 1 1 auto;
+  position: relative;
+}
+.bgql-stats-search-input { padding-right: 32px; }
+.bgql-stats-search-clear {
+  position: absolute; right: 6px; top: 50%;
+  transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border: 0;
+  background: #F1F5F9;
+  color: #64748B;
+  border-radius: 99px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+.bgql-stats-search-dd {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15,46,69,.12);
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 50;
+}
+.bgql-stats-dd-l {
+  font-size: 10px; font-weight: 800;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 8px 12px 4px;
+  background: #F8FAFC;
+}
+.bgql-stats-dd-it {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 12.5px;
+  color: #1E293B;
+}
+.bgql-stats-dd-it:last-child { border-bottom: 0; }
+.bgql-stats-dd-it:hover, .bgql-stats-dd-it:active { background: #F1F5F9; }
+.bgql-stats-dd-it b { color: #0F172A; font-weight: 700; }
+.bgql-stats-dd-it small { color: #94A3B8; font-size: 10.5px; margin-left: 4px; }
+.bgql-stats-dd-empty {
+  padding: 14px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 12.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.35] Confirm screen Bàn giao ca - tổng hợp trước gửi
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bg-cf-modal { max-width: 540px; }
+.bg-cf-body { padding-bottom: 30px !important; }
+
+.bg-cf-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 16px;
+}
+.bg-cf-summary:has(.bg-cf-stat.chua) { grid-template-columns: repeat(4, 1fr); }
+.bg-cf-stat {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.bg-cf-stat.dat { background: #ECFDF5; border-color: #A7F3D0; }
+.bg-cf-stat.khong { background: #F1F5F9; border-color: #CBD5E1; }
+.bg-cf-stat.vd { background: #FEF2F2; border-color: #FECACA; }
+.bg-cf-stat.chua { background: #FEF3C7; border-color: #FDE68A; }
+.bg-cf-stat-v {
+  font-size: 22px; font-weight: 800;
+  color: #0F2E45;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -.02em;
+}
+.bg-cf-stat.dat .bg-cf-stat-v { color: #047857; }
+.bg-cf-stat.vd .bg-cf-stat-v { color: #991B1B; }
+.bg-cf-stat.chua .bg-cf-stat-v { color: #92400E; }
+.bg-cf-stat-l {
+  font-size: 10.5px; font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-top: 2px;
+}
+
+.bg-cf-warn {
+  background: #FEF3C7;
+  border-left: 3px solid #D97706;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: #92400E;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.bg-cf-sec { margin-bottom: 16px; }
+.bg-cf-sec-l {
+  font-size: 10.5px; font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 8px;
+}
+.bg-cf-sec-vd { color: #991B1B; }
+.bg-cf-sec-khong { color: #64748B; }
+.bg-cf-sec-dat { color: #047857; }
+
+.bg-cf-kv { margin-bottom: 10px; }
+.bg-cf-kv-l {
+  font-size: 11px; font-weight: 700;
+  color: #0F2E45;
+  margin-bottom: 5px;
+  padding-left: 2px;
+}
+.bg-cf-items {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.bg-cf-item {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #94A3B8;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: #1E293B;
+  font-weight: 500;
+}
+.bg-cf-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.bg-cf-empty {
+  padding: 8px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.bg-cf-note {
+  font-size: 11.5px;
+  color: #475569;
+  background: #F1F5F9;
+  border-radius: 7px;
+  padding: 9px 12px;
+  margin: 12px 0;
+  line-height: 1.45;
+}
