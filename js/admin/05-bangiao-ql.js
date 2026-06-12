@@ -87,9 +87,9 @@ function bgqlRenderSuVuFilters(){
       <div class="bgql-flt-row">
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('muc_do', this.value)">
           <option value="all"${bgqlSuVuFilter.muc_do==='all'?' selected':''}>Mức độ: Tất cả</option>
-          <option value="KHAN_CAP"${bgqlSuVuFilter.muc_do==='KHAN_CAP'?' selected':''}>🔴 Khẩn cấp</option>
-          <option value="QUAN_TRONG"${bgqlSuVuFilter.muc_do==='QUAN_TRONG'?' selected':''}>⚠️ Quan trọng</option>
-          <option value="CAN_THIET"${bgqlSuVuFilter.muc_do==='CAN_THIET'?' selected':''}>📋 Cần thiết</option>
+          <option value="KHAN_CAP"${bgqlSuVuFilter.muc_do==='KHAN_CAP'?' selected':''}>Khẩn cấp</option>
+          <option value="QUAN_TRONG"${bgqlSuVuFilter.muc_do==='QUAN_TRONG'?' selected':''}>Quan trọng</option>
+          <option value="CAN_THIET"${bgqlSuVuFilter.muc_do==='CAN_THIET'?' selected':''}>Cần thiết</option>
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
           <option value="open"${bgqlSuVuFilter.trang_thai==='open'?' selected':''}>Đang xử lý (${open.length})</option>
@@ -592,7 +592,7 @@ function bgqlTLCardHtml(b){
     <div class="bg-tl-head">
       <div class="bg-tl-time">${time}</div>
       <div class="bg-tl-by">${escHtml(b.ten_ch_snapshot||b.ma_ch)} · ${escHtml(b.nguoi_ban_giao_ten||'?')}</div>
-      ${soKhan>0?`<div class="bg-tl-tag khan">${soKhan} khẩn</div>`:''}
+      ${soKhan>0?`<div class="bg-tl-tag khan">${soKhan} khẩn cấp</div>`:''}
     </div>
     <div class="bg-tl-metrics">
       <div class="bg-tl-metric"><div class="bg-tl-metric-v">${tien}<span style="font-size:11px;font-weight:600;opacity:.7"> đ</span></div><div class="bg-tl-metric-l">Tổng tiền</div></div>
@@ -762,11 +762,11 @@ function bgqlChRowHtml(c, opened){
   if (isChuaGui) {
     statusBadge = '<span class="bgql-ch-badge bgql-ch-badge-warn">Chưa gửi</span>';
   } else if (isKhan) {
-    statusBadge = `<span class="bgql-ch-badge bgql-ch-badge-khan">🔴 ${c.so_su_vu_khan} khẩn · ${c.so_su_vu} sự vụ</span>`;
+    statusBadge = `<span class="bgql-ch-badge bgql-ch-badge-khan">${c.so_su_vu_khan} khẩn · ${c.so_su_vu} sự vụ</span>`;
   } else if (hasSV) {
     statusBadge = `<span class="bgql-ch-badge bgql-ch-badge-sv">${c.so_su_vu} sự vụ</span>`;
   } else {
-    statusBadge = '<span class="bgql-ch-badge bgql-ch-badge-ok">✓ Bình thường</span>';
+    statusBadge = '<span class="bgql-ch-badge bgql-ch-badge-ok">Bình thường</span>';
   }
   
   return `
@@ -787,7 +787,7 @@ function bgqlChRowHtml(c, opened){
 }
 
 function bgqlSvDetailHtml(sv){
-  const mdMap = { 'KHAN_CAP':'🔴 Khẩn cấp', 'QUAN_TRONG':'⚠️ Quan trọng', 'CAN_THIET':'📋 Cần thiết' };
+  const mdMap = { 'KHAN_CAP':'Khẩn cấp', 'QUAN_TRONG':'Quan trọng', 'CAN_THIET':'Cần thiết' };
   const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
   const mdClass = sv.muc_do === 'KHAN_CAP' ? 'khan' : sv.muc_do === 'QUAN_TRONG' ? 'qt' : 'ct';
   const t = sv.created_at ? new Date(sv.created_at).toLocaleString('vi-VN', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
@@ -800,13 +800,27 @@ function bgqlSvDetailHtml(sv){
       </div>
       <div class="bgql-sv-mini-title">${escHtml(sv.tieu_de||'')}</div>
       ${sv.mo_ta ? `<div class="bgql-sv-mini-desc">${escHtml(sv.mo_ta)}</div>` : ''}
-      ${sv.phan_hoi_xu_ly ? `<div class="bgql-sv-mini-reply"><b>QL phản hồi:</b> ${escHtml(sv.phan_hoi_xu_ly)}${sv.deadline_xu_ly?` · ⏰ ${new Date(sv.deadline_xu_ly).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:''}</div>` : ''}
+      ${sv.phan_hoi_xu_ly ? `<div class="bgql-sv-mini-reply"><b>QL phản hồi:</b> ${escHtml(sv.phan_hoi_xu_ly)}${sv.deadline_xu_ly?` · Deadline: ${new Date(sv.deadline_xu_ly).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:''}</div>` : ''}
     </div>
   `;
 }
 
 // Format VND (reuse từ NV view)
 function bgFmtVN(n){ return (n||0).toLocaleString('vi-VN'); }
+
+// [v13.33] Format ngày VN (FIX missing → ReferenceError ở Timeline + Tiền chi)
+function bgqlFmtDayVN(dateStr){
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d)) return dateStr;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diffDays = Math.floor((today - d) / 86400000);
+  if (diffDays === 0) return 'Hôm nay';
+  if (diffDays === 1) return 'Hôm qua';
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+  const days = ['CN','T2','T3','T4','T5','T6','T7'];
+  return `${days[d.getDay()]} · ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
 
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1288,7 +1302,7 @@ function bgqlRenderSuVuDetail(d){
   const bg = d.bien_ban;
   const anhBg = d.anh_bien_ban || [];
   
-  const mdMap = { 'KHAN_CAP':'🔴 Khẩn cấp', 'QUAN_TRONG':'⚠️ Quan trọng', 'CAN_THIET':'📋 Cần thiết' };
+  const mdMap = { 'KHAN_CAP':'Khẩn cấp', 'QUAN_TRONG':'Quan trọng', 'CAN_THIET':'Cần thiết' };
   const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
   const loaiMap = {
     'TAI_SAN_KHONG_DAT':'Tài sản không đạt',
@@ -1311,19 +1325,26 @@ function bgqlRenderSuVuDetail(d){
   
   document.getElementById('bgql-svd-title').textContent = 'Chi tiết sự vụ';
   
+  // [v13.33] Nút xóa chỉ hiển thị cho ADMIN
+  const isAdmin = SESSION && SESSION.vaiTro === 'ADMIN';
+  const deleteBtn = isAdmin ? `
+    <button class="bgql-svd-del" onclick="bgqlDeleteSuVu('${sv.id}')" title="Xóa sự vụ">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    </button>
+  ` : '';
+  
   body.innerHTML = `
     <!-- HEADER -->
     <div class="bgql-svd-header">
-      <div class="bgql-svd-tags">
-        <span class="bgql-sv-mini-md ${mdClass}">${mdMap[sv.muc_do]||sv.muc_do}</span>
-        <span class="bgql-sv-mini-st" data-st="${sv.trang_thai||''}">${stMap[sv.trang_thai]||sv.trang_thai}</span>
-        ${sv.loai ? `<span class="bgql-svd-loai">${escHtml(loaiMap[sv.loai]||sv.loai)}</span>` : ''}
+      <div class="bgql-svd-header-row">
+        <div class="bgql-svd-tags">
+          <span class="bgql-sv-mini-md ${mdClass}">${mdMap[sv.muc_do]||sv.muc_do}</span>
+          <span class="bgql-sv-mini-st" data-st="${sv.trang_thai||''}">${stMap[sv.trang_thai]||sv.trang_thai}</span>
+        </div>
+        ${deleteBtn}
       </div>
       <div class="bgql-svd-tieude">${escHtml(sv.tieu_de||'(không có tiêu đề)')}</div>
-      <div class="bgql-svd-ch">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        ${escHtml(sv.ten_ch_snapshot || sv.ma_ch)} · ${escHtml(sv.ma_ch)}
-      </div>
+      <div class="bgql-svd-ch">${escHtml(sv.ten_ch_snapshot || sv.ma_ch)} · ${escHtml(sv.ma_ch)}</div>
     </div>
 
     <!-- TIMELINE EVENTS -->
@@ -1348,10 +1369,7 @@ function bgqlRenderSuVuDetail(d){
       <div class="bgql-svd-section-l">Mô tả</div>
       <div class="bgql-svd-mota">${escHtml(sv.mo_ta)}</div>
     </div>` : ''}
-    ${sv.so_lieu && Object.keys(sv.so_lieu).length > 0 ? `<div class="bgql-svd-section">
-      <div class="bgql-svd-section-l">Số liệu</div>
-      <div class="bgql-svd-solieu">${Object.entries(sv.so_lieu).filter(([k,v])=>v!==null).map(([k,v])=>`<span><b>${escHtml(k)}:</b> ${escHtml(String(v))}</span>`).join(' · ')}</div>
-    </div>` : ''}
+    
 
     <!-- ẢNH SỰ VỤ -->
     ${anhSv.length > 0 ? `<div class="bgql-svd-section">
@@ -1365,7 +1383,7 @@ function bgqlRenderSuVuDetail(d){
     ${(sv.phan_hoi_xu_ly || anhPh.length > 0) ? `<div class="bgql-svd-section bgql-svd-reply">
       <div class="bgql-svd-section-l">Phản hồi từ QL</div>
       ${sv.phan_hoi_xu_ly ? `<div class="bgql-svd-reply-text">${escHtml(sv.phan_hoi_xu_ly)}</div>` : ''}
-      ${sv.deadline_xu_ly ? `<div class="bgql-svd-reply-dl">⏰ Deadline: <b>${fmtT(sv.deadline_xu_ly)}</b></div>` : ''}
+      ${sv.deadline_xu_ly ? `<div class="bgql-svd-reply-dl">Deadline: <b>${fmtT(sv.deadline_xu_ly)}</b></div>` : ''}
       ${sv.nguoi_phu_trach_ten ? `<div class="bgql-svd-reply-by">— ${escHtml(sv.nguoi_phu_trach_ten)}${sv.thoi_gian_phan_hoi ? ` · ${fmtT(sv.thoi_gian_phan_hoi)}` : ''}</div>` : ''}
       ${anhPh.length > 0 ? `<div class="bgql-svd-gallery" style="margin-top:8px">
         ${anhPh.map(url => `<div class="bgql-svd-gal-cell" onclick="bgViewImage('${escHtml(url)}')"><img src="${escHtml(url)}" loading="lazy"></div>`).join('')}
@@ -1399,3 +1417,22 @@ function bgqlRenderSuVuDetail(d){
     </div>` : ''}
   `;
 }
+
+// [v13.33] Xóa sự vụ — chỉ ADMIN
+window.bgqlDeleteSuVu = async function(sv_id){
+  if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
+    showToast('Chỉ ADMIN được xóa sự vụ', 'warn');
+    return;
+  }
+  if (!confirm('Xóa sự vụ này? Hành động KHÔNG thể hoàn tác.')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_su_vu_delete', {
+      p_id: sv_id, p_ma_nv: SESSION.ma
+    });
+    if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
+    showToast('Đã xóa sự vụ', 'ok');
+    bgqlCloseSuVuDetail();
+    bgqlSuVuCache = null;
+    bgqlLoadSuVu();
+  } catch(e){ showToast('Lỗi: ' + e.message, 'warn'); }
+};

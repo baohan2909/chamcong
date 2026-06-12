@@ -1764,11 +1764,6 @@
   flex-shrink: 0;
   font-family: inherit;
 }
-.bgql-ch-badge-ok { background: #ECFDF5; color: #047857; }
-.bgql-ch-badge-warn { background: #FEF3C7; color: #92400E; }
-.bgql-ch-badge-sv { background: #FED7AA; color: #9A3412; }
-.bgql-ch-badge-khan { background: #FEE2E2; color: #991B1B; }
-
 .bgql-ch-chev {
   color: #94A3B8;
   transition: transform .15s;
@@ -1794,14 +1789,6 @@
   margin-bottom: 5px;
   flex-wrap: wrap;
 }
-.bgql-sv-mini-md {
-  font-size: 10px; font-weight: 800;
-  padding: 2px 7px; border-radius: 99px;
-  letter-spacing: .03em;
-}
-.bgql-sv-mini-md.khan { background: #FEE2E2; color: #991B1B; }
-.bgql-sv-mini-md.qt { background: #FEF3C7; color: #92400E; }
-.bgql-sv-mini-md.ct { background: #E0F2FE; color: #075985; }
 .bgql-sv-mini-st {
   font-size: 10px; font-weight: 700; color: #475569;
   background: #fff;
@@ -1835,60 +1822,71 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
- *  [v13.31] STATUS PALETTE — Trạng thái sự vụ
- *  - Slate (mới tạo), Blue (tiếp nhận), Amber (đang xử lý)
- *  - Emerald (hoàn tất), Red (hủy), Teal (có phản hồi)
- *  - KHÔNG dùng purple/violet, đồng bộ hệ navy/emerald
+ *  [v13.33] STATUS PALETTE — Monochrome navy/slate/amber chuyên nghiệp
+ *  Bỏ tươi/chói, ưu tiên slate-navy + amber trung tính cho hoàn tất
+ *  Phản hồi/Cập nhật dùng xanh navy đậm (NOT tím)
  * ═══════════════════════════════════════════════════════════════════════ */
 .bgql-st-MOI_TAO,
-.bgql-st--moi_tao,
-.bgql-status[data-st="MOI_TAO"] {
+.bgql-status[data-st="MOI_TAO"],
+.bgql-sv-mini-st[data-st="MOI_TAO"] {
   background: #F1F5F9 !important;
   color: #475569 !important;
-  border: 1px solid #CBD5E1;
+  border: 1px solid #E2E8F0 !important;
 }
 .bgql-st-DA_TIEP_NHAN,
-.bgql-st--da_tiep_nhan,
-.bgql-status[data-st="DA_TIEP_NHAN"] {
-  background: #DBEAFE !important;
-  color: #1D4ED8 !important;
-  border: 1px solid #93C5FD;
+.bgql-status[data-st="DA_TIEP_NHAN"],
+.bgql-sv-mini-st[data-st="DA_TIEP_NHAN"] {
+  background: #E0F2FE !important;
+  color: #075985 !important;
+  border: 1px solid #BAE6FD !important;
 }
+/* Cập nhật / Đang xử lý — xanh navy đậm chuyên nghiệp (NOT amber/cam) */
 .bgql-st-DANG_XU_LY,
-.bgql-st--dang_xu_ly,
-.bgql-status[data-st="DANG_XU_LY"] {
-  background: #FEF3C7 !important;
-  color: #B45309 !important;
-  border: 1px solid #FCD34D;
+.bgql-status[data-st="DANG_XU_LY"],
+.bgql-sv-mini-st[data-st="DANG_XU_LY"] {
+  background: #DBEAFE !important;
+  color: #1E3A8A !important;
+  border: 1px solid #BFDBFE !important;
 }
+/* Hoàn tất / Đóng — amber trung tính dễ nhìn (KHÔNG xanh tươi) */
 .bgql-st-HOAN_TAT,
-.bgql-st--hoan_tat,
-.bgql-status[data-st="HOAN_TAT"] {
-  background: #D1FAE5 !important;
-  color: #047857 !important;
-  border: 1px solid #6EE7B7;
+.bgql-status[data-st="HOAN_TAT"],
+.bgql-sv-mini-st[data-st="HOAN_TAT"] {
+  background: #FEF3C7 !important;
+  color: #92400E !important;
+  border: 1px solid #FDE68A !important;
 }
 .bgql-st-HUY,
-.bgql-st--huy,
-.bgql-status[data-st="HUY"] {
-  background: #FEE2E2 !important;
-  color: #B91C1C !important;
-  border: 1px solid #FCA5A5;
-}
-/* Có phản hồi từ QL — teal (KHÔNG dùng purple) */
-.bgql-st-phan-hoi,
-.bgql-has-reply {
-  background: #CCFBF1 !important;
-  color: #0F766E !important;
-  border: 1px solid #5EEAD4;
+.bgql-status[data-st="HUY"],
+.bgql-sv-mini-st[data-st="HUY"] {
+  background: #F1F5F9 !important;
+  color: #64748B !important;
+  border: 1px solid #E2E8F0 !important;
+  text-decoration: line-through;
 }
 
-/* Áp dụng cho bgql-sv-mini-st (Stats drill-down) */
-.bgql-sv-mini-st[data-st="MOI_TAO"] { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
-.bgql-sv-mini-st[data-st="DA_TIEP_NHAN"] { background: #DBEAFE; color: #1D4ED8; border-color: #93C5FD; }
-.bgql-sv-mini-st[data-st="DANG_XU_LY"] { background: #FEF3C7; color: #B45309; border-color: #FCD34D; }
-.bgql-sv-mini-st[data-st="HOAN_TAT"] { background: #D1FAE5; color: #047857; border-color: #6EE7B7; }
-.bgql-sv-mini-st[data-st="HUY"] { background: #FEE2E2; color: #B91C1C; border-color: #FCA5A5; }
+/* Phản hồi (badge phụ) — slate-navy nhẹ hơn DANG_XU_LY */
+.bgql-st-phan-hoi,
+.bgql-has-reply {
+  background: #E0F2FE !important;
+  color: #0C4A6E !important;
+  border: 1px solid #BAE6FD !important;
+}
+
+/* Mức độ — bỏ chói, bg pastel + chữ đậm — KHÔNG dùng emoji */
+.bgql-sv-mini-md {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bgql-sv-mini-md.khan { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.bgql-sv-mini-md.qt   { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+.bgql-sv-mini-md.ct   { background: #E0F2FE; color: #075985; border: 1px solid #BAE6FD; }
+
 
 /* ═══════════════════════════════════════════════════════════════════════
  *  [v13.32] MODAL CHI TIẾT SỰ VỤ — bottom sheet iOS style
@@ -2034,10 +2032,6 @@
   background: #E2E8F0;
 }
 .bgql-svd-ev-created .bgql-svd-ev-dot { background: #94A3B8; box-shadow: 0 0 0 1px #CBD5E1; }
-.bgql-svd-ev-received .bgql-svd-ev-dot { background: #1D4ED8; box-shadow: 0 0 0 1px #93C5FD; }
-.bgql-svd-ev-processing .bgql-svd-ev-dot { background: #B45309; box-shadow: 0 0 0 1px #FCD34D; }
-.bgql-svd-ev-reply .bgql-svd-ev-dot { background: #0F766E; box-shadow: 0 0 0 1px #5EEAD4; }
-.bgql-svd-ev-closed .bgql-svd-ev-dot { background: #047857; box-shadow: 0 0 0 1px #6EE7B7; }
 .bgql-svd-ev-body { padding-top: 1px; }
 .bgql-svd-ev-label {
   font-size: 13px; font-weight: 700;
@@ -2069,48 +2063,7 @@
 .bgql-svd-gal-cell:active { transform: scale(.97); }
 
 /* PHẢN HỒI QL */
-.bgql-svd-reply {
-  background: #CCFBF1;
-  border-radius: 11px;
-  padding: 12px 14px;
-  border-left: 4px solid #0F766E;
-}
-.bgql-svd-reply .bgql-svd-section-l { color: #0F766E; }
-.bgql-svd-reply-text {
-  font-size: 13.5px; color: #134E4A; line-height: 1.55;
-  margin-bottom: 6px;
-}
-.bgql-svd-reply-dl {
-  font-size: 12px; font-weight: 700;
-  color: #B45309;
-  background: #FEF3C7;
-  padding: 5px 10px;
-  border-radius: 7px;
-  display: inline-block;
-  margin-bottom: 6px;
-}
-.bgql-svd-reply-by {
-  font-size: 11.5px; color: #0F766E;
-  font-style: italic;
-}
-
 /* ĐÓNG */
-.bgql-svd-closed {
-  background: #D1FAE5;
-  border-radius: 11px;
-  padding: 12px 14px;
-  border-left: 4px solid #047857;
-}
-.bgql-svd-closed .bgql-svd-section-l { color: #047857; }
-.bgql-svd-closed-by {
-  font-size: 13px; font-weight: 700;
-  color: #064E3B;
-}
-.bgql-svd-closed-note {
-  font-size: 12.5px; color: #065F46;
-  margin-top: 5px;
-}
-
 /* BIÊN BẢN GỐC card clickable */
 .bgql-svd-bg-card {
   display: flex; align-items: center; gap: 12px;
@@ -2158,3 +2111,80 @@
   color: #94A3B8;
   flex-shrink: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.33] FIX modal sự vụ — tràn deadline + nút xóa ADMIN
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Header row chứa tags + nút xóa */
+.bgql-svd-header-row {
+  display: flex; justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.bgql-svd-header-row .bgql-svd-tags {
+  margin-bottom: 0;
+  flex: 1; min-width: 0;
+}
+
+/* Nút xóa ADMIN */
+.bgql-svd-del {
+  width: 32px; height: 32px;
+  border: 1px solid #FECACA;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.bgql-svd-del:active {
+  background: #FEE2E2;
+  transform: scale(.95);
+}
+
+/* FIX deadline tràn viền — block + word-break */
+.bgql-svd-reply-dl {
+  display: block;
+  font-size: 12px; font-weight: 700;
+  color: #92400E;
+  background: #FEF3C7;
+  padding: 6px 10px;
+  border-radius: 7px;
+  margin-bottom: 6px;
+  border: 1px solid #FDE68A;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Phản hồi — đổi sang sky đậm KHÔNG dùng teal (anh nói xanh đậm/đen nhẹ) */
+.bgql-svd-reply {
+  background: #F0F9FF;
+  border-left: 4px solid #075985;
+}
+.bgql-svd-reply .bgql-svd-section-l { color: #075985; }
+.bgql-svd-reply-text { color: #0C4A6E; }
+.bgql-svd-reply-by { color: #075985; }
+
+/* Đóng — amber trung tính */
+.bgql-svd-closed {
+  background: #FFFBEB;
+  border-left: 4px solid #92400E;
+}
+.bgql-svd-closed .bgql-svd-section-l { color: #92400E; }
+.bgql-svd-closed-by { color: #78350F; }
+.bgql-svd-closed-note { color: #92400E; }
+
+/* CH row sub badges (Stats list) — đổi tone */
+.bgql-ch-badge-khan { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.bgql-ch-badge-sv { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+.bgql-ch-badge-warn { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+.bgql-ch-badge-ok { background: #ECFDF5; color: #047857; border: 1px solid #D1FAE5; }
+
+/* Timeline event dots — đồng bộ với palette mới */
+.bgql-svd-ev-received .bgql-svd-ev-dot { background: #075985; box-shadow: 0 0 0 1px #BAE6FD; }
+.bgql-svd-ev-processing .bgql-svd-ev-dot { background: #1E3A8A; box-shadow: 0 0 0 1px #BFDBFE; }
+.bgql-svd-ev-reply .bgql-svd-ev-dot { background: #075985; box-shadow: 0 0 0 1px #BAE6FD; }
+.bgql-svd-ev-closed .bgql-svd-ev-dot { background: #92400E; box-shadow: 0 0 0 1px #FDE68A; }
