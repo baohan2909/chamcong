@@ -25,6 +25,16 @@ let bgPhotos = [];          // [{ blob, dataUrl }]
 //  ENTRY POINT
 // ═════════════════════════════════════════════════════════════════════════
 async function bgInitPage(){
+  // [v13.27] Skip rebuild nếu đã có state + CH không đổi
+  // → Khi user qua Chấm công rồi quay lại, KHÔNG mất dữ liệu đang nhập
+  if (bgCurrentCH && bgGroups.length > 0 && document.getElementById('bg-ch-info')) {
+    // Refresh hiển thị CH (đề phòng đổi tài khoản, nhưng state form vẫn giữ)
+    const chNameEl = document.getElementById('bg-ch-name');
+    const chSubEl = document.getElementById('bg-ch-sub');
+    if (chNameEl) chNameEl.textContent = bgCurrentCH.ten;
+    if (chSubEl) chSubEl.textContent = bgCurrentCH.ma + (bgCurrentCH.khuVuc ? ' · ' + bgCurrentCH.khuVuc : '');
+    return;
+  }
   document.getElementById('bg-ch-name').textContent = 'Đang xác định cửa hàng...';
   document.getElementById('bg-ch-sub').textContent = '';
   await bgXacDinhCH();

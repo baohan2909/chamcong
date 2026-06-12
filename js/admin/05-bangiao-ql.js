@@ -25,6 +25,12 @@ let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
 //  ENTRY
 // ═════════════════════════════════════════════════════════════════════════
 function bgqlInitPage(){
+  // [v13.27] Giữ tab + cache khi user switch tab về rồi quay lại
+  if (bgqlSuVuCache !== null && document.getElementById('bgql-sub-suvu')) {
+    // Chỉ refresh badge tab counts (không clear cache)
+    bgqlSwitchSub(bgqlSub || 'suvu');
+    return;
+  }
   bgqlSub = 'suvu';
   bgqlSuVuCache = null;
   bgqlTimelineCache = null;
@@ -34,7 +40,7 @@ window.bgqlInitPage = bgqlInitPage;
 
 function bgqlSwitchSub(sub){
   bgqlSub = sub;
-  ['suvu','timeline','stats'].forEach(s => {
+  ['suvu','timeline','stats','print'].forEach(s => {
     const tab = document.getElementById('bgql-subtab-'+s);
     const body = document.getElementById('bgql-sub-'+s);
     if (tab) tab.classList.toggle('active', s===sub);
@@ -43,6 +49,7 @@ function bgqlSwitchSub(sub){
   if (sub==='suvu') bgqlLoadSuVu();
   if (sub==='timeline') bgqlLoadTimeline();
   if (sub==='stats') bgqlLoadStats();
+  if (sub==='print') bgqlLoadPrint();
 }
 window.bgqlSwitchSub = bgqlSwitchSub;
 
@@ -520,3 +527,260 @@ function bgqlRenderStatsCards(stats, from, to){
 
 // Format VND (reuse từ NV view)
 function bgFmtVN(n){ return (n||0).toLocaleString('vi-VN'); }
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.27] TAB IN ẤN — Gallery + Print biên bản giấy
+//  Mỗi cửa hàng = 1 sheet 2 mặt (4 ảnh layout cố định)
+//  Hoặc tùy chọn 1/2/4 ảnh per trang
+// ═════════════════════════════════════════════════════════════════════════
+let bgqlPrintCache = null;        // Map<ma_ch, {ten_ch, bg_list: [{id, ngay, time, by, anh_urls[]}]}>
+let bgqlPrintRange = '7d';        // 'today' | '7d' | '30d' | 'custom'
+let bgqlPrintCustomFrom = null;
+let bgqlPrintCustomTo = null;
+let bgqlPrintSelectedCH = new Set();  // CH đã tick chọn
+let bgqlPrintLayout = '4';        // '1' | '2' | '4' (ảnh/trang)
+
+async function bgqlLoadPrint(){
+  const cont = document.getElementById('bgql-print-content');
+  cont.innerHTML = bgqlRenderPrintHeader() + '<div class="ns-empty">⏳ Đang tải biên bản...</div>';
+  
+  try {
+    // Tính range ngày
+    const { from, to } = bgqlPrintGetRange();
+    
+    // Fetch tất cả biên bản trong range (cross-CH, dùng RPC timeline_ql)
+    const { data, error } = await supa.rpc('fn_ban_giao_timeline_ql', {
+      p_tu_ngay: from, p_den_ngay: to,
+      p_ma_ch: null, p_khu_vuc: null, p_limit: 1000
+    });
+    if (error) throw error;
+    
+    // Group theo CH
+    const byCH = {};
+    (data || []).forEach(bg => {
+      if (!byCH[bg.ma_ch]) byCH[bg.ma_ch] = { 
+        ma_ch: bg.ma_ch, ten_ch: bg.ten_ch_snapshot, khu_vuc: bg.khu_vuc,
+        bg_list: [], total_anh: 0
+      };
+      const urls = bg.anh_urls || [];
+      byCH[bg.ma_ch].bg_list.push({
+        id: bg.id,
+        ngay: bg.ngay_ban_giao,
+        time: bg.gio_ban_giao,
+        by: bg.nguoi_ban_giao_ten,
+        anh_urls: urls,
+        so_su_vu: bg.so_su_vu||0,
+        so_khan: bg.so_su_vu_khan||0
+      });
+      byCH[bg.ma_ch].total_anh += urls.length;
+    });
+    
+    bgqlPrintCache = byCH;
+    bgqlRenderPrintList();
+  } catch(e){
+    cont.innerHTML = bgqlRenderPrintHeader() + 
+      `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function bgqlPrintGetRange(){
+  const today = new Date();
+  const to = today.toISOString().slice(0,10);
+  let from;
+  if (bgqlPrintRange === 'today') from = to;
+  else if (bgqlPrintRange === '7d') { const d = new Date(today); d.setDate(d.getDate()-7); from = d.toISOString().slice(0,10); }
+  else if (bgqlPrintRange === '30d') { const d = new Date(today); d.setDate(d.getDate()-30); from = d.toISOString().slice(0,10); }
+  else { return { from: bgqlPrintCustomFrom || to, to: bgqlPrintCustomTo || to }; }
+  return { from, to };
+}
+
+function bgqlRenderPrintHeader(){
+  return `
+    <div class="bgql-print-bar">
+      <div class="bgql-print-bar-left">
+        <select class="bg-tl-dropdown" onchange="bgqlPrintSetRange(this.value)">
+          <option value="today"${bgqlPrintRange==='today'?' selected':''}>Hôm nay</option>
+          <option value="7d"${bgqlPrintRange==='7d'?' selected':''}>7 ngày qua</option>
+          <option value="30d"${bgqlPrintRange==='30d'?' selected':''}>30 ngày qua</option>
+        </select>
+        <select class="bg-tl-dropdown" onchange="bgqlPrintSetLayout(this.value)">
+          <option value="1"${bgqlPrintLayout==='1'?' selected':''}>1 ảnh / trang</option>
+          <option value="2"${bgqlPrintLayout==='2'?' selected':''}>2 ảnh / trang</option>
+          <option value="4"${bgqlPrintLayout==='4'?' selected':''}>4 ảnh / trang (mặc định)</option>
+        </select>
+      </div>
+      <div class="bgql-print-bar-right">
+        <button class="bgql-act bgql-act-ghost" onclick="bgqlPrintToggleAll()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Chọn tất cả
+        </button>
+        <button class="bgql-act bgql-act-primary" id="bgql-print-btn" onclick="bgqlDoPrint()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          In <span id="bgql-print-count" style="font-weight:800">0</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function bgqlRenderPrintList(){
+  const cont = document.getElementById('bgql-print-content');
+  const cache = bgqlPrintCache || {};
+  const arr = Object.values(cache);
+  
+  if (arr.length === 0){
+    cont.innerHTML = bgqlRenderPrintHeader() + 
+      '<div class="ns-empty">Không có biên bản trong khoảng thời gian này.</div>';
+    return;
+  }
+  
+  // Sort by ten_ch
+  arr.sort((a,b) => (a.ten_ch||'').localeCompare(b.ten_ch||'', 'vi'));
+  
+  cont.innerHTML = bgqlRenderPrintHeader() + `
+    <div class="bgql-print-list">
+      ${arr.map(ch => {
+        const checked = bgqlPrintSelectedCH.has(ch.ma_ch);
+        const previewImgs = [];
+        ch.bg_list.forEach(bg => bg.anh_urls.forEach(u => previewImgs.push(u)));
+        const showImgs = previewImgs.slice(0, 4);
+        return `
+          <div class="bgql-print-card${checked?' selected':''}" onclick="bgqlPrintToggleCH('${ch.ma_ch}')">
+            <div class="bgql-print-card-check">
+              <div class="bgql-print-checkbox${checked?' checked':''}">
+                ${checked ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+              </div>
+            </div>
+            <div class="bgql-print-card-info">
+              <div class="bgql-print-card-name">${escHtml(ch.ten_ch||ch.ma_ch)}</div>
+              <div class="bgql-print-card-meta">${escHtml(ch.ma_ch)} · ${ch.bg_list.length} biên bản · ${ch.total_anh} ảnh</div>
+            </div>
+            <div class="bgql-print-card-thumbs">
+              ${showImgs.map(u => `<div class="bgql-print-thumb"><img src="${u}" loading="lazy"></div>`).join('')}
+              ${previewImgs.length > 4 ? `<div class="bgql-print-thumb bgql-print-thumb-more">+${previewImgs.length-4}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  bgqlPrintUpdateBtnState();
+}
+
+window.bgqlPrintSetRange = function(r){
+  bgqlPrintRange = r;
+  bgqlPrintCache = null;
+  bgqlPrintSelectedCH.clear();
+  bgqlLoadPrint();
+};
+
+window.bgqlPrintSetLayout = function(l){
+  bgqlPrintLayout = l;
+};
+
+window.bgqlPrintToggleCH = function(ma_ch){
+  if (bgqlPrintSelectedCH.has(ma_ch)) bgqlPrintSelectedCH.delete(ma_ch);
+  else bgqlPrintSelectedCH.add(ma_ch);
+  bgqlRenderPrintList();
+};
+
+window.bgqlPrintToggleAll = function(){
+  const cache = bgqlPrintCache || {};
+  const allMaCh = Object.keys(cache);
+  if (bgqlPrintSelectedCH.size === allMaCh.length){
+    bgqlPrintSelectedCH.clear();
+  } else {
+    allMaCh.forEach(m => bgqlPrintSelectedCH.add(m));
+  }
+  bgqlRenderPrintList();
+};
+
+function bgqlPrintUpdateBtnState(){
+  const btn = document.getElementById('bgql-print-btn');
+  const cnt = document.getElementById('bgql-print-count');
+  if (!btn || !cnt) return;
+  // Đếm tổng ảnh
+  let totalAnh = 0;
+  const cache = bgqlPrintCache || {};
+  bgqlPrintSelectedCH.forEach(m => {
+    if (cache[m]) totalAnh += cache[m].total_anh;
+  });
+  cnt.textContent = totalAnh;
+  btn.disabled = totalAnh === 0;
+  btn.style.opacity = totalAnh === 0 ? '.5' : '1';
+}
+
+// ─── DO PRINT — render print HTML + window.print() ────────────────────────
+window.bgqlDoPrint = function(){
+  const cache = bgqlPrintCache || {};
+  const layout = parseInt(bgqlPrintLayout, 10) || 4;
+  
+  // Build print HTML
+  const chList = Array.from(bgqlPrintSelectedCH)
+    .map(m => cache[m])
+    .filter(Boolean)
+    .sort((a,b) => (a.ten_ch||'').localeCompare(b.ten_ch||'', 'vi'));
+  
+  if (chList.length === 0){ showToast('Vui lòng chọn ít nhất 1 cửa hàng', 'warn'); return; }
+  
+  const printRoot = document.getElementById('bgql-print-root') || (() => {
+    const d = document.createElement('div');
+    d.id = 'bgql-print-root';
+    document.body.appendChild(d);
+    return d;
+  })();
+  
+  // Render: mỗi CH có nhiều page. Mỗi page chứa `layout` ảnh.
+  const pages = [];
+  chList.forEach(ch => {
+    const allImgs = [];
+    ch.bg_list.forEach(bg => {
+      bg.anh_urls.forEach(url => allImgs.push({ url, bg }));
+    });
+    if (allImgs.length === 0) return;
+    
+    // Chia thành pages, mỗi page `layout` ảnh
+    for (let i = 0; i < allImgs.length; i += layout) {
+      const pageImgs = allImgs.slice(i, i + layout);
+      pages.push({ ch, imgs: pageImgs, pageNum: Math.floor(i/layout) + 1, totalPages: Math.ceil(allImgs.length/layout) });
+    }
+  });
+  
+  printRoot.innerHTML = pages.map((p, idx) => `
+    <div class="print-page print-layout-${layout}">
+      <div class="print-header">
+        <div class="print-header-l">
+          <div class="print-ch-name">${escHtml(p.ch.ten_ch||p.ch.ma_ch)}</div>
+          <div class="print-ch-sub">${escHtml(p.ch.ma_ch)} · BIÊN BẢN BÀN GIAO CA</div>
+        </div>
+        <div class="print-header-r">
+          <div>Trang ${p.pageNum}/${p.totalPages}</div>
+          <div>${new Date().toLocaleDateString('vi-VN')}</div>
+        </div>
+      </div>
+      <div class="print-grid">
+        ${p.imgs.map(({url, bg}) => `
+          <div class="print-cell">
+            <div class="print-cell-img"><img src="${url}" crossorigin="anonymous"></div>
+            <div class="print-cell-meta">
+              <b>${escHtml(bg.by||'')}</b> · ${(bg.time||'').slice(0,5)} · ${bg.ngay}
+              ${bg.so_su_vu>0?` · ${bg.so_su_vu} sự vụ${bg.so_khan>0?` (${bg.so_khan} khẩn)`:''}`:''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  
+  // Activate print mode + trigger
+  document.body.classList.add('printing');
+  // Wait for images to load
+  setTimeout(() => {
+    window.print();
+    // Cleanup sau khi print dialog đóng
+    setTimeout(() => {
+      document.body.classList.remove('printing');
+    }, 500);
+  }, 800);
+};

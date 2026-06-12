@@ -353,6 +353,15 @@ let chkCurrentCH = null;    // {ma, ten}
 let chkSub = 'new';
 
 async function chkInitPage(){
+  // [v13.27] Skip rebuild nếu đã có state + CH không đổi
+  // → Khi user qua Chấm công rồi quay lại, KHÔNG mất dữ liệu đang nhập
+  if (chkCurrentCH && chkGroups.length > 0 && document.getElementById('chk-ch-info')) {
+    const chNameEl = document.getElementById('chk-ch-name');
+    const chSubEl = document.getElementById('chk-ch-sub');
+    if (chNameEl) chNameEl.textContent = chkCurrentCH.ten;
+    if (chSubEl) chSubEl.textContent = chkCurrentCH.ma + (chkCurrentCH.khuVuc ? ' · ' + chkCurrentCH.khuVuc : '');
+    return;
+  }
   // Xác định CH hiện tại
   document.getElementById('chk-ch-name').textContent = 'Đang xác định cửa hàng...';
   document.getElementById('chk-ch-sub').textContent = '';
