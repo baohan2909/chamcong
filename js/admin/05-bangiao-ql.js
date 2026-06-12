@@ -1243,6 +1243,9 @@ function bgqlPrintUpdateBtnState(){
 
 // ─── DO PRINT — render print HTML letterhead + đợi ảnh load + window.print() ──
 window.bgqlDoPrint = async function(){
+  // [v13.37] HOÀN TOÀN ĐỔI PHƯƠNG ÁN — IFRAME ẨN CÁCH LY HOÀN TOÀN
+  // Lý do: print body chính luôn lộ các page khác. Iframe = sandbox độc lập,
+  // browser KHÔNG nhìn thấy app body → không thể tạo trang trắng.
   const cache = bgqlPrintCache || {};
   const layout = parseInt(bgqlPrintLayout, 10) || 1;
   
@@ -1252,13 +1255,6 @@ window.bgqlDoPrint = async function(){
     .sort((a,b) => (a.ten_ch||'').localeCompare(b.ten_ch||'', 'vi'));
   
   if (chList.length === 0){ showToast('Vui lòng chọn ít nhất 1 cửa hàng', 'warn'); return; }
-  
-  const printRoot = document.getElementById('bgql-print-root') || (() => {
-    const d = document.createElement('div');
-    d.id = 'bgql-print-root';
-    document.body.appendChild(d);
-    return d;
-  })();
   
   // Build pages
   const pages = [];
@@ -1278,61 +1274,120 @@ window.bgqlDoPrint = async function(){
     }
   });
   
-  const printDateStr = new Date().toLocaleDateString('vi-VN', { 
-    day:'2-digit', month:'2-digit', year:'numeric' 
-  });
+  if (pages.length === 0) { showToast('Không có ảnh để in', 'warn'); return; }
   
-  printRoot.innerHTML = pages.map(p => `
-    <div class="print-page print-layout-${layout}">
-      <div class="print-header">
-        <div class="print-header-l">
-          <div class="print-ch-name">${escHtml(p.ch.ten_ch||p.ch.ma_ch)}</div>
-          <div class="print-ch-sub">${escHtml(p.ch.ma_ch)} · Biên bản bàn giao ca</div>
-        </div>
-        <div class="print-header-r">
-          <div>Ngày in: <b>${printDateStr}</b></div>
-          <div>Trang <b>${p.pageNum}/${p.totalPages}</b></div>
-        </div>
-      </div>
-      <div class="print-grid">
-        ${p.imgs.map(({url, bg}) => `
-          <div class="print-cell">
-            <div class="print-cell-img"><img src="${escHtml(url)}" crossorigin="anonymous" loading="eager"></div>
-            <div class="print-cell-meta">
-              <b>${escHtml(bg.by||'-')}</b> · Lúc ${(bg.time||'').slice(0,5)} ngày ${bg.ngay}
-              ${bg.so_su_vu>0?` · <b style="color:#9A3412">${bg.so_su_vu} sự vụ${bg.so_khan>0?` (${bg.so_khan} khẩn)`:''}</b>`:''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-      <div class="print-footer">
-        <span>Nón Sơn · Hệ thống chấm công & bàn giao</span>
-        <span>Cửa hàng: <b>${escHtml(p.ch.ma_ch)}</b></span>
-      </div>
+  const printDateStr = new Date().toLocaleDateString('vi-VN', {day:'2-digit', month:'2-digit', year:'numeric'});
+  const esc = s => String(s||'').replace(/[<>&"\']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"\'":'&#39;'})[c]);
+  
+  // CSS inline đầy đủ cho iframe — không phụ thuộc CSS app
+  const css = `
+@page { size: A4; margin: 12mm 14mm; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html, body { margin: 0; padding: 0; background: #fff; color: #000; font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif; }
+.print-page { 
+  page-break-after: always; page-break-inside: avoid;
+  break-after: page; break-inside: avoid;
+  width: 100%; height: 100vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.print-page:last-child { page-break-after: auto !important; break-after: auto !important; }
+.print-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 6mm; margin-bottom: 6mm; border-bottom: 1.5pt solid #0F2E45; flex-shrink: 0; }
+.print-header-l { flex: 1; }
+.print-ch-name { font-size: 16pt; font-weight: 800; color: #0F2E45; line-height: 1.15; margin-bottom: 2mm; }
+.print-ch-sub { font-size: 10pt; font-weight: 600; color: #475569; letter-spacing: .05em; text-transform: uppercase; }
+.print-header-r { text-align: right; font-size: 9.5pt; color: #475569; font-weight: 600; line-height: 1.5; }
+.print-header-r b { color: #0F2E45; font-weight: 800; }
+.print-grid { flex: 1 1 auto; display: grid; gap: 6mm; min-height: 0; overflow: hidden; }
+.print-layout-1 .print-grid { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.print-layout-2 .print-grid { grid-template-columns: 1fr; grid-template-rows: repeat(2, 1fr); }
+.print-layout-4 .print-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+.print-cell { display: flex; flex-direction: column; background: #fff; border: 0.5pt solid #94A3B8; border-radius: 2pt; overflow: hidden; min-height: 0; page-break-inside: avoid; break-inside: avoid; }
+.print-cell-img { flex: 1 1 auto; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 3mm; min-height: 0; }
+.print-cell-img img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }
+.print-cell-meta { padding: 2.5mm 4mm; font-size: 8.5pt; color: #1E293B; background: #F1F5F9; border-top: 0.5pt solid #CBD5E1; flex-shrink: 0; font-weight: 500; }
+.print-cell-meta b { color: #0F2E45; font-weight: 700; }
+.print-footer { margin-top: 5mm; padding-top: 3mm; border-top: 0.5pt solid #CBD5E1; display: flex; justify-content: space-between; font-size: 8.5pt; color: #64748B; flex-shrink: 0; }
+.print-footer b { color: #0F2E45; }
+`;
+  
+  const bodyHtml = pages.map(p => `
+<div class="print-page print-layout-${layout}">
+  <div class="print-header">
+    <div class="print-header-l">
+      <div class="print-ch-name">${esc(p.ch.ten_ch||p.ch.ma_ch)}</div>
+      <div class="print-ch-sub">${esc(p.ch.ma_ch)} · Biên bản bàn giao ca</div>
     </div>
-  `).join('');
+    <div class="print-header-r">
+      <div>Ngày in: <b>${printDateStr}</b></div>
+      <div>Trang <b>${p.pageNum}/${p.totalPages}</b></div>
+    </div>
+  </div>
+  <div class="print-grid">
+    ${p.imgs.map(({url, bg}) => `
+      <div class="print-cell">
+        <div class="print-cell-img"><img src="${esc(url)}" crossorigin="anonymous"></div>
+        <div class="print-cell-meta">
+          <b>${esc(bg.by||'-')}</b> · Lúc ${(bg.time||'').slice(0,5)} ngày ${bg.ngay}${bg.so_su_vu>0?` · <b style="color:#9A3412">${bg.so_su_vu} sự vụ</b>`:''}
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  <div class="print-footer">
+    <span>Nón Sơn · Hệ thống chấm công &amp; bàn giao</span>
+    <span>Cửa hàng: <b>${esc(p.ch.ma_ch)}</b></span>
+  </div>
+</div>
+`).join('');
   
-  // [v13.31] Wait for ALL images to load trước khi mở print dialog
+  const html = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>In biên bản bàn giao · Nón Sơn</title><style>${css}</style></head><body>${bodyHtml}</body></html>`;
+  
+  // Xóa iframe cũ nếu có
+  const old = document.getElementById('bgql-print-iframe');
+  if (old) old.remove();
+  
   showToast('⏳ Đang chuẩn bị bản in...', 'info');
-  const allImgEls = printRoot.querySelectorAll('img');
-  await Promise.all(Array.from(allImgEls).map(img => {
+  
+  // Tạo iframe ẩn — sandbox HOÀN TOÀN tách biệt với app
+  const iframe = document.createElement('iframe');
+  iframe.id = 'bgql-print-iframe';
+  iframe.setAttribute('aria-hidden', 'true');
+  iframe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;z-index:-1;';
+  document.body.appendChild(iframe);
+  
+  // Write HTML vào iframe
+  const idoc = iframe.contentDocument || iframe.contentWindow.document;
+  idoc.open();
+  idoc.write(html);
+  idoc.close();
+  
+  // Đợi ảnh load TRONG IFRAME
+  const imgs = idoc.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img => {
     if (img.complete && img.naturalHeight > 0) return Promise.resolve();
     return new Promise(resolve => {
-      img.addEventListener('load', resolve, { once: true });
-      img.addEventListener('error', resolve, { once: true });  // Resolve cả khi error để không stuck
-      setTimeout(resolve, 5000);  // Timeout safety 5s/ảnh
+      img.addEventListener('load', resolve, {once:true});
+      img.addEventListener('error', resolve, {once:true});
+      setTimeout(resolve, 5000);  // Safety 5s/ảnh
     });
   }));
   
-  document.body.classList.add('printing');
-  // Đợi 1 frame để CSS apply
+  // Đợi 1 frame để layout settle
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  window.print();
-  // Cleanup
-  setTimeout(() => {
-    document.body.classList.remove('printing');
-    printRoot.innerHTML = '';  // Clear để tránh phình memory
-  }, 1500);
+  
+  // Print iframe (KHÔNG print body chính)
+  try {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } catch(e) {
+    console.error('Print error:', e);
+    showToast('⚠ Lỗi mở dialog in: ' + e.message, 'warn');
+  }
+  
+  // Cleanup sau 3s (đủ cho user thấy dialog + cancel/in xong)
+  setTimeout(() => { 
+    try { iframe.remove(); } catch(e){}
+  }, 3000);
 };
 
 
@@ -1639,33 +1694,44 @@ window.bgqlDeleteSuVu = async function(sv_id){
 let bgqlMultiSelectMode = false;
 let bgqlSelectedIds = new Set();
 
+// [v13.37] FIX bugs: full re-render thay vì partial → DOM luôn sync với state
 window.bgqlToggleMultiSelect = function(){
   if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
     showToast('Chỉ ADMIN có quyền xóa hàng loạt', 'warn');
     return;
   }
   bgqlMultiSelectMode = !bgqlMultiSelectMode;
-  bgqlSelectedIds.clear();
+  bgqlSelectedIds = new Set();  // Reset hoàn toàn
   bgqlRenderSuVuList();
+  bgqlRenderSuVuFilters();  // Update button text "Chọn nhiều" ↔ "Đóng chọn"
   bgqlRenderMultiSelectBar();
 };
 
 window.bgqlToggleSelect = function(id){
   if (bgqlSelectedIds.has(id)) bgqlSelectedIds.delete(id);
   else bgqlSelectedIds.add(id);
-  // Re-render minimal: update checkbox + bar
-  const card = document.querySelector(`.bgql-card .bgql-card-cbx[onclick*="${id}"]`);
-  if (card) {
-    card.checked = bgqlSelectedIds.has(id);
-    card.closest('.bgql-card').classList.toggle('bgql-card-selected', bgqlSelectedIds.has(id));
-  }
+  // [v13.37] FULL re-render — partial DOM update không reliable
+  bgqlRenderSuVuList();
   bgqlRenderMultiSelectBar();
 };
 
 window.bgqlSelectAll = function(){
-  const all = (bgqlSuVuCache||[]).map(s => s.id);
-  if (bgqlSelectedIds.size === all.length) bgqlSelectedIds.clear();
-  else all.forEach(id => bgqlSelectedIds.add(id));
+  // [v13.37] Clean ID không còn trong cache (tránh stale state)
+  const cache = bgqlSuVuCache || [];
+  const validIds = cache.map(s => s.id);
+  const validIdSet = new Set(validIds);
+  // Filter selected — chỉ giữ ID hợp lệ
+  bgqlSelectedIds = new Set(Array.from(bgqlSelectedIds).filter(id => validIdSet.has(id)));
+  
+  if (validIds.length === 0) return;  // Không có gì để chọn
+  
+  if (bgqlSelectedIds.size === validIds.length) {
+    // Đang chọn tất cả → bỏ chọn hết
+    bgqlSelectedIds = new Set();
+  } else {
+    // Chưa chọn tất cả → chọn hết
+    bgqlSelectedIds = new Set(validIds);
+  }
   bgqlRenderSuVuList();
   bgqlRenderMultiSelectBar();
 };
@@ -1682,20 +1748,29 @@ function bgqlRenderMultiSelectBar(){
     bar.className = 'bgql-multiselect-bar';
     document.body.appendChild(bar);
   }
-  const total = (bgqlSuVuCache||[]).length;
+  // [v13.37] Tính total dựa trên cache HIỆN TẠI
+  const cache = bgqlSuVuCache || [];
+  const validIdSet = new Set(cache.map(s => s.id));
+  // Đảm bảo selectedIds chỉ chứa ID còn tồn tại
+  bgqlSelectedIds = new Set(Array.from(bgqlSelectedIds).filter(id => validIdSet.has(id)));
+  const total = cache.length;
+  const sel = bgqlSelectedIds.size;
+  const allSelected = sel === total && total > 0;
+  
   bar.innerHTML = `
-    <div class="bgql-ms-l">Đã chọn <b>${bgqlSelectedIds.size}</b> / ${total}</div>
+    <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
-      <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${bgqlSelectedIds.size===total?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
-      <button class="bgql-act bgql-act-secondary" onclick="bgqlDeleteBulkConfirm()" ${bgqlSelectedIds.size===0?'disabled':''}>Xóa (${bgqlSelectedIds.size})</button>
+      <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
+      <button class="bgql-act bgql-act-secondary" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>Xóa (${sel})</button>
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
   `;
 }
 
 window.bgqlDeleteBulkConfirm = async function(){
-  if (bgqlSelectedIds.size === 0) return;
+  if (bgqlSelectedIds.size === 0) { showToast('Chưa chọn sự vụ nào', 'warn'); return; }
   if (!confirm(`Xóa ${bgqlSelectedIds.size} sự vụ đã chọn? Hành động KHÔNG thể hoàn tác.`)) return;
+  
   try {
     const ids = Array.from(bgqlSelectedIds);
     const { data, error } = await supa.rpc('fn_su_vu_delete_bulk', {
@@ -1703,10 +1778,20 @@ window.bgqlDeleteBulkConfirm = async function(){
     });
     if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
     showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
-    bgqlSelectedIds.clear();
+    
+    // [v13.37] FULL RESET state — quan trọng để lần tiếp theo hoạt động đúng
+    bgqlSelectedIds = new Set();
     bgqlMultiSelectMode = false;
-    bgqlRenderMultiSelectBar();
     bgqlSuVuCache = null;
-    bgqlLoadSuVu();
-  } catch(e){ showToast('Lỗi: ' + e.message, 'warn'); }
+    
+    // Remove bar khỏi DOM
+    const bar = document.getElementById('bgql-multiselect-bar');
+    if (bar) bar.remove();
+    
+    // Reload + re-render filter (button text reset về "Chọn nhiều để xóa")
+    await bgqlLoadSuVu();
+    bgqlRenderSuVuFilters();
+  } catch(e){ 
+    showToast('Lỗi: ' + e.message, 'warn');
+  }
 };
