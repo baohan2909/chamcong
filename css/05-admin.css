@@ -5,7 +5,7 @@
 #page-admin.active { display:block; }
 .adm2-wrap { max-width:960px; margin:0 auto; padding:14px 14px 0; }
 
-/* Sticky segmented tabs — [v13.35] 4 thẻ chia đều 1 hàng, không vuốt ngang */
+/* Sticky segmented tabs — [v13.36] Bỏ icon, cho label wrap, height auto */
 .adm2-tabs {
   position:sticky; top:80px; z-index:5;
   display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:6px;
@@ -15,16 +15,20 @@
   box-shadow:0 2px 8px -2px rgba(0,0,0,0.08);
 }
 .adm2-tab {
-  display:flex; align-items:center; justify-content:center; gap:5px;
-  padding:8px 6px; border:none; background:transparent;
+  display:flex; align-items:center; justify-content:center;
+  padding:10px 6px; border:none; background:transparent;
   color:#6B7280; font-size:12px; font-weight:600;
   border-radius:8px; cursor:pointer;
   transition:all 0.15s;
-  min-width:0;
+  min-width:0; min-height: 40px;
+  text-align: center;
+  line-height: 1.25;
 }
-.adm2-tab svg { width:14px; height:14px; flex:0 0 14px; }
+/* [v13.36] Bỏ icon SVG hoàn toàn */
+.adm2-tab svg { display: none !important; }
 .adm2-tab span {
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  white-space:normal;
+  word-break: keep-all;
   min-width:0;
 }
 .adm2-tab:hover { color:#1F2937; background:rgba(0,0,0,0.04); }

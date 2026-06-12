@@ -782,6 +782,7 @@
 
 /* Sự vụ card */
 .bgql-card {
+  position: relative;
   background: #fff; border-radius: 14px;
   padding: 14px; margin-bottom: 10px;
   box-shadow: 0 2px 12px rgba(15,46,69,.07), 0 1px 3px rgba(15,46,69,.04);
@@ -876,11 +877,11 @@
   color: #fff;
   box-shadow: 0 3px 10px rgba(249,115,22,.28);
 }
-/* [v13.34] Đóng hoàn tất — xanh giống Tiếp nhận, gradient nhẹ */
+/* [v13.36] Đóng hoàn tất — emerald gradient (xanh mặc định + gradient nhẹ) */
 .bgql-act-success {
-  background: linear-gradient(135deg, #0E7490 0%, #0891B2 100%);
+  background: linear-gradient(135deg, #047857 0%, #10B981 100%);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(14,116,144,.28);
+  box-shadow: 0 3px 10px rgba(5,150,105,.28);
 }
 .bgql-act-ghost {
   background: #fff;
@@ -1443,17 +1444,27 @@
   @page { size: A4; margin: 12mm 14mm; }
   
   .print-page {
+    /* [v13.36] Fix in 2 ảnh ra 4 trang: 
+       - Bỏ min-height ép → browser tự fit
+       - break-inside: avoid để không bị split giữa trang
+       - page-break-after: always TRỪ trang cuối */
     page-break-after: always;
+    page-break-inside: avoid;
     break-after: page;
+    break-inside: avoid;
     width: 100%;
-    min-height: 250mm;
+    height: auto;
     box-sizing: border-box;
     background: white;
     display: flex; flex-direction: column;
     font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #000;
+    overflow: hidden;
   }
-  .print-page:last-child { page-break-after: auto; break-after: auto; }
+  .print-page:last-child { 
+    page-break-after: auto !important; 
+    break-after: auto !important; 
+  }
   
   /* Header letterhead — tên CH + mã + ngày */
   .print-header {
@@ -1512,7 +1523,13 @@
   }
   /* Layout 1: ảnh chiếm full + có khung nhẹ */
   .print-layout-1 .print-cell { border: 0.5pt solid #94A3B8; }
-  .print-layout-1 .print-cell-img { padding: 4mm; }
+  .print-layout-1 .print-cell-img { 
+    padding: 4mm; 
+    max-height: 230mm; /* [v13.36] Ép max-height tránh tràn trang → blank pages */
+  }
+  .print-layout-1 .print-cell-img img {
+    max-height: 220mm;
+  }
   
   .print-cell-meta {
     padding: 2.5mm 4mm;
@@ -2501,4 +2518,58 @@
   padding: 9px 12px;
   margin: 12px 0;
   line-height: 1.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.36] Multi-select delete (ADMIN)
+ * ═══════════════════════════════════════════════════════════════════════ */
+.bgql-msel-btn {
+  width: 100%;
+  background: #FEF2F2 !important;
+  color: #B91C1C !important;
+  border: 1px solid #FECACA !important;
+}
+.bgql-msel-btn:active { background: #FEE2E2 !important; }
+
+.bgql-card-cbx {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 22px; height: 22px;
+  cursor: pointer;
+  accent-color: #DC2626;
+  z-index: 2;
+}
+
+.bgql-card-selected {
+  background: #FEF2F2 !important;
+  border-color: #FCA5A5 !important;
+  box-shadow: 0 0 0 2px #FCA5A5;
+}
+
+.bgql-multiselect-bar {
+  position: fixed;
+  bottom: 92px; left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  width: calc(100% - 24px);
+  max-width: 480px;
+  background: #fff;
+  border: 1px solid #FCA5A5;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(220,38,38,.25);
+  padding: 10px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  z-index: 35;
+}
+.bgql-ms-l {
+  font-size: 13px; font-weight: 600;
+  color: #1E293B;
+}
+.bgql-ms-l b { color: #DC2626; font-weight: 800; font-size: 14px; }
+.bgql-ms-r {
+  display: flex; gap: 6px;
+}
+.bgql-ms-r .bgql-act {
+  padding: 7px 12px;
+  font-size: 12px;
 }

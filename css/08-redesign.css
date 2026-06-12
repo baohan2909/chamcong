@@ -1495,12 +1495,24 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .menu-section-label:first-child { padding-top: 6px; }
 
 /* ═══════════════════════════════════════════════════════════════════════
- *  [v13.34] FIX bottom nav blur cao quá + viền cứng PC
+ *  [v13.36] FIX bottom nav: ngang thanh + KHÔNG rung khi scroll
  * ═══════════════════════════════════════════════════════════════════════ */
 
-/* Mobile: giảm padding-top để vùng blur KHÔNG cao hơn thanh nav */
+/* Mobile: padding-top 0 — vùng blur NGANG với thanh nav, không cao hơn */
 .bottom-nav.cc-nav-modern {
-  padding-top: 4px !important;
+  padding-top: 0 !important;
+  /* Chống rung khi scroll iOS — hardware acceleration */
+  transition: none !important;
+  -webkit-transform: translate3d(-50%, 0, 0) !important;
+  transform: translate3d(-50%, 0, 0) !important;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* [v13.36] Mở rộng padding-bottom cho .page để pagination không bị che */
+@media (max-width: 767px) {
+  .page { padding-bottom: 110px !important; }
 }
 
 /* PC (≥768px): bỏ blur + gradient để không có viền cứng */

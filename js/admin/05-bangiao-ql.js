@@ -81,6 +81,12 @@ function bgqlRenderSuVuFilters(){
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
+  // [v13.36] Nút Chọn nhiều — chỉ ADMIN, chỉ tab "suvu"
+  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
+  const multiBtn = (isAdmin && bgqlInnerTab === 'suvu') ? 
+    `<button class="bgql-act bgql-act-ghost bgql-msel-btn" onclick="bgqlToggleMultiSelect()">
+      ${bgqlMultiSelectMode?'Đóng chọn':'Chọn nhiều để xóa'}
+    </button>` : '';
 
   if (bgqlInnerTab === 'suvu') {
     cont.innerHTML = `
@@ -97,6 +103,7 @@ function bgqlRenderSuVuFilters(){
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
         </select>
       </div>
+      ${multiBtn?`<div class="bgql-flt-row">${multiBtn}</div>`:''}
       ${(khuVucs.length>1 || chList.length>5) ? `
       <div class="bgql-flt-row">
         ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
@@ -269,7 +276,15 @@ function bgqlSuVuCardHtml(s){
     </div>`;
   }
 
-  return `<div class="bgql-card" style="border-left:4px solid ${accent}" onclick="if(!event.target.closest('.bgql-act,.bgql-card-actions,a,button,input,textarea,select')) bgqlOpenSuVuDetail('${s.id}')">
+  // [v13.36] Checkbox multi-select cho ADMIN
+  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
+  const checkbox = isAdmin && bgqlMultiSelectMode ? 
+    `<input type="checkbox" class="bgql-card-cbx" 
+      ${bgqlSelectedIds.has(s.id)?'checked':''}
+      onclick="event.stopPropagation(); bgqlToggleSelect('${s.id}')">` : '';
+
+  return `<div class="bgql-card ${bgqlSelectedIds.has(s.id)?'bgql-card-selected':''}" style="border-left:4px solid ${accent}" onclick="if(!event.target.closest('.bgql-act,.bgql-card-actions,.bgql-card-cbx,a,button,input,textarea,select')){ if(bgqlMultiSelectMode){bgqlToggleSelect('${s.id}')} else {bgqlOpenSuVuDetail('${s.id}')} }">
+    ${checkbox}
     <div class="bgql-card-head">
       <span class="bgql-md-tag bgql-md-${s.muc_do||'CAN_THIET'}">${mdLbl}</span>
       ${stLbl?`<span class="bgql-st-tag ${isOpen?'open':'closed'}">${stLbl}</span>`:''}
@@ -279,8 +294,8 @@ function bgqlSuVuCardHtml(s){
     <div class="bgql-card-title">${escHtml(s.tieu_de)}</div>
     <div class="bgql-card-meta">
       <b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}
-      ${s.nguoi_xu_ly_ten?' · Xử lý: '+escHtml(s.nguoi_xu_ly_ten):(s.nguoi_phu_trach_ten?' · Phụ trách: '+escHtml(s.nguoi_phu_trach_ten):'')}
     </div>
+    ${(s.nguoi_xu_ly_ten||s.nguoi_phu_trach_ten)?`<div class="bgql-card-meta">${s.nguoi_xu_ly_ten?'Xử lý: <b>'+escHtml(s.nguoi_xu_ly_ten)+'</b>':'Phụ trách: <b>'+escHtml(s.nguoi_phu_trach_ten)+'</b>'}</div>`:''}
     ${s.mo_ta?`<div class="bgql-card-body">${escHtml(s.mo_ta).slice(0,220)}${s.mo_ta.length>220?'...':''}</div>`:''}
     ${s.phan_hoi_xu_ly?`<div class="bgql-reply">
       <div class="bgql-reply-l">Phản hồi · ${escHtml(s.nguoi_phu_trach_ten||'QL')}</div>
@@ -1564,7 +1579,7 @@ function bgqlRenderSuVuDetail(d){
       <div class="bgql-svd-section-l">Phản hồi từ QL</div>
       ${sv.phan_hoi_xu_ly ? `<div class="bgql-svd-reply-text">${escHtml(sv.phan_hoi_xu_ly)}</div>` : ''}
       ${sv.deadline_xu_ly ? `<div class="bgql-svd-reply-dl">Deadline: <b>${fmtT(sv.deadline_xu_ly)}</b></div>` : ''}
-      ${sv.nguoi_phu_trach_ten ? `<div class="bgql-svd-reply-by">— ${escHtml(sv.nguoi_phu_trach_ten)}${sv.thoi_gian_phan_hoi ? ` · ${fmtT(sv.thoi_gian_phan_hoi)}` : ''}</div>` : ''}
+      ${sv.nguoi_phu_trach_ten ? `<div class="bgql-svd-reply-by">- ${escHtml(sv.nguoi_phu_trach_ten)}${sv.thoi_gian_phan_hoi ? ` · ${fmtT(sv.thoi_gian_phan_hoi)}` : ''}</div>` : ''}
       ${anhPh.length > 0 ? `<div class="bgql-svd-gallery" style="margin-top:8px">
         ${anhPh.map(url => `<div class="bgql-svd-gal-cell" onclick="bgViewImage('${escHtml(url)}')"><img src="${escHtml(url)}" loading="lazy"></div>`).join('')}
       </div>` : ''}
@@ -1612,6 +1627,85 @@ window.bgqlDeleteSuVu = async function(sv_id){
     if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
     showToast('Đã xóa sự vụ', 'ok');
     bgqlCloseSuVuDetail();
+    bgqlSuVuCache = null;
+    bgqlLoadSuVu();
+  } catch(e){ showToast('Lỗi: ' + e.message, 'warn'); }
+};
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.36] MULTI-SELECT DELETE — ADMIN tick nhiều sự vụ để xóa hàng loạt
+// ═════════════════════════════════════════════════════════════════════════
+let bgqlMultiSelectMode = false;
+let bgqlSelectedIds = new Set();
+
+window.bgqlToggleMultiSelect = function(){
+  if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
+    showToast('Chỉ ADMIN có quyền xóa hàng loạt', 'warn');
+    return;
+  }
+  bgqlMultiSelectMode = !bgqlMultiSelectMode;
+  bgqlSelectedIds.clear();
+  bgqlRenderSuVuList();
+  bgqlRenderMultiSelectBar();
+};
+
+window.bgqlToggleSelect = function(id){
+  if (bgqlSelectedIds.has(id)) bgqlSelectedIds.delete(id);
+  else bgqlSelectedIds.add(id);
+  // Re-render minimal: update checkbox + bar
+  const card = document.querySelector(`.bgql-card .bgql-card-cbx[onclick*="${id}"]`);
+  if (card) {
+    card.checked = bgqlSelectedIds.has(id);
+    card.closest('.bgql-card').classList.toggle('bgql-card-selected', bgqlSelectedIds.has(id));
+  }
+  bgqlRenderMultiSelectBar();
+};
+
+window.bgqlSelectAll = function(){
+  const all = (bgqlSuVuCache||[]).map(s => s.id);
+  if (bgqlSelectedIds.size === all.length) bgqlSelectedIds.clear();
+  else all.forEach(id => bgqlSelectedIds.add(id));
+  bgqlRenderSuVuList();
+  bgqlRenderMultiSelectBar();
+};
+
+function bgqlRenderMultiSelectBar(){
+  let bar = document.getElementById('bgql-multiselect-bar');
+  if (!bgqlMultiSelectMode) {
+    if (bar) bar.remove();
+    return;
+  }
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'bgql-multiselect-bar';
+    bar.className = 'bgql-multiselect-bar';
+    document.body.appendChild(bar);
+  }
+  const total = (bgqlSuVuCache||[]).length;
+  bar.innerHTML = `
+    <div class="bgql-ms-l">Đã chọn <b>${bgqlSelectedIds.size}</b> / ${total}</div>
+    <div class="bgql-ms-r">
+      <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${bgqlSelectedIds.size===total?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
+      <button class="bgql-act bgql-act-secondary" onclick="bgqlDeleteBulkConfirm()" ${bgqlSelectedIds.size===0?'disabled':''}>Xóa (${bgqlSelectedIds.size})</button>
+      <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
+    </div>
+  `;
+}
+
+window.bgqlDeleteBulkConfirm = async function(){
+  if (bgqlSelectedIds.size === 0) return;
+  if (!confirm(`Xóa ${bgqlSelectedIds.size} sự vụ đã chọn? Hành động KHÔNG thể hoàn tác.`)) return;
+  try {
+    const ids = Array.from(bgqlSelectedIds);
+    const { data, error } = await supa.rpc('fn_su_vu_delete_bulk', {
+      p_ids: ids, p_ma_nv: SESSION.ma
+    });
+    if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
+    showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
+    bgqlSelectedIds.clear();
+    bgqlMultiSelectMode = false;
+    bgqlRenderMultiSelectBar();
     bgqlSuVuCache = null;
     bgqlLoadSuVu();
   } catch(e){ showToast('Lỗi: ' + e.message, 'warn'); }

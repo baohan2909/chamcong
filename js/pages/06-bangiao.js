@@ -460,7 +460,7 @@ function bgRenderGroupHang(g){
       <div style="flex:1;font-size:13px;color:#1E293B;font-weight:500">${escHtml(it.ten)}</div>
       <input type="number" inputmode="numeric" min="0" 
         style="width:84px;padding:9px 11px;text-align:right;border:1.5px solid #E2E8F0;border-radius:10px;color:#0F172A;background:#F8FAFC"
-        value="${sl}" placeholder="—"
+        value="${sl}" placeholder="-"
         onfocus="this.style.background='#fff'; this.style.borderColor='#10B981';"
         onblur="this.style.background='#F8FAFC'; this.style.borderColor='#E2E8F0';"
         onchange="bgUpdateHang('${it.id}', this.value)">
@@ -736,7 +736,7 @@ async function bgSubmit(){
             p_nguoi_tao_ma_nv: SESSION.ma,
             p_nguoi_tao_ten: SESSION.ten || SESSION.hoTen || '',
             p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-            p_tieu_de: it.ten + ' - Có vấn đề',
+            p_tieu_de: it.ten,
             p_mo_ta: st.mo_ta || '',
             p_so_lieu: { stt:it.stt, khu_vuc:it.khu_vuc, nhom_hang:null },
             p_anh_urls: itemAnh[it.id] || [],
@@ -756,7 +756,7 @@ async function bgSubmit(){
           p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
           p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
           p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-          p_tieu_de: LBL + ' - Có ghi chú',
+          p_tieu_de: LBL,
           p_mo_ta: note,
           p_so_lieu: { loai:k, so_tien: bgState[k].so_tien||0 },
           p_anh_urls: [], p_muc_do: 'KHAN_CAP'
@@ -774,7 +774,12 @@ async function bgSubmit(){
             p_ma_ch: bgCurrentCH.ma, p_ten_ch_snapshot: bgCurrentCH.ten,
             p_nguoi_tao_ma_nv: SESSION.ma, p_nguoi_tao_ten: SESSION.ten||SESSION.hoTen||'',
             p_nguoi_tao_chuc_vu: SESSION.vaiTro || 'NV',
-            p_tieu_de: it.nhom_hang + ' (' + it.khu_vuc + ') - Chênh lệch',
+            p_tieu_de: (function(){
+              var kvMap = { 'SANH':'Trưng bày', 'KHO':'Kho', 'NIEM_PHONG':'Niêm phong' };
+              var nhom = (it.nhom_hang||'').replace(/^Nhóm\s+/i, '').replace(/\s*\(.+?\)\s*$/,'').trim();
+              var kv = kvMap[it.khu_vuc] || it.khu_vuc || '';
+              return nhom + (kv ? ' - ' + kv : '');
+            })(),
             p_mo_ta: st.ghi_chu,
             p_so_lieu: { khu_vuc:it.khu_vuc, nhom:it.nhom_hang, sl:st.so_luong||0 },
             p_anh_urls: [], p_muc_do: 'QUAN_TRONG'
@@ -1125,7 +1130,7 @@ function bgDetailRenderHtml(d){
         <div class="bgd-hang-kv">${KV_L[kv]||kv}</div>
         ${byKV[kv].map(r => `<div class="bgd-tien-row">
           <span>${escHtml(r.nhom_hang||'')}</span>
-          <b>${r.so_luong_thuc_te ?? '—'}</b>
+          <b>${r.so_luong_thuc_te ?? '-'}</b>
         </div>${r.ghi_chu?`<div class="bgd-note">${escHtml(r.ghi_chu)}</div>`:''}`).join('')}
       `).join('')}
     </div>`;
@@ -1232,9 +1237,9 @@ window.bgOpenConfirmSubmit = function(){
   const khongByKV = groupItems(itemsKhongCo);
   const vdByKV = groupItems(itemsVD);
   
-  const kvLabel = kv => kv === 1 ? 'Khu vực 1 — Mặt tiền' 
-    : kv === 2 ? 'Khu vực 2 — Quầy thu ngân' 
-    : kv === 4 ? 'Khu vực 4 — Kho/Sinh hoạt' 
+  const kvLabel = kv => kv === 1 ? 'Khu vực 1 - Mặt tiền' 
+    : kv === 2 ? 'Khu vực 2 - Quầy thu ngân' 
+    : kv === 4 ? 'Khu vực 4 - Kho/Sinh hoạt' 
     : `Khu vực ${kv}`;
   
   const renderKVList = (byKV, color, showMota) => {
