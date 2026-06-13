@@ -42,7 +42,7 @@ window.bgqlInitPage = bgqlInitPage;
 
 function bgqlSwitchSub(sub){
   bgqlSub = sub;
-  ['suvu','timeline','stats','print'].forEach(s => {
+  ['suvu','timeline','stats','aibc','print'].forEach(s => {
     const tab = document.getElementById('bgql-subtab-'+s);
     const body = document.getElementById('bgql-sub-'+s);
     if (tab) tab.classList.toggle('active', s===sub);
@@ -51,6 +51,7 @@ function bgqlSwitchSub(sub){
   if (sub==='suvu') bgqlLoadSuVu();
   if (sub==='timeline') bgqlLoadTimeline();
   if (sub==='stats') bgqlLoadStats();
+  if (sub==='aibc') bgqlLoadAiBaoCao();
   if (sub==='print') bgqlLoadPrint();
 }
 window.bgqlSwitchSub = bgqlSwitchSub;
@@ -2148,5 +2149,206 @@ window.bgqlDigestToggle = async function(turnOn){
     if (error) throw error;
     showToast(turnOn?'✓ Đã bật digest':'Đã tắt digest', 'ok');
     bgqlRenderDigestConfig();
+  } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
+};
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.40] AI BÁO CÁO ON-DEMAND — Sprint A
+// ═════════════════════════════════════════════════════════════════════════
+let bgqlAibcSelectedRange = '7d';  // today | 7d | 30d | custom
+let bgqlAibcCustomFrom = null;
+let bgqlAibcCustomTo = null;
+let bgqlAibcCache = null;
+let bgqlAibcGenerating = false;
+
+window.bgqlLoadAiBaoCao = async function(){
+  bgqlRenderAibcUI();
+  if (!bgqlAibcCache) await bgqlAibcLoadHistory();
+};
+
+function bgqlRenderAibcUI(){
+  const cont = document.getElementById('bgql-aibc-content');
+  if (!cont) return;
+  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
+  if (!isAdmin) {
+    cont.innerHTML = '<div class="ns-empty">Tính năng dành cho ADMIN.</div>';
+    return;
+  }
+  const isCustom = bgqlAibcSelectedRange === 'custom';
+  cont.innerHTML = `
+    <div class="aibc-intro">
+      <div class="aibc-intro-ttl">Nhân viên AI · Báo cáo theo yêu cầu</div>
+      <div class="aibc-intro-sub">Phân tích chi tiết hoạt động bàn giao, sự vụ, tài chính, thiết bị hư lặp lại. Số tiền chỉ hiện khi có lệch tiền.</div>
+    </div>
+
+    <div class="aibc-range-grid">
+      <button class="aibc-range ${bgqlAibcSelectedRange==='today'?'active':''}" onclick="bgqlAibcSetRange('today')">Hôm nay</button>
+      <button class="aibc-range ${bgqlAibcSelectedRange==='7d'?'active':''}" onclick="bgqlAibcSetRange('7d')">7 ngày</button>
+      <button class="aibc-range ${bgqlAibcSelectedRange==='30d'?'active':''}" onclick="bgqlAibcSetRange('30d')">30 ngày</button>
+      <button class="aibc-range ${isCustom?'active':''}" onclick="bgqlAibcSetRange('custom')">Tùy chọn</button>
+    </div>
+
+    ${isCustom ? `<div class="aibc-custom-row">
+      <input type="date" class="bg-tl-dropdown" id="aibc-from" value="${bgqlAibcCustomFrom||''}" onchange="bgqlAibcCustomFrom=this.value">
+      <span class="aibc-custom-sep">đến</span>
+      <input type="date" class="bg-tl-dropdown" id="aibc-to" value="${bgqlAibcCustomTo||''}" onchange="bgqlAibcCustomTo=this.value">
+    </div>` : ''}
+
+    <button class="aibc-gen-btn ${bgqlAibcGenerating?'busy':''}" onclick="bgqlAibcGenerate()" ${bgqlAibcGenerating?'disabled':''}>
+      ${bgqlAibcGenerating ? 'AI đang phân tích...' : 'Tạo báo cáo AI ngay'}
+    </button>
+    <div class="aibc-hint">Mất khoảng 20-40 giây. AI dùng Claude Sonnet để phân tích chi tiết.</div>
+
+    <div class="aibc-sec-ttl">Lịch sử báo cáo</div>
+    <div id="aibc-history-list"><div class="ns-empty">⏳ Đang tải...</div></div>
+  `;
+}
+
+window.bgqlAibcSetRange = function(r){
+  bgqlAibcSelectedRange = r;
+  bgqlRenderAibcUI();
+  bgqlAibcRenderHistory();  // render lại list để không mất
+};
+
+async function bgqlAibcLoadHistory(){
+  try {
+    const { data, error } = await supa.rpc('fn_report_list', { p_ma_nv: SESSION.ma, p_limit: 20 });
+    if (error) throw error;
+    bgqlAibcCache = Array.isArray(data) ? data : [];
+    bgqlAibcRenderHistory();
+  } catch(e){
+    const box = document.getElementById('aibc-history-list');
+    if (box) box.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function bgqlAibcRenderHistory(){
+  const box = document.getElementById('aibc-history-list');
+  if (!box) return;
+  const arr = bgqlAibcCache || [];
+  if (arr.length === 0) {
+    box.innerHTML = '<div class="ns-empty">Chưa có báo cáo nào. Bấm "Tạo báo cáo AI ngay" để bắt đầu.</div>';
+    return;
+  }
+  box.innerHTML = arr.map(r => {
+    const t = new Date(r.created_at);
+    const tStr = pad(t.getHours())+':'+pad(t.getMinutes())+' '+pad(t.getDate())+'/'+pad(t.getMonth()+1)+'/'+t.getFullYear();
+    return `<div class="aibc-his-row" onclick="bgqlAibcOpenReport('${r.id}')">
+      <div class="aibc-his-ttl">${escHtml(r.tieu_de)}</div>
+      <div class="aibc-his-meta">${tStr} · ${escHtml(r.nguoi_tao_ten||r.nguoi_tao_ma)}</div>
+      <div class="aibc-his-preview">${escHtml(r.preview||'')}...</div>
+    </div>`;
+  }).join('');
+}
+
+window.bgqlAibcGenerate = async function(){
+  if (bgqlAibcGenerating) return;
+  
+  // Validate custom range
+  if (bgqlAibcSelectedRange === 'custom') {
+    if (!bgqlAibcCustomFrom || !bgqlAibcCustomTo) {
+      showToast('Vui lòng chọn cả ngày bắt đầu và kết thúc', 'warn');
+      return;
+    }
+    if (new Date(bgqlAibcCustomFrom) > new Date(bgqlAibcCustomTo)) {
+      showToast('Ngày bắt đầu phải trước ngày kết thúc', 'warn');
+      return;
+    }
+  }
+  
+  bgqlAibcGenerating = true;
+  bgqlRenderAibcUI();
+  bgqlAibcRenderHistory();
+  
+  try {
+    const payload = {
+      ma_nv: SESSION.ma,
+      ten_nv: SESSION.ten || SESSION.hoTen || '',
+      range_loai: bgqlAibcSelectedRange
+    };
+    if (bgqlAibcSelectedRange === 'custom') {
+      payload.range_from = new Date(bgqlAibcCustomFrom + 'T00:00:00').toISOString();
+      payload.range_to = new Date(bgqlAibcCustomTo + 'T23:59:59').toISOString();
+    }
+    
+    const { data: { session } } = await supa.auth.getSession();
+    const res = await fetch(`${supa.supabaseUrl}/functions/v1/ai-report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token || supa.supabaseKey}`,
+        'apikey': supa.supabaseKey
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || 'Lỗi tạo báo cáo');
+    
+    showToast('✓ Đã tạo báo cáo AI', 'ok');
+    bgqlAibcGenerating = false;
+    
+    // Reload history + mở luôn báo cáo mới
+    await bgqlAibcLoadHistory();
+    bgqlRenderAibcUI();
+    bgqlAibcRenderHistory();
+    bgqlAibcShowReport({
+      id: result.id,
+      tieu_de: result.tieu_de,
+      noi_dung: result.noi_dung,
+      created_at: new Date().toISOString(),
+      nguoi_tao_ten: SESSION.ten || SESSION.hoTen
+    });
+  } catch(e){
+    showToast('⚠ ' + e.message, 'warn');
+    bgqlAibcGenerating = false;
+    bgqlRenderAibcUI();
+    bgqlAibcRenderHistory();
+  }
+};
+
+window.bgqlAibcOpenReport = async function(id){
+  try {
+    const { data, error } = await supa.rpc('fn_report_get', { p_id: id, p_ma_nv: SESSION.ma });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    bgqlAibcShowReport(data.report);
+  } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
+};
+
+function bgqlAibcShowReport(r){
+  let modal = document.getElementById('aibc-report-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'aibc-report-modal';
+  modal.className = 'ai-digest-modal-bg';
+  const isAdmin = SESSION && SESSION.vaiTro === 'ADMIN';
+  const t = new Date(r.created_at);
+  const tStr = pad(t.getHours())+':'+pad(t.getMinutes())+' '+pad(t.getDate())+'/'+pad(t.getMonth()+1)+'/'+t.getFullYear();
+  const safeBody = escHtml(r.noi_dung).replace(/\n/g, '<br>');
+  modal.innerHTML = `
+    <div class="ai-digest-modal">
+      <div class="ai-digest-head">
+        <div class="ai-digest-ttl">${escHtml(r.tieu_de)}</div>
+        <button class="ai-digest-x" onclick="document.getElementById('aibc-report-modal').remove()">✕</button>
+      </div>
+      <div class="ai-digest-body">${safeBody}</div>
+      <div class="ai-digest-foot">
+        <span>Tạo lúc ${tStr} · ${escHtml(r.nguoi_tao_ten||'?')}</span>
+        ${isAdmin && r.id ? `<button class="aibc-del-btn" onclick="bgqlAibcDeleteReport('${r.id}')">Xóa báo cáo</button>` : ''}
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+window.bgqlAibcDeleteReport = async function(id){
+  if (!confirm('Xóa báo cáo này? Không thể hoàn tác.')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_report_delete', { p_id: id, p_ma_nv: SESSION.ma });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã xóa', 'ok');
+    const m = document.getElementById('aibc-report-modal');
+    if (m) m.remove();
+    await bgqlAibcLoadHistory();
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
 };
