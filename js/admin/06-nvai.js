@@ -232,23 +232,16 @@ window.nvaiSendMessage = async function(){
       content: m.content || ''
     }));
     
-    const { data: { session } } = await supa.auth.getSession();
-    const res = await fetch(`${supa.supabaseUrl}/functions/v1/ai-agent`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || supa.supabaseKey}`,
-        'apikey': supa.supabaseKey
-      },
-      body: JSON.stringify({
+    const { data: result, error: invokeErr } = await supa.functions.invoke('ai-agent', {
+      body: {
         ma_nv: SESSION.ma,
         session_id: nvaiCurrentSession?.id || null,
         user_message: text,
         history
-      })
+      }
     });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'Lỗi AI');
+    if (invokeErr) throw new Error(invokeErr.message || 'Lỗi kết nối AI');
+    if (!result || !result.ok) throw new Error((result && result.error) || 'Lỗi AI');
     
     // Update session_id (nếu tạo mới)
     if (!nvaiCurrentSession && result.session_id) {

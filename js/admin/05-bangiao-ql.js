@@ -2272,18 +2272,11 @@ window.bgqlAibcGenerate = async function(){
       payload.range_to = new Date(bgqlAibcCustomTo + 'T23:59:59').toISOString();
     }
     
-    const { data: { session } } = await supa.auth.getSession();
-    const res = await fetch(`${supa.supabaseUrl}/functions/v1/ai-report`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || supa.supabaseKey}`,
-        'apikey': supa.supabaseKey
-      },
-      body: JSON.stringify(payload)
+    const { data: result, error: invokeErr } = await supa.functions.invoke('ai-report', {
+      body: payload
     });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'Lỗi tạo báo cáo');
+    if (invokeErr) throw new Error(invokeErr.message || 'Lỗi kết nối AI');
+    if (!result || !result.ok) throw new Error((result && result.error) || 'Lỗi tạo báo cáo');
     
     showToast('✓ Đã tạo báo cáo AI', 'ok');
     bgqlAibcGenerating = false;
