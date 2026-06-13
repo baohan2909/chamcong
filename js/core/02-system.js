@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.41.2',
+  'sys.cache_version': 'v13.42',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -713,24 +713,42 @@ function khoiDongApp(){
     } catch (e) {}
   }
   if (isAdminAll) {
-    // ADMIN: bật nav-admin + nav-banhang ở bottom (cũng giữ menu-admin trong Tài khoản)
-    const nA = document.getElementById('nav-admin');
-    if (nA) nA.style.display = '';
-    const nBH = document.getElementById('nav-banhang');
-    if (nBH) nBH.style.display = '';
-    const mAd = document.getElementById('menu-admin');
-    if (mAd) mAd.style.display = '';
-    const mBH = document.getElementById('menu-banhang');
-    if (mBH) mBH.style.display='';
-    // [v11 muanon] menu Hình ảnh sản phẩm hàng tuần
-    const mMNA = document.getElementById('menu-muanon-admin');
-    if (mMNA) mMNA.style.display = '';
+    // [v13.42] ADMIN bottom-nav: chỉ 5 mục (Nhân sự + Bán hàng + QL bàn giao + Hình ảnh SP + Admin).
+    // ẨN tất cả nav NV: chamcong/giocong/bandochidung/lichca/muanon/chuongtrinh/taikhoan
+    const _hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+    const _show = id => { const el = document.getElementById(id); if (el) el.style.display = ''; };
+    
+    _hide('nav-chamcong');
+    _hide('nav-giocong');
+    _hide('nav-bandochidung');
+    _hide('nav-lichca');
+    _hide('nav-muanon');
+    _hide('nav-chuongtrinh');
+    _hide('nav-taikhoan');
+    
+    _show('nav-nhansu');
+    _show('nav-banhang');
+    _show('nav-bangiao-ql');
+    _show('nav-muanon-admin');
+    _show('nav-admin');
+    
+    // Menu Tài khoản: show các mục ADMIN
+    _show('menu-admin');
+    _show('menu-banhang');
+    _show('menu-muanon-admin');
+    
+    // Show section labels của Nhóm 1 (AI) + Nhóm 2 (Quản lý) + Nhóm 3 (SP)
+    _show('acc-sec-ai');
+    _show('acc-sec-quanly');
+    _show('acc-sec-sp');
   }
 
   // [v11 muanon] QL (QLNS/QLBH) cũng thấy menu-muanon-admin
   if (isQL || isQLBH || isCH) {
     const mMNA = document.getElementById('menu-muanon-admin');
     if (mMNA) mMNA.style.display = '';
+    const sSP = document.getElementById('acc-sec-sp');
+    if (sSP) sSP.style.display = '';
   }
 
   if(isQL){
@@ -745,11 +763,15 @@ function khoiDongApp(){
     _showQL('menu-duyetyc');     // [v10 Yc #5]
     _showQL('menu-checklist-ql'); // [v10.85] Sự cố CH (retire)
     _showQL('menu-bangiao-ql');   // [v13.19] QL bàn giao
+    _showQL('acc-sec-quanly');    // [v13.42] section label Quản lý vận hành
   }
   // [v13.26] QLBH cũng cần thấy menu Bàn giao QL (chịu trách nhiệm CH)
   if (isQLBH) {
     const mBGQL = document.getElementById('menu-bangiao-ql');
     if (mBGQL) mBGQL.style.display = '';
+    // [v13.42] section label
+    const sQL = document.getElementById('acc-sec-quanly');
+    if (sQL) sQL.style.display = '';
   }
 
   // [v11] Phân quyền CỬA HÀNG

@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.41.2">
-<link rel="stylesheet" href="css/01-base.css?v=13.41.2">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.41.2">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.41.2">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.41.2">
-<link rel="stylesheet" href="css/05-admin.css?v=13.41.2">
-<link rel="stylesheet" href="css/06-modules.css?v=13.41.2">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.41.2">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.41.2">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.41.2">
-<link rel="stylesheet" href="css/11-face.css?v=13.41.2">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.42">
+<link rel="stylesheet" href="css/01-base.css?v=13.42">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.42">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.42">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.42">
+<link rel="stylesheet" href="css/05-admin.css?v=13.42">
+<link rel="stylesheet" href="css/06-modules.css?v=13.42">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.42">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.42">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.42">
+<link rel="stylesheet" href="css/11-face.css?v=13.42">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.41.2</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.42</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1488,79 +1488,10 @@
       <div class="acc-vaitro" id="acc-vaitro" style="display:none">--</div>
     </div>
     <div class="acc-menu">
-      <div class="menu-section-label">Công việc</div>
-      <div class="menu-item" onclick="goToPage('chamcong')">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="menu-label">Chấm công hôm nay</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" onclick="goToPage('bandochidung')">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div class="menu-label">Bản đồ cửa hàng</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" onclick="moLichCa()">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div class="menu-label">Lịch làm việc</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-bosung-ca" onclick="moModalBoSungCa()" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="menu-label">Xin bổ sung ca</div>
-        <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-bosung-quota">--</span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-section-label">Mẫu nón & Khuyến mãi</div>
-      <div class="menu-item" id="menu-muanon" onclick="moPageMuanon()">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#12805C,#0B5C42)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13a9 9 0 0 1 18 0v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><circle cx="12" cy="13" r="2"/></svg>
-        </div>
-        <div class="menu-label">Gửi ảnh mẫu nón</div>
-        <span class="menu-badge-pill" id="muanon-menu-badge" style="display:none;font-size:10px;background:#EF4444;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px">Chưa gửi</span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-bangiao" onclick="goToPage('bangiao')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#1B4965,#0F2E45)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div class="menu-label">Bàn giao ca</div>
-        <span class="menu-badge-pill" id="bangiao-menu-badge" style="display:none;font-size:10px;background:#B91C1C;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-chuongtrinh" onclick="goToPage('chuongtrinh')">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#12805C,#0B5C42)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-        </div>
-        <div class="menu-label">Chương trình khuyến mãi</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-section-label">Khuôn mặt</div>
-      <div class="menu-item" id="menu-face-enroll" onclick="nsFaceOpenEnrollment()">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#12805C,#0B5C42)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
-        </div>
-        <div class="menu-label">Đăng ký khuôn mặt</div>
-        <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-face-status">--</span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-section-label">Quản lý</div>
-      <div class="menu-item" id="menu-bangiao-ql" onclick="goToPage('bangiao-ql')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <div class="menu-label">Bàn giao · Quản lý</div>
-        <span class="menu-badge-pill" id="bgql-menu-badge" style="display:none;font-size:10px;background:#DC2626;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-nvai" onclick="goToPage('nvai')" style="display:none">
+      
+      <!-- ═══ NHÓM 1: TRỢ LÝ AI (navy gradient) ═══ -->
+      <div class="menu-section-label menu-sec-ai" id="acc-sec-ai" style="display:none">Trợ lý AI</div>
+      <div class="menu-item menu-clr-navy" id="menu-nvai" onclick="goToPage('nvai')" style="display:none">
         <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#1E3A8A)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="white"/><circle cx="15" cy="10" r="1" fill="white"/></svg>
         </div>
@@ -1568,74 +1499,160 @@
         <span class="menu-badge-pill" style="font-size:10px;background:#1E3A8A;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px">MỚI</span>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-duyetyc" onclick="goToPage('duyetyc')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
+      
+      <!-- ═══ NHÓM 2: QUẢN LÝ VẬN HÀNH (cam gradient) ═══ -->
+      <div class="menu-section-label menu-sec-cam" id="acc-sec-quanly" style="display:none">Quản lý vận hành</div>
+      <div class="menu-item menu-clr-cam" id="menu-bangiao-ql" onclick="goToPage('bangiao-ql')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="menu-label">Quản lý bàn giao</div>
+        <span class="menu-badge-pill" id="bgql-menu-badge" style="display:none;font-size:10px;background:#DC2626;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-cam" id="menu-dashboard" onclick="goToPage('dashboard')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        </div>
+        <div class="menu-label">Dashboard</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-cam" id="menu-duyetyc" onclick="goToPage('duyetyc')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         </div>
         <div class="menu-label">Duyệt yêu cầu</div>
         <span class="nav-badge" id="acc-duyetyc-badge" style="display:none;position:static;margin-right:8px"></span>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-dashboard" onclick="goToPage('dashboard')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        </div>
-        <div class="menu-label">Dashboard</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-nhansu" onclick="goToPage('nhansu')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
+      <div class="menu-item menu-clr-cam" id="menu-nhansu" onclick="goToPage('nhansu')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <div class="menu-label">Quản lý nhân sự</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-face-admin" onclick="nsFaceOpenAdmin()" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
+      <div class="menu-item menu-clr-cam" id="menu-face-admin" onclick="nsFaceOpenAdmin()" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
         </div>
         <div class="menu-label">Quản lý chấm công khuôn mặt</div>
         <span class="menu-badge-pill" id="menu-face-admin-status">--</span>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" id="menu-muanon-admin" onclick="moPageMuanonAdmin()" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <div class="menu-label">Hình ảnh sản phẩm hàng tuần</div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-item" id="menu-admin" onclick="goToPage('admin')" style="display:none">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
+      <div class="menu-item menu-clr-cam" id="menu-admin" onclick="goToPage('admin')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#C2410C,#F97316)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
         </div>
         <div class="menu-label">Trang Admin</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-section-label">Hệ thống</div>
-      <div class="menu-item" onclick="forceReloadApp()">
+      
+      <!-- ═══ NHÓM 3: SẢN PHẨM & BÁN HÀNG (gold gradient) ═══ -->
+      <div class="menu-section-label menu-sec-gold" id="acc-sec-sp" style="display:none">Sản phẩm và bán hàng</div>
+      <div class="menu-item menu-clr-gold" id="menu-muanon-admin" onclick="moPageMuanonAdmin()" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#B45309,#D97706)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="menu-label">Hình ảnh sản phẩm hàng tuần</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-gold" id="menu-chuongtrinh" onclick="goToPage('chuongtrinh')">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#B45309,#D97706)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="menu-label">Chương trình khuyến mãi</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-gold" id="menu-banhang" onclick="goToPage('banhang')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#B45309,#D97706)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <div class="menu-label">Bán hàng</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      
+      <!-- ═══ NHÓM 4: QUY TRÌNH HẰNG NGÀY (emerald gradient) ═══ -->
+      <div class="menu-section-label menu-sec-emerald">Quy trình hằng ngày</div>
+      <div class="menu-item menu-clr-emerald" id="menu-bangiao" onclick="goToPage('bangiao')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="menu-label">Bàn giao ca</div>
+        <span class="menu-badge-pill" id="bangiao-menu-badge" style="display:none;font-size:10px;background:#B91C1C;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" onclick="goToPage('chamcong')">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="menu-label">Chấm công hôm nay</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" onclick="goToPage('bandochidung')">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="menu-label">Bản đồ cửa hàng</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" onclick="moLichCa()">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="menu-label">Lịch làm việc</div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" id="menu-bosung-ca" onclick="moModalBoSungCa()" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        </div>
+        <div class="menu-label">Xin bổ sung ca</div>
+        <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-bosung-quota">--</span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" id="menu-muanon" onclick="moPageMuanon()">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13a9 9 0 0 1 18 0v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><circle cx="12" cy="13" r="2"/></svg>
+        </div>
+        <div class="menu-label">Gửi ảnh mẫu nón</div>
+        <span class="menu-badge-pill" id="muanon-menu-badge" style="display:none;font-size:10px;background:#EF4444;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px">Chưa gửi</span>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item menu-clr-emerald" id="menu-face-enroll" onclick="nsFaceOpenEnrollment()">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#047857,#10B981)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
+        </div>
+        <div class="menu-label">Đăng ký khuôn mặt</div>
+        <span style="font-size:10px;color:#9CA3AF;margin-right:8px" id="menu-face-status">--</span>
+        <div class="menu-arrow">›</div>
+      </div>
+      
+      <!-- ═══ NHÓM 5: HỆ THỐNG APP (slate gradient) ═══ -->
+      <div class="menu-section-label menu-sec-slate">Hệ thống ứng dụng</div>
+      <div class="menu-item menu-clr-slate" onclick="forceReloadApp()">
         <div class="menu-icon" style="background:linear-gradient(135deg,#64748B,#475569)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </div>
         <div class="menu-label">Tải lại ứng dụng</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" onclick="openPwModal()">
+      <div class="menu-item menu-clr-slate" onclick="openPwModal()">
         <div class="menu-icon" style="background:linear-gradient(135deg,#64748B,#475569)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <div class="menu-label">Đổi mật khẩu</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" onclick="goToPage('giaodien')">
+      <div class="menu-item menu-clr-slate" onclick="goToPage('giaodien')">
         <div class="menu-icon" style="background:linear-gradient(135deg,#64748B,#475569)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
         </div>
         <div class="menu-label">Giao diện</div>
         <div class="menu-arrow">›</div>
       </div>
-      <div class="menu-item" onclick="doLogout()">
-        <div class="menu-icon" style="background:linear-gradient(135deg,#B42318,#912018)">
+      <div class="menu-item menu-clr-rose" onclick="doLogout()">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#B91C1C,#DC2626)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </div>
         <div class="menu-label">Đăng xuất</div>
@@ -1646,7 +1663,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.41.2 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.42 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2850,7 +2867,7 @@
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <div class="nav-label">Bản đồ</div>
     </button>
-    <button class="nav-item" id="nav-nhansu" onclick="goToPage('nhansu')" style="display:none">
+    <button class="nav-item nv-clr-teal" id="nav-nhansu" onclick="goToPage('nhansu')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <div class="nav-label">Nhân sự</div>
       <span class="nav-badge" id="ns-nav-badge" style="display:none"></span>
@@ -2871,10 +2888,21 @@
       <div class="nav-label">Mẫu nón</div>
     </button>
     <!-- [v11] Tab Bán hàng — hiện khi vaiTro=CUA_HANG hoặc QLBH -->
-    <button class="nav-item" id="nav-banhang" onclick="goToPage('banhang')" style="display:none">
+    <button class="nav-item nv-clr-cam" id="nav-banhang" onclick="goToPage('banhang')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <div class="nav-label">Bán hàng</div>
       <span class="nav-badge" id="bh-nav-badge" style="display:none"></span>
+    </button>
+    <!-- [v13.42] Quản lý bàn giao - cho ADMIN ở bottom nav -->
+    <button class="nav-item nv-clr-emerald" id="nav-bangiao-ql" onclick="goToPage('bangiao-ql')" style="display:none">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <div class="nav-label">QL bàn giao</div>
+      <span class="nav-badge" id="bgql-nav-badge" style="display:none"></span>
+    </button>
+    <!-- [v13.42] Hình ảnh sản phẩm hàng tuần - cho ADMIN ở bottom nav (= muanon-admin) -->
+    <button class="nav-item nv-clr-gold" id="nav-muanon-admin" onclick="moPageMuanonAdmin()" style="display:none">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div class="nav-label">Hình ảnh SP</div>
     </button>
     <!-- [v11.0] Tab Chương trình khuyến mãi — bật cho NV/CTV qua JS -->
     <button class="nav-item" id="nav-chuongtrinh" onclick="goToPage('chuongtrinh')" style="display:none">
@@ -2882,7 +2910,7 @@
       <div class="nav-label">Chương trình</div>
     </button>
     <!-- [v11.0] Tab Admin — bật cho ADMIN qua JS -->
-    <button class="nav-item" id="nav-admin" onclick="goToPage('admin')" style="display:none">
+    <button class="nav-item nv-clr-navy" id="nav-admin" onclick="goToPage('admin')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c4-1 6-2 9-4 3 2 5 3 9 4 0 7-3 12-9 14-6-2-9-7-9-14z"/><circle cx="12" cy="11" r="2"/></svg>
       <div class="nav-label">Admin</div>
     </button>
@@ -2894,13 +2922,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.41.2"></script>
-<script src="js/core/02-system.js?v=13.41.2"></script>
+<script src="js/core/01-config.js?v=13.42"></script>
+<script src="js/core/02-system.js?v=13.42"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.41.2">
+<link rel="stylesheet" href="css/07-extras.css?v=13.42">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2935,20 +2963,20 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.41.2"></script>
-<script src="js/pages/01-lichca.js?v=13.41.2"></script>
-<script src="js/pages/02-nhansu.js?v=13.41.2"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.41.2"></script>
-<script src="js/pages/04-misc.js?v=13.41.2"></script>
-<script src="js/pages/05-muanon.js?v=13.41.2"></script>
-<script src="js/lib/camscanner.js?v=13.41.2"></script>
-<script src="js/pages/06-bangiao.js?v=13.41.2"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.41.2"></script>
-<script src="js/admin/06-nvai.js?v=13.41.2"></script>
-<script src="js/ai/face-recognition.js?v=13.41.2"></script>
-<script src="js/admin/01-banhang.js?v=13.41.2"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.41.2"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.41.2"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.41.2"></script>
+<script src="js/core/03-router.js?v=13.42"></script>
+<script src="js/pages/01-lichca.js?v=13.42"></script>
+<script src="js/pages/02-nhansu.js?v=13.42"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.42"></script>
+<script src="js/pages/04-misc.js?v=13.42"></script>
+<script src="js/pages/05-muanon.js?v=13.42"></script>
+<script src="js/lib/camscanner.js?v=13.42"></script>
+<script src="js/pages/06-bangiao.js?v=13.42"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.42"></script>
+<script src="js/admin/06-nvai.js?v=13.42"></script>
+<script src="js/ai/face-recognition.js?v=13.42"></script>
+<script src="js/admin/01-banhang.js?v=13.42"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.42"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.42"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.42"></script>
 </body>
 </html>

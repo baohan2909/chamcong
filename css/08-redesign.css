@@ -1532,3 +1532,108 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
     border: 1px solid #E5E7EB !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.42] BOTTOM-NAV ADMIN: gradient màu riêng cho từng mục
+ *  Áp dụng cho 5 nav-item của ADMIN (nv-clr-*)
+ *  Style chỉ kích hoạt khi active (đang ở page đó)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Khi active: nav-item có gradient background ở icon zone, label đậm */
+.nav-item.nv-clr-teal.active .nav-svg    { stroke: #0D9488; }
+.nav-item.nv-clr-teal.active .nav-label  { color: #0D9488; }
+
+.nav-item.nv-clr-cam.active .nav-svg     { stroke: #C2410C; }
+.nav-item.nv-clr-cam.active .nav-label   { color: #C2410C; }
+
+.nav-item.nv-clr-emerald.active .nav-svg   { stroke: #047857; }
+.nav-item.nv-clr-emerald.active .nav-label { color: #047857; }
+
+.nav-item.nv-clr-gold.active .nav-svg    { stroke: #B45309; }
+.nav-item.nv-clr-gold.active .nav-label  { color: #B45309; }
+
+.nav-item.nv-clr-navy.active .nav-svg    { stroke: #1E3A8A; }
+.nav-item.nv-clr-navy.active .nav-label  { color: #1E3A8A; }
+
+/* Chấm tròn nhỏ phía trên nav-item active để báo group */
+.nav-item.nv-clr-teal.active::before,
+.nav-item.nv-clr-cam.active::before,
+.nav-item.nv-clr-emerald.active::before,
+.nav-item.nv-clr-gold.active::before,
+.nav-item.nv-clr-navy.active::before {
+  content: "";
+  position: absolute;
+  top: 2px; left: 50%;
+  transform: translateX(-50%);
+  width: 22px; height: 3px;
+  border-radius: 2px;
+}
+.nav-item.nv-clr-teal.active::before    { background: linear-gradient(90deg, #0D9488, #14B8A6); }
+.nav-item.nv-clr-cam.active::before     { background: linear-gradient(90deg, #C2410C, #F97316); }
+.nav-item.nv-clr-emerald.active::before { background: linear-gradient(90deg, #047857, #10B981); }
+.nav-item.nv-clr-gold.active::before    { background: linear-gradient(90deg, #B45309, #D97706); }
+.nav-item.nv-clr-navy.active::before    { background: linear-gradient(90deg, #0F2E45, #1E3A8A); }
+
+/* Cần position relative để ::before định vị */
+.nav-item.nv-clr-teal,
+.nav-item.nv-clr-cam,
+.nav-item.nv-clr-emerald,
+.nav-item.nv-clr-gold,
+.nav-item.nv-clr-navy { position: relative; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.42] MENU TÀI KHOẢN: section labels với gradient bar
+ *  Mỗi nhóm có màu riêng cho section header + viền trái cho menu items
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Override default menu-section-label: thêm gradient bar bên trái */
+.menu-section-label.menu-sec-ai,
+.menu-section-label.menu-sec-cam,
+.menu-section-label.menu-sec-gold,
+.menu-section-label.menu-sec-emerald,
+.menu-section-label.menu-sec-slate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin: 18px 0 8px;
+}
+.menu-section-label.menu-sec-ai::before,
+.menu-section-label.menu-sec-cam::before,
+.menu-section-label.menu-sec-gold::before,
+.menu-section-label.menu-sec-emerald::before,
+.menu-section-label.menu-sec-slate::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 16px;
+  border-radius: 3px;
+}
+.menu-section-label.menu-sec-ai      { color: #1E3A8A; }
+.menu-section-label.menu-sec-ai::before      { background: linear-gradient(180deg, #0F2E45, #1E3A8A); }
+
+.menu-section-label.menu-sec-cam     { color: #C2410C; }
+.menu-section-label.menu-sec-cam::before     { background: linear-gradient(180deg, #C2410C, #F97316); }
+
+.menu-section-label.menu-sec-gold    { color: #B45309; }
+.menu-section-label.menu-sec-gold::before    { background: linear-gradient(180deg, #B45309, #D97706); }
+
+.menu-section-label.menu-sec-emerald { color: #047857; }
+.menu-section-label.menu-sec-emerald::before { background: linear-gradient(180deg, #047857, #10B981); }
+
+.menu-section-label.menu-sec-slate   { color: #475569; }
+.menu-section-label.menu-sec-slate::before   { background: linear-gradient(180deg, #64748B, #475569); }
+
+/* Subtle hint khi hover/active từng menu-item theo nhóm */
+.menu-item.menu-clr-navy:active    { background: linear-gradient(90deg, rgba(30,58,138,.06), transparent); }
+.menu-item.menu-clr-cam:active     { background: linear-gradient(90deg, rgba(249,115,22,.08), transparent); }
+.menu-item.menu-clr-gold:active    { background: linear-gradient(90deg, rgba(217,119,6,.08), transparent); }
+.menu-item.menu-clr-emerald:active { background: linear-gradient(90deg, rgba(16,185,129,.08), transparent); }
+.menu-item.menu-clr-slate:active   { background: linear-gradient(90deg, rgba(100,116,139,.08), transparent); }
+.menu-item.menu-clr-rose:active    { background: linear-gradient(90deg, rgba(220,38,38,.08), transparent); }
