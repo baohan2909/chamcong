@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.40.1">
-<link rel="stylesheet" href="css/01-base.css?v=13.40.1">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.40.1">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.40.1">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.40.1">
-<link rel="stylesheet" href="css/05-admin.css?v=13.40.1">
-<link rel="stylesheet" href="css/06-modules.css?v=13.40.1">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.40.1">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.40.1">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.40.1">
-<link rel="stylesheet" href="css/11-face.css?v=13.40.1">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.41">
+<link rel="stylesheet" href="css/01-base.css?v=13.41">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.41">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.41">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.41">
+<link rel="stylesheet" href="css/05-admin.css?v=13.41">
+<link rel="stylesheet" href="css/06-modules.css?v=13.41">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.41">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.41">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.41">
+<link rel="stylesheet" href="css/11-face.css?v=13.41">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.40.1</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.41</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1560,6 +1560,14 @@
         <span class="menu-badge-pill" id="bgql-menu-badge" style="display:none;font-size:10px;background:#DC2626;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px"></span>
         <div class="menu-arrow">›</div>
       </div>
+      <div class="menu-item" id="menu-nvai" onclick="goToPage('nvai')" style="display:none">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#1E3A8A)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="white"/><circle cx="15" cy="10" r="1" fill="white"/></svg>
+        </div>
+        <div class="menu-label">Nhân viên AI</div>
+        <span class="menu-badge-pill" style="font-size:10px;background:#1E3A8A;color:#fff;padding:2px 8px;border-radius:99px;font-weight:700;margin-right:6px">MỚI</span>
+        <div class="menu-arrow">›</div>
+      </div>
       <div class="menu-item" id="menu-duyetyc" onclick="goToPage('duyetyc')" style="display:none">
         <div class="menu-icon" style="background:linear-gradient(135deg,#0F2E45,#081C2E)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -1638,7 +1646,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.40.1 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.41 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2756,7 +2764,52 @@
     </div>
   </div>
 
-<!-- [v13.32] MODAL CHI TIẾT SỰ VỤ — universal -->
+<!-- [v13.41] PAGE NHÂN VIÊN AI -->
+  <div class="page" id="page-nvai">
+    <div class="cc-hero-page">
+      <div class="cc-hero-page-label">TRỢ LÝ AI</div>
+      <div class="cc-hero-page-title">Nhân viên AI</div>
+      <div class="cc-hero-page-sub">Hỏi gì cũng được - data toàn hệ thống</div>
+    </div>
+    <div class="nvai-wrap">
+      <div class="nvai-sidebar" id="nvai-sidebar">
+        <button class="nvai-new-btn" onclick="nvaiNewChat()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Cuộc hội thoại mới
+        </button>
+        <div class="nvai-sec-ttl">Lịch sử</div>
+        <div id="nvai-session-list"><div class="ns-empty" style="font-size:11.5px">⏳</div></div>
+      </div>
+      <div class="nvai-main" id="nvai-main">
+        <div id="nvai-msg-list" class="nvai-msg-list">
+          <div class="nvai-welcome">
+            <div class="nvai-welcome-ttl">Xin chào, em là Nhân viên AI của anh.</div>
+            <div class="nvai-welcome-sub">Em hiểu data toàn hệ thống Nón Sơn: nhân sự, chấm công, lịch ca, bàn giao, sự vụ. Anh hỏi tự nhiên, em truy vấn data thật và trả lời.</div>
+            <div class="nvai-suggest-grid">
+              <button class="nvai-suggest" onclick="nvaiSendSuggest('Cho anh xem tổng quan hệ thống hôm nay')">Tổng quan hệ thống hôm nay</button>
+              <button class="nvai-suggest" onclick="nvaiSendSuggest('Hôm nay có ai đi trễ hoặc chưa chấm công không?')">Ai đi trễ hôm nay?</button>
+              <button class="nvai-suggest" onclick="nvaiSendSuggest('Liệt kê các sự vụ KHẨN CẤP đang còn mở')">Sự vụ khẩn cấp đang mở</button>
+              <button class="nvai-suggest" onclick="nvaiSendSuggest('Top 5 cửa hàng có nhiều sự vụ nhất 7 ngày qua')">Top CH nhiều vấn đề</button>
+            </div>
+          </div>
+        </div>
+        <div class="nvai-input-bar">
+          <textarea id="nvai-input" class="nvai-input" placeholder="Hỏi gì cũng được..." rows="1" onkeydown="nvaiOnKey(event)" oninput="nvaiAutoResize(this)"></textarea>
+          <button class="nvai-send-btn" id="nvai-send-btn" onclick="nvaiSendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- [v13.41] FLOATING BUTTON Nhân viên AI (ADMIN only) -->
+  <button id="nvai-fab" class="nvai-fab" onclick="goToPage('nvai')" style="display:none" title="Nhân viên AI">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <circle cx="9" cy="10" r="1" fill="white"/><circle cx="15" cy="10" r="1" fill="white"/>
+    </svg>
+  </button>
   <div class="bgql-svd-modal" id="bgql-svd-modal" style="display:none">
     <div class="bgql-svd-backdrop" onclick="bgqlCloseSuVuDetail()"></div>
     <div class="bgql-svd-sheet">
@@ -2830,13 +2883,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.40.1"></script>
-<script src="js/core/02-system.js?v=13.40.1"></script>
+<script src="js/core/01-config.js?v=13.41"></script>
+<script src="js/core/02-system.js?v=13.41"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.40.1">
+<link rel="stylesheet" href="css/07-extras.css?v=13.41">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -2871,19 +2924,20 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.40.1"></script>
-<script src="js/pages/01-lichca.js?v=13.40.1"></script>
-<script src="js/pages/02-nhansu.js?v=13.40.1"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.40.1"></script>
-<script src="js/pages/04-misc.js?v=13.40.1"></script>
-<script src="js/pages/05-muanon.js?v=13.40.1"></script>
-<script src="js/lib/camscanner.js?v=13.40.1"></script>
-<script src="js/pages/06-bangiao.js?v=13.40.1"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.40.1"></script>
-<script src="js/ai/face-recognition.js?v=13.40.1"></script>
-<script src="js/admin/01-banhang.js?v=13.40.1"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.40.1"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.40.1"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.40.1"></script>
+<script src="js/core/03-router.js?v=13.41"></script>
+<script src="js/pages/01-lichca.js?v=13.41"></script>
+<script src="js/pages/02-nhansu.js?v=13.41"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.41"></script>
+<script src="js/pages/04-misc.js?v=13.41"></script>
+<script src="js/pages/05-muanon.js?v=13.41"></script>
+<script src="js/lib/camscanner.js?v=13.41"></script>
+<script src="js/pages/06-bangiao.js?v=13.41"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.41"></script>
+<script src="js/admin/06-nvai.js?v=13.41"></script>
+<script src="js/ai/face-recognition.js?v=13.41"></script>
+<script src="js/admin/01-banhang.js?v=13.41"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.41"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.41"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.41"></script>
 </body>
 </html>
