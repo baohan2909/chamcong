@@ -883,6 +883,17 @@
   color: #fff;
   box-shadow: 0 3px 10px rgba(5,150,105,.28);
 }
+/* [v13.40.1] Nút nguy hiểm (Xóa hàng loạt) — đỏ rõ ràng */
+.bgql-act-danger {
+  background: linear-gradient(135deg, #B91C1C 0%, #DC2626 100%);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(220,38,38,.3);
+}
+.bgql-act-danger:disabled {
+  background: #FCA5A5;
+  box-shadow: none;
+  cursor: not-allowed;
+}
 .bgql-act-ghost {
   background: #fff;
   color: #64748B;
@@ -2548,7 +2559,8 @@
 
 .bgql-multiselect-bar {
   position: fixed;
-  bottom: 92px; left: 50%;
+  bottom: calc(102px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
   transform: translate3d(-50%, 0, 0);
   width: calc(100% - 24px);
   max-width: 480px;
@@ -2559,7 +2571,7 @@
   padding: 10px 14px;
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
-  z-index: 35;
+  z-index: 60; /* [v13.40.1] cao hơn bottom-nav (50) */
 }
 .bgql-ms-l {
   font-size: 13px; font-weight: 600;

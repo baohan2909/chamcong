@@ -1791,7 +1791,7 @@ function bgqlRenderMultiSelectBar(){
     <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
       <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
-      <button class="bgql-act bgql-act-secondary" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>Xóa (${sel})</button>
+      <button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>Xóa (${sel})</button>
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
   `;

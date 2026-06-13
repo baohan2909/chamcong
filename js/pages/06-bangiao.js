@@ -564,12 +564,14 @@ function bgUpdateProgress(){
   // Đếm "phần" hoàn thành (6 groups)
   let doneCount = 0;
   let issues = 0;
+  let anyHang = false; // [v13.40.1] hoist
+  let anhOK = bgPhotos.length >= 1;
 
   // Tiền: cần nhập đủ 3 dòng tiền (>=0 cũng tính là nhập nếu user đã chạm — kiểm bằng key tồn tại)
   const tienOK = ['tien_mat_ket','tien_ban_hang','tien_chi'].every(k => bgState[k] && bgState[k].so_tien !== undefined);
   if (tienOK) doneCount++;
 
-  // 3 nhóm tài sản: hết items đã có status
+  // 3 nhóm tài sản: hết items đã có status (progress bar đếm; KHÔNG bắt buộc gửi)
   for (const kv of [1,2,4]) {
     const g = bgGroups.find(x=>x.key==='ts_kv'+kv);
     if (!g) continue;
@@ -582,12 +584,12 @@ function bgUpdateProgress(){
   // Hàng: cần nhập ít nhất 1 dòng (>=0)
   const hangG = bgGroups.find(x=>x.key==='hang');
   if (hangG){
-    const anyHang = hangG.items.some(it=>bgState[it.id] && bgState[it.id].so_luong !== undefined && bgState[it.id].so_luong !== null);
+    anyHang = hangG.items.some(it=>bgState[it.id] && bgState[it.id].so_luong !== undefined && bgState[it.id].so_luong !== null);
     if (anyHang) doneCount++;
   }
 
   // Ảnh: >= 1
-  if (bgPhotos.length >= 1) doneCount++;
+  if (anhOK) doneCount++;
 
   const txt = document.getElementById('bg-progress-text');
   const isb = document.getElementById('bg-progress-issues');
@@ -597,8 +599,10 @@ function bgUpdateProgress(){
   if (isb) isb.textContent = issues > 0 ? (issues + ' vấn đề') : '';
   if (fill) fill.style.width = (doneCount/6*100) + '%';
   if (btn) {
-    // Cần đủ 6 phần để gửi
-    btn.disabled = (doneCount < 6);
+    // [v13.40.1] FIX: 3 KV tài sản KHÔNG bắt buộc — hạng mục chưa chọn sẽ tự lưu 'KHÔNG CÓ'.
+    // Chỉ cần Tiền + Hàng + Ảnh là gửi được.
+    const required = tienOK && anyHang && anhOK;
+    btn.disabled = !required;
   }
 }
 
