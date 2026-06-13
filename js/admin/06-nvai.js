@@ -294,3 +294,49 @@ function nvaiRemoveThinkingBubble(){
   const b = document.getElementById('nvai-thinking');
   if (b) b.remove();
 }
+
+// [v13.41.2] Toggle drawer session list (mobile)
+window.nvaiToggleSessionDrawer = function(){
+  const sb = document.getElementById('nvai-sidebar');
+  const bd = document.getElementById('nvai-drawer-bd');
+  if (!sb || !bd) return;
+  const isOpen = sb.classList.contains('open');
+  if (isOpen) {
+    sb.classList.remove('open');
+    bd.classList.remove('open');
+  } else {
+    sb.classList.add('open');
+    bd.classList.add('open');
+  }
+};
+
+// [v13.41.2] Update title mobile bar khi đổi session
+function nvaiUpdateMobileBarTtl(){
+  const el = document.getElementById('nvai-mb-ttl');
+  if (!el) return;
+  el.textContent = nvaiCurrentSession?.tieu_de || 'Cuộc hội thoại mới';
+}
+
+// Hook: tự đóng drawer khi click session
+const _origOpenSession = window.nvaiOpenSession;
+window.nvaiOpenSession = async function(sid){
+  await _origOpenSession(sid);
+  // Đóng drawer sau khi mở
+  const sb = document.getElementById('nvai-sidebar');
+  const bd = document.getElementById('nvai-drawer-bd');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.classList.remove('open');
+  nvaiUpdateMobileBarTtl();
+};
+
+// Hook: update title khi new chat
+const _origNewChat = window.nvaiNewChat;
+window.nvaiNewChat = function(){
+  _origNewChat();
+  nvaiUpdateMobileBarTtl();
+  // Đóng drawer trên mobile
+  const sb = document.getElementById('nvai-sidebar');
+  const bd = document.getElementById('nvai-drawer-bd');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.classList.remove('open');
+};

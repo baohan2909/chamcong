@@ -2915,18 +2915,37 @@
   padding: 0 12px;
 }
 @media (max-width: 767px) {
-  /* [v13.41.1] Mobile: full chiều cao, không padding 2 bên */
-  .nvai-wrap { 
-    padding: 0; 
-    height: calc(100dvh - 180px);
-    gap: 0;
+  /* [v13.41.2] Mobile: page-nvai full screen FIXED giữa header app và bottom-nav.
+     Không scroll body — chỉ scroll trong .nvai-msg-list. Header sticky tự nhiên. */
+  #page-nvai.active {
+    position: fixed;
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    left: 0; right: 0;
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0;
+    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
   }
-  /* Hero của page nvai gọn hơn để chừa không gian chat */
-  #page-nvai .cc-hero-page { 
-    padding: 14px 16px 12px !important;
-    margin-bottom: 0 !important;
+  #page-nvai .cc-hero-page {
+    flex-shrink: 0;
+    padding: 10px 14px 12px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
   #page-nvai .cc-hero-page-sub { font-size: 11px; }
+  
+  .nvai-wrap {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+    display: flex;
+  }
 }
 
 /* Sidebar lịch sử session */
@@ -3001,8 +3020,11 @@
   overflow: hidden;
 }
 @media (max-width: 767px) {
-  /* [v13.41.1] Mobile: full width, không border */
+  /* [v13.41.2] Mobile: full width, flex 1, không border */
   .nvai-main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -3016,7 +3038,11 @@
   -webkit-overflow-scrolling: touch;
 }
 @media (max-width: 767px) {
-  .nvai-msg-list { padding: 14px 12px; }
+  .nvai-msg-list { 
+    flex: 1;
+    min-height: 0;
+    padding: 14px 12px;
+  }
 }
 
 /* Welcome screen */
@@ -3146,14 +3172,15 @@
   background: #fff;
 }
 @media (max-width: 767px) {
-  /* [v13.41.1] Mobile: input bar dạng thẻ nổi, có khoảng cách với bottom-nav */
+  /* [v13.41.2] Mobile: input bar cố định cuối page-nvai, không bị bottom-nav che */
   .nvai-input-bar {
-    border-top: none;
-    margin: 6px 8px calc(12px + env(safe-area-inset-bottom, 0px));
-    border: 1px solid #E2E8F0;
-    border-radius: 14px;
-    box-shadow: 0 -2px 12px rgba(15,46,69,.05);
-    padding: 10px 10px 10px 14px;
+    flex-shrink: 0;
+    border-top: 1px solid #E2E8F0;
+    background: #fff;
+    margin: 0;
+    border-radius: 0;
+    padding: 10px 12px;
+    box-shadow: 0 -2px 12px rgba(15,46,69,.06);
   }
 }
 .nvai-input {
@@ -3188,4 +3215,62 @@
   background: #94A3B8;
   cursor: wait;
   box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.41.2] Nhân viên AI - mobile bar + session drawer
+ * ═══════════════════════════════════════════════════════════════════════ */
+.nvai-mobile-bar { display: none; }
+@media (max-width: 767px) {
+  .nvai-mobile-bar {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .nvai-mb-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 7px 10px;
+    background: #F1F5F9; color: #0F2E45;
+    border: none; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .nvai-mb-btn:active { background: #E2E8F0; }
+  .nvai-mb-ttl {
+    flex: 1; min-width: 0;
+    font-size: 13px; font-weight: 700; color: #0F172A;
+    text-align: center;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    padding: 0 4px;
+  }
+  
+  /* Sidebar trên mobile = drawer slide từ trái */
+  .nvai-sidebar {
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    width: 280px; max-width: 80vw;
+    z-index: 70;
+    background: #fff;
+    border-radius: 0;
+    border: none;
+    box-shadow: 4px 0 24px rgba(15,46,69,.2);
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    display: flex !important;  /* override display:none mobile cũ */
+  }
+  .nvai-sidebar.open { transform: translateX(0); }
+  
+  /* Backdrop khi drawer mở */
+  .nvai-drawer-bd {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 65;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .nvai-drawer-bd.open { display: block; }
 }
