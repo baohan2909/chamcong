@@ -312,6 +312,10 @@ function _notifIcon(loai) {
     'DN_TUCHOI': '❌',
     'LC_MOI': '📅',
     'LICH_MOI': '📋',
+    'SV_ASSIGN': '📌',
+    'SV_ESCALATE': '⚠',
+    'BG_XAC_NHAN': '✅',
+    'AI_DIGEST': '🗒',
     'INFO': '🔔',
   };
   return map[loai] || '🔔';
@@ -340,6 +344,12 @@ async function onNotifClick(id, link) {
     renderNotifBadge();
     renderNotifList();
     try { await supa.rpc('fn_danh_dau_da_xem_tb', { p_ids: [id] }); } catch(e){}
+  }
+  // [v13.39] AI_DIGEST: nội dung dài → mở modal đọc toàn văn, không deep-link
+  if (notif && notif.loai === 'AI_DIGEST') {
+    closeNotifPanel();
+    setTimeout(() => _showDigestModal(notif), 200);
+    return;
   }
   closeNotifPanel();
   if (link) {
@@ -515,3 +525,25 @@ try{
 // ═══════════════════════════════════════════════════════════════════
 // [v11] MODULE BÁN HÀNG
 // ═══════════════════════════════════════════════════════════════════
+
+// [v13.39] Modal đọc toàn văn AI Tổng hợp sáng
+function _showDigestModal(notif){
+  let modal = document.getElementById('ai-digest-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'ai-digest-modal';
+  modal.className = 'ai-digest-modal-bg';
+  // Giữ nguyên xuống dòng từ nội dung digest
+  const safeBody = _escTBHtml(notif.noiDung).replace(/\n/g, '<br>');
+  modal.innerHTML = `
+    <div class="ai-digest-modal">
+      <div class="ai-digest-head">
+        <div class="ai-digest-ttl">${_escTBHtml(notif.tieuDe)}</div>
+        <button class="ai-digest-x" onclick="document.getElementById('ai-digest-modal').remove()">✕</button>
+      </div>
+      <div class="ai-digest-body">${safeBody}</div>
+      <div class="ai-digest-foot">Bản phân tích tạo tự động bởi AI lúc 7h sáng</div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}

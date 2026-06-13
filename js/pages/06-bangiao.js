@@ -671,10 +671,12 @@ async function bgSubmit(){
     bgGroups.filter(g=>g.type==='taisan').forEach(g => {
       g.items.forEach(it => {
         const st = bgState[it.id] || {};
+        // [v13.38] FIX: chưa chọn hoặc 'K' → đánh dấu 'KHÔNG CÓ' (khớp confirm screen)
+        const isKhongCo = !st.status || st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO';
         chi_tiet_tai_san.push({
           stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
           dat: st.status !== 'VD',
-          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : null
+          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : (isKhongCo ? 'KHÔNG CÓ' : null)
         });
       });
     });
@@ -1072,13 +1074,60 @@ window.bgOpenBanGiaoDetail = async function(id){
   </div>`;
   document.body.appendChild(m);
   try {
-    const { data, error } = await supa.rpc('fn_ban_giao_detail', { p_id: id });
+    // [v13.38] Load detail + trạng thái xác nhận song song
+    const [detailRes, xnRes] = await Promise.all([
+      supa.rpc('fn_ban_giao_detail', { p_id: id }),
+      supa.rpc('fn_bg_xac_nhan_status', { p_ids: [id] }).then(r=>r).catch(()=>({data:null}))
+    ]);
+    const { data, error } = detailRes;
     if (error) throw error;
     if (!data || data.ok === false) throw new Error((data&&data.error)||'Lỗi');
-    document.getElementById('bgdetail-body').innerHTML = bgDetailRenderHtml(data);
+    const xn = (xnRes.data && xnRes.data[0]) || null;
+    document.getElementById('bgdetail-body').innerHTML = bgXacNhanHtml(id, xn) + bgDetailRenderHtml(data);
   } catch(e){
     document.getElementById('bgdetail-body').innerHTML = 
       `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message||'')}</div>`;
+  }
+};
+
+// [v13.38] Section xác nhận biên bản — badge + nút cho QL
+function bgXacNhanHtml(id, xn){
+  const isQL = SESSION && ['ADMIN','QLNS','QLBH'].some(r => (SESSION.vaiTro||'').startsWith(r));
+  const daXN = xn && xn.trang_thai === 'DA_XAC_NHAN';
+  if (daXN) {
+    const t = xn.thoi_gian_xac_nhan ? new Date(xn.thoi_gian_xac_nhan) : null;
+    const tStr = t ? pad(t.getHours())+':'+pad(t.getMinutes())+' '+pad(t.getDate())+'/'+pad(t.getMonth()+1) : '';
+    return `<div class="bgd-xn bgd-xn-ok">
+      Đã xác nhận bởi <b>${escHtml(xn.nguoi_xac_nhan_ten||'QL')}</b>${tStr?' · '+tStr:''}
+    </div>`;
+  }
+  if (isQL) {
+    return `<div class="bgd-xn bgd-xn-pending">
+      <span>Biên bản chưa được xác nhận</span>
+      <button class="bgql-act bgql-act-primary" onclick="bgXacNhanBienBan('${id}', this)">Xác nhận đã kiểm tra</button>
+    </div>`;
+  }
+  return `<div class="bgd-xn bgd-xn-pending"><span>Chờ quản lý xác nhận</span></div>`;
+}
+
+window.bgXacNhanBienBan = async function(id, btn){
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xác nhận...'; }
+  try {
+    const { data, error } = await supa.rpc('fn_bg_xac_nhan', {
+      p_id: id, p_ma_nv: SESSION.ma, p_ten: SESSION.ten || SESSION.hoTen || ''
+    });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã xác nhận biên bản · NV sẽ nhận thông báo', 'ok');
+    // Update section tại chỗ
+    const sec = document.querySelector('.bgd-xn');
+    if (sec) {
+      sec.className = 'bgd-xn bgd-xn-ok';
+      const now = new Date();
+      sec.innerHTML = `Đã xác nhận bởi <b>${escHtml(SESSION.ten||SESSION.hoTen||'')}</b> · ${pad(now.getHours())}:${pad(now.getMinutes())} ${pad(now.getDate())}/${pad(now.getMonth()+1)}`;
+    }
+  } catch(e){
+    if (btn) { btn.disabled = false; btn.textContent = 'Xác nhận đã kiểm tra'; }
+    showToast('⚠ ' + e.message, 'warn');
   }
 };
 

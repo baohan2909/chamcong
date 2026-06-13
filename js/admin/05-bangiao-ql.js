@@ -99,11 +99,16 @@ function bgqlRenderSuVuFilters(){
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
           <option value="open"${bgqlSuVuFilter.trang_thai==='open'?' selected':''}>Đang xử lý (${open.length})</option>
+          <option value="overdue"${bgqlSuVuFilter.trang_thai==='overdue'?' selected':''}>Quá deadline</option>
           <option value="closed"${bgqlSuVuFilter.trang_thai==='closed'?' selected':''}>Đã đóng</option>
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
         </select>
       </div>
-      ${multiBtn?`<div class="bgql-flt-row">${multiBtn}</div>`:''}
+      <div class="bgql-flt-row">
+        ${multiBtn||''}
+        <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportSuVu()">Xuất Excel</button>
+        <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlEnablePush(this)">Bật thông báo đẩy</button>
+      </div>
       ${(khuVucs.length>1 || chList.length>5) ? `
       <div class="bgql-flt-row">
         ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
@@ -223,6 +228,11 @@ function bgqlRenderSuVuList(){
   
   if (bgqlSuVuFilter.trang_thai === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   else if (bgqlSuVuFilter.trang_thai === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
+  else if (bgqlSuVuFilter.trang_thai === 'overdue') {
+    // [v13.38] Quá deadline + chưa đóng
+    const nowT = Date.now();
+    arr = arr.filter(s => s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < nowT && !['HOAN_TAT','HUY'].includes(s.trang_thai));
+  }
   if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
@@ -551,6 +561,19 @@ async function bgqlLoadTimeline(){
     });
     if (error) throw error;
     bgqlTimelineCache = Array.isArray(data) ? data : [];
+    // [v13.38] Merge trạng thái xác nhận (batch, không đụng RPC cũ)
+    try {
+      const ids = bgqlTimelineCache.map(b => b.id).filter(Boolean);
+      if (ids.length > 0) {
+        const { data: xns } = await supa.rpc('fn_bg_xac_nhan_status', { p_ids: ids });
+        const xnMap = {};
+        (xns||[]).forEach(x => { xnMap[x.id] = x; });
+        bgqlTimelineCache.forEach(b => {
+          const x = xnMap[b.id];
+          if (x) { b._xn = x.trang_thai === 'DA_XAC_NHAN'; b._xn_ten = x.nguoi_xac_nhan_ten; }
+        });
+      }
+    } catch(e){ /* non-blocking */ }
     bgqlRenderTimeline();
   } catch(e){
     list.innerHTML = bgqlRenderTimelineHeader() + 
@@ -699,6 +722,7 @@ function bgqlTLCardHtml(b){
     <div class="bg-tl-head">
       <div class="bg-tl-time">${time}</div>
       <div class="bg-tl-by">${escHtml(b.ten_ch_snapshot||b.ma_ch)} · ${escHtml(b.nguoi_ban_giao_ten||'?')}</div>
+      ${b._xn?'<div class="bg-tl-tag xn-ok">Đã xác nhận</div>':'<div class="bg-tl-tag xn-cho">Chưa xác nhận</div>'}
       ${soKhan>0?`<div class="bg-tl-tag khan">${soKhan} khẩn cấp</div>`:''}
     </div>
     <div class="bg-tl-metrics">
@@ -818,6 +842,11 @@ function bgqlRenderStatsTopBar(){
         <div class="bgql-stats-search-dd" id="bgql-stats-search-dd" style="display:none"></div>
         ${(bgqlStatsKhuVuc || bgqlStatsMaCh) ? `<button class="bgql-stats-search-clear" onclick="bgqlStatsSearchClear()">✕</button>` : ''}
       </div>
+    </div>
+    <div class="bgql-flt-row">
+      <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlOpenHeatmap()">CH hay có vấn đề</button>
+      <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportThongKe()">Xuất Excel</button>
+      ${(typeof SESSION!=='undefined' && SESSION && SESSION.vaiTro==='ADMIN') ? `<button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlOpenDigestConfig()">Cấu hình AI sáng</button>` : ''}
     </div>
     ${bgqlStatsRange === 'day' ? `<div class="bgql-flt-row">
       <input type="date" class="bg-tl-dropdown" value="${bgqlStatsDay||''}" onchange="bgqlSetStatsDay(this.value)">
@@ -1794,4 +1823,330 @@ window.bgqlDeleteBulkConfirm = async function(){
   } catch(e){ 
     showToast('Lỗi: ' + e.message, 'warn');
   }
+};
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.38] HEATMAP — CH hay có vấn đề (30 ngày)
+// ═════════════════════════════════════════════════════════════════════════
+window.bgqlOpenHeatmap = async function(){
+  const modal = document.getElementById('bgql-svd-modal');
+  const body = document.getElementById('bgql-svd-body');
+  if (!modal || !body) return;
+  document.getElementById('bgql-svd-title').textContent = 'CH hay có vấn đề · 30 ngày';
+  body.innerHTML = '<div class="ns-empty">⏳ Đang phân tích...</div>';
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  try {
+    const { data, error } = await supa.rpc('fn_bg_heatmap_ch', {});
+    if (error) throw error;
+    const arr = Array.isArray(data) ? data : [];
+    if (arr.length === 0) { body.innerHTML = '<div class="ns-empty">Chưa có dữ liệu sự vụ 30 ngày qua.</div>'; return; }
+    body.innerHTML = arr.map((c, i) => `
+      <div class="bgql-hm-row" onclick="bgqlOpenThietBi('${escHtml(c.ma_ch)}','${escHtml(c.ten_ch||c.ma_ch)}')">
+        <div class="bgql-hm-rank ${i<3?'top':''}">${i+1}</div>
+        <div class="bgql-hm-main">
+          <div class="bgql-hm-ten">${escHtml(c.ten_ch||c.ma_ch)}</div>
+          <div class="bgql-hm-sub">${escHtml(c.ma_ch)}${c.khu_vuc?' · '+escHtml(c.khu_vuc):''}</div>
+          ${(c.lap_lai && c.lap_lai.length>0)?`<div class="bgql-hm-rep">${c.lap_lai.map(l=>`<span>${escHtml(l.ten)} ×${l.so_lan}</span>`).join('')}</div>`:''}
+        </div>
+        <div class="bgql-hm-nums">
+          <div class="bgql-hm-num"><b>${c.tong_su_vu}</b><small>sự vụ</small></div>
+          ${c.so_khan>0?`<div class="bgql-hm-num khan"><b>${c.so_khan}</b><small>khẩn</small></div>`:''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e){
+    body.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.38] LỊCH SỬ THIẾT BỊ — hạng mục hư lặp lại của 1 CH (6 tháng)
+// ═════════════════════════════════════════════════════════════════════════
+window.bgqlOpenThietBi = async function(ma_ch, ten_ch){
+  const modal = document.getElementById('bgql-svd-modal');
+  const body = document.getElementById('bgql-svd-body');
+  if (!modal || !body) return;
+  document.getElementById('bgql-svd-title').textContent = 'Lịch sử thiết bị · ' + (ten_ch||ma_ch);
+  body.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  try {
+    const { data, error } = await supa.rpc('fn_thiet_bi_history', { p_ma_ch: ma_ch });
+    if (error) throw error;
+    const arr = Array.isArray(data) ? data : [];
+    if (arr.length === 0) { body.innerHTML = '<div class="ns-empty">CH này không có hạng mục hư hỏng trong 6 tháng.</div>'; return; }
+    body.innerHTML = `<div style="font-size:12px;color:#64748B;margin-bottom:12px">Thống kê tài sản hư hỏng 6 tháng gần nhất. Hạng mục từ 3 lần trở lên nên cân nhắc thay mới.</div>` +
+      arr.map(t => `
+      <div class="bgql-tb-row${t.canh_bao_thay_moi?' canh-bao':''}">
+        <div class="bgql-tb-head">
+          <div class="bgql-tb-ten">${escHtml(t.hang_muc)}</div>
+          <div class="bgql-tb-count${t.canh_bao_thay_moi?' do':''}">${t.so_lan} lần</div>
+        </div>
+        ${t.canh_bao_thay_moi?'<div class="bgql-tb-warn">Hư lặp lại nhiều - đề xuất thay mới thay vì sửa</div>':''}
+        <div class="bgql-tb-list">
+          ${(t.chi_tiet||[]).slice(0,5).map(c=>`<div class="bgql-tb-item">${c.ngay} · ${escHtml(c.mo_ta||'')} <span class="bgql-tb-st">${c.trang_thai==='HOAN_TAT'?'Đã xử lý':'Đang mở'}</span></div>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  } catch(e){
+    body.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.38] EXPORT CSV (Excel mở được) — sự vụ + thống kê
+// ═════════════════════════════════════════════════════════════════════════
+function bgqlExportCsv(filename, headers, rows){
+  const esc = v => {
+    const s = String(v == null ? '' : v);
+    return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  };
+  // BOM UTF-8 để Excel hiển thị đúng tiếng Việt
+  const csv = '\uFEFF' + [headers.map(esc).join(','), ...rows.map(r => r.map(esc).join(','))].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+window.bgqlExportSuVu = function(){
+  const arr = bgqlSuVuCache || [];
+  if (arr.length === 0) { showToast('Không có dữ liệu để xuất', 'warn'); return; }
+  const fmtT = t => t ? new Date(t).toLocaleString('vi-VN') : '';
+  bgqlExportCsv(
+    'su_vu_' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Mã sự vụ','Cửa hàng','Mã CH','Tiêu đề','Mô tả','Mức độ','Trạng thái','Người tạo','Người phụ trách','Người xử lý','Phản hồi','Deadline','Tạo lúc'],
+    arr.map(s => [
+      s.ma_sv||'', s.ten_ch_snapshot||'', s.ma_ch||'', s.tieu_de||'', s.mo_ta||'',
+      s.muc_do||'', s.trang_thai||'', s.nguoi_tao_ten||'', s.nguoi_phu_trach_ten||'',
+      s.nguoi_xu_ly_ten||'', s.phan_hoi_xu_ly||'', fmtT(s.deadline_xu_ly), fmtT(s.created_at)
+    ])
+  );
+  showToast('✓ Đã xuất ' + arr.length + ' sự vụ', 'ok');
+};
+
+window.bgqlExportThongKe = function(){
+  const ds = (bgqlStatsData && bgqlStatsData.ds_ch) || [];
+  if (ds.length === 0) { showToast('Không có dữ liệu để xuất', 'warn'); return; }
+  bgqlExportCsv(
+    'thong_ke_bg_' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Mã CH','Tên CH','Khu vực','Đã gửi BB','Số sự vụ','Số khẩn cấp'],
+    ds.map(c => [c.ma_ch||'', c.ten_ch||'', c.khu_vuc||'', c.da_gui?'Có':'Chưa', c.so_su_vu||0, c.so_su_vu_khan||0])
+  );
+  showToast('✓ Đã xuất ' + ds.length + ' cửa hàng', 'ok');
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.38] WEB PUSH SUBSCRIBE — QL bật thông báo đẩy
+//  VAPID public key đọc từ app_settings key 'push.vapid_public'
+// ═════════════════════════════════════════════════════════════════════════
+function bgqlUrlB64ToUint8(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+window.bgqlEnablePush = async function(btn){
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showToast('Thiết bị không hỗ trợ thông báo đẩy. iPhone: cần cài app vào màn hình chính (iOS 16.4+)', 'warn');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Đang bật...'; }
+    
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      showToast('Bạn đã từ chối quyền thông báo', 'warn');
+      if (btn) { btn.disabled = false; btn.textContent = 'Bật thông báo đẩy'; }
+      return;
+    }
+    
+    // Lấy VAPID public key từ app_settings
+    const { data: vapidRow, error: ve } = await supa.from('app_settings')
+      .select('value').eq('key', 'push.vapid_public').single();
+    if (ve || !vapidRow || !vapidRow.value) {
+      showToast('Hệ thống chưa cấu hình VAPID key (admin cần setup Edge Function)', 'warn');
+      if (btn) { btn.disabled = false; btn.textContent = 'Bật thông báo đẩy'; }
+      return;
+    }
+    const vapidKey = typeof vapidRow.value === 'string' ? vapidRow.value.replace(/"/g,'') : vapidRow.value;
+    
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: bgqlUrlB64ToUint8(vapidKey)
+    });
+    
+    const raw = sub.toJSON();
+    const { data, error } = await supa.rpc('fn_push_subscribe', {
+      p_ma_nv: SESSION.ma,
+      p_endpoint: raw.endpoint,
+      p_p256dh: raw.keys.p256dh,
+      p_auth: raw.keys.auth,
+      p_ua: navigator.userAgent.slice(0, 200)
+    });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    
+    showToast('✓ Đã bật thông báo đẩy trên thiết bị này', 'ok');
+    if (btn) { btn.textContent = '✓ Đã bật thông báo'; }
+  } catch(e){
+    showToast('⚠ ' + e.message, 'warn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Bật thông báo đẩy'; }
+  }
+};
+
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [v13.39] CẤU HÌNH AI TỔNG HỢP SÁNG — quản lý người nhận (ADMIN)
+// ═════════════════════════════════════════════════════════════════════════
+let bgqlDigestOptions = null;
+
+window.bgqlOpenDigestConfig = async function(){
+  const modal = document.getElementById('bgql-svd-modal');
+  const body = document.getElementById('bgql-svd-body');
+  if (!modal || !body) return;
+  document.getElementById('bgql-svd-title').textContent = 'Cấu hình AI Tổng hợp sáng';
+  body.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  await bgqlRenderDigestConfig();
+};
+
+async function bgqlRenderDigestConfig(){
+  const body = document.getElementById('bgql-svd-body');
+  if (!body) return;
+  try {
+    const [listRes, optRes, enRes] = await Promise.all([
+      supa.rpc('fn_digest_recipients_list'),
+      supa.rpc('fn_digest_options'),
+      supa.from('app_settings').select('value').eq('key','digest.enabled').single().then(r=>r).catch(()=>({data:null}))
+    ]);
+    const list = Array.isArray(listRes.data) ? listRes.data : [];
+    bgqlDigestOptions = optRes.data || { roles: [], bo_phan: [] };
+    const enabled = enRes.data && (enRes.data.value === true || enRes.data.value === 'true');
+
+    const loaiLabel = { NGUOI:'Người', ROLE:'Vai trò', BO_PHAN:'Bộ phận' };
+
+    body.innerHTML = `
+      <div class="bgql-dg-info">
+        AI đọc toàn bộ biên bản và sự vụ 24h qua, gửi bản phân tích chi tiết lúc 7h sáng mỗi ngày. Số tiền chỉ hiển thị khi có lệch tiền.
+      </div>
+
+      <div class="bgql-dg-toggle">
+        <span>Trạng thái: <b class="${enabled?'on':'off'}">${enabled?'Đang bật':'Đã tắt'}</b></span>
+        <button class="bgql-act ${enabled?'bgql-act-ghost':'bgql-act-primary'}" onclick="bgqlDigestToggle(${!enabled})">${enabled?'Tắt digest':'Bật digest'}</button>
+      </div>
+
+      <div class="bgql-dg-sec-ttl">Người nhận hiện tại (${list.length})</div>
+      <div class="bgql-dg-list">
+        ${list.length===0 ? '<div class="ns-empty">Chưa có người nhận nào.</div>' :
+          list.map(r => `
+            <div class="bgql-dg-row">
+              <div class="bgql-dg-row-l">
+                <span class="bgql-dg-badge ${r.loai}">${loaiLabel[r.loai]||r.loai}</span>
+                <span class="bgql-dg-name">${escHtml(r.ten_hien_thi||r.gia_tri)}</span>
+                ${!r.active?'<span class="bgql-dg-off">đã tắt</span>':''}
+              </div>
+              <button class="bgql-dg-del" onclick="bgqlDigestRemove('${r.id}')" title="Xóa">✕</button>
+            </div>
+          `).join('')}
+      </div>
+
+      <div class="bgql-dg-sec-ttl">Thêm người nhận</div>
+      <div class="bgql-dg-add">
+        <select class="bg-tl-dropdown" id="bgql-dg-loai" onchange="bgqlDigestLoaiChange()">
+          <option value="NGUOI">Người cụ thể</option>
+          <option value="ROLE">Theo vai trò</option>
+          <option value="BO_PHAN">Theo bộ phận</option>
+        </select>
+        <div id="bgql-dg-value-wrap">
+          <input type="text" class="bg-tl-dropdown" id="bgql-dg-search" placeholder="Tìm theo tên hoặc mã..." oninput="bgqlDigestSearchPerson(this.value)" autocomplete="off">
+          <div id="bgql-dg-search-results" class="bgql-dg-results"></div>
+        </div>
+      </div>
+    `;
+  } catch(e){
+    body.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
+  }
+}
+
+window.bgqlDigestLoaiChange = function(){
+  const loai = document.getElementById('bgql-dg-loai').value;
+  const wrap = document.getElementById('bgql-dg-value-wrap');
+  if (!wrap) return;
+  if (loai === 'NGUOI') {
+    wrap.innerHTML = `<input type="text" class="bg-tl-dropdown" id="bgql-dg-search" placeholder="Tìm theo tên hoặc mã..." oninput="bgqlDigestSearchPerson(this.value)" autocomplete="off">
+      <div id="bgql-dg-search-results" class="bgql-dg-results"></div>`;
+  } else {
+    const opts = loai === 'ROLE' ? (bgqlDigestOptions.roles||[]) : (bgqlDigestOptions.bo_phan||[]);
+    wrap.innerHTML = `<select class="bg-tl-dropdown" id="bgql-dg-select">
+        ${opts.length===0?'<option value="">(không có)</option>':opts.map(o=>`<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('')}
+      </select>
+      <button class="bgql-act bgql-act-primary" style="margin-top:8px;width:100%" onclick="bgqlDigestAddRoleOrDept()">Thêm</button>`;
+  }
+};
+
+let bgqlDigestSearchTimer = null;
+window.bgqlDigestSearchPerson = function(kw){
+  clearTimeout(bgqlDigestSearchTimer);
+  const box = document.getElementById('bgql-dg-search-results');
+  if (!box) return;
+  if (!kw || kw.length < 1) { box.innerHTML = ''; return; }
+  bgqlDigestSearchTimer = setTimeout(async () => {
+    try {
+      const { data } = await supa.rpc('fn_search_nguoi_xu_ly', { p_keyword: kw, p_limit: 8 });
+      const arr = Array.isArray(data) ? data : [];
+      box.innerHTML = arr.length===0 ? '<div class="bgql-dg-noresult">Không tìm thấy</div>' :
+        arr.map(p => `<div class="bgql-dg-result-item" onclick="bgqlDigestAddPerson('${escHtml(p.ma)}','${escHtml((p.ten||'').replace(/'/g,''))}')">
+          <b>${escHtml(p.ten)}</b> <span>${escHtml(p.ma)}${p.ch_or_role?' · '+escHtml(p.ch_or_role):''}</span>
+        </div>`).join('');
+    } catch(e){ box.innerHTML = ''; }
+  }, 250);
+};
+
+window.bgqlDigestAddPerson = async function(ma, ten){
+  await bgqlDigestDoAdd('NGUOI', ma, ten);
+};
+window.bgqlDigestAddRoleOrDept = async function(){
+  const loai = document.getElementById('bgql-dg-loai').value;
+  const sel = document.getElementById('bgql-dg-select');
+  if (!sel || !sel.value) { showToast('Chưa chọn giá trị', 'warn'); return; }
+  await bgqlDigestDoAdd(loai, sel.value, sel.value);
+};
+
+async function bgqlDigestDoAdd(loai, giaTri, ten){
+  try {
+    const { data, error } = await supa.rpc('fn_digest_recipient_add', {
+      p_ma_nv: SESSION.ma, p_loai: loai, p_gia_tri: giaTri, p_ten: ten
+    });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã thêm người nhận', 'ok');
+    bgqlRenderDigestConfig();
+  } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
+}
+
+window.bgqlDigestRemove = async function(id){
+  if (!confirm('Xóa người nhận này khỏi danh sách digest?')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_digest_recipient_remove', { p_ma_nv: SESSION.ma, p_id: id });
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã xóa', 'ok');
+    bgqlRenderDigestConfig();
+  } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
+};
+
+window.bgqlDigestToggle = async function(turnOn){
+  try {
+    const { error } = await supa.from('app_settings')
+      .update({ value: turnOn, updated_at: new Date().toISOString() })
+      .eq('key', 'digest.enabled');
+    if (error) throw error;
+    showToast(turnOn?'✓ Đã bật digest':'Đã tắt digest', 'ok');
+    bgqlRenderDigestConfig();
+  } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
 };

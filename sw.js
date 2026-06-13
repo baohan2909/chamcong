@@ -12,7 +12,7 @@
  *   4. User bấm → skipWaiting + reload
  */
 
-const CACHE_VERSION = 'nonson-v13.37';
+const CACHE_VERSION = 'nonson-v13.39';
 const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
 
 // Files cần precache cho offline (chỉ static assets quan trọng)
@@ -131,4 +131,37 @@ self.addEventListener('message', event => {
   if (event.data && event.data.action === 'getVersion') {
     event.ports[0].postMessage({ version: CACHE_VERSION });
   }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// [v13.38] WEB PUSH — nhận thông báo đẩy từ Supabase Edge Function
+// ═══════════════════════════════════════════════════════════════════════════
+self.addEventListener('push', event => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; } catch(e) {
+    payload = { title: 'Nón Sơn', body: event.data ? event.data.text() : '' };
+  }
+  const title = payload.title || 'Nón Sơn · Thông báo';
+  const options = {
+    body: payload.body || '',
+    icon: payload.icon || './icons/icon-192.png',
+    badge: payload.badge || './icons/icon-192.png',
+    tag: payload.tag || 'nonson-tb',
+    renotify: true,
+    data: { url: payload.url || './' }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || './';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if ('focus' in c) { c.focus(); return; }
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
 });
