@@ -2906,6 +2906,58 @@
   50%      { box-shadow: 0 6px 20px rgba(15,46,69,.4), 0 0 0 12px rgba(30,58,138,0); }
 }
 
+/* [v13.54] Header AI — navy gradient + vòng tròn trang trí, gọn, cố định */
+#page-nvai .cc-hero-page.nvai-hero {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #0B2A4A 0%, #123A63 55%, #0E4D6B 100%) !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+}
+#page-nvai .cc-hero-page.nvai-hero::before {
+  content: ''; position: absolute;
+  top: -60px; right: -30px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,212,191,.22), transparent 70%);
+  pointer-events: none;
+}
+#page-nvai .cc-hero-page.nvai-hero::after {
+  content: ''; position: absolute;
+  bottom: -70px; left: 32%;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(203,164,90,.16), transparent 70%);
+  pointer-events: none;
+}
+.nvai-hero-l { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 0; position: relative; z-index: 1; }
+.nvai-hero-ic {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #5EEAD4;
+}
+.nvai-hero-txt { min-width: 0; }
+#page-nvai .nvai-hero .cc-hero-page-label { color: rgba(255,255,255,.62) !important; }
+#page-nvai .nvai-hero .cc-hero-page-title { color: #fff !important; margin: 0 !important; }
+.nvai-hero-acts { display: flex; gap: 7px; position: relative; z-index: 1; }
+.nvai-hero-act {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.nvai-hero-act:active { background: rgba(255,255,255,.22); }
+.nvai-hero-home { flex-shrink: 0; position: relative; z-index: 1; }
+@media (min-width: 768px) {
+  .nvai-hero-acts, .nvai-hero-home { display: none; }  /* desktop dùng sidebar + main-header */
+}
+
 /* Layout chat */
 .nvai-wrap {
   display: flex;
@@ -2919,15 +2971,16 @@
      + bàn phím đẩy menu). Header app sticky tự nhiên giữ cố định trên cùng.
      Bottom-nav + fab được ẩn khi ở page này (JS goToPage). */
   #page-nvai .cc-hero-page {
-    padding: 14px 16px !important;
-    margin: 10px 12px 0 !important;
-    border-radius: 18px !important;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 12px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
     position: sticky !important;
-    top: 8px;
-    z-index: 30;
-    box-shadow: 0 6px 18px rgba(15,46,69,.18);
+    top: 0;
+    z-index: 40;
+    box-shadow: 0 4px 16px rgba(11,42,74,.22);
   }
   #page-nvai .cc-hero-page-sub { font-size: 11px; }
+  .nvai-hero-ic { width: 36px; height: 36px; }
 
   .nvai-wrap {
     display: block;
@@ -3062,15 +3115,17 @@
 }
 @media (max-width: 540px) { .nvai-suggest-grid { grid-template-columns: 1fr; } }
 .nvai-suggest {
-  padding: 11px 13px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  font-size: 12.5px; font-weight: 600; color: #1E3A8A;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #E5EAF0;
+  border-radius: 11px;
+  font-size: 12.5px; font-weight: 600; color: #123A63;
   text-align: left; cursor: pointer;
-  line-height: 1.4;
+  line-height: 1.35;
+  box-shadow: 0 1px 2px rgba(11,42,74,.04);
+  transition: transform .15s, border-color .15s, background .15s;
 }
-.nvai-suggest:hover { background: #EFF6FF; border-color: #BFDBFE; }
+.nvai-suggest:hover { background: #F0F7FF; border-color: #93C5FD; transform: translateY(-1px); }
 .nvai-suggest:active { transform: scale(.99); }
 
 /* Message bubbles */
@@ -3113,6 +3168,13 @@
   margin-bottom: 6px;
 }
 .nvai-content { font-size: 13.5px; }
+.nvai-content.nvai-streaming { white-space: pre-wrap; }
+.nvai-content.nvai-streaming::after {
+  content: '▍'; color: #2DD4BF;
+  animation: nvaiCaret 1s steps(1) infinite;
+  margin-left: 1px; font-weight: 400;
+}
+@keyframes nvaiCaret { 50% { opacity: 0; } }
 .nvai-content b { color: #0F2E45; font-weight: 700; }
 .nvai-content code {
   background: #fff; padding: 1px 6px;
@@ -3267,11 +3329,13 @@
   .nvai-drawer-bd.open { display: block; }
 }
 
-/* [v13.53] Khi ở Nhân viên AI: ẩn chắc bottom-nav + FAB (override), ô chat dính đáy */
+/* [v13.54] Trang Nhân viên AI: ẩn bottom-nav + FAB; mobile ẩn main-header (header AI navy tự cố định) */
 body.nvai-active .bottom-nav,
 body.nvai-active #nvai-fab,
 body.nvai-active #bottom-nav { display: none !important; }
 @media (max-width: 767px) {
+  body.nvai-active #main-header { display: none !important; }
+  #page-nvai .nvai-mobile-bar { display: none !important; }  /* gộp nút vào header navy */
   body.nvai-active #page-nvai .nvai-input-bar {
     position: sticky; bottom: 0; z-index: 10;
   }

@@ -53,6 +53,7 @@ window.nvaiPageInit = async function(){
 // Hook khi rời page nvai → show FAB + bottom-nav lại
 window.nvaiPageLeave = function(){
   document.body.classList.remove('nvai-active');
+  if (typeof _nvaiStreamTimer !== 'undefined' && _nvaiStreamTimer) { clearTimeout(_nvaiStreamTimer); _nvaiStreamTimer = null; }
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = '';
   nvaiInitFab();
@@ -275,6 +276,7 @@ window.nvaiSendMessage = async function(){
     
     nvaiRemoveThinkingBubble();
     nvaiRenderMessages();
+    nvaiStreamLastAssistant(result.reply);  // [v13.54] chữ chạy từ từ như ChatGPT
     await nvaiLoadSessions();  // refresh sidebar
     
   } catch(e){
@@ -305,6 +307,37 @@ function nvaiAddThinkingBubble(){
 function nvaiRemoveThinkingBubble(){
   const b = document.getElementById('nvai-thinking');
   if (b) b.remove();
+}
+
+// [v13.54] Hiệu ứng chữ chạy từ từ (như ChatGPT) cho câu trả lời mới nhất
+let _nvaiStreamTimer = null;
+function nvaiStreamLastAssistant(fullText){
+  if (_nvaiStreamTimer) { clearTimeout(_nvaiStreamTimer); _nvaiStreamTimer = null; }
+  const list = document.getElementById('nvai-msg-list');
+  if (!list || !fullText) return;
+  const conts = list.querySelectorAll('.nvai-msg.assistant .nvai-content');
+  const el = conts[conts.length - 1];
+  if (!el) return;
+  // Tách theo từ (giữ khoảng trắng) để chạy mượt, không quá chậm
+  const tokens = String(fullText).split(/(\s+)/);
+  let i = 0;
+  el.textContent = '';
+  el.classList.add('nvai-streaming');
+  const nearBottom = () => (list.scrollHeight - list.scrollTop - list.clientHeight) < 90;
+  function step(){
+    el.textContent += tokens.slice(i, i + 2).join('');  // 2 token/nhịp
+    i += 2;
+    if (nearBottom()) list.scrollTop = list.scrollHeight;
+    if (i < tokens.length) {
+      _nvaiStreamTimer = setTimeout(step, 16);
+    } else {
+      el.innerHTML = nvaiFormatMarkdown(fullText);  // format markdown đầy đủ khi xong
+      el.classList.remove('nvai-streaming');
+      _nvaiStreamTimer = null;
+      if (nearBottom()) list.scrollTop = list.scrollHeight;
+    }
+  }
+  step();
 }
 
 // [v13.41.2] Toggle drawer session list (mobile)
