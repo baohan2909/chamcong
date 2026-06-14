@@ -95,8 +95,8 @@ window.dhTimCuaHang = async function(){
   if (btn){ btn.disabled = true; btn.textContent = 'AI đang phân tích...'; }
   box.innerHTML = '<div class="dh-loading">Đang định vị địa chỉ khách...</div>';
 
-  // 1) Geocode khách
-  const geo = await dhGeocode(diaChi);
+  // 1) Geocode khách (thông minh, fallback nhiều cấp)
+  const geo = await dhGeocodeSmart();
   if (!geo) {
     box.innerHTML = '<div class="dh-empty">Không tìm được tọa độ địa chỉ này. Thử ghi rõ hơn: số nhà, đường, phường, tỉnh/thành.</div>';
     if (btn){ btn.disabled = false; btn.textContent = 'AI gợi ý cửa hàng'; }
@@ -123,7 +123,7 @@ window.dhTimCuaHang = async function(){
 
   // 2b) Lọc CH còn hàng nếu có nhập barcode (tồn hiện tại > 0)
   let candidate = near;
-  const barcode = (document.getElementById('dh-sp-barcode').value || '').trim();
+  const barcode = (dhSelectedSp && dhSelectedSp.maVach) ? String(dhSelectedSp.maVach).trim() : '';
   if (barcode) {
     try {
       const { data: tk } = await supa.rpc('dh_fn_ch_con_hang', { p_barcode: barcode });
@@ -380,3 +380,36 @@ document.addEventListener('click', function(e){
   const w = e.target.closest('.dh-ac-wrap');
   if (!w) { const box = document.getElementById('dh-sp-aclist'); if (box) box.classList.remove('on'); }
 }, true);
+
+/* ════════════════════════════════════════════════════════════════════════
+ *  [v13.64] GEOCODE THÔNG MINH — fallback nhiều cấp cho địa chỉ VN
+ *  Nominatim yếu với địa chỉ chi tiết (số nhà, "Phường 6", "Quận ...").
+ *  → thử lần lượt: đường+quận+tỉnh → quận+tỉnh → raw → tỉnh. Bỏ tiền tố.
+ * ════════════════════════════════════════════════════════════════════════ */
+function dhCleanPart(s){
+  return String(s||'').replace(/^(Thành phố|Thanh pho|TP\.?|Tỉnh|Quận|Huyện|Phường|Xã|Thị xã|Thị trấn)\s+/i,'').trim();
+}
+function dhStreetName(s){
+  // Bỏ số nhà đầu: "44 Nguyễn Văn Dung" → "Nguyễn Văn Dung"; "12/3 Lê Lợi" → "Lê Lợi"
+  return String(s||'').replace(/^[\d]+[\/\d\w]*\s+/,'').trim();
+}
+async function dhGeocodeSmart(){
+  const tinh   = dhCleanPart(dhAddrText('dh-addr-tinh'));
+  const huyen  = dhCleanPart(dhAddrText('dh-addr-huyen'));
+  const street = dhStreetName((document.getElementById('dh-addr-street')||{}).value || '');
+  const raw    = (document.getElementById('dh-diachi').value || '').trim();
+  const queries = [];
+  if (street && huyen && tinh) queries.push(`${street}, ${huyen}, ${tinh}, Vietnam`);
+  if (huyen && tinh)           queries.push(`${huyen}, ${tinh}, Vietnam`);
+  if (raw)                     queries.push(raw + ', Vietnam');
+  if (raw)                     queries.push(raw);
+  if (tinh)                    queries.push(`${tinh}, Vietnam`);
+  // unique giữ thứ tự
+  const seen = new Set();
+  for (const q of queries) {
+    if (seen.has(q)) continue; seen.add(q);
+    const geo = await dhGeocode(q);
+    if (geo) return geo;
+  }
+  return null;
+}
