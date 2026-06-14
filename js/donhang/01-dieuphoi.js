@@ -29,14 +29,23 @@ window.dhDieuPhoiInit = function(){
     else { tag.textContent = 'DEMO'; tag.classList.remove('dh-tag-live'); }
   }
   dhResetForm();
+  dhEnsureSanPham();   // nạp danh sách SP cho autocomplete (tái dùng engine bán hàng)
+  dhLoadTinh();        // nạp danh sách tỉnh/thành cho địa chỉ phân cấp
 };
 
 function dhResetForm(){
   dhLastCHRanked = [];
   dhKhachLatLng  = null;
-  ['dh-khach-ten','dh-khach-sdt','dh-diachi','dh-sp-barcode','dh-sp-ten','dh-sp-size','dh-sp-giatri']
+  dhSelectedSp   = null;
+  ['dh-khach-ten','dh-khach-sdt','dh-diachi','dh-addr-street','dh-sp-search','dh-sp-ck']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['dh-addr-tinh','dh-addr-huyen','dh-addr-xa'].forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+  const selH = document.getElementById('dh-addr-huyen'); if (selH){ selH.innerHTML='<option value="">Quận / Huyện...</option>'; selH.disabled=true; }
+  const selX = document.getElementById('dh-addr-xa'); if (selX){ selX.innerHTML='<option value="">Phường / Xã...</option>'; selX.disabled=true; }
   const sl = document.getElementById('dh-sp-sl'); if (sl) sl.value = '1';
+  if (typeof dhRenderSpChosen === 'function') dhRenderSpChosen();
+  const mb = document.getElementById('dh-money-box'); if (mb) mb.style.display='none';
+  const ac = document.getElementById('dh-sp-aclist'); if (ac){ ac.classList.remove('on'); ac.innerHTML=''; }
   const box = document.getElementById('dh-ch-list'); if (box) box.innerHTML = '';
   const sw = document.getElementById('dh-send-wrap'); if (sw) sw.style.display = 'none';
   const bt = document.getElementById('dh-btn-tim'); if (bt) { bt.disabled = false; bt.textContent = 'Tìm cửa hàng gần khách'; }
@@ -187,17 +196,23 @@ function dhRenderCHList(list){
 window.dhGuiYeuCau = async function(){
   if (!dhLastCHRanked.length) { showToast && showToast('Chưa có cửa hàng để gửi', 'warn'); return; }
   const diaChi  = (document.getElementById('dh-diachi').value || '').trim();
-  const spTen   = (document.getElementById('dh-sp-ten').value || '').trim();
-  if (!diaChi || !spTen) { showToast && showToast('Cần địa chỉ + tên sản phẩm', 'warn'); return; }
+  if (!diaChi) { showToast && showToast('Cần địa chỉ giao', 'warn'); return; }
+  if (!dhSelectedSp) { showToast && showToast('Chọn sản phẩm trước', 'warn'); return; }
   if (!dhKhachLatLng) { showToast && showToast('Bấm Tìm cửa hàng trước', 'warn'); return; }
 
   const khachTen = (document.getElementById('dh-khach-ten').value || '').trim();
   const khachSdt = (document.getElementById('dh-khach-sdt').value || '').trim();
-  const spBar    = (document.getElementById('dh-sp-barcode').value || '').trim();
-  const spSize   = (document.getElementById('dh-sp-size').value || '').trim();
+  const spTen    = dhSelectedSp.ten || '';
+  const spBar    = dhSelectedSp.maVach || '';
+  const spSku    = dhSelectedSp.sku || '';
+  const gia      = dhGiaSp(dhSelectedSp);
   const soLuong  = parseInt(document.getElementById('dh-sp-sl').value || '1') || 1;
-  const giaTri   = parseFloat((document.getElementById('dh-sp-giatri').value || '0').replace(/[^\d.]/g,'')) || 0;
+  const chietKhau= parseFloat((document.getElementById('dh-sp-ck').value || '0').replace(/[^\d.]/g,'')) || 0;
+  const giaTri   = Math.max(0, gia*soLuong - chietKhau);
   const pttt     = document.getElementById('dh-pttt').value || 'COD';
+  const addrTinh = dhAddrText('dh-addr-tinh');
+  const addrXa   = dhAddrText('dh-addr-xa');
+  const addrConLai = [ (document.getElementById('dh-addr-street').value||'').trim(), dhAddrText('dh-addr-huyen') ].filter(Boolean).join(', ');
 
   const banKinh = parseFloat(_getSetting('donhang.ban_kinh_km', 2)) || 2;
   const nguong  = dhLastCHRanked[0].km_sort + banKinh;
@@ -212,9 +227,9 @@ window.dhGuiYeuCau = async function(){
   try {
     const tao = await supa.rpc('dh_fn_tao_don', {
       p_khach_ten: khachTen, p_khach_sdt: khachSdt,
-      p_dia_chi_full: diaChi, p_dia_chi_tinh: null, p_dia_chi_xa: null, p_dia_chi_con_lai: null,
+      p_dia_chi_full: diaChi, p_dia_chi_tinh: addrTinh||null, p_dia_chi_xa: addrXa||null, p_dia_chi_con_lai: addrConLai||null,
       p_khach_lat: dhKhachLatLng.lat, p_khach_lng: dhKhachLatLng.lng,
-      p_sp_barcode: spBar, p_sp_ten: spTen, p_sp_size: spSize,
+      p_sp_barcode: spBar, p_sp_ten: spTen, p_sp_size: spSku,
       p_so_luong: soLuong, p_gia_tri: giaTri,
       p_tu_van_ma: SESSION.ma, p_tu_van_ten: SESSION.ten,
       p_phuong_thuc_tt: pttt, p_nguon: 'WEB', p_is_demo: true
@@ -233,3 +248,135 @@ window.dhGuiYeuCau = async function(){
     if (btn) btn.disabled = false;
   }
 };
+
+/* ════════════════════════════════════════════════════════════════════════
+ *  [v13.61] NÂNG CẤP: autocomplete sản phẩm + địa chỉ phân cấp + thành tiền
+ * ════════════════════════════════════════════════════════════════════════ */
+let dhSelectedSp = null;   // sản phẩm đã chọn (object từ BH.spList)
+let dhAcItems    = [];     // kết quả gợi ý hiện tại
+let dhTinhList   = [];     // danh sách tỉnh/thành
+
+function dhFmtTien(n){ n = Math.round(n||0); return n.toLocaleString('vi-VN') + 'đ'; }
+function dhGiaSp(sp){ return (sp && sp.giaSale>0) ? sp.giaSale : (sp ? sp.giaNY : 0); }
+
+// ─── Sản phẩm: nạp danh sách (tái dùng engine phiên bán hàng) ───
+async function dhEnsureSanPham(){
+  if (typeof BH !== 'undefined' && BH.spList && BH.spList.length) return;
+  if (typeof bhLoadSanPham === 'function') {
+    try { await bhLoadSanPham(); } catch(e){ console.warn('[DH] load SP:', e); }
+  }
+}
+
+window.dhSpSearch = function(q){
+  const box = document.getElementById('dh-sp-aclist');
+  if (!box) return;
+  q = (q||'').trim();
+  if (q.length < 1) { box.classList.remove('on'); box.innerHTML=''; return; }
+  let res = [];
+  if (typeof bhSearchSpLocal === 'function') res = bhSearchSpLocal(q, 12) || [];
+  dhAcItems = res;
+  if (!res.length) {
+    box.innerHTML = '<div class="dh-ac-empty">Không tìm thấy sản phẩm phù hợp</div>';
+    box.classList.add('on'); return;
+  }
+  box.innerHTML = res.map((sp,i)=>`
+    <div class="dh-ac-item" onclick="dhSpPick(${i})">
+      <div class="dh-ac-info">
+        <div class="dh-ac-ten">${escHtml(sp.ten||'')}</div>
+        <div class="dh-ac-meta">${escHtml(sp.maCu||'')}${sp.sku?(' · '+escHtml(sp.sku)):''}${sp.maVach?(' · '+escHtml(sp.maVach)):''}</div>
+      </div>
+      <div class="dh-ac-gia">${dhFmtTien(dhGiaSp(sp))}</div>
+    </div>`).join('');
+  box.classList.add('on');
+};
+
+window.dhSpPick = function(i){
+  const sp = dhAcItems[i]; if (!sp) return;
+  dhSelectedSp = sp;
+  const box = document.getElementById('dh-sp-aclist');
+  if (box){ box.classList.remove('on'); box.innerHTML=''; }
+  const srch = document.getElementById('dh-sp-search'); if (srch) srch.value = '';
+  dhRenderSpChosen();
+  dhCalcTien();
+};
+
+function dhRenderSpChosen(){
+  const wrap = document.getElementById('dh-sp-chosen');
+  if (!wrap) return;
+  if (!dhSelectedSp){ wrap.innerHTML=''; return; }
+  const sp = dhSelectedSp;
+  wrap.innerHTML = `<div class="dh-sp-card">
+    <button class="dh-sp-card-x" onclick="dhSpClear()" aria-label="Bỏ">×</button>
+    <div class="dh-sp-card-tt">${escHtml(sp.ten||'')}</div>
+    <div class="dh-sp-card-meta">${escHtml(sp.maCu||'')}${sp.sku?(' · SKU '+escHtml(sp.sku)):''} · ${dhFmtTien(dhGiaSp(sp))}</div>
+  </div>`;
+}
+
+window.dhSpClear = function(){ dhSelectedSp = null; dhRenderSpChosen(); dhCalcTien(); };
+
+window.dhCalcTien = function(){
+  const box = document.getElementById('dh-money-box');
+  if (!dhSelectedSp){ if (box) box.style.display='none'; return; }
+  const gia = dhGiaSp(dhSelectedSp);
+  const sl = parseInt(document.getElementById('dh-sp-sl').value||'1')||1;
+  const ck = parseFloat((document.getElementById('dh-sp-ck').value||'0').replace(/[^\d.]/g,''))||0;
+  const total = Math.max(0, gia*sl - ck);
+  document.getElementById('dh-m-gia').textContent = dhFmtTien(gia);
+  document.getElementById('dh-m-sl').textContent = '×'+sl;
+  document.getElementById('dh-m-ck').textContent = '−'+dhFmtTien(ck);
+  document.getElementById('dh-m-total').textContent = dhFmtTien(total);
+  if (box) box.style.display='block';
+};
+
+// ─── Địa chỉ: phân cấp Tỉnh → Huyện → Xã (provinces.open-api.vn, miễn phí) ───
+async function dhLoadTinh(){
+  const sel = document.getElementById('dh-addr-tinh');
+  if (!sel || dhTinhList.length) return;
+  try {
+    const r = await fetch('https://provinces.open-api.vn/api/p/', { signal: AbortSignal.timeout(9000) });
+    dhTinhList = await r.json();
+    sel.innerHTML = '<option value="">Tỉnh / Thành...</option>' +
+      dhTinhList.map(t=>`<option value="${t.code}">${escHtml(t.name)}</option>`).join('');
+  } catch(e){ console.warn('[DH] load tỉnh:', e); }
+}
+window.dhAddrTinhChange = async function(){
+  const code = document.getElementById('dh-addr-tinh').value;
+  const selH = document.getElementById('dh-addr-huyen');
+  const selX = document.getElementById('dh-addr-xa');
+  selH.innerHTML = '<option value="">Quận / Huyện...</option>'; selH.disabled = true;
+  selX.innerHTML = '<option value="">Phường / Xã...</option>'; selX.disabled = true;
+  dhAddrCompose();
+  if (!code) return;
+  try {
+    const r = await fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`, { signal: AbortSignal.timeout(9000) });
+    const d = await r.json();
+    (d.districts||[]).forEach(h=>{ const o=document.createElement('option'); o.value=h.code; o.textContent=h.name; selH.appendChild(o); });
+    selH.disabled = false;
+  } catch(e){ console.warn('[DH] load huyện:', e); }
+};
+window.dhAddrHuyenChange = async function(){
+  const code = document.getElementById('dh-addr-huyen').value;
+  const selX = document.getElementById('dh-addr-xa');
+  selX.innerHTML = '<option value="">Phường / Xã...</option>'; selX.disabled = true;
+  dhAddrCompose();
+  if (!code) return;
+  try {
+    const r = await fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`, { signal: AbortSignal.timeout(9000) });
+    const d = await r.json();
+    (d.wards||[]).forEach(x=>{ const o=document.createElement('option'); o.value=x.code; o.textContent=x.name; selX.appendChild(o); });
+    selX.disabled = false;
+  } catch(e){ console.warn('[DH] load xã:', e); }
+};
+function dhAddrText(selId){ const s=document.getElementById(selId); return (s && s.selectedIndex>0) ? s.options[s.selectedIndex].text : ''; }
+window.dhAddrCompose = function(){
+  const street = (document.getElementById('dh-addr-street').value||'').trim();
+  const parts = [street, dhAddrText('dh-addr-xa'), dhAddrText('dh-addr-huyen'), dhAddrText('dh-addr-tinh')].filter(Boolean);
+  const ta = document.getElementById('dh-diachi');
+  if (ta) ta.value = parts.join(', ');
+};
+
+// Đóng dropdown gợi ý khi chạm ra ngoài
+document.addEventListener('click', function(e){
+  const w = e.target.closest('.dh-ac-wrap');
+  if (!w) { const box = document.getElementById('dh-sp-aclist'); if (box) box.classList.remove('on'); }
+}, true);
