@@ -2304,3 +2304,14 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-money-row.total { border-top: 1px dashed #E2E5E2; margin-top: 6px; padding-top: 9px; }
 .dh-money-row.total .dh-money-v { font-size: 19px; font-weight: 800; color: #0F6E56; }
 .dh-money-v { font-weight: 600; color: var(--text); }
+
+/* [v13.64] QR chuyển khoản (VietQR) trong Đơn hàng online */
+#page-donhang .dh-qr-box { background:#fff; border:1px solid #E2E5E2; border-radius:14px; padding:16px; margin-bottom:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+#page-donhang .dh-qr-bank { font-size:12px; font-weight:700; color:#0F6E56; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+#page-donhang .dh-qr-img { width:210px; height:210px; max-width:100%; border-radius:12px; background:#F4FBF8; object-fit:contain; display:block; margin:0 auto; }
+#page-donhang .dh-qr-info { margin-top:13px; text-align:left; }
+#page-donhang .dh-qr-line { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--text-m); padding:4px 0; gap:12px; }
+#page-donhang .dh-qr-line b { color:var(--text); font-weight:600; text-align:right; }
+#page-donhang .dh-qr-line.total { border-top:1px dashed #E2E5E2; margin-top:6px; padding-top:9px; }
+#page-donhang .dh-qr-line.total b { font-size:17px; font-weight:800; color:#0F6E56; }
+#page-donhang .dh-qr-note { font-size:11px; color:var(--text-m); margin-top:8px; line-height:1.4; }

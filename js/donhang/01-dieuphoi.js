@@ -45,6 +45,8 @@ function dhResetForm(){
   const sl = document.getElementById('dh-sp-sl'); if (sl) sl.value = '1';
   if (typeof dhRenderSpChosen === 'function') dhRenderSpChosen();
   const mb = document.getElementById('dh-money-box'); if (mb) mb.style.display='none';
+  const pttt = document.getElementById('dh-pttt'); if (pttt) pttt.value = 'COD';
+  const qr = document.getElementById('dh-qr-box'); if (qr) qr.style.display = 'none';
   const ac = document.getElementById('dh-sp-aclist'); if (ac){ ac.classList.remove('on'); ac.innerHTML=''; }
   const box = document.getElementById('dh-ch-list'); if (box) box.innerHTML = '';
   const sw = document.getElementById('dh-send-wrap'); if (sw) sw.style.display = 'none';
@@ -121,7 +123,8 @@ window.dhTimCuaHang = async function(){
     return;
   }
 
-  // 2b) Lọc CH còn hàng nếu có nhập barcode (tồn hiện tại > 0)
+  // 2b) Nếu có barcode: ưu tiên CH CÒN HÀNG, sắp theo gần nhất.
+  //     Lấy MỌI cửa hàng còn hàng (không bó hẹp trong 15 CH gần) rồi mới sắp khoảng cách.
   let candidate = near;
   const barcode = (dhSelectedSp && dhSelectedSp.maVach) ? String(dhSelectedSp.maVach).trim() : '';
   if (barcode) {
@@ -129,18 +132,26 @@ window.dhTimCuaHang = async function(){
       const { data: tk } = await supa.rpc('dh_fn_ch_con_hang', { p_barcode: barcode });
       if (Array.isArray(tk) && tk.length) {
         const conHang = {};
-        tk.forEach(x => { conHang[x.ma_ch] = x.ton; });
-        const loc = near.filter(ch => conHang[ch.ma] != null);
-        if (loc.length) {
-          loc.forEach(ch => { ch.ton = conHang[ch.ma]; });
-          candidate = loc;
+        tk.forEach(x => { conHang[String(x.ma_ch).trim()] = x.ton; });
+        const conHangGan = CH_LIST
+          .filter(ch => conHang[String(ch.ma).trim()] != null
+                     && ch.lat && ch.lng && !isNaN(parseFloat(ch.lat)) && !isNaN(parseFloat(ch.lng)))
+          .map(ch => ({
+            ma: ch.ma, ten: ch.ten,
+            lat: parseFloat(ch.lat), lng: parseFloat(ch.lng),
+            ton: conHang[String(ch.ma).trim()],
+            chim_bay: dhHaversine(geo.lat, geo.lng, parseFloat(ch.lat), parseFloat(ch.lng))
+          }))
+          .sort((a,b) => a.chim_bay - b.chim_bay)
+          .slice(0, 15);
+        if (conHangGan.length) {
+          candidate = conHangGan;
         } else {
-          box.innerHTML = '<div class="dh-empty">Không có cửa hàng gần nào còn hàng sản phẩm này (barcode ' + escHtml(barcode) + '). Bỏ barcode để xem tất cả CH gần.</div>';
-          if (btn){ btn.disabled = false; btn.textContent = 'AI gợi ý cửa hàng'; }
-          return;
+          // Còn hàng nhưng các CH đó chưa có toạ độ → không chặn, vẫn hiện CH gần
+          candidate = near;
         }
       }
-      // tk rỗng → chưa đồng bộ tồn / SP không có dữ liệu → giữ tất cả CH gần
+      // tk rỗng → SP chưa có dữ liệu tồn → giữ tất cả CH gần
     } catch(e){}
   }
 
@@ -316,7 +327,7 @@ window.dhSpClear = function(){ dhSelectedSp = null; dhRenderSpChosen(); dhCalcTi
 
 window.dhCalcTien = function(){
   const box = document.getElementById('dh-money-box');
-  if (!dhSelectedSp){ if (box) box.style.display='none'; return; }
+  if (!dhSelectedSp){ if (box) box.style.display='none'; if (typeof dhUpdateQR==='function') dhUpdateQR(); return; }
   const gia = dhGiaSp(dhSelectedSp);
   const sl = parseInt(document.getElementById('dh-sp-sl').value||'1')||1;
   const ck = parseFloat((document.getElementById('dh-sp-ck').value||'0').replace(/[^\d.]/g,''))||0;
@@ -326,6 +337,7 @@ window.dhCalcTien = function(){
   document.getElementById('dh-m-ck').textContent = '−'+dhFmtTien(ck);
   document.getElementById('dh-m-total').textContent = dhFmtTien(total);
   if (box) box.style.display='block';
+  if (typeof dhUpdateQR==='function') dhUpdateQR();
 };
 
 // ─── Địa chỉ: phân cấp Tỉnh → Huyện → Xã (provinces.open-api.vn, miễn phí) ───
@@ -412,4 +424,34 @@ async function dhGeocodeSmart(){
     if (geo) return geo;
   }
   return null;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ *  [v13.64] QR CHUYỂN KHOẢN (VietQR) — gắn sẵn số tiền + nội dung
+ *  STK test; đổi sang STK Nón Sơn khi chạy thật (có thể đưa vào app_settings).
+ * ════════════════════════════════════════════════════════════════════════ */
+const DH_QR = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
+
+function dhDonAmount(){
+  if (!dhSelectedSp) return 0;
+  const gia = dhGiaSp(dhSelectedSp);
+  const sl = parseInt((document.getElementById('dh-sp-sl')||{}).value||'1')||1;
+  const ck = parseFloat(((document.getElementById('dh-sp-ck')||{}).value||'0').replace(/[^\d.]/g,''))||0;
+  return Math.max(0, gia*sl - ck);
+}
+
+window.dhPtttChange = function(){ dhUpdateQR(); };
+
+function dhUpdateQR(){
+  const box = document.getElementById('dh-qr-box');
+  if (!box) return;
+  const pttt = (document.getElementById('dh-pttt')||{}).value;
+  if (pttt !== 'CK_TRUOC') { box.style.display='none'; return; }
+  const amt = dhDonAmount();
+  const sdt = ((document.getElementById('dh-khach-sdt')||{}).value || '').trim();
+  const info = encodeURIComponent(('NonSon ' + sdt).trim());
+  const url = `https://img.vietqr.io/image/${DH_QR.bank}-${DH_QR.stk}-compact2.png?amount=${amt}&addInfo=${info}&accountName=${encodeURIComponent(DH_QR.owner)}`;
+  const img = document.getElementById('dh-pqr-img'); if (img) img.src = url;
+  const amtEl = document.getElementById('dh-pqr-amt'); if (amtEl) amtEl.textContent = dhFmtTien(amt);
+  box.style.display='block';
 }
