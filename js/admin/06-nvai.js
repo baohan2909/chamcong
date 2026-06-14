@@ -40,14 +40,19 @@ window.nvaiPageInit = async function(){
     goToPage('home');
     return;
   }
-  // Ẩn FAB khi đang ở page nvai
+  // [v13.42.1] Ẩn FAB + bottom-nav khi ở page nvai (màn chat full,
+  // tránh bàn phím đẩy menu lên). Khôi phục khi rời page.
   const fab = document.getElementById('nvai-fab');
   if (fab) fab.style.display = 'none';
+  const nav = document.querySelector('.bottom-nav');
+  if (nav) nav.style.display = 'none';
   await nvaiLoadSessions();
 };
 
-// Hook khi rời page nvai → show FAB lại
+// Hook khi rời page nvai → show FAB + bottom-nav lại
 window.nvaiPageLeave = function(){
+  const nav = document.querySelector('.bottom-nav');
+  if (nav) nav.style.display = '';
   nvaiInitFab();
 };
 

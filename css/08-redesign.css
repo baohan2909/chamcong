@@ -1637,3 +1637,120 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .menu-item.menu-clr-emerald:active { background: linear-gradient(90deg, rgba(16,185,129,.08), transparent); }
 .menu-item.menu-clr-slate:active   { background: linear-gradient(90deg, rgba(100,116,139,.08), transparent); }
 .menu-item.menu-clr-rose:active    { background: linear-gradient(90deg, rgba(220,38,38,.08), transparent); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.43] HOME HUB - Trang chủ phân hệ (ADMIN landing)
+ *  Dark theme: obsidian navy nền, gold #CBA45A + teal accent
+ * ═══════════════════════════════════════════════════════════════════════ */
+#page-home {
+  background: #0E1E2E;
+  min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.hub-shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 15px calc(28px + env(safe-area-inset-bottom, 0px));
+  color: #E8EDF2;
+  font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+}
+
+/* Topbar: avatar + tên + chuông */
+.hub-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 22px;
+}
+.hub-user { display: flex; align-items: center; gap: 11px; }
+.hub-avatar {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: linear-gradient(135deg, #0F2E45, #1E3A8A);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; color: #CBA45A;
+  overflow: hidden;
+}
+.hub-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hub-uname { font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.2; }
+.hub-urole { font-size: 11px; color: #8FA3B5; margin-top: 1px; }
+.hub-bell {
+  position: relative;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.06); border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: #E8EDF2; cursor: pointer;
+}
+.hub-bell:active { background: rgba(255,255,255,.12); }
+.hub-bell-dot {
+  position: absolute; top: 6px; right: 7px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #E24B4A; border: 2px solid #0E1E2E;
+}
+
+/* Head: label + title */
+.hub-head { margin-bottom: 18px; }
+.hub-head-label {
+  font-size: 10.5px; letter-spacing: .14em; color: #CBA45A;
+  font-weight: 600; margin-bottom: 6px;
+}
+.hub-head-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 25px; font-weight: 600; color: #fff; line-height: 1.05;
+}
+
+/* Grid thẻ phân hệ */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.hub-card {
+  background: #16293B;
+  border: 0.5px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  padding: 16px 14px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.hub-card:active { transform: scale(.97); background: #1A2F44; }
+.hub-card:hover { border-color: rgba(203,164,90,.3); }
+.hub-card-sm { padding: 14px 13px; }
+.hub-ic {
+  width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+.hub-ic-sm { width: 38px; height: 38px; border-radius: 11px; margin-bottom: 10px; }
+.hub-nm {
+  font-size: 14.5px; font-weight: 700; color: #fff;
+  line-height: 1.25; margin-bottom: 4px;
+}
+.hub-card-sm .hub-nm { font-size: 13px; }
+.hub-ds { font-size: 11px; color: #8FA3B5; line-height: 1.4; }
+.hub-bdg {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 9px; font-weight: 700;
+  background: rgba(203,164,90,.18); color: #CBA45A;
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .03em;
+}
+.hub-foot {
+  text-align: center; font-size: 10.5px; color: #5A6F82;
+  margin-top: 20px;
+}
+
+/* [v13.43] Nút về Hub trong header (ADMIN) */
+.cc-header-home-btn {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: 11px;
+  background: rgba(203,164,90,.14);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: #B45309; cursor: pointer;
+  margin-right: 9px;
+  padding: 0;
+}
+.cc-header-home-btn svg { width: 19px; height: 19px; }
+.cc-header-home-btn:active { background: rgba(203,164,90,.26); transform: scale(.94); }

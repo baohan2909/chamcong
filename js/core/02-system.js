@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.42',
+  'sys.cache_version': 'v13.43',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -328,6 +328,7 @@ setInterval(()=>{
 
 // ─── NAVIGATION ─────────────────────────────────────────────
 const PAGE_TITLES={
+  'home':      '',
   'lichca':    'LỊCH LÀM VIỆC',
   'lichca-ql': 'LỊCH CA HỆ THỐNG',
   chamcong:'CHẤM CÔNG', giocong:'GIỜ CÔNG CỦA TÔI',
@@ -363,6 +364,18 @@ function goToPage(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
+  // [v13.43] HOME HUB: ẩn main-header + bottom-nav (hub có header riêng).
+  // Các page khác: hiện lại (nvai sẽ tự ẩn bottom-nav qua nvaiPageInit).
+  const _mh = document.getElementById('main-header');
+  const _bn = document.getElementById('bottom-nav');
+  if (page === 'home') {
+    if (_mh) _mh.style.display = 'none';
+    if (_bn) _bn.style.display = 'none';
+    if (typeof hubRenderHeader === 'function') hubRenderHeader();
+  } else {
+    if (_mh) _mh.style.display = 'block';
+    if (_bn) _bn.style.display = '';
+  }
   const navEl=document.getElementById('nav-'+page);
   if(navEl)navEl.classList.add('active');
   // Giờ công: active nav-giocong cho cả 2 page
@@ -413,6 +426,24 @@ function goToPage(page){
 function navGioCong(){
   const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
   goToPage(isQL?'giocong-ql':'giocong');
+}
+
+// ─── [v13.43] HOME HUB ──────────────────────────────────────
+// Điền tên + avatar (chữ cái đầu) vào header hub
+function hubRenderHeader(){
+  if(typeof SESSION==='undefined'||!SESSION) return;
+  const nameEl=document.getElementById('hub-uname');
+  if(nameEl) nameEl.textContent=SESSION.ten||SESSION.ma||'--';
+  const avEl=document.getElementById('hub-avatar');
+  if(avEl){
+    const t=(SESSION.ten||SESSION.ma||'?').trim();
+    const initials=t.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
+    avEl.textContent=initials||'?';
+  }
+}
+// Thẻ Đơn hàng Online — đang xây dựng (phiên sau)
+function hubOpenDonhang(){
+  if(typeof showToast==='function') showToast('Phân hệ Đơn hàng Online đang được xây dựng','info');
 }
 
 // ─── LOGIN ──────────────────────────────────────────────────
@@ -731,6 +762,7 @@ function khoiDongApp(){
     _show('nav-bangiao-ql');
     _show('nav-muanon-admin');
     _show('nav-admin');
+    _show('cc-header-home-btn');   // [v13.43] nút về Hub
     
     // Menu Tài khoản: show các mục ADMIN
     _show('menu-admin');
@@ -741,6 +773,9 @@ function khoiDongApp(){
     _show('acc-sec-ai');
     _show('acc-sec-quanly');
     _show('acc-sec-sp');
+
+    // [v13.43] ADMIN landing → HOME HUB (trang chủ phân hệ)
+    setTimeout(()=>{ try{ goToPage('home'); }catch(e){} }, 120);
   }
 
   // [v11 muanon] QL (QLNS/QLBH) cũng thấy menu-muanon-admin

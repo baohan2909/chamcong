@@ -2915,36 +2915,22 @@
   padding: 0 12px;
 }
 @media (max-width: 767px) {
-  /* [v13.41.2] Mobile: page-nvai full screen FIXED giữa header app và bottom-nav.
-     Không scroll body — chỉ scroll trong .nvai-msg-list. Header sticky tự nhiên. */
-  #page-nvai.active {
-    position: fixed;
-    top: calc(56px + env(safe-area-inset-top, 0px));
-    left: 0; right: 0;
-    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 0 !important;
-    margin: 0;
-    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
-  }
+  /* [v13.42.1] Mobile: page-nvai là PAGE THƯỜNG (bỏ position:fixed đã gây vỡ layout
+     + bàn phím đẩy menu). Header app sticky tự nhiên giữ cố định trên cùng.
+     Bottom-nav + fab được ẩn khi ở page này (JS goToPage). */
   #page-nvai .cc-hero-page {
-    flex-shrink: 0;
-    padding: 10px 14px 12px !important;
+    padding: 12px 14px 14px !important;
     margin: 0 !important;
     border-radius: 0 !important;
   }
   #page-nvai .cc-hero-page-sub { font-size: 11px; }
-  
+
   .nvai-wrap {
-    flex: 1;
+    display: block;
     height: auto;
     min-height: 0;
     padding: 0;
     gap: 0;
-    overflow: hidden;
-    display: flex;
   }
 }
 
@@ -3020,11 +3006,11 @@
   overflow: hidden;
 }
 @media (max-width: 767px) {
-  /* [v13.41.2] Mobile: full width, flex 1, không border */
+  /* [v13.42.1] Mobile: full width, block (không flex), cao tự nhiên */
   .nvai-main {
-    flex: 1;
+    display: block;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -3039,9 +3025,9 @@
 }
 @media (max-width: 767px) {
   .nvai-msg-list { 
-    flex: 1;
-    min-height: 0;
-    padding: 14px 12px;
+    min-height: calc(100dvh - 380px);
+    overflow: visible;
+    padding: 14px 12px 16px;
   }
 }
 
@@ -3172,14 +3158,17 @@
   background: #fff;
 }
 @media (max-width: 767px) {
-  /* [v13.41.2] Mobile: input bar cố định cuối page-nvai, không bị bottom-nav che */
+  /* [v13.42.1] Mobile: input bar STICKY đáy viewport (không fixed).
+     Bottom-nav đã ẩn khi ở page này nên không bị che/đẩy khi mở bàn phím. */
   .nvai-input-bar {
-    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
     border-top: 1px solid #E2E8F0;
     background: #fff;
     margin: 0;
     border-radius: 0;
-    padding: 10px 12px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     box-shadow: 0 -2px 12px rgba(15,46,69,.06);
   }
 }
@@ -3223,7 +3212,6 @@
 .nvai-mobile-bar { display: none; }
 @media (max-width: 767px) {
   .nvai-mobile-bar {
-    flex-shrink: 0;
     display: flex; align-items: center; gap: 8px;
     padding: 8px 12px;
     background: #fff;
