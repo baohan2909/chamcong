@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.44">
-<link rel="stylesheet" href="css/01-base.css?v=13.44">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.44">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.44">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.44">
-<link rel="stylesheet" href="css/05-admin.css?v=13.44">
-<link rel="stylesheet" href="css/06-modules.css?v=13.44">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.44">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.44">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.44">
-<link rel="stylesheet" href="css/11-face.css?v=13.44">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.45">
+<link rel="stylesheet" href="css/01-base.css?v=13.45">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.45">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.45">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.45">
+<link rel="stylesheet" href="css/05-admin.css?v=13.45">
+<link rel="stylesheet" href="css/06-modules.css?v=13.45">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.45">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.45">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.45">
+<link rel="stylesheet" href="css/11-face.css?v=13.45">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.44</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.45</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -927,6 +927,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="dh-topttl">Điều phối đơn</div>
+        <button class="dh-nav-pill" onclick="goToPage('donhang-nhan')">Đơn về CH →</button>
         <span class="dh-demo-tag" id="dh-demo-tag">DEMO</span>
       </div>
 
@@ -967,6 +968,70 @@
       <div class="dh-send-wrap" id="dh-send-wrap" style="display:none">
         <button class="dh-btn-gui" id="dh-btn-gui" onclick="dhGuiYeuCau()">Gửi yêu cầu</button>
         <div class="dh-send-note">Các cửa hàng trong bán kính sẽ nhận thông báo cùng lúc</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       PAGE: ĐƠN VỀ CỬA HÀNG - màn CH nhận đơn [v13.45]
+       ════════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-donhang-nhan">
+    <div class="dh-shell">
+      <div class="dh-topbar">
+        <button class="dh-back" onclick="goToPage('donhang')" aria-label="Quay lại">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="dh-topttl">Đơn về cửa hàng</div>
+        <span class="dh-demo-tag" id="dh-nhan-demo-tag">DEMO</span>
+      </div>
+      <div class="dh-nhan-scope-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="dh-nhan-scope">--</span>
+        <span class="dh-nhan-live-dot"></span>
+      </div>
+      <div id="dh-nhan-list"></div>
+    </div>
+
+    <!-- Popup nhận đơn (cạnh tranh) -->
+    <div class="dh-nhan-popup" id="dh-nhan-popup" style="display:none">
+      <div class="dh-pop-card">
+        <div class="dh-pop-head">
+          <div>
+            <div class="dh-pop-title">Đơn điều phối mới</div>
+            <div class="dh-pop-madon" id="dh-pop-madon">--</div>
+          </div>
+          <div class="dh-pop-timer-box">
+            <div class="dh-pop-timer" id="dh-pop-timer">3:00</div>
+            <div class="dh-pop-timer-lbl">còn lại</div>
+          </div>
+        </div>
+
+        <div class="dh-pop-body">
+          <div class="dh-pop-sp" id="dh-pop-sp">--</div>
+          <div class="dh-pop-sl" id="dh-pop-sl">SL 1</div>
+          <div class="dh-pop-stats">
+            <div class="dh-pop-stat">
+              <div class="dh-pop-stat-lbl">Cách cửa hàng</div>
+              <div class="dh-pop-stat-val dh-pop-km" id="dh-pop-km">--</div>
+            </div>
+            <div class="dh-pop-stat">
+              <div class="dh-pop-stat-lbl">Giá trị đơn</div>
+              <div class="dh-pop-stat-val dh-pop-gt" id="dh-pop-gt">--</div>
+            </div>
+          </div>
+          <div class="dh-pop-pt-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span id="dh-pop-pt">--</span>
+          </div>
+          <div class="dh-pop-diachi-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="dh-pop-diachi">--</span>
+          </div>
+        </div>
+
+        <button class="dh-pop-btn-nhan" id="dh-pop-btn-nhan" onclick="dhNhanAccept()">Nhận đơn</button>
+        <button class="dh-pop-btn-tuchoi" onclick="dhNhanOpenReject()">Từ chối (chọn lý do)</button>
+        <div class="dh-pop-lydo" id="dh-pop-lydo" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -1818,7 +1883,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.44 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.45 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -3077,13 +3142,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.44"></script>
-<script src="js/core/02-system.js?v=13.44"></script>
+<script src="js/core/01-config.js?v=13.45"></script>
+<script src="js/core/02-system.js?v=13.45"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.44">
+<link rel="stylesheet" href="css/07-extras.css?v=13.45">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -3118,21 +3183,22 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.44"></script>
-<script src="js/pages/01-lichca.js?v=13.44"></script>
-<script src="js/pages/02-nhansu.js?v=13.44"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.44"></script>
-<script src="js/pages/04-misc.js?v=13.44"></script>
-<script src="js/pages/05-muanon.js?v=13.44"></script>
-<script src="js/lib/camscanner.js?v=13.44"></script>
-<script src="js/pages/06-bangiao.js?v=13.44"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.44"></script>
-<script src="js/admin/06-nvai.js?v=13.44"></script>
-<script src="js/ai/face-recognition.js?v=13.44"></script>
-<script src="js/admin/01-banhang.js?v=13.44"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.44"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.44"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.44"></script>
-<script src="js/donhang/01-dieuphoi.js?v=13.44"></script>
+<script src="js/core/03-router.js?v=13.45"></script>
+<script src="js/pages/01-lichca.js?v=13.45"></script>
+<script src="js/pages/02-nhansu.js?v=13.45"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.45"></script>
+<script src="js/pages/04-misc.js?v=13.45"></script>
+<script src="js/pages/05-muanon.js?v=13.45"></script>
+<script src="js/lib/camscanner.js?v=13.45"></script>
+<script src="js/pages/06-bangiao.js?v=13.45"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.45"></script>
+<script src="js/admin/06-nvai.js?v=13.45"></script>
+<script src="js/ai/face-recognition.js?v=13.45"></script>
+<script src="js/admin/01-banhang.js?v=13.45"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.45"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.45"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.45"></script>
+<script src="js/donhang/01-dieuphoi.js?v=13.45"></script>
+<script src="js/donhang/02-nhandon.js?v=13.45"></script>
 </body>
 </html>

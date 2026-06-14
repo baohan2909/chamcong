@@ -1858,3 +1858,101 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-btn-gui:active { transform: scale(.98); }
 .dh-btn-gui:disabled { opacity: .6; cursor: wait; }
 .dh-send-note { text-align: center; font-size: 10.5px; color: #8FA3B5; margin-top: 8px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.45] ĐƠN HÀNG ONLINE - Màn cửa hàng nhận đơn + popup
+ * ═══════════════════════════════════════════════════════════════════════ */
+#page-donhang-nhan {
+  background: #0E1E2E; min-height: 100vh; margin: 0 !important; padding: 0 !important;
+}
+.dh-nav-pill {
+  background: rgba(255,255,255,.06); color: #CBA45A; border: none;
+  border-radius: 9px; padding: 7px 11px; font-size: 11.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; flex-shrink: 0;
+}
+.dh-nav-pill:active { background: rgba(255,255,255,.14); }
+
+.dh-nhan-scope-bar {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11.5px; color: #8FA3B5; margin-bottom: 14px;
+}
+.dh-nhan-scope-bar svg { color: #CBA45A; }
+.dh-nhan-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #34D399;
+  margin-left: auto; animation: dhPulse 1.6s ease-in-out infinite;
+}
+@keyframes dhPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.dh-nhan-empty {
+  text-align: center; padding: 28px 14px; font-size: 12.5px; color: #8FA3B5;
+  background: #16293B; border-radius: 12px;
+}
+.dh-nhan-card {
+  background: #16293B; border: 0.5px solid rgba(255,255,255,.07);
+  border-radius: 13px; padding: 13px; margin-bottom: 9px; cursor: pointer;
+}
+.dh-nhan-card:active { background: #1A2F44; }
+.dh-nhan-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.dh-nhan-madon { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #CBA45A; font-weight: 500; }
+.dh-nhan-km { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #2DD4BF; }
+.dh-nhan-sp { font-size: 13.5px; color: #fff; font-weight: 500; margin-bottom: 6px; }
+.dh-nhan-meta { display: flex; align-items: center; gap: 10px; }
+.dh-nhan-gt { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #CBA45A; font-weight: 600; }
+.dh-nhan-pt { font-size: 10px; color: #8FA3B5; background: rgba(255,255,255,.06); padding: 2px 8px; border-radius: 20px; }
+.dh-nhan-pt.dh-pt-ck { color: #34D399; background: rgba(16,185,129,.12); }
+
+/* Popup nhận đơn */
+.dh-nhan-popup {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(6,15,24,.82); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.dh-pop-card {
+  width: 100%; max-width: 380px;
+  background: #152A3E; border: 0.5px solid rgba(203,164,90,.45);
+  border-radius: 18px; padding: 17px 16px; color: #E8EDF2;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.dh-pop-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.dh-pop-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; color: #fff; }
+.dh-pop-madon { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8FA3B5; margin-top: 2px; }
+.dh-pop-timer-box { text-align: center; background: rgba(255,255,255,.05); border-radius: 10px; padding: 6px 11px; }
+.dh-pop-timer { font-family: 'JetBrains Mono', monospace; font-size: 21px; font-weight: 600; color: #CBA45A; line-height: 1; }
+.dh-pop-timer.dh-timer-red { color: #E0827D; }
+.dh-pop-timer-lbl { font-size: 8px; color: #8FA3B5; margin-top: 2px; }
+
+.dh-pop-body { background: #0E1E2E; border-radius: 12px; padding: 13px; margin-bottom: 13px; }
+.dh-pop-sp { font-size: 14px; color: #fff; font-weight: 500; }
+.dh-pop-sl { font-size: 11px; color: #8FA3B5; margin: 2px 0 11px; }
+.dh-pop-stats { display: flex; gap: 8px; margin-bottom: 11px; }
+.dh-pop-stat { flex: 1; border-radius: 9px; padding: 8px 10px; }
+.dh-pop-stat:nth-child(1) { background: rgba(45,212,191,.1); }
+.dh-pop-stat:nth-child(2) { background: rgba(203,164,90,.1); }
+.dh-pop-stat-lbl { font-size: 10px; color: #8FA3B5; }
+.dh-pop-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; }
+.dh-pop-km { color: #2DD4BF; }
+.dh-pop-gt { color: #CBA45A; }
+.dh-pop-pt-row, .dh-pop-diachi-row { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: #E8EDF2; }
+.dh-pop-pt-row { margin-bottom: 8px; }
+.dh-pop-pt-row svg, .dh-pop-diachi-row svg { color: #CBA45A; flex-shrink: 0; margin-top: 1px; }
+.dh-pop-diachi-row { line-height: 1.4; }
+
+.dh-pop-btn-nhan {
+  width: 100%; background: #CBA45A; color: #0E1E2E; border: none;
+  border-radius: 12px; padding: 14px; font-size: 14.5px; font-weight: 700;
+  font-family: inherit; cursor: pointer; margin-bottom: 9px;
+}
+.dh-pop-btn-nhan:active { transform: scale(.98); }
+.dh-pop-btn-nhan:disabled { opacity: .6; cursor: wait; }
+.dh-pop-btn-tuchoi {
+  width: 100%; background: transparent; color: #E0827D;
+  border: 0.5px solid rgba(224,130,125,.4); border-radius: 12px;
+  padding: 11px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+}
+.dh-pop-lydo { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.dh-lydo-btn {
+  flex: 1; min-width: 44%; background: rgba(224,130,125,.1); color: #E0827D;
+  border: 0.5px solid rgba(224,130,125,.3); border-radius: 9px; padding: 9px;
+  font-size: 12px; font-family: inherit; cursor: pointer;
+}
+.dh-lydo-btn:active { background: rgba(224,130,125,.2); }
