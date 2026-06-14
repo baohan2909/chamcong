@@ -2161,3 +2161,32 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .hub-nm { color: #1a1a18; }
 .hub-ds { color: #6b6b67; }
 .hub-ic { box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.58] OVERLAY MENU TRUNG GIAN (hub-submenu) → SÁNG đồng bộ.
+ *  (Tạm thời cho khớp giao diện chuẩn — sẽ thay bằng tab khi gộp navigation.)
+ * ═══════════════════════════════════════════════════════════════════════ */
+#hub-submenu-overlay { background: var(--bg) !important; }
+.hubsub-head {
+  background: rgba(250,250,248,.92) !important;
+  border-bottom: 1px solid rgba(0,0,0,.06) !important;
+}
+.hubsub-back { background: rgba(15,110,86,.12); color: #0F6E56; }
+.hubsub-back:active { background: rgba(15,110,86,.22); }
+.hubsub-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1a1a18;
+}
+.hubsub-item {
+  background: #fff;
+  border: 1px solid #ECECE8;
+  box-shadow: 0 4px 14px rgba(0,0,0,.05);
+}
+.hubsub-item:active { border-color: rgba(15,110,86,.4); background: #F7FAF9; }
+.hubsub-lb {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1a1a18;
+}
+.hubsub-ds { color: #6b6b67; }
+.hubsub-arr { color: #9b9a96; }
+.hubsub-empty { color: #6b6b67; }

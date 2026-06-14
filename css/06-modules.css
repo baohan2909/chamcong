@@ -3272,19 +3272,19 @@ body.nvai-active .bottom-nav,
 body.nvai-active #nvai-fab,
 body.nvai-active #bottom-nav { display: none !important; }
 
-/* [v13.57] Layout chat AI mobile: header (cứng + thẻ hero) cố định trên,
-   ô nhập cố định dưới đáy, vùng tin nhắn cuộn ở giữa. --nvai-header-h do JS đo. */
+/* [v13.58] Layout chat AI mobile — CHỈ áp dụng khi đang Ở trang AI (body.nvai-active),
+   nếu không #page-nvai sẽ đè .page{display:none} và hiện ở mọi trang. */
 @media (max-width: 767px) {
-  #page-nvai {
-    display: flex; flex-direction: column;
+  body.nvai-active #page-nvai {
+    display: flex !important; flex-direction: column;
     height: calc(100dvh - var(--nvai-header-h, 58px));
     overflow: hidden;
     padding-bottom: 0 !important;
   }
-  #page-nvai .cc-hero-page,
-  #page-nvai .nvai-mobile-bar { flex-shrink: 0; }
-  #page-nvai .nvai-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  #page-nvai .nvai-main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  #page-nvai .nvai-msg-list { flex: 1; min-height: 0; overflow-y: auto; }
-  #page-nvai .nvai-input-bar { position: static; flex-shrink: 0; }
+  body.nvai-active #page-nvai .cc-hero-page,
+  body.nvai-active #page-nvai .nvai-mobile-bar { flex-shrink: 0; }
+  body.nvai-active #page-nvai .nvai-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  body.nvai-active #page-nvai .nvai-main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  body.nvai-active #page-nvai .nvai-msg-list { flex: 1; min-height: 0; overflow-y: auto; }
+  body.nvai-active #page-nvai .nvai-input-bar { position: static; flex-shrink: 0; }
 }

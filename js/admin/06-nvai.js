@@ -45,16 +45,26 @@ window.nvaiPageInit = async function(){
   const fab = document.getElementById('nvai-fab');
   if (fab) fab.style.display = 'none';
   document.body.classList.add('nvai-active');
-  // [v13.57] Đo chiều cao header cứng (#main-header) → set biến CSS --nvai-header-h.
-  //   Layout chat: page-nvai cao = 100dvh - header; ô nhập cố định đáy, tin nhắn cuộn giữa.
-  const _setNvaiHeaderH = () => {
+  // [v13.58] Ép chiều cao trang chat = vùng NHÌN THẤY (visualViewport) - header cứng.
+  //   Nhờ vậy ô nhập luôn SÁT đáy/bàn phím (không hở), header cứng vẫn cố định trên.
+  const _vvFit = () => {
+    if (!document.body.classList.contains('nvai-active')) return;
+    const page = document.getElementById('page-nvai');
+    if (!page) return;
     const mh = document.getElementById('main-header');
-    const h = mh ? Math.round(mh.getBoundingClientRect().height) : 58;
-    if (h > 0) document.documentElement.style.setProperty('--nvai-header-h', h + 'px');
+    const hh = mh ? Math.round(mh.getBoundingClientRect().height) : 0;
+    document.documentElement.style.setProperty('--nvai-header-h', hh + 'px');
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    page.style.height = Math.max(220, Math.round(vh - hh)) + 'px';
   };
-  _setNvaiHeaderH();
-  setTimeout(_setNvaiHeaderH, 150);
-  setTimeout(_setNvaiHeaderH, 500);
+  window._nvaiVVFit = _vvFit;
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', _vvFit);
+    window.visualViewport.addEventListener('scroll', _vvFit);
+  }
+  _vvFit();
+  setTimeout(_vvFit, 150);
+  setTimeout(_vvFit, 500);
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = 'none';
   await nvaiLoadSessions();
@@ -63,6 +73,13 @@ window.nvaiPageInit = async function(){
 // Hook khi rời page nvai → show FAB + bottom-nav lại
 window.nvaiPageLeave = function(){
   document.body.classList.remove('nvai-active');
+  if (window._nvaiVVFit && window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', window._nvaiVVFit);
+    window.visualViewport.removeEventListener('scroll', window._nvaiVVFit);
+  }
+  window._nvaiVVFit = null;
+  const _pg = document.getElementById('page-nvai');
+  if (_pg) _pg.style.height = '';
   if (typeof _nvaiStreamTimer !== 'undefined' && _nvaiStreamTimer) { clearTimeout(_nvaiStreamTimer); _nvaiStreamTimer = null; }
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = '';
