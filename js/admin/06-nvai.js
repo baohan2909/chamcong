@@ -45,6 +45,16 @@ window.nvaiPageInit = async function(){
   const fab = document.getElementById('nvai-fab');
   if (fab) fab.style.display = 'none';
   document.body.classList.add('nvai-active');
+  // [v13.57] Đo chiều cao header cứng (#main-header) → set biến CSS --nvai-header-h.
+  //   Layout chat: page-nvai cao = 100dvh - header; ô nhập cố định đáy, tin nhắn cuộn giữa.
+  const _setNvaiHeaderH = () => {
+    const mh = document.getElementById('main-header');
+    const h = mh ? Math.round(mh.getBoundingClientRect().height) : 58;
+    if (h > 0) document.documentElement.style.setProperty('--nvai-header-h', h + 'px');
+  };
+  _setNvaiHeaderH();
+  setTimeout(_setNvaiHeaderH, 150);
+  setTimeout(_setNvaiHeaderH, 500);
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = 'none';
   await nvaiLoadSessions();
