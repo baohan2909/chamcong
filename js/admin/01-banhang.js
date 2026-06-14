@@ -1565,32 +1565,49 @@ async function bhAutoClosePhien(s) {
   }
 }
 
-// [v9.0] Modal hướng dẫn khi bị chặn mở phiên mới vì còn phiên tự đóng chưa điền
-function bhShowPhienCanDienModal(soPhien) {
-  // Tìm các phiên trong historyToday có ketQua = 'Tự đóng' chưa được xử lý
-  const phienCanDien = (BH.historyToday || []).filter(p => p.trangThai === 'Tự đóng');
-  let listHtml = '';
+// [v9.0/v13.55] Modal khi bị chặn mở phiên mới vì còn phiên tự đóng chưa điền.
+//   Query TRỰC TIẾP đơn TỰ ĐÓNG chưa điền trong 7 ngày (không phụ thuộc list đã load).
+async function bhShowPhienCanDienModal(soPhien) {
+  const today = new Date();
+  const hnStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const _from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+  const ngay7 = _from.getFullYear()+'-'+String(_from.getMonth()+1).padStart(2,'0')+'-'+String(_from.getDate()).padStart(2,'0');
+  let phienCanDien = [];
+  try {
+    const { data, error } = await supa.from('phien_ban_hang')
+      .select('id, stt_trong_ngay, gio_mo, gio_dong, ngay')
+      .eq('ma_ch', SESSION.cuaHangMa).eq('trang_thai', 'DA_DONG').eq('ket_qua', 'TU_DONG')
+      .gte('ngay', ngay7).order('gio_mo', { ascending: false }).limit(50);
+    if (!error && Array.isArray(data)) {
+      const fmt = ts => { try { const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); } catch(e){ return ''; } };
+      phienCanDien = data.map(r => ({ idPhien: r.id, stt: r.stt_trong_ngay, gioBD: fmt(r.gio_mo), gioKT: fmt(r.gio_dong), ngay: r.ngay }));
+    }
+  } catch(e){ console.warn('[BH] load phiên cần điền:', e); }
+  BH._phienCanDienList = phienCanDien;  // lưu cho modal con dùng
+
+  let listHtml;
   if (phienCanDien.length) {
-    listHtml = phienCanDien.map(p => `
+    listHtml = phienCanDien.map(p => {
+      const nb = (p.ngay && p.ngay !== hnStr) ? ' · ' + String(p.ngay).split('-').reverse().slice(0,2).join('/') : '';
+      return `
       <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
         <div>
-          <div style="font-size:13px;font-weight:600;color:#9A3412">Phiên #${p.stt} · ${p.gioBD} → ${p.gioKT}</div>
+          <div style="font-size:13px;font-weight:600;color:#9A3412">Phiên #${p.stt} · ${p.gioBD} → ${p.gioKT}${nb}</div>
           <div style="font-size:11px;color:#C2410C;margin-top:2px">Đã quá 60 phút, tự đóng</div>
         </div>
         <button onclick="bhMoModalDienKetQua('${p.idPhien}')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Điền kết quả</button>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   } else {
-    listHtml = '<div style="text-align:center;color:var(--text-m);font-size:12px;padding:14px">Không tải được danh sách phiên cần xử lý.</div>';
+    listHtml = '<div style="text-align:center;color:var(--text-m);font-size:12px;padding:14px">Không còn phiên tự đóng nào cần điền (có thể đã được xử lý ở thiết bị khác).</div>';
   }
-  // Show modal
   const modal = document.createElement('div');
   modal.id = 'bh-can-dien-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML = `
     <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:16px 18px;border-bottom:1px solid #F3F4F6">
-        <div style="font-size:15px;font-weight:700;color:#9A3412">⏰ Còn ${soPhien} phiên chưa điền kết quả</div>
+        <div style="font-size:15px;font-weight:700;color:#9A3412">⏰ Còn ${phienCanDien.length || soPhien} phiên chưa điền kết quả</div>
         <div style="font-size:12px;color:var(--text-m);margin-top:4px;line-height:1.5">Phải điền kết quả (Mua/Chưa mua) hoặc gửi yêu cầu xóa cho phiên cũ trước khi mở phiên mới.</div>
       </div>
       <div style="padding:14px 18px;overflow-y:auto">${listHtml}</div>
@@ -1603,7 +1620,9 @@ function bhShowPhienCanDienModal(soPhien) {
 
 // [v9.0] Mở modal điền kết quả cho phiên tự đóng
 function bhMoModalDienKetQua(phienId) {
-  const p = (BH.historyToday || []).find(x => x.idPhien === phienId);
+  const p = (BH._phienCanDienList || []).find(x => x.idPhien === phienId)
+         || (BH.historyToday || []).find(x => x.idPhien === phienId)
+         || (BH.historyTuDongCu || []).find(x => x.idPhien === phienId);
   if (!p) { bhShowToast('Không tìm thấy phiên', null); return; }
   // Đóng modal cha nếu đang mở
   const cur = document.getElementById('bh-can-dien-modal');

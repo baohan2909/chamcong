@@ -1655,7 +1655,7 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .hub-shell {
   max-width: 640px;
   margin: 0 auto;
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(30px + env(safe-area-inset-bottom, 0px));
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px));
   color: #E8EDF2;
   font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
 }
