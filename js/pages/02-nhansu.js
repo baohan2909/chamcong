@@ -186,6 +186,7 @@ function onLCQLSearch(){
 
 let _lcqlAllData = [];
 function taiLichCaQL(){
+  if(typeof _chanQuanLyNS==='function' && _chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
   document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
@@ -1898,6 +1899,7 @@ async function duyetTatCaDonNghiNS(action){
 // QLNS duyệt đơn nghỉ phép — [v11.6 Item 1] Fire-and-forget
 // [v10.85 YC#5] Duyệt nhiều đơn cùng lúc (gộp)
 async function duyetGopDonNghi(idsStr, quyetDinh){
+  if(typeof _canQuanLyNS==='function' && !_canQuanLyNS()){ if(typeof showToast==='function') showToast('Chỉ QLNS hoặc Admin mới được duyệt','warn'); return; }
   const ids = String(idsStr || '').split(',').filter(Boolean);
   if (!ids.length){ showToast('Không có đơn để duyệt', 'err'); return; }
   let ghiChuQLNS = '';

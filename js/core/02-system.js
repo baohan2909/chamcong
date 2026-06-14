@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.48',
+  'sys.cache_version': 'v13.51',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -362,6 +362,24 @@ const PAGE_TITLES={
   // [v13.41]
   'nvai':       'NHÂN VIÊN AI',
 };
+// ─── [v13.49] PHÂN QUYỀN DUYỆT/QUẢN LÝ NHÂN SỰ ─────────────────────────
+// Duyệt chấm công / nhân sự / lịch ca / nghỉ phép: CHỈ ADMIN + QLNS.
+// CH và các loại QL khác (QLBH...) đều KHÔNG được.
+function _canQuanLyNS(){
+  return (typeof SESSION!=='undefined' && SESSION &&
+          (SESSION.vaiTro==='ADMIN' || SESSION.vaiTro==='QLNS'));
+}
+// Trả về true nếu ĐÃ chặn (không có quyền) → hàm gọi nên return ngay
+function _chanQuanLyNS(){
+  if(_canQuanLyNS()) return false;
+  if(typeof showToast==='function') showToast('Bạn không có quyền truy cập mục quản lý nhân sự', 'warn');
+  const r = (SESSION&&SESSION.vaiTro==='CUA_HANG') ? 'banhang'
+          : (SESSION&&SESSION.vaiTro==='ADMIN')    ? 'home'
+          : 'chamcong';
+  setTimeout(()=>{ try{ goToPage(r); }catch(e){} }, 50);
+  return true;
+}
+
 function goToPage(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -449,13 +467,112 @@ function hubRenderHeader(){
     const initials=t.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
     avEl.textContent=initials||'?';
   }
-  // [v13.48] Thẻ Đơn hàng Online: demo chỉ NS00490 thấy, admin khác ẩn
+  // [v13.51] Thẻ Đơn hàng Online: demo chỉ NS00490 thấy, admin khác ẩn
   const dhCard=document.getElementById('hub-card-donhang');
   if(dhCard){
     const cheDo=(typeof _getSetting==='function')?_getSetting('donhang.che_do','demo'):'demo';
     const show=(cheDo==='live')||(SESSION.ma==='NS00490');
     dhCard.style.display = show ? '' : 'none';
   }
+}
+
+// ═══ [v13.51] HUB SUBMENU — gom chức năng con theo phân hệ ═══════════════
+// Bấm thẻ Hub → mở submenu các chức năng con (không mất menu nào).
+// Quyền: ADMIN thấy hết; role khác theo `roles` của từng mục.
+const _hubIc = {
+  cc:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  map:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
+  cal:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+  face: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  box:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  img:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+};
+const HUB_GROUPS = {
+  cc_ns: {
+    title: 'Chấm công & Nhân sự',
+    items: [
+      { label:'Chấm công',          desc:'Vào ca / ra ca',        ic:_hubIc.cc,    roles:['NV','CTV'],               act:()=>goToPage('chamcong') },
+      { label:'Giờ công',           desc:'Bảng công của tôi',     ic:_hubIc.clock, roles:['NV','CTV'],               act:()=>navGioCong() },
+      { label:'Bản đồ chấm công',   desc:'Vị trí chấm công',      ic:_hubIc.map,   roles:['NV','CTV'],               act:()=>goToPage('bandochidung') },
+      { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               act:()=>moLichCa() },
+      { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               act:()=>moModalBoSungCa() },
+      { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV'],               act:()=>nsFaceOpenEnrollment() },
+      { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   act:()=>goToPage('nhansu') },
+      { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   act:()=>moLichCaQL_safe() },
+      { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   act:()=>goToPage('duyetyc') },
+      { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   act:()=>nsFaceOpenAdmin() },
+    ]
+  },
+  banhang: {
+    title: 'Bán hàng hệ thống',
+    items: [
+      { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('banhang') },
+      { label:'Dashboard doanh số', desc:'Báo cáo doanh số',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('dashboard') },
+    ]
+  },
+  bangiao: {
+    title: 'Bàn giao hệ thống',
+    items: [
+      { label:'Bàn giao ca',        desc:'Bàn giao tại cửa hàng', ic:_hubIc.box,   roles:['NV','CTV','CUA_HANG'],    act:()=>goToPage('bangiao') },
+      { label:'Bàn giao (Quản lý)', desc:'Đối soát, sự vụ',       ic:_hubIc.check, roles:['QLNS','QLBH'],            act:()=>goToPage('bangiao-ql') },
+    ]
+  },
+  muanon: {
+    title: 'Mẫu nón',
+    items: [
+      { label:'Mẫu nón sưu tầm',    desc:'Ảnh sản phẩm hàng tuần',ic:_hubIc.img,   roles:[],                         act:()=>moPageMuanonAdmin() },
+      { label:'Mua nón',            desc:'Đăng ký mua nón',       ic:_hubIc.cart,  roles:['NV','CTV'],               act:()=>moPageMuanon() },
+    ]
+  },
+};
+function _hubItemVisible(it){
+  if(typeof SESSION==='undefined'||!SESSION) return false;
+  if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
+  return Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
+}
+// moLichCaQL wrapper an toàn (taiLichCaQL nằm ở page nhân sự)
+function moLichCaQL_safe(){ try{ goToPage('lichca-ql'); }catch(e){ try{ taiLichCaQL(); }catch(_){} } }
+
+function hubOpenGroup(key){
+  const g = HUB_GROUPS[key]; if(!g) return;
+  const items = g.items.filter(_hubItemVisible);
+  window._hubCurItems = items;
+  let ov = document.getElementById('hub-submenu-overlay');
+  if(!ov){ ov = document.createElement('div'); ov.id = 'hub-submenu-overlay'; document.body.appendChild(ov); }
+  const arrow = '<svg class="hubsub-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  ov.innerHTML = `
+    <div class="hubsub-head">
+      <button class="hubsub-back" onclick="hubCloseGroup()" aria-label="Quay lại">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="hubsub-title">${escHtml(g.title)}</div>
+    </div>
+    <div class="hubsub-list">
+      ${items.length ? items.map((it,i)=>`
+        <div class="hubsub-item" onclick="hubRunItem(${i})">
+          <div class="hubsub-ic">${it.ic||''}</div>
+          <div class="hubsub-txt"><div class="hubsub-lb">${escHtml(it.label)}</div>${it.desc?`<div class="hubsub-ds">${escHtml(it.desc)}</div>`:''}</div>
+          ${arrow}
+        </div>`).join('')
+      : '<div class="hubsub-empty">Không có chức năng nào khả dụng với tài khoản của bạn.</div>'}
+    </div>`;
+  ov.style.display = 'flex';
+  requestAnimationFrame(()=>ov.classList.add('show'));
+}
+function hubRunItem(i){
+  const it = (window._hubCurItems||[])[i]; if(!it) return;
+  hubCloseGroup();
+  setTimeout(()=>{ try{ it.act(); }catch(e){ console.error('[hub]',e); } }, 80);
+}
+function hubCloseGroup(){
+  const ov = document.getElementById('hub-submenu-overlay');
+  if(ov){ ov.classList.remove('show'); setTimeout(()=>{ ov.style.display='none'; }, 200); }
 }
 // Thẻ Đơn hàng Online — mở màn điều phối (page tự kiểm tra công tắc demo + quyền)
 function hubOpenDonhang(){
@@ -837,11 +954,9 @@ function khoiDongApp(){
     if (mBHCh) mBHCh.style.display='';
     // [v13.28 FIX] Null-safe — menu-lichca-ql có thể đã retire
     const _showCH = (id) => { const el = document.getElementById(id); if (el) el.style.display = ''; };
-    _showCH('nav-nhansu');
-    _showCH('menu-nhansu');
-    _showCH('menu-lichca-ql');
+    // [v13.49] CH KHÔNG quản lý/duyệt nhân sự — chỉ giữ Dashboard doanh số.
+    // Ẩn: Nhân sự, Lịch ca QL (các mục quản lý). Duyệt yêu cầu giữ ẩn (chờ RPC lọc theo CH).
     _showCH('menu-dashboard');
-    // CH KHÔNG có quyền duyệt yêu cầu → ẩn menu-duyetyc (giữ default hidden)
     // Chuyển trang mặc định sang Bán hàng
     setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
   }
@@ -852,10 +967,9 @@ function khoiDongApp(){
     document.getElementById('nav-chamcong').style.display='none';
     document.getElementById('nav-bandochidung').style.display='none';
     document.getElementById('nav-lichca').style.display='none';
-    // Hiện tab Bán hàng và Nhân sự (chỉ xem)
+    // [v13.49] QLBH KHÔNG quản lý/duyệt nhân sự (duyệt chỉ QLNS) → ẩn Nhân sự.
+    // QLBH chỉ giám sát Bán hàng + Bàn giao (theo quyền "QL nào cũng được" cho 2 mục này).
     document.getElementById('nav-banhang').style.display='';
-    document.getElementById('nav-nhansu').style.display='';
-    document.getElementById('menu-nhansu').style.display='';
     // [v5.6] Menu Phiên bán hàng trong tab Tài khoản
     const mBHQl = document.getElementById('menu-banhang');
     if (mBHQl) mBHQl.style.display='';
@@ -3594,6 +3708,7 @@ function _dedupedFetch(url){
 }
 
 function taiNhanSu(forceRefresh){
+  if(_chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS
   const list=document.getElementById('ns-list');
   if(!nsData.length||forceRefresh)
     list.innerHTML='<div class="ns-empty">⏳ Đang tải nhân sự...</div>';

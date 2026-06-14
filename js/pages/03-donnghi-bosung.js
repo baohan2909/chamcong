@@ -956,7 +956,7 @@ function _renderACCDnpQL(){
       // [v8.8] Dùng lyDo + anhUrl trực tiếp từ RPC
       const lyDoTxt = don.lyDo || '';
       const linkAnh = don.anhUrl || '';
-      const btns=don.trangThai==='Chờ duyệt'
+      const btns=(don.trangThai==='Chờ duyệt' && (typeof _canQuanLyNS==='function' && _canQuanLyNS()))
         ? `<div class="ns-duyet-wrap" style="margin-top:8px">
              <button class="ns-btn-ok" onclick="duyetDonNghiById('${don.id}','Đã duyệt')">✓ Duyệt</button>
              <button class="ns-btn-no" onclick="duyetDonNghiById('${don.id}','Từ chối')">✗ Từ chối</button>
@@ -986,6 +986,7 @@ function _renderACCDnpQL(){
 
 // [v12-FIX] Duyệt đơn nghỉ bằng UUID trực tiếp
 function duyetDonNghiById(dnId, qd){
+  if(typeof _canQuanLyNS==='function' && !_canQuanLyNS()){ if(typeof showToast==='function') showToast('Chỉ QLNS hoặc Admin mới được duyệt','warn'); return; }
   let ghiChu = '';
   if(qd==='Từ chối'){
     ghiChu=prompt('Lý do từ chối đơn này?');
@@ -1029,6 +1030,7 @@ function duyetDonNghiById(dnId, qd){
 
 // [v9.45] Duyệt đề nghị XIN ĐỔI LỊCH (cập nhật lich_ca, trigger trg_after_duyet_lich_ca tự xử lý ca cũ)
 async function duyetDoiLichById(lcId, qd) {
+  if(typeof _canQuanLyNS==='function' && !_canQuanLyNS()){ if(typeof showToast==='function') showToast('Chỉ QLNS hoặc Admin mới được duyệt','warn'); return; }
   let ghiChu = '';
   if (qd === 'Từ chối') {
     ghiChu = prompt('Lý do từ chối yêu cầu này?');
@@ -1248,6 +1250,7 @@ async function _fetchYeuCauDoiLich(tu, den, ttFilter) {
 }
 
 function taiDuyetYC(){
+  if(typeof _chanQuanLyNS==='function' && _chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS (CH-xem chờ RPC lọc theo CH)
   const content=document.getElementById('yc-content');
   content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
   const [tu,den]=_getYCRange();
@@ -1411,7 +1414,7 @@ function _renderYC(filterQ){
           ${d._isXinDoiLich && d._caMoi ? `<div style="margin-top:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #FED7AA;font-size:12px"><div style="color:#9A3412;font-weight:600;font-size:11px;margin-bottom:3px">Đổi thành:</div><div style="color:#7C2D12">${d._caMoi}</div></div>` : ''}
           ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
           ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đơn đính kèm</div>`:''}
-          ${d.trangThai==='CHO_DUYET'?`<div class="ns-duyet-wrap" style="margin-top:8px">
+          ${(d.trangThai==='CHO_DUYET' && (typeof _canQuanLyNS==='function' && _canQuanLyNS()))?`<div class="ns-duyet-wrap" style="margin-top:8px">
             <button class="ns-btn-ok" onclick="${d._isXinDoiLich?`duyetDoiLichById('${d.id}','Đã duyệt')`:`duyetDonNghiById('${d.id}','Đã duyệt')`}">✓ Duyệt</button>
             <button class="ns-btn-no" onclick="${d._isXinDoiLich?`duyetDoiLichById('${d.id}','Từ chối')`:`duyetDonNghiById('${d.id}','Từ chối')`}">✗ Từ chối</button>
           </div>`:(d.nguoiDuyet?`<div style="font-size:11px;color:var(--text-m);margin-top:6px">Duyệt bởi: ${d.nguoiDuyet}${d.ghiChuQLNS?' · '+d.ghiChuQLNS:''}</div>`:'')}
@@ -1451,7 +1454,7 @@ function _renderYC(filterQ){
           </div>
           <div class="dnp-lydo"><div class="dnp-lydo-lbl">Nội dung CB</div>${d.noiDung.replace(/\n/g,'<br>')}</div>
           ${d.giaiTrinh?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Giải trình của NV</div>${d.giaiTrinh}</div>`:'<div class="dnp-lydo" style="color:var(--red)"><div class="dnp-lydo-lbl">⚠ NV chưa giải trình</div>Khuyến nghị: chờ NV giải trình trước khi duyệt</div>'}
-          ${(d.trangThai==='DA_GIAI_TRINH'||d.trangThai==='CHUA_GIAI_TRINH')?`<div class="ns-duyet-wrap" style="margin-top:8px">
+          ${(d.trangThai==='DA_GIAI_TRINH'||d.trangThai==='CHUA_GIAI_TRINH') && (typeof _canQuanLyNS==='function' && _canQuanLyNS())?`<div class="ns-duyet-wrap" style="margin-top:8px">
             <button class="ns-btn-ok" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Duyệt','${cbId}')">✓ Duyệt</button>
             <button class="ns-btn-no" onclick="duyetGiaiTrinhYC('${d.maNV}','${d.ngay}','Không duyệt','${cbId}')">✗ Không duyệt</button>
             ${(d.loaiCB==='BỔ SUNG CA')?`<button class="ns-btn-edit" onclick='moModalSuaCB(${JSON.stringify({cbId:d.cbId,maCh:d.maCh,cuaHang:d.cuaHang,gio:d.gio,ngay:d.ngay,noiDung:d.noiDung}).replace(/'/g,"&#39;")})'><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Sửa</button>`:''}
@@ -1598,6 +1601,7 @@ async function hoanTacDuyet(token){
 }
 
 function duyetGiaiTrinhYC(maNV,ngay,quyetDinh,cbId){
+  if(typeof _canQuanLyNS==='function' && !_canQuanLyNS()){ if(typeof showToast==='function') showToast('Chỉ QLNS hoặc Admin mới được duyệt','warn'); return; }
   // Remove item từ UI ngay
   const itemEl=document.querySelector(`[data-gtitem="${cbId}"]`);
   if(itemEl){

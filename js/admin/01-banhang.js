@@ -1102,17 +1102,20 @@ function bhScheduleLogoutAt0h() {
 
 async function bhLoadStatsToday() {
   try {
-    // [v12-P1] Query trực tiếp: phiên DA_DONG hôm nay của CH
+    // [v13.50] Lấy phiên DA_DONG trong 7 NGÀY gần nhất (gồm hôm nay) của CH
+    //   → NV xem được phiên tự đóng các ngày trước để BỔ SUNG kết quả.
     const today = new Date();
     const ngayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    const _from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+    const ngay7Str = _from.getFullYear() + '-' + String(_from.getMonth()+1).padStart(2,'0') + '-' + String(_from.getDate()).padStart(2,'0');
     const { data: rows, error } = await supa
       .from('phien_ban_hang')
-      .select('id, stt_trong_ngay, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_da_mua_text, sp_quan_tam_text')
+      .select('id, stt_trong_ngay, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_da_mua_text, sp_quan_tam_text, ngay')
       .eq('ma_ch', SESSION.cuaHangMa)
       .eq('trang_thai', 'DA_DONG')
-      .eq('ngay', ngayStr)
+      .gte('ngay', ngay7Str)
       .order('gio_mo', { ascending: false })
-      .limit(200);
+      .limit(300);
     if (error) throw error;
     // Convert sang format cũ
     const list = (rows || []).map(r => {
@@ -1147,6 +1150,7 @@ async function bhLoadStatsToday() {
         tongGiaTri: r.tong_gia_tri,
         spDaMua: r.sp_da_mua_text ? r.sp_da_mua_text.split('\n').filter(Boolean) : [],
         spQuanTam: r.sp_quan_tam_text ? r.sp_quan_tam_text.split('\n').filter(Boolean) : [],
+        ngay: r.ngay,   // [v13.50] để hiển thị nhãn ngày khi không phải hôm nay
       };
     });
     BH.historyToday = list;
@@ -1314,12 +1318,20 @@ function bhBuildHistCardCh(p) {
           : 'Chưa mua';
     if (p.lyDo) detail = bhEscHtml(p.lyDo.length > 40 ? p.lyDo.slice(0,40)+'…' : p.lyDo);
   }
+  // [v13.50] Nhãn ngày khi phiên KHÔNG phải hôm nay (xem phiên 7 ngày để bổ sung)
+  const _hnStr = (function(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  let ngayBadge = '';
+  if (p.ngay && p.ngay !== _hnStr) {
+    const _pr = String(p.ngay).split('-');
+    if (_pr.length === 3) ngayBadge = '<span class="bh-hist-ngay">' + _pr[2] + '/' + _pr[1] + '</span>';
+  }
   card.innerHTML = `
     <div class="bh-hist-ch-status ${cls}"></div>
     <div class="bh-hist-ch-info">
       <div class="bh-hist-ch-title">
         <span class="bh-hist-ch-stt">#${p.stt || '?'}</span>
         ${bhEscHtml(label)}
+        ${ngayBadge}
         ${p.tenNV ? '· NV: ' + bhEscHtml(p.tenNV) : ''}
       </div>
       <div class="bh-hist-ch-meta">
