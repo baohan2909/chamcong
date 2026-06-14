@@ -8,16 +8,20 @@
 let dhLastCHRanked = [];    // CH đã xếp hạng sau OSRM
 let dhKhachLatLng  = null;  // tọa độ khách (geocode)
 
+// Quyền truy cập phân hệ: live = mọi người; demo = CHỈ NS00490 (admin khác cũng chặn)
+window._dhCanAccess = function(){
+  const cheDo = _getSetting('donhang.che_do', 'demo');
+  if (cheDo === 'live') return true;
+  return (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490');
+};
+
 // ─── Init khi vào page ──────────────────────────────────────────────────
 window.dhDieuPhoiInit = function(){
-  // Công tắc demo: khi 'demo' chỉ ADMIN vào (nhân viên không thấy)
-  const cheDo  = _getSetting('donhang.che_do', 'demo');
-  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
-  if (cheDo !== 'live' && !isAdmin) {
-    if (typeof showToast === 'function') showToast('Phân hệ đang chạy thử, chỉ ADMIN truy cập', 'warn');
-    goToPage('home');
-    return;
+  if (!_dhCanAccess()) {
+    if (typeof showToast === 'function') showToast('Phân hệ đang chạy thử — chỉ tài khoản NS00490', 'warn');
+    goToPage('home'); return;
   }
+  const cheDo = _getSetting('donhang.che_do', 'demo');
   // Nhãn DEMO/LIVE
   const tag = document.getElementById('dh-demo-tag');
   if (tag) {
@@ -108,17 +112,40 @@ window.dhTimCuaHang = async function(){
     return;
   }
 
-  box.innerHTML = '<div class="dh-loading">Đang tính khoảng cách di chuyển ' + near.length + ' cửa hàng...</div>';
+  // 2b) Lọc CH còn hàng nếu có nhập barcode (tồn hiện tại > 0)
+  let candidate = near;
+  const barcode = (document.getElementById('dh-sp-barcode').value || '').trim();
+  if (barcode) {
+    try {
+      const { data: tk } = await supa.rpc('dh_fn_ch_con_hang', { p_barcode: barcode });
+      if (Array.isArray(tk) && tk.length) {
+        const conHang = {};
+        tk.forEach(x => { conHang[x.ma_ch] = x.ton; });
+        const loc = near.filter(ch => conHang[ch.ma] != null);
+        if (loc.length) {
+          loc.forEach(ch => { ch.ton = conHang[ch.ma]; });
+          candidate = loc;
+        } else {
+          box.innerHTML = '<div class="dh-empty">Không có cửa hàng gần nào còn hàng sản phẩm này (barcode ' + escHtml(barcode) + '). Bỏ barcode để xem tất cả CH gần.</div>';
+          if (btn){ btn.disabled = false; btn.textContent = 'Tìm cửa hàng gần khách'; }
+          return;
+        }
+      }
+      // tk rỗng → chưa đồng bộ tồn / SP không có dữ liệu → giữ tất cả CH gần
+    } catch(e){}
+  }
 
-  // 3) OSRM cho 15 CH (song song)
-  await Promise.all(near.map(async ch => { ch.di_chuyen = await dhOSRM(geo.lat, geo.lng, ch.lat, ch.lng); }));
+  box.innerHTML = '<div class="dh-loading">Đang tính khoảng cách di chuyển ' + candidate.length + ' cửa hàng...</div>';
+
+  // 3) OSRM cho các CH ứng viên (song song)
+  await Promise.all(candidate.map(async ch => { ch.di_chuyen = await dhOSRM(geo.lat, geo.lng, ch.lat, ch.lng); }));
 
   // Xếp hạng: ưu tiên di chuyển, fallback chim bay
-  near.forEach(ch => { ch.km_sort = (ch.di_chuyen != null ? ch.di_chuyen : ch.chim_bay); });
-  near.sort((a,b) => a.km_sort - b.km_sort);
+  candidate.forEach(ch => { ch.km_sort = (ch.di_chuyen != null ? ch.di_chuyen : ch.chim_bay); });
+  candidate.sort((a,b) => a.km_sort - b.km_sort);
 
-  dhLastCHRanked = near;
-  dhRenderCHList(near);
+  dhLastCHRanked = candidate;
+  dhRenderCHList(candidate);
   if (btn){ btn.disabled = false; btn.textContent = 'Tìm lại'; }
 };
 
@@ -138,7 +165,7 @@ function dhRenderCHList(list){
         <div class="dh-ch-idx">${String.fromCharCode(65 + i)}</div>
         <div class="dh-ch-info">
           <div class="dh-ch-ten">${escHtml(ch.ten || ch.ma)}</div>
-          <div class="dh-ch-sub">${escHtml(ch.ma)} · ${loai}</div>
+          <div class="dh-ch-sub">${escHtml(ch.ma)} · ${loai}${ch.ton!=null?(' · còn '+ch.ton):''}</div>
         </div>
         <div class="dh-ch-km">
           <div class="dh-ch-km-num">${kmTxt}</div>

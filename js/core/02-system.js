@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.47',
+  'sys.cache_version': 'v13.48',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -448,6 +448,13 @@ function hubRenderHeader(){
     const t=(SESSION.ten||SESSION.ma||'?').trim();
     const initials=t.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
     avEl.textContent=initials||'?';
+  }
+  // [v13.48] Thẻ Đơn hàng Online: demo chỉ NS00490 thấy, admin khác ẩn
+  const dhCard=document.getElementById('hub-card-donhang');
+  if(dhCard){
+    const cheDo=(typeof _getSetting==='function')?_getSetting('donhang.che_do','demo'):'demo';
+    const show=(cheDo==='live')||(SESSION.ma==='NS00490');
+    dhCard.style.display = show ? '' : 'none';
   }
 }
 // Thẻ Đơn hàng Online — mở màn điều phối (page tự kiểm tra công tắc demo + quyền)

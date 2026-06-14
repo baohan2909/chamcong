@@ -26,10 +26,8 @@ function _dhVND(x){ return Number(x||0).toLocaleString('vi-VN'); }
 
 // ─── Init ───────────────────────────────────────────────────────────────
 window.dhQLInit = function(){
-  const cheDo  = _getSetting('donhang.che_do', 'demo');
-  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
-  if (cheDo !== 'live' && !isAdmin) {
-    showToast && showToast('Phân hệ đang chạy thử, chỉ ADMIN truy cập', 'warn');
+  if (!_dhCanAccess()) {
+    showToast && showToast('Phân hệ đang chạy thử — chỉ tài khoản NS00490', 'warn');
     goToPage('home'); return;
   }
   dhQLSwitchTab('theodoi');

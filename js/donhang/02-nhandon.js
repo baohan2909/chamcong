@@ -14,13 +14,12 @@ const DH_LY_DO = ['Hết size', 'Hết màu', 'Hết hàng', 'Đang bận'];
 
 // ─── Init ───────────────────────────────────────────────────────────────
 window.dhNhanInit = function(){
-  const cheDo  = _getSetting('donhang.che_do', 'demo');
-  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
-  const isCH    = (SESSION && SESSION.vaiTro === 'CUA_HANG');
-  if (cheDo !== 'live' && !isAdmin) {
-    showToast && showToast('Phân hệ đang chạy thử, chỉ ADMIN truy cập', 'warn');
+  if (!_dhCanAccess()) {
+    showToast && showToast('Phân hệ đang chạy thử — chỉ tài khoản NS00490', 'warn');
     goToPage('home'); return;
   }
+  const cheDo  = _getSetting('donhang.che_do', 'demo');
+  const isCH    = (SESSION && SESSION.vaiTro === 'CUA_HANG');
   // ADMIN xem tất cả (demo); CH thật lọc theo cửa hàng mình
   dhNhanMaCh = (isCH && SESSION.cuaHangMa) ? SESSION.cuaHangMa : null;
 
