@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.51',
+  'sys.cache_version': 'v13.52',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -466,6 +466,14 @@ function hubRenderHeader(){
     const t=(SESSION.ten||SESSION.ma||'?').trim();
     const initials=t.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
     avEl.textContent=initials||'?';
+  }
+  // [v13.51] Lời chào động theo giờ
+  const greetEl=document.getElementById('hub-greeting');
+  if(greetEl){
+    const h=new Date().getHours();
+    const g = h<11 ? 'Chào buổi sáng' : h<14 ? 'Chào buổi trưa' : h<18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+    const ten=(SESSION.ten||'').trim().split(/\s+/).slice(-1)[0] || '';
+    greetEl.textContent = ten ? (g + ', ' + ten) : g;
   }
   // [v13.51] Thẻ Đơn hàng Online: demo chỉ NS00490 thấy, admin khác ẩn
   const dhCard=document.getElementById('hub-card-donhang');

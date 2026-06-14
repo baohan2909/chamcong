@@ -1643,7 +1643,11 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
  *  Dark theme: obsidian navy nền, gold #CBA45A + teal accent
  * ═══════════════════════════════════════════════════════════════════════ */
 #page-home {
-  background: #0E1E2E;
+  background:
+    radial-gradient(1100px 560px at 88% -8%, rgba(203,164,90,.11), transparent 58%),
+    radial-gradient(820px 480px at -12% 112%, rgba(45,212,191,.085), transparent 54%),
+    linear-gradient(180deg, #0E1E2E 0%, #091420 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   margin: 0 !important;
   padding: 0 !important;
@@ -1651,7 +1655,7 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .hub-shell {
   max-width: 640px;
   margin: 0 auto;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) 15px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(30px + env(safe-area-inset-bottom, 0px));
   color: #E8EDF2;
   font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
 }
@@ -1659,86 +1663,103 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 /* Topbar: avatar + tên + chuông */
 .hub-topbar {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
-.hub-user { display: flex; align-items: center; gap: 11px; }
+.hub-user { display: flex; align-items: center; gap: 12px; }
 .hub-avatar {
-  width: 44px; height: 44px; border-radius: 13px;
-  background: linear-gradient(135deg, #0F2E45, #1E3A8A);
+  width: 46px; height: 46px; border-radius: 15px;
+  background: linear-gradient(135deg, #13354F, #1E3A8A);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 15px; color: #CBA45A;
   overflow: hidden;
+  border: 1px solid rgba(203,164,90,.28);
+  box-shadow: 0 5px 16px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.09);
 }
 .hub-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.hub-uname { font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.2; }
-.hub-urole { font-size: 11px; color: #8FA3B5; margin-top: 1px; }
+.hub-uname { font-size: 15px; font-weight: 700; color: #F4ECDC; line-height: 1.2; letter-spacing: .1px; }
+.hub-urole { font-size: 11.5px; color: #7E94A6; margin-top: 2px; }
 .hub-bell {
   position: relative;
-  width: 40px; height: 40px; border-radius: 50%;
-  background: rgba(255,255,255,.06); border: none;
+  width: 42px; height: 42px; border-radius: 14px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
   display: flex; align-items: center; justify-content: center;
-  color: #E8EDF2; cursor: pointer;
+  color: #D6DEE6; cursor: pointer; transition: background .15s, border-color .15s;
 }
 .hub-bell:active { background: rgba(255,255,255,.12); }
 .hub-bell-dot {
-  position: absolute; top: 6px; right: 7px;
+  position: absolute; top: 8px; right: 9px;
   width: 9px; height: 9px; border-radius: 50%;
   background: #E24B4A; border: 2px solid #0E1E2E;
+  box-shadow: 0 0 0 2px rgba(226,75,74,.25);
 }
 
 /* Head: label + title */
-.hub-head { margin-bottom: 18px; }
+.hub-head { margin-bottom: 22px; }
 .hub-head-label {
-  font-size: 10.5px; letter-spacing: .14em; color: #CBA45A;
-  font-weight: 600; margin-bottom: 6px;
+  font-size: 10.5px; letter-spacing: .17em; color: #CBA45A;
+  font-weight: 600; margin-bottom: 7px; text-transform: uppercase;
 }
 .hub-head-title {
   font-family: 'Fraunces', Georgia, serif;
-  font-size: 25px; font-weight: 600; color: #fff; line-height: 1.05;
+  font-size: 28px; font-weight: 600; color: #F8F2E6; line-height: 1.04;
+  letter-spacing: .2px;
 }
 
 /* Grid thẻ phân hệ */
 .hub-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 13px;
 }
 .hub-card {
-  background: #16293B;
-  border: 0.5px solid rgba(255,255,255,.07);
-  border-radius: 16px;
-  padding: 16px 14px;
+  background: linear-gradient(155deg, rgba(25,45,64,.96) 0%, rgba(15,30,45,.96) 100%);
+  border: 1px solid rgba(203,164,90,.12);
+  border-radius: 20px;
+  padding: 18px 16px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: transform .12s, border-color .12s, background .12s;
+  box-shadow: 0 10px 28px rgba(4,10,18,.42), inset 0 1px 0 rgba(255,255,255,.045);
+  transition: transform .14s cubic-bezier(.22,.61,.36,1), border-color .18s, box-shadow .18s;
 }
-.hub-card:active { transform: scale(.97); background: #1A2F44; }
-.hub-card:hover { border-color: rgba(203,164,90,.3); }
-.hub-card-sm { padding: 14px 13px; }
+.hub-card::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 130px; height: 130px;
+  background: radial-gradient(circle at top right, rgba(203,164,90,.09), transparent 68%);
+  pointer-events: none;
+}
+.hub-card:active {
+  transform: scale(.975) translateY(1px);
+  border-color: rgba(45,212,191,.36);
+  box-shadow: 0 4px 14px rgba(4,10,18,.5);
+}
+@media (hover:hover){ .hub-card:hover { border-color: rgba(203,164,90,.34); box-shadow: 0 14px 34px rgba(4,10,18,.5); } }
+.hub-card-sm { padding: 15px 14px; }
 .hub-ic {
-  width: 44px; height: 44px; border-radius: 13px;
+  width: 48px; height: 48px; border-radius: 15px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  margin-bottom: 13px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.3);
+  position: relative;
 }
-.hub-ic-sm { width: 38px; height: 38px; border-radius: 11px; margin-bottom: 10px; }
+.hub-ic-sm { width: 40px; height: 40px; border-radius: 12px; margin-bottom: 11px; }
 .hub-nm {
-  font-size: 14.5px; font-weight: 700; color: #fff;
-  line-height: 1.25; margin-bottom: 4px;
+  font-size: 15px; font-weight: 700; color: #F4ECDC;
+  line-height: 1.25; margin-bottom: 4px; letter-spacing: .1px;
 }
-.hub-card-sm .hub-nm { font-size: 13px; }
-.hub-ds { font-size: 11px; color: #8FA3B5; line-height: 1.4; }
+.hub-card-sm .hub-nm { font-size: 13.5px; }
+.hub-ds { font-size: 11.5px; color: #7E94A6; line-height: 1.45; }
 .hub-bdg {
-  position: absolute; top: 12px; right: 12px;
+  position: absolute; top: 13px; right: 13px;
   font-size: 9px; font-weight: 700;
-  background: rgba(203,164,90,.18); color: #CBA45A;
-  padding: 2px 8px; border-radius: 20px;
-  letter-spacing: .03em;
+  background: linear-gradient(135deg, rgba(226,75,74,.92), rgba(203,164,90,.92));
+  color: #fff;
+  padding: 2.5px 8px; border-radius: 20px;
+  letter-spacing: .04em;
+  box-shadow: 0 3px 9px rgba(226,75,74,.32);
 }
 .hub-foot {
-  text-align: center; font-size: 10.5px; color: #5A6F82;
-  margin-top: 20px;
+  text-align: center; font-size: 10.5px; color: #566B7D;
+  margin-top: 22px;
 }
 
 /* [v13.43] Nút về Hub trong header (ADMIN) */
