@@ -1102,61 +1102,58 @@ function bhScheduleLogoutAt0h() {
 
 async function bhLoadStatsToday() {
   try {
-    // [v13.50] Lấy phiên DA_DONG trong 7 NGÀY gần nhất (gồm hôm nay) của CH
-    //   → NV xem được phiên tự đóng các ngày trước để BỔ SUNG kết quả.
+    // [v13.54] Hiển thị phiên CHỈ TRONG NGÀY (hôm nay).
+    //   Ngoại lệ: đơn TỰ ĐÓNG chưa bổ sung trong 6 ngày trước → vẫn lấy về
+    //   để NV nhập lại kết quả (trước đây không tìm thấy đơn nên không nhập được).
     const today = new Date();
     const ngayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
     const _from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
     const ngay7Str = _from.getFullYear() + '-' + String(_from.getMonth()+1).padStart(2,'0') + '-' + String(_from.getDate()).padStart(2,'0');
-    const { data: rows, error } = await supa
-      .from('phien_ban_hang')
-      .select('id, stt_trong_ngay, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_da_mua_text, sp_quan_tam_text, ngay')
-      .eq('ma_ch', SESSION.cuaHangMa)
-      .eq('trang_thai', 'DA_DONG')
-      .gte('ngay', ngay7Str)
-      .order('gio_mo', { ascending: false })
-      .limit(300);
-    if (error) throw error;
-    // Convert sang format cũ
-    const list = (rows || []).map(r => {
+    const SEL = 'id, stt_trong_ngay, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_da_mua_text, sp_quan_tam_text, ngay';
+
+    // Query 1: phiên DA_DONG HÔM NAY (mọi kết quả) — dùng cho thống kê + hiển thị
+    const p1 = supa.from('phien_ban_hang').select(SEL)
+      .eq('ma_ch', SESSION.cuaHangMa).eq('trang_thai', 'DA_DONG').eq('ngay', ngayStr)
+      .order('gio_mo', { ascending: false }).limit(300);
+    // Query 2: phiên TỰ ĐÓNG chưa bổ sung trong 6 ngày TRƯỚC (để bổ sung kết quả)
+    const p2 = supa.from('phien_ban_hang').select(SEL)
+      .eq('ma_ch', SESSION.cuaHangMa).eq('trang_thai', 'DA_DONG').eq('ket_qua', 'TU_DONG')
+      .gte('ngay', ngay7Str).lt('ngay', ngayStr)
+      .order('gio_mo', { ascending: false }).limit(100);
+
+    const [r1, r2] = await Promise.all([p1, p2]);
+    if (r1.error) throw r1.error;
+
+    const fmtTime = ts => {
+      if (!ts) return '';
+      try { const d = new Date(ts); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+      catch(e){ return ''; }
+    };
+    const fmtThoiLuong = m => {
+      if (!m) return '';
+      const totalSec = Math.round(m * 60);
+      return String(Math.floor(totalSec/60)).padStart(2,'0') + ':' + String(totalSec%60).padStart(2,'0');
+    };
+    const mapRow = r => {
       let trangThai = 'Đã mua';
       if (r.ket_qua === 'CHUA_MUA')        trangThai = 'Chưa mua';
       else if (r.ket_qua === 'TU_DONG')    trangThai = 'Tự đóng';
       else if (r.ket_qua === 'ADMIN_DONG') trangThai = 'Admin đã đóng';
-      const fmtTime = ts => {
-        if (!ts) return '';
-        try {
-          const d = new Date(ts);
-          return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-        } catch(e){ return ''; }
-      };
-      const fmtThoiLuong = m => {
-        if (!m) return '';
-        const totalSec = Math.round(m * 60);
-        const mm = Math.floor(totalSec / 60);
-        const ss = totalSec % 60;
-        return String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
-      };
       return {
-        idPhien: r.id,
-        stt: r.stt_trong_ngay,
-        maNV: r.ma_nv,
-        tenNV: r.ten_nv_snapshot,
-        gioBD: fmtTime(r.gio_mo),
-        gioKT: fmtTime(r.gio_dong),
-        thoiLuong: fmtThoiLuong(r.thoi_luong_phut),
-        trangThai,
-        lyDo: r.ly_do_khong_mua,
-        tongGiaTri: r.tong_gia_tri,
+        idPhien: r.id, stt: r.stt_trong_ngay, maNV: r.ma_nv, tenNV: r.ten_nv_snapshot,
+        gioBD: fmtTime(r.gio_mo), gioKT: fmtTime(r.gio_dong), thoiLuong: fmtThoiLuong(r.thoi_luong_phut),
+        trangThai, lyDo: r.ly_do_khong_mua, tongGiaTri: r.tong_gia_tri,
         spDaMua: r.sp_da_mua_text ? r.sp_da_mua_text.split('\n').filter(Boolean) : [],
         spQuanTam: r.sp_quan_tam_text ? r.sp_quan_tam_text.split('\n').filter(Boolean) : [],
-        ngay: r.ngay,   // [v13.50] để hiển thị nhãn ngày khi không phải hôm nay
+        ngay: r.ngay,   // để hiển thị nhãn ngày khi không phải hôm nay
       };
-    });
-    BH.historyToday = list;
+    };
+
+    BH.historyToday    = (r1.data || []).map(mapRow);                       // hôm nay
+    BH.historyTuDongCu = (r2.error ? [] : (r2.data || []).map(mapRow));     // tự đóng cũ (cần bổ sung)
     BH.statsToday = {
-      bought:    list.filter(p => p.trangThai === 'Đã mua').length,
-      notBought: list.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng').length,
+      bought:    BH.historyToday.filter(p => p.trangThai === 'Đã mua').length,
+      notBought: BH.historyToday.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng').length,
     };
     bhUpdateStats();
     if (BH.filterStatus !== 'selling' && BH.filterStatus !== undefined) {
@@ -1228,9 +1225,14 @@ function bhRenderSessions() {
   if (filter === 'bought' || filter === 'notbought') {
     // Ẩn cards selling
     [...wrap.querySelectorAll('.bh-card')].forEach(c => c.remove());
-    const hist = (BH.historyToday || []).filter(p =>
-      filter === 'bought' ? p.trangThai === 'Đã mua' : (p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng')
-    );
+    let hist;
+    if (filter === 'bought') {
+      hist = (BH.historyToday || []).filter(p => p.trangThai === 'Đã mua');
+    } else {
+      // notbought: chưa mua/tự đóng HÔM NAY + đơn tự đóng CŨ (≤7 ngày) cần bổ sung
+      hist = (BH.historyToday || []).filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng')
+             .concat(BH.historyTuDongCu || []);
+    }
     if (!hist.length) {
       if (empty) {
         empty.style.display = 'block';

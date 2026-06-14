@@ -6,7 +6,7 @@
   "start_url": "/chamcong/?source=pwa",
   "scope": "/chamcong/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": ["standalone"],
   "orientation": "portrait",
   "background_color": "#0F6E56",
   "theme_color": "#0F6E56",
