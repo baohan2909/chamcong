@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.45',
+  'sys.cache_version': 'v13.46',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -331,6 +331,7 @@ const PAGE_TITLES={
   'home':      '',
   'donhang':   '',
   'donhang-nhan': '',
+  'donhang-ql': '',
   'lichca':    'LỊCH LÀM VIỆC',
   'lichca-ql': 'LỊCH CA HỆ THỐNG',
   chamcong:'CHẤM CÔNG', giocong:'GIỜ CÔNG CỦA TÔI',
@@ -371,7 +372,7 @@ function goToPage(page){
   // Các page khác: hiện lại (nvai sẽ tự ẩn bottom-nav qua nvaiPageInit).
   const _mh = document.getElementById('main-header');
   const _bn = document.getElementById('bottom-nav');
-  if (page === 'home' || page === 'donhang' || page === 'donhang-nhan') {
+  if (page === 'home' || page === 'donhang' || page === 'donhang-nhan' || page === 'donhang-ql') {
     if (_mh) _mh.style.display = 'none';
     if (_bn) _bn.style.display = 'none';
     if (page === 'home' && typeof hubRenderHeader === 'function') hubRenderHeader();
@@ -425,6 +426,8 @@ function goToPage(page){
   if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='donhang-nhan') { if(typeof dhNhanInit==='function') dhNhanInit(); }  // [v13.45] CH nhận đơn
   else { if(typeof dhNhanLeave==='function') dhNhanLeave(); }
+  if(page==='donhang-ql')   { if(typeof dhQLInit==='function') dhQLInit(); }  // [v13.46] Quản lý đơn hàng
+  else { if(typeof dhQLLeave==='function') dhQLLeave(); }
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
 }
