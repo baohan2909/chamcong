@@ -2315,3 +2315,132 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 #page-donhang .dh-qr-line.total { border-top:1px dashed #E2E5E2; margin-top:6px; padding-top:9px; }
 #page-donhang .dh-qr-line.total b { font-size:17px; font-weight:800; color:#0F6E56; }
 #page-donhang .dh-qr-note { font-size:11px; color:var(--text-m); margin-top:8px; line-height:1.4; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.65] ĐƠN VỀ CỬA HÀNG + QUẢN LÝ ĐƠN → GIAO DIỆN SÁNG (đồng bộ)
+ *  Override toàn bộ bản dark: gold→xanh, card→trắng, chữ→đậm, badge sáng.
+ * ═══════════════════════════════════════════════════════════════════════ */
+#page-donhang-nhan, #page-donhang-ql { background: var(--bg) !important; }
+#page-donhang-nhan .dh-shell, #page-donhang-ql .dh-shell {
+  color: var(--text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  padding-top: 0 !important;
+}
+
+/* Nhận đơn — list */
+.dh-nhan-scope-bar { color: var(--text-m) !important; }
+.dh-nhan-scope-bar svg { color: #0F6E56 !important; }
+.dh-nhan-live-dot { background: #1D9E75 !important; }
+.dh-nhan-empty { background: #fff !important; color: var(--text-m) !important; border: 1px solid var(--line); }
+.dh-nhan-card { background: #fff !important; border: 1px solid #E2E5E2 !important; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+.dh-nhan-card:active { background: #F4FBF8 !important; }
+.dh-nhan-madon { color: #0F6E56 !important; }
+.dh-nhan-km { color: #0D9488 !important; }
+.dh-nhan-sp { color: var(--text) !important; }
+.dh-nhan-gt { color: #0F6E56 !important; }
+.dh-nhan-pt { color: var(--text-m) !important; background: #EEF2F1 !important; }
+.dh-nhan-pt.dh-pt-ck { color: #047857 !important; background: #DCFCE7 !important; }
+
+/* Popup nhận đơn */
+.dh-pop-card { background: #fff !important; border: 1px solid rgba(15,110,86,.25) !important; color: var(--text) !important; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.dh-pop-title { font-family: inherit !important; color: var(--text) !important; }
+.dh-pop-madon { color: var(--text-m) !important; }
+.dh-pop-timer-box { background: #F4FBF8 !important; }
+.dh-pop-timer { color: #0F6E56 !important; }
+.dh-pop-timer.dh-timer-red { color: #DC2626 !important; }
+.dh-pop-timer-lbl { color: var(--text-m) !important; }
+.dh-pop-body { background: #F7F7F4 !important; }
+.dh-pop-sp { color: var(--text) !important; }
+.dh-pop-sl { color: var(--text-m) !important; }
+.dh-pop-stat:nth-child(1) { background: rgba(13,148,136,.1) !important; }
+.dh-pop-stat:nth-child(2) { background: rgba(15,110,86,.1) !important; }
+.dh-pop-stat-lbl { color: var(--text-m) !important; }
+.dh-pop-km { color: #0D9488 !important; }
+.dh-pop-gt { color: #0F6E56 !important; }
+.dh-pop-pt-row, .dh-pop-diachi-row { color: var(--text) !important; }
+.dh-pop-pt-row svg, .dh-pop-diachi-row svg { color: #0F6E56 !important; }
+.dh-pop-btn-nhan { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+.dh-pop-btn-tuchoi { color: #DC2626 !important; border-color: rgba(220,38,38,.35) !important; }
+.dh-lydo-btn { background: #FEF2F2 !important; color: #DC2626 !important; border-color: rgba(220,38,38,.25) !important; }
+
+/* Quản lý — tabs + chips + list */
+.dh-ql-tabs { background: #EEF2F1 !important; }
+.dh-ql-tab { color: var(--text-m) !important; }
+.dh-ql-tab.active { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+.dh-ql-loading, .dh-ql-empty { background: #fff !important; color: var(--text-m) !important; border: 1px solid var(--line); }
+.dh-ql-chip { background: #fff !important; border: 1px solid #E2E5E2 !important; color: var(--text-m) !important; }
+.dh-ql-chip.active { background: rgba(15,110,86,.1) !important; border-color: rgba(15,110,86,.4) !important; color: #0F6E56 !important; }
+.dh-ql-don { background: #fff !important; border: 1px solid #E2E5E2 !important; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+.dh-ql-don:active { background: #F4FBF8 !important; }
+.dh-ql-madon { color: #0F6E56 !important; }
+.dh-ql-don-sp { color: var(--text) !important; }
+.dh-ql-don-bot { color: var(--text-m) !important; }
+.dh-ql-don-gt { color: #0F6E56 !important; }
+
+/* Badge trạng thái — nền nhạt + chữ đậm cho nền sáng */
+.dh-tt-slate   { background: #F1F5F9 !important; color: #475569 !important; }
+.dh-tt-navy    { background: #DBEAFE !important; color: #2563EB !important; }
+.dh-tt-amber   { background: #FEF3C7 !important; color: #B45309 !important; }
+.dh-tt-teal    { background: #CCFBF1 !important; color: #0D9488 !important; }
+.dh-tt-cyan    { background: #CFFAFE !important; color: #0891B2 !important; }
+.dh-tt-emerald { background: #DCFCE7 !important; color: #047857 !important; }
+.dh-tt-red     { background: #FEE2E2 !important; color: #DC2626 !important; }
+
+/* Báo cáo */
+.dh-bc-card, .dh-bc-stat { background: #fff !important; border: 1px solid #E2E5E2 !important; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+.dh-bc-num { color: var(--text) !important; }
+.dh-bc-lbl, .dh-bc-stat-lbl { color: var(--text-m) !important; }
+.dh-bc-money { background: #F4FBF8 !important; border: 1px solid rgba(15,110,86,.2) !important; }
+.dh-bc-money-lbl { color: var(--text-m) !important; }
+.dh-bc-money-num { color: #0F6E56 !important; }
+.dh-bc-sec { color: var(--text-m) !important; }
+.dh-bc-item { background: #fff !important; border: 1px solid #E2E5E2 !important; color: var(--text) !important; }
+.dh-bc-item b { color: #0F6E56 !important; }
+
+/* Cài đặt */
+.dh-cd-warn { background: #FEF2F2 !important; border: 1px solid rgba(220,38,38,.25) !important; color: #DC2626 !important; }
+.dh-cd-sec { color: #0F6E56 !important; }
+.dh-cd-toggle { background: #fff !important; border: 1px solid #E2E5E2 !important; }
+.dh-cd-tg-ttl { color: var(--text) !important; }
+.dh-cd-tg-sub { color: var(--text-m) !important; }
+.dh-seg { background: #EEF2F1 !important; }
+.dh-seg-btn { color: var(--text-m) !important; }
+.dh-seg-btn.active { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+.dh-seg-btn.dh-seg-live.active { background: #1D9E75 !important; }
+.dh-cd-fld label { color: var(--text-m) !important; }
+.dh-cd-inp { background: #fff !important; border: 1px solid #E2E5E2 !important; color: var(--text) !important; }
+.dh-cd-inp:focus { border-color: #0F6E56 !important; }
+.dh-cd-save { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+
+/* Overlay chi tiết đơn */
+.dh-det-card { background: #fff !important; }
+.dh-det-head { color: var(--text) !important; font-family: inherit !important; border-bottom: 1px solid #ECECE8 !important; }
+.dh-det-close { background: #F1F5F9 !important; color: var(--text) !important; }
+.dh-det-madon { color: #0F6E56 !important; }
+.dh-det-sec { color: var(--text-m) !important; }
+.dh-det-row { color: var(--text-m) !important; border-bottom: 1px solid #F1F3F1 !important; }
+.dh-det-row b { color: var(--text) !important; }
+.dh-det-dp { background: #F7F7F4 !important; }
+.dh-det-dp-ch { color: var(--text) !important; }
+.dh-det-dp-km { color: var(--text-m) !important; }
+.dh-dp-nhan { color: #047857 !important; }
+.dh-dp-tu_choi { color: #DC2626 !important; }
+.dh-dp-het_gio { color: var(--text-m) !important; }
+.dh-dp-cho { color: #B45309 !important; }
+.dh-det-empty { color: var(--text-m) !important; }
+.dh-det-hh { background: #F4FBF8 !important; }
+.dh-det-hh-row { color: var(--text) !important; }
+.dh-det-hh-row b { color: #0F6E56 !important; }
+.dh-det-btn-next { background: rgba(13,148,136,.12) !important; color: #0D9488 !important; border-color: rgba(13,148,136,.3) !important; }
+.dh-det-btn-done { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+.dh-det-btn-qr { background: rgba(15,110,86,.1) !important; color: #0F6E56 !important; border-color: rgba(15,110,86,.3) !important; }
+.dh-det-paid { background: #DCFCE7 !important; color: #047857 !important; }
+
+/* Overlay QR (CH nhận đơn) */
+.dh-qr-card { background: #fff !important; border: 1px solid rgba(15,110,86,.25) !important; color: var(--text) !important; }
+.dh-qr-head { color: var(--text) !important; font-family: inherit !important; }
+.dh-qr-amt { color: #0F6E56 !important; }
+.dh-qr-info { background: #F7F7F4 !important; }
+.dh-qr-info-row { color: var(--text-m) !important; }
+.dh-qr-info-row b { color: var(--text) !important; }
+.dh-qr-confirm { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
