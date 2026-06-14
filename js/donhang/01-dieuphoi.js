@@ -262,8 +262,8 @@ function dhGiaSp(sp){ return (sp && sp.giaSale>0) ? sp.giaSale : (sp ? sp.giaNY 
 // ─── Sản phẩm: nạp danh sách (tái dùng engine phiên bán hàng) ───
 async function dhEnsureSanPham(){
   if (typeof BH !== 'undefined' && BH.spList && BH.spList.length) return;
-  if (typeof bhLoadSanPham === 'function') {
-    try { await bhLoadSanPham(); } catch(e){ console.warn('[DH] load SP:', e); }
+  if (typeof bhLoadSpData === 'function') {
+    try { await bhLoadSpData(); } catch(e){ console.warn('[DH] load SP:', e); }
   }
 }
 

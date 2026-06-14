@@ -2197,10 +2197,10 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
  *  Nền kem sáng, header cc-hero xanh + vòng tròn, form trắng, font hệ thống.
  *  + Thành phần mới: autocomplete sản phẩm, địa chỉ phân cấp, thành tiền.
  * ═══════════════════════════════════════════════════════════════════════ */
-#page-donhang, #page-donhang-nhan, #page-donhang-ql {
+#page-donhang {
   background: var(--bg) !important;
 }
-.dh-shell {
+#page-donhang .dh-shell {
   color: var(--text) !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
   padding-top: 0 !important;

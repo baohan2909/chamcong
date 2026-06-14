@@ -80,9 +80,13 @@ window.nvaiPageLeave = function(){
   const _pg = document.getElementById('page-nvai');
   if (_pg) { _pg.style.height = ''; _pg.style.top = ''; }
   if (typeof _nvaiStreamTimer !== 'undefined' && _nvaiStreamTimer) { clearTimeout(_nvaiStreamTimer); _nvaiStreamTimer = null; }
+  // [v13.62] Chỉ hiện lại bottom-nav nếu trang hiện tại KHÔNG thuộc nhóm ẩn nav
+  // (home + các page đơn hàng có header riêng, ẩn nav để bàn phím không đẩy thanh nav).
+  const _hideNav = ['home','donhang','donhang-nhan','donhang-ql'];
+  const _cur = (typeof currentPage !== 'undefined') ? currentPage : '';
   const nav = document.querySelector('.bottom-nav');
-  if (nav) nav.style.display = '';
-  nvaiInitFab();
+  if (nav && _hideNav.indexOf(_cur) === -1) nav.style.display = '';
+  if (_hideNav.indexOf(_cur) === -1) nvaiInitFab();
 };
 
 async function nvaiLoadSessions(){
