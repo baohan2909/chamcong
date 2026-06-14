@@ -2919,9 +2919,13 @@
      + bàn phím đẩy menu). Header app sticky tự nhiên giữ cố định trên cùng.
      Bottom-nav + fab được ẩn khi ở page này (JS goToPage). */
   #page-nvai .cc-hero-page {
-    padding: 12px 14px 14px !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
+    padding: 14px 16px !important;
+    margin: 10px 12px 0 !important;
+    border-radius: 18px !important;
+    position: sticky !important;
+    top: 8px;
+    z-index: 30;
+    box-shadow: 0 6px 18px rgba(15,46,69,.18);
   }
   #page-nvai .cc-hero-page-sub { font-size: 11px; }
 
@@ -3261,4 +3265,14 @@
     -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   }
   .nvai-drawer-bd.open { display: block; }
+}
+
+/* [v13.53] Khi ở Nhân viên AI: ẩn chắc bottom-nav + FAB (override), ô chat dính đáy */
+body.nvai-active .bottom-nav,
+body.nvai-active #nvai-fab,
+body.nvai-active #bottom-nav { display: none !important; }
+@media (max-width: 767px) {
+  body.nvai-active #page-nvai .nvai-input-bar {
+    position: sticky; bottom: 0; z-index: 10;
+  }
 }

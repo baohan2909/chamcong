@@ -40,10 +40,11 @@ window.nvaiPageInit = async function(){
     goToPage('home');
     return;
   }
-  // [v13.42.1] Ẩn FAB + bottom-nav khi ở page nvai (màn chat full,
-  // tránh bàn phím đẩy menu lên). Khôi phục khi rời page.
+  // [v13.53] Ẩn FAB + bottom-nav chắc chắn khi ở page nvai (class trên body
+  // override mọi CSS) → ô chat dính đáy, bàn phím không bị nav che/đẩy.
   const fab = document.getElementById('nvai-fab');
   if (fab) fab.style.display = 'none';
+  document.body.classList.add('nvai-active');
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = 'none';
   await nvaiLoadSessions();
@@ -51,6 +52,7 @@ window.nvaiPageInit = async function(){
 
 // Hook khi rời page nvai → show FAB + bottom-nav lại
 window.nvaiPageLeave = function(){
+  document.body.classList.remove('nvai-active');
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = '';
   nvaiInitFab();
@@ -187,8 +189,13 @@ function nvaiFormatMarkdown(text){
   // Headings
   s = s.replace(/^### (.+)$/gm, '<h4>$1</h4>');
   s = s.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+  // [v13.53] Gộp dòng trống thừa (AI hay xuống 2-3 dòng không cần → trông kéo dài)
+  s = s.replace(/\n{2,}/g, '\n');
   // Line break
   s = s.replace(/\n/g, '<br>');
+  // Bỏ <br> dư ngay quanh khối list/heading (tránh khoảng trống lớn)
+  s = s.replace(/<br>\s*(<(?:ul|h3|h4))/g, '$1');
+  s = s.replace(/(<\/(?:ul|h3|h4)>)\s*<br>/g, '$1');
   return s;
 }
 
