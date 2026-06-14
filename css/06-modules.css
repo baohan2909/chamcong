@@ -3272,19 +3272,46 @@ body.nvai-active .bottom-nav,
 body.nvai-active #nvai-fab,
 body.nvai-active #bottom-nav { display: none !important; }
 
-/* [v13.58] Layout chat AI mobile — CHỈ áp dụng khi đang Ở trang AI (body.nvai-active),
-   nếu không #page-nvai sẽ đè .page{display:none} và hiện ở mọi trang. */
+/* [v13.59] Layout chat AI mobile — CHỈ khi đang ở trang AI (body.nvai-active).
+   Bỏ header tên/ngày giờ, dùng THẺ HERO XANH làm header trên cùng (cố định) →
+   khung chat dài hơn, ô nhập sát bàn phím (chiều cao trang = đúng vùng nhìn thấy do JS set). */
 @media (max-width: 767px) {
+  body.nvai-active #main-header { display: none !important; }
   body.nvai-active #page-nvai {
+    position: fixed !important; top: 0; left: 0; right: 0;
     display: flex !important; flex-direction: column;
-    height: calc(100dvh - var(--nvai-header-h, 58px));
+    height: 100dvh;
     overflow: hidden;
-    padding-bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 30;
   }
-  body.nvai-active #page-nvai .cc-hero-page,
+  body.nvai-active #page-nvai .cc-hero-page {
+    flex-shrink: 0;
+    margin: 0 !important;
+    border-radius: 0 0 22px 22px !important;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 14px) !important;
+  }
   body.nvai-active #page-nvai .nvai-mobile-bar { flex-shrink: 0; }
   body.nvai-active #page-nvai .nvai-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   body.nvai-active #page-nvai .nvai-main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   body.nvai-active #page-nvai .nvai-msg-list { flex: 1; min-height: 0; overflow-y: auto; }
   body.nvai-active #page-nvai .nvai-input-bar { position: static; flex-shrink: 0; }
 }
+
+/* [v13.59] Nút về Hub trong header AI (vì đã ẩn header tên + bottom-nav ở trang AI) */
+.nvai-home-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: 14px;
+  width: 36px; height: 36px;
+  border-radius: 11px;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 3; padding: 0;
+}
+.nvai-home-btn:active { background: rgba(255,255,255,.3); }
+.nvai-home-btn svg { width: 18px; height: 18px; }
+@media (min-width: 768px) { .nvai-home-btn { display: none; } }

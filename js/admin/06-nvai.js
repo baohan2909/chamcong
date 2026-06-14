@@ -51,11 +51,10 @@ window.nvaiPageInit = async function(){
     if (!document.body.classList.contains('nvai-active')) return;
     const page = document.getElementById('page-nvai');
     if (!page) return;
-    const mh = document.getElementById('main-header');
-    const hh = mh ? Math.round(mh.getBoundingClientRect().height) : 0;
-    document.documentElement.style.setProperty('--nvai-header-h', hh + 'px');
-    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    page.style.height = Math.max(220, Math.round(vh - hh)) + 'px';
+    const vv = window.visualViewport;
+    const vh = vv ? vv.height : window.innerHeight;
+    page.style.height = Math.max(220, Math.round(vh)) + 'px';
+    page.style.top = (vv ? Math.round(vv.offsetTop) : 0) + 'px';
   };
   window._nvaiVVFit = _vvFit;
   if (window.visualViewport) {
@@ -79,7 +78,7 @@ window.nvaiPageLeave = function(){
   }
   window._nvaiVVFit = null;
   const _pg = document.getElementById('page-nvai');
-  if (_pg) _pg.style.height = '';
+  if (_pg) { _pg.style.height = ''; _pg.style.top = ''; }
   if (typeof _nvaiStreamTimer !== 'undefined' && _nvaiStreamTimer) { clearTimeout(_nvaiStreamTimer); _nvaiStreamTimer = null; }
   const nav = document.querySelector('.bottom-nav');
   if (nav) nav.style.display = '';
