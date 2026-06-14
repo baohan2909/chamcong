@@ -192,7 +192,7 @@ function nvaiRenderMsg(m){
     return `<div class="nvai-msg assistant">
       <div class="nvai-avatar">AI</div>
       <div class="nvai-bubble assistant">
-        ${tcCount>0?`<div class="nvai-tool-hint">Đã truy vấn ${tcCount} tool</div>`:''}
+        <div class="nvai-tool-hint">Nhân viên AI</div>
         <div class="nvai-content">${body}</div>
         ${(model||tokens)?`<div class="nvai-meta-foot">${model}${tokens?' · '+tokens+' tokens out':''}</div>`:''}
       </div>
@@ -216,9 +216,9 @@ function nvaiFormatMarkdown(text){
   // Headings
   s = s.replace(/^### (.+)$/gm, '<h4>$1</h4>');
   s = s.replace(/^## (.+)$/gm, '<h3>$1</h3>');
-  // [v13.53] Gộp dòng trống thừa (AI hay xuống 2-3 dòng không cần → trông kéo dài)
-  s = s.replace(/\n{2,}/g, '\n');
-  // Line break
+  // [v13.60] Giữ ngắt đoạn cho rõ ràng (xuống dòng), chỉ bỏ dòng trống thừa (3+ → 2)
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.replace(/\n\n/g, '<br><br>');
   s = s.replace(/\n/g, '<br>');
   // Bỏ <br> dư ngay quanh khối list/heading (tránh khoảng trống lớn)
   s = s.replace(/<br>\s*(<(?:ul|h3|h4))/g, '$1');

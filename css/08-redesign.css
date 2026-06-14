@@ -2110,8 +2110,9 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .hubsub-ic{
   width:46px; height:46px; flex:0 0 46px; border-radius:14px;
   display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(135deg,rgba(203,164,90,.18),rgba(45,212,191,.14));
-  color:#CBA45A;
+  background:linear-gradient(135deg,#1D9E75,#0F6E56);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(15,110,86,.25);
 }
 .hubsub-ic svg{ width:23px; height:23px; }
 .hubsub-txt{ flex:1; min-width:0; }
