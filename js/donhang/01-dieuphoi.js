@@ -48,7 +48,7 @@ function dhResetForm(){
   const ac = document.getElementById('dh-sp-aclist'); if (ac){ ac.classList.remove('on'); ac.innerHTML=''; }
   const box = document.getElementById('dh-ch-list'); if (box) box.innerHTML = '';
   const sw = document.getElementById('dh-send-wrap'); if (sw) sw.style.display = 'none';
-  const bt = document.getElementById('dh-btn-tim'); if (bt) { bt.disabled = false; bt.textContent = 'Tìm cửa hàng gần khách'; }
+  const bt = document.getElementById('dh-btn-tim'); if (bt) { bt.disabled = false; bt.textContent = 'AI gợi ý cửa hàng'; }
 }
 
 // ─── Geocode địa chỉ khách (Nominatim, miễn phí) ────────────────────────
@@ -88,18 +88,18 @@ async function dhOSRM(fromLat,fromLng,toLat,toLng){
 window.dhTimCuaHang = async function(){
   const diaChi = (document.getElementById('dh-diachi').value || '').trim();
   if (!diaChi) { showToast && showToast('Nhập địa chỉ khách trước', 'warn'); return; }
-  if (!window.CH_LIST || !CH_LIST.length) { showToast && showToast('Chưa tải được danh sách cửa hàng', 'warn'); return; }
+  if (typeof CH_LIST === 'undefined' || !CH_LIST || !CH_LIST.length) { showToast && showToast('Chưa tải được danh sách cửa hàng — thử lại sau giây lát', 'warn'); return; }
 
   const btn = document.getElementById('dh-btn-tim');
   const box = document.getElementById('dh-ch-list');
-  if (btn){ btn.disabled = true; btn.textContent = 'Đang tìm...'; }
+  if (btn){ btn.disabled = true; btn.textContent = 'AI đang phân tích...'; }
   box.innerHTML = '<div class="dh-loading">Đang định vị địa chỉ khách...</div>';
 
   // 1) Geocode khách
   const geo = await dhGeocode(diaChi);
   if (!geo) {
     box.innerHTML = '<div class="dh-empty">Không tìm được tọa độ địa chỉ này. Thử ghi rõ hơn: số nhà, đường, phường, tỉnh/thành.</div>';
-    if (btn){ btn.disabled = false; btn.textContent = 'Tìm cửa hàng gần khách'; }
+    if (btn){ btn.disabled = false; btn.textContent = 'AI gợi ý cửa hàng'; }
     return;
   }
   dhKhachLatLng = { lat: geo.lat, lng: geo.lng };
@@ -117,7 +117,7 @@ window.dhTimCuaHang = async function(){
 
   if (!near.length) {
     box.innerHTML = '<div class="dh-empty">Không có cửa hàng nào có tọa độ để điều phối.</div>';
-    if (btn){ btn.disabled = false; btn.textContent = 'Tìm cửa hàng gần khách'; }
+    if (btn){ btn.disabled = false; btn.textContent = 'AI gợi ý cửa hàng'; }
     return;
   }
 
@@ -136,7 +136,7 @@ window.dhTimCuaHang = async function(){
           candidate = loc;
         } else {
           box.innerHTML = '<div class="dh-empty">Không có cửa hàng gần nào còn hàng sản phẩm này (barcode ' + escHtml(barcode) + '). Bỏ barcode để xem tất cả CH gần.</div>';
-          if (btn){ btn.disabled = false; btn.textContent = 'Tìm cửa hàng gần khách'; }
+          if (btn){ btn.disabled = false; btn.textContent = 'AI gợi ý cửa hàng'; }
           return;
         }
       }
@@ -155,7 +155,7 @@ window.dhTimCuaHang = async function(){
 
   dhLastCHRanked = candidate;
   dhRenderCHList(candidate);
-  if (btn){ btn.disabled = false; btn.textContent = 'Tìm lại'; }
+  if (btn){ btn.disabled = false; btn.textContent = 'Gợi ý lại'; }
 };
 
 // ─── Render danh sách CH + đánh dấu đợt 1 (bán kính +Nkm) ────────────────
