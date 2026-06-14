@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.43">
-<link rel="stylesheet" href="css/01-base.css?v=13.43">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.43">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.43">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.43">
-<link rel="stylesheet" href="css/05-admin.css?v=13.43">
-<link rel="stylesheet" href="css/06-modules.css?v=13.43">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.43">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.43">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.43">
-<link rel="stylesheet" href="css/11-face.css?v=13.43">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.44">
+<link rel="stylesheet" href="css/01-base.css?v=13.44">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.44">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.44">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.44">
+<link rel="stylesheet" href="css/05-admin.css?v=13.44">
+<link rel="stylesheet" href="css/06-modules.css?v=13.44">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.44">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.44">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.44">
+<link rel="stylesheet" href="css/11-face.css?v=13.44">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.43</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.44</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -916,6 +916,61 @@
     </div>
   </div>
 
+  <!-- ════════════════════════════════════════════════════════════════
+       PAGE: ĐƠN HÀNG ONLINE - MÀN ĐIỀU PHỐI [v13.44]
+       Dark theme. Ẩn sau công tắc demo (chỉ ADMIN khi che_do=demo).
+       ════════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-donhang">
+    <div class="dh-shell">
+      <div class="dh-topbar">
+        <button class="dh-back" onclick="goToPage('home')" aria-label="Trang chủ">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="dh-topttl">Điều phối đơn</div>
+        <span class="dh-demo-tag" id="dh-demo-tag">DEMO</span>
+      </div>
+
+      <div class="dh-form">
+        <div class="dh-grp-label">Khách hàng</div>
+        <input class="dh-inp" id="dh-khach-ten" placeholder="Tên khách hàng">
+        <input class="dh-inp" id="dh-khach-sdt" placeholder="Số điện thoại" inputmode="tel">
+        <textarea class="dh-inp dh-ta" id="dh-diachi" rows="2" placeholder="Địa chỉ giao: số nhà, đường, phường, tỉnh/thành"></textarea>
+
+        <div class="dh-grp-label">Sản phẩm</div>
+        <input class="dh-inp" id="dh-sp-ten" placeholder="Tên sản phẩm">
+        <div class="dh-row2">
+          <input class="dh-inp" id="dh-sp-barcode" placeholder="Barcode">
+          <input class="dh-inp" id="dh-sp-size" placeholder="Size">
+        </div>
+        <div class="dh-row2">
+          <input class="dh-inp" id="dh-sp-sl" type="number" value="1" min="1" placeholder="Số lượng">
+          <input class="dh-inp" id="dh-sp-giatri" inputmode="numeric" placeholder="Giá trị (đ)">
+        </div>
+
+        <div class="dh-grp-label">Thanh toán</div>
+        <select class="dh-inp dh-sel" id="dh-pttt">
+          <option value="COD">COD - thu khi giao</option>
+          <option value="CK_TRUOC">Chuyển khoản trước</option>
+        </select>
+
+        <button class="dh-btn-tim" id="dh-btn-tim" onclick="dhTimCuaHang()">Tìm cửa hàng gần khách</button>
+      </div>
+
+      <div class="dh-ch-section">
+        <div class="dh-ch-head">
+          <span class="dh-ch-label">Cửa hàng gần nhất</span>
+          <span class="dh-ch-hint">xếp theo khoảng cách di chuyển</span>
+        </div>
+        <div id="dh-ch-list"></div>
+      </div>
+
+      <div class="dh-send-wrap" id="dh-send-wrap" style="display:none">
+        <button class="dh-btn-gui" id="dh-btn-gui" onclick="dhGuiYeuCau()">Gửi yêu cầu</button>
+        <div class="dh-send-note">Các cửa hàng trong bán kính sẽ nhận thông báo cùng lúc</div>
+      </div>
+    </div>
+  </div>
+
   <!-- PAGE: CHẤM CÔNG -->
   <div class="page active" id="page-chamcong">
     <!-- [v11.0] HERO CARD "Ca hôm nay" -->
@@ -1763,7 +1818,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.43 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.44 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -3022,13 +3077,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.43"></script>
-<script src="js/core/02-system.js?v=13.43"></script>
+<script src="js/core/01-config.js?v=13.44"></script>
+<script src="js/core/02-system.js?v=13.44"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.43">
+<link rel="stylesheet" href="css/07-extras.css?v=13.44">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -3063,20 +3118,21 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.43"></script>
-<script src="js/pages/01-lichca.js?v=13.43"></script>
-<script src="js/pages/02-nhansu.js?v=13.43"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.43"></script>
-<script src="js/pages/04-misc.js?v=13.43"></script>
-<script src="js/pages/05-muanon.js?v=13.43"></script>
-<script src="js/lib/camscanner.js?v=13.43"></script>
-<script src="js/pages/06-bangiao.js?v=13.43"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.43"></script>
-<script src="js/admin/06-nvai.js?v=13.43"></script>
-<script src="js/ai/face-recognition.js?v=13.43"></script>
-<script src="js/admin/01-banhang.js?v=13.43"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.43"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.43"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.43"></script>
+<script src="js/core/03-router.js?v=13.44"></script>
+<script src="js/pages/01-lichca.js?v=13.44"></script>
+<script src="js/pages/02-nhansu.js?v=13.44"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.44"></script>
+<script src="js/pages/04-misc.js?v=13.44"></script>
+<script src="js/pages/05-muanon.js?v=13.44"></script>
+<script src="js/lib/camscanner.js?v=13.44"></script>
+<script src="js/pages/06-bangiao.js?v=13.44"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.44"></script>
+<script src="js/admin/06-nvai.js?v=13.44"></script>
+<script src="js/ai/face-recognition.js?v=13.44"></script>
+<script src="js/admin/01-banhang.js?v=13.44"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.44"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.44"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.44"></script>
+<script src="js/donhang/01-dieuphoi.js?v=13.44"></script>
 </body>
 </html>

@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.43',
+  'sys.cache_version': 'v13.44',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -329,6 +329,7 @@ setInterval(()=>{
 // ─── NAVIGATION ─────────────────────────────────────────────
 const PAGE_TITLES={
   'home':      '',
+  'donhang':   '',
   'lichca':    'LỊCH LÀM VIỆC',
   'lichca-ql': 'LỊCH CA HỆ THỐNG',
   chamcong:'CHẤM CÔNG', giocong:'GIỜ CÔNG CỦA TÔI',
@@ -365,13 +366,14 @@ function goToPage(page){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   // [v13.43] HOME HUB: ẩn main-header + bottom-nav (hub có header riêng).
+  // [v13.44] page donhang cũng dark full-screen → ẩn như home.
   // Các page khác: hiện lại (nvai sẽ tự ẩn bottom-nav qua nvaiPageInit).
   const _mh = document.getElementById('main-header');
   const _bn = document.getElementById('bottom-nav');
-  if (page === 'home') {
+  if (page === 'home' || page === 'donhang') {
     if (_mh) _mh.style.display = 'none';
     if (_bn) _bn.style.display = 'none';
-    if (typeof hubRenderHeader === 'function') hubRenderHeader();
+    if (page === 'home' && typeof hubRenderHeader === 'function') hubRenderHeader();
   } else {
     if (_mh) _mh.style.display = 'block';
     if (_bn) _bn.style.display = '';
@@ -419,6 +421,7 @@ function goToPage(page){
   if(page==='bangiao-ql')   bgqlInitPage();  // [v13.19] QL bàn giao
   if(page==='nvai')         { if(typeof nvaiPageInit==='function') nvaiPageInit(); }  // [v13.41] Nhân viên AI
   else { if(typeof nvaiPageLeave==='function') nvaiPageLeave(); }
+  if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
 }
@@ -441,9 +444,9 @@ function hubRenderHeader(){
     avEl.textContent=initials||'?';
   }
 }
-// Thẻ Đơn hàng Online — đang xây dựng (phiên sau)
+// Thẻ Đơn hàng Online — mở màn điều phối (page tự kiểm tra công tắc demo + quyền)
 function hubOpenDonhang(){
-  if(typeof showToast==='function') showToast('Phân hệ Đơn hàng Online đang được xây dựng','info');
+  goToPage('donhang');
 }
 
 // ─── LOGIN ──────────────────────────────────────────────────

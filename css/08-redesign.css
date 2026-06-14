@@ -1754,3 +1754,107 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 }
 .cc-header-home-btn svg { width: 19px; height: 19px; }
 .cc-header-home-btn:active { background: rgba(203,164,90,.26); transform: scale(.94); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  [v13.44] ĐƠN HÀNG ONLINE - Màn điều phối (dark theme)
+ * ═══════════════════════════════════════════════════════════════════════ */
+#page-donhang {
+  background: #0E1E2E;
+  min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.dh-shell {
+  max-width: 640px; margin: 0 auto;
+  padding: calc(14px + env(safe-area-inset-top,0px)) 14px calc(28px + env(safe-area-inset-bottom,0px));
+  color: #E8EDF2;
+  font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+}
+.dh-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.dh-back {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px;
+  background: rgba(255,255,255,.06); border: none; color: #E8EDF2;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.dh-back:active { background: rgba(255,255,255,.14); transform: scale(.94); }
+.dh-topttl { flex: 1; font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; color: #fff; }
+.dh-demo-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  background: rgba(203,164,90,.18); color: #CBA45A;
+  padding: 3px 10px; border-radius: 20px;
+}
+.dh-demo-tag.dh-tag-live { background: rgba(16,185,129,.18); color: #34D399; }
+
+/* Form */
+.dh-form { margin-bottom: 18px; }
+.dh-grp-label {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: #8FA3B5; font-weight: 600; margin: 14px 0 8px;
+}
+.dh-grp-label:first-child { margin-top: 0; }
+.dh-inp {
+  width: 100%; box-sizing: border-box;
+  background: #16293B; border: 0.5px solid rgba(255,255,255,.1);
+  border-radius: 11px; padding: 12px 13px; margin-bottom: 9px;
+  font-size: 14px; font-family: inherit; color: #E8EDF2;
+  outline: none;
+}
+.dh-inp::placeholder { color: #5A6F82; }
+.dh-inp:focus { border-color: rgba(203,164,90,.5); background: #1A2F44; }
+.dh-ta { resize: none; line-height: 1.4; }
+.dh-sel { appearance: none; -webkit-appearance: none; cursor: pointer; }
+.dh-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.dh-row2 .dh-inp { margin-bottom: 9px; }
+
+.dh-btn-tim {
+  width: 100%; margin-top: 6px;
+  background: rgba(203,164,90,.14); color: #CBA45A;
+  border: 0.5px solid rgba(203,164,90,.4); border-radius: 12px;
+  padding: 13px; font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+}
+.dh-btn-tim:active { background: rgba(203,164,90,.24); }
+.dh-btn-tim:disabled { opacity: .6; cursor: wait; }
+
+/* Danh sách CH */
+.dh-ch-section { margin-bottom: 14px; }
+.dh-ch-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.dh-ch-label { font-size: 13px; font-weight: 600; color: #fff; }
+.dh-ch-hint { font-size: 10.5px; color: #8FA3B5; }
+.dh-loading, .dh-empty {
+  text-align: center; padding: 18px 12px; font-size: 12.5px; color: #8FA3B5;
+  background: #16293B; border-radius: 12px;
+}
+.dh-empty { color: #E0827D; }
+
+.dh-ch-card {
+  display: flex; align-items: center; gap: 11px;
+  background: #16293B; border: 0.5px solid rgba(255,255,255,.07);
+  border-radius: 13px; padding: 11px 12px; margin-bottom: 8px;
+}
+.dh-ch-card.dh-ch-dot1 { border-color: rgba(203,164,90,.45); }
+.dh-ch-idx {
+  width: 28px; height: 28px; flex-shrink: 0; border-radius: 8px;
+  background: rgba(255,255,255,.08); color: #8FA3B5;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+.dh-ch-dot1 .dh-ch-idx { background: #CBA45A; color: #0E1E2E; }
+.dh-ch-info { flex: 1; min-width: 0; }
+.dh-ch-ten { font-size: 13.5px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dh-ch-sub { font-size: 11px; color: #8FA3B5; margin-top: 1px; }
+.dh-ch-km { text-align: right; flex-shrink: 0; }
+.dh-ch-km-num { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; color: #E8EDF2; }
+.dh-ch-dot1-tag { font-size: 9px; color: #CBA45A; margin-top: 1px; }
+.dh-ch-wait { font-size: 9px; color: #5A6F82; margin-top: 1px; }
+
+/* Nút gửi */
+.dh-send-wrap { margin-top: 6px; }
+.dh-btn-gui {
+  width: 100%;
+  background: #CBA45A; color: #0E1E2E; border: none; border-radius: 13px;
+  padding: 15px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.dh-btn-gui:active { transform: scale(.98); }
+.dh-btn-gui:disabled { opacity: .6; cursor: wait; }
+.dh-send-note { text-align: center; font-size: 10.5px; color: #8FA3B5; margin-top: 8px; }
