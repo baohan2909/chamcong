@@ -108,6 +108,8 @@ window.dhQLDetail = async function(donId){
     if (error) throw error;
     if (!data || !data.ok) return;
     const d = data.don, dp = data.dieu_phoi || [];
+    const hh = data.hoa_hong, tt = data.thanh_toan;
+    window._dhQLCurDon = d;
     const ov = document.getElementById('dh-ql-detail');
     document.getElementById('dh-ql-detail-body').innerHTML = `
       <div class="dh-det-madon">${escHtml(d.ma_don||'')} ${_dhTTBadge(d.trang_thai)}</div>
@@ -132,7 +134,26 @@ window.dhQLDetail = async function(donId){
           <span class="dh-det-dp-tt dh-dp-${(x.trang_thai||'').toLowerCase()}">${
             x.trang_thai==='NHAN'?'đã nhận':x.trang_thai==='TU_CHOI'?('từ chối: '+escHtml(x.ly_do_tu_choi||'')):x.trang_thai==='HET_GIO'?'hết giờ':'đang chờ'
           }</span>
-        </div>`).join('') || '<div class="dh-det-empty">Chưa điều phối</div>'}`;
+        </div>`).join('') || '<div class="dh-det-empty">Chưa điều phối</div>'}
+      ${hh ? `
+        <div class="dh-det-sec">Hoa hồng đã chia</div>
+        <div class="dh-det-hh">
+          <div class="dh-det-hh-row"><span>${escHtml(hh.tu_van_ten||'Tư vấn')} · ${hh.pct_tu_van}%</span><b>${_dhVND(hh.tien_tu_van)}đ</b></div>
+          <div class="dh-det-hh-row"><span>${escHtml(hh.ch_ten||'Cửa hàng')} · ${hh.pct_ban}%</span><b>${_dhVND(hh.tien_ban)}đ</b></div>
+        </div>` : ''}
+      ${(function(){
+        let h = '';
+        if (d.phuong_thuc_tt === 'CK_TRUOC') {
+          if (d.tt_trang_thai === 'DA_TT') h += '<div class="dh-det-paid">✓ Đã thanh toán chuyển khoản</div>';
+          else h += '<button class="dh-det-btn dh-det-btn-qr" onclick="dhQLShowQR('+d.id+')">Hiện QR thanh toán</button>';
+        }
+        const nx = {CH_DA_NHAN:['DANG_DONG_GOI','Đã đóng gói'],DANG_DONG_GOI:['DA_BOOK_SHIP','Đã book ship'],DA_BOOK_SHIP:['DANG_GIAO','Đang giao'],DANG_GIAO:['HOAN_TAT','Hoàn tất đơn']}[d.trang_thai];
+        if (nx) {
+          const cls = nx[0]==='HOAN_TAT' ? 'dh-det-btn-done' : 'dh-det-btn-next';
+          h += '<button class="dh-det-btn '+cls+'" onclick="dhQLChuyenTT('+d.id+',\''+nx[0]+'\')">'+nx[1]+'</button>';
+        }
+        return h ? ('<div class="dh-det-actions">'+h+'</div>') : '';
+      })()}`;
     ov.style.display = 'flex';
   } catch(e){
     showToast && showToast('Lỗi: '+(e.message||e), 'error');
@@ -272,4 +293,63 @@ window.dhQLSaveSettings = async function(){
     showToast && showToast('Đã lưu toàn bộ cấu hình', 'success');
   } catch(e){ showToast && showToast('Lỗi: '+(e.message||e), 'error'); }
   finally { if (btn) { btn.disabled = false; btn.textContent = 'Lưu cấu hình'; } }
+};
+
+// ─── Chuyển trạng thái đơn (đóng gói → ship → giao → hoàn tất) ──────────
+window.dhQLChuyenTT = async function(donId, tt){
+  try {
+    let res;
+    if (tt === 'HOAN_TAT') res = await supa.rpc('dh_fn_hoan_tat', { p_don_id: donId });
+    else res = await supa.rpc('dh_fn_trang_thai', { p_don_id: donId, p_trang_thai: tt });
+    if (res.error) throw res.error;
+    showToast && showToast(tt==='HOAN_TAT' ? 'Đơn hoàn tất · đã chia hoa hồng' : 'Đã cập nhật trạng thái', 'success');
+    dhQLDetail(donId);
+    dhQLLoadDon();
+  } catch(e){ showToast && showToast('Lỗi: '+(e.message||e), 'error'); }
+};
+
+// ─── QR thanh toán VietQR (động, miễn phí qua img.vietqr.io) ────────────
+window.dhQLShowQR = async function(donId){
+  try {
+    const { data, error } = await supa.rpc('dh_fn_tao_thanh_toan', { p_don_id: donId });
+    if (error) throw error;
+    if (!data || !data.ok) { showToast && showToast((data&&data.error)||'Lỗi tạo thanh toán', 'warn'); return; }
+
+    const bank = _getSetting('donhang.tt_ngan_hang', '');
+    const acc  = _getSetting('donhang.tt_so_tk', '');
+    const name = _getSetting('donhang.tt_ten_tk', '');
+    if (!bank || !acc) { showToast && showToast('Chưa cấu hình ngân hàng nhận tiền — vào tab Cài đặt', 'warn'); return; }
+
+    const amt  = Math.round(Number(data.so_tien) || 0);
+    const ndck = data.noi_dung_ck;
+    const qrUrl = 'https://img.vietqr.io/image/' + encodeURIComponent(bank) + '-' + encodeURIComponent(acc)
+                + '-compact2.png?amount=' + amt + '&addInfo=' + encodeURIComponent(ndck)
+                + '&accountName=' + encodeURIComponent(name);
+
+    document.getElementById('dh-qr-img').src = qrUrl;
+    document.getElementById('dh-qr-amt').textContent = _dhVND(amt) + 'đ';
+    document.getElementById('dh-qr-ndck').textContent = ndck;
+    document.getElementById('dh-qr-bank').textContent = String(bank).toUpperCase() + ' · ' + acc;
+    document.getElementById('dh-qr-name').textContent = name || '--';
+    window._dhQRDonId = donId;
+    document.getElementById('dh-qr-overlay').style.display = 'flex';
+  } catch(e){ showToast && showToast('Lỗi: '+(e.message||e), 'error'); }
+};
+window.dhQRClose = function(){ const o = document.getElementById('dh-qr-overlay'); if (o) o.style.display = 'none'; };
+
+// Xác nhận đã nhận tiền (thủ công — webhook SePay thay thế khi go-live)
+window.dhQLXacNhanTT = async function(){
+  const donId = window._dhQRDonId;
+  if (!donId) return;
+  const btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xác nhận...'; }
+  try {
+    const { error } = await supa.rpc('dh_fn_xac_nhan_tt', { p_don_id: donId });
+    if (error) throw error;
+    showToast && showToast('Đã xác nhận thanh toán', 'success');
+    dhQRClose();
+    dhQLDetail(donId);
+    dhQLLoadDon();
+  } catch(e){ showToast && showToast('Lỗi: '+(e.message||e), 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Xác nhận đã nhận tiền'; } }
 };

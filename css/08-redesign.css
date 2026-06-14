@@ -2056,3 +2056,30 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-dp-het_gio { color:#8FA3B5; }
 .dh-dp-cho { color:#CBA45A; }
 .dh-det-empty { text-align:center; font-size:11.5px; color:#5A6F82; padding:10px; }
+
+/* [v13.47] Chi tiết đơn: hoa hồng + nút hành động */
+.dh-det-hh { background:#0E1E2E; border-radius:10px; padding:11px 12px; margin-top:4px; }
+.dh-det-hh-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:12.5px; color:#E8EDF2; }
+.dh-det-hh-row b { color:#CBA45A; font-family:'JetBrains Mono',monospace; }
+.dh-det-actions { margin-top:16px; display:flex; flex-direction:column; gap:9px; }
+.dh-det-btn { width:100%; border:none; border-radius:11px; padding:13px; font-size:13.5px; font-weight:700; font-family:inherit; cursor:pointer; }
+.dh-det-btn-next { background:rgba(45,212,191,.14); color:#2DD4BF; border:0.5px solid rgba(45,212,191,.35); }
+.dh-det-btn-done { background:#34D399; color:#0E1E2E; }
+.dh-det-btn-qr { background:rgba(203,164,90,.14); color:#CBA45A; border:0.5px solid rgba(203,164,90,.35); }
+.dh-det-btn:active { transform:scale(.98); }
+.dh-det-paid { text-align:center; background:rgba(16,185,129,.12); color:#34D399; border-radius:11px; padding:11px; font-size:13px; font-weight:600; }
+
+/* [v13.47] Overlay QR VietQR */
+.dh-qr-overlay { position:fixed; inset:0; z-index:9100; background:rgba(6,15,24,.85); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:18px; }
+.dh-qr-card { width:100%; max-width:340px; background:#152A3E; border:0.5px solid rgba(203,164,90,.4); border-radius:18px; padding:16px; color:#E8EDF2; max-height:90vh; overflow-y:auto; }
+.dh-qr-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-family:'Fraunces',Georgia,serif; font-size:16px; font-weight:600; color:#fff; }
+.dh-qr-imgwrap { background:#fff; border-radius:14px; padding:12px; display:flex; align-items:center; justify-content:center; }
+.dh-qr-imgwrap img { width:100%; max-width:240px; height:auto; display:block; }
+.dh-qr-amt { text-align:center; font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:600; color:#CBA45A; margin:14px 0 12px; }
+.dh-qr-info { background:#0E1E2E; border-radius:11px; padding:11px 12px; }
+.dh-qr-info-row { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:5px 0; font-size:12px; color:#8FA3B5; }
+.dh-qr-info-row b { color:#E8EDF2; text-align:right; font-weight:500; word-break:break-all; }
+.dh-qr-note { font-size:10.5px; color:#8FA3B5; text-align:center; margin:11px 0 13px; line-height:1.4; }
+.dh-qr-confirm { width:100%; background:#34D399; color:#0E1E2E; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; }
+.dh-qr-confirm:active { transform:scale(.98); }
+.dh-qr-confirm:disabled { opacity:.6; }
