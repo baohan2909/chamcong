@@ -1736,6 +1736,8 @@ window.bgqlDeleteSuVu = async function(sv_id){
 // ═════════════════════════════════════════════════════════════════════════
 let bgqlMultiSelectMode = false;
 let bgqlSelectedIds = new Set();
+let bgqlDeleteArmed = false;     // [v13.68] xác nhận xóa 2 bước (thay confirm iOS)
+let bgqlDeleteArmTimer = null;
 
 // [v13.37] FIX bugs: full re-render thay vì partial → DOM luôn sync với state
 window.bgqlToggleMultiSelect = function(){
@@ -1745,6 +1747,7 @@ window.bgqlToggleMultiSelect = function(){
   }
   bgqlMultiSelectMode = !bgqlMultiSelectMode;
   bgqlSelectedIds = new Set();  // Reset hoàn toàn
+  bgqlDeleteArmed = false;
   bgqlRenderSuVuList();
   bgqlRenderSuVuFilters();  // Update button text "Chọn nhiều" ↔ "Đóng chọn"
   bgqlRenderMultiSelectBar();
@@ -1753,6 +1756,7 @@ window.bgqlToggleMultiSelect = function(){
 window.bgqlToggleSelect = function(id){
   if (bgqlSelectedIds.has(id)) bgqlSelectedIds.delete(id);
   else bgqlSelectedIds.add(id);
+  bgqlDeleteArmed = false;
   // [v13.37] FULL re-render — partial DOM update không reliable
   bgqlRenderSuVuList();
   bgqlRenderMultiSelectBar();
@@ -1804,7 +1808,7 @@ function bgqlRenderMultiSelectBar(){
     <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
       <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
-      <button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>Xóa (${sel})</button>
+      <button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>${bgqlDeleteArmed ? 'Bấm lần nữa để xóa' : 'Xóa ('+sel+')'}</button>
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
   `;
@@ -1812,14 +1816,23 @@ function bgqlRenderMultiSelectBar(){
 
 window.bgqlDeleteBulkConfirm = async function(){
   if (bgqlSelectedIds.size === 0) { showToast('Chưa chọn sự vụ nào', 'warn'); return; }
-  if (!confirm(`Xóa ${bgqlSelectedIds.size} sự vụ đã chọn? Hành động KHÔNG thể hoàn tác.`)) return;
-  
+  // [v13.68] iOS PWA: confirm() thường không hiện → xác nhận 2 bước ngay trên thanh
+  if (!bgqlDeleteArmed) {
+    bgqlDeleteArmed = true;
+    bgqlRenderMultiSelectBar();
+    if (bgqlDeleteArmTimer) clearTimeout(bgqlDeleteArmTimer);
+    bgqlDeleteArmTimer = setTimeout(function(){ bgqlDeleteArmed = false; bgqlRenderMultiSelectBar(); }, 4000);
+    return;
+  }
+  bgqlDeleteArmed = false;
+  if (bgqlDeleteArmTimer) { clearTimeout(bgqlDeleteArmTimer); bgqlDeleteArmTimer = null; }
+
   try {
     const ids = Array.from(bgqlSelectedIds);
     const { data, error } = await supa.rpc('fn_su_vu_delete_bulk', {
       p_ids: ids, p_ma_nv: SESSION.ma
     });
-    if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
+    if (error || (data && data.ok === false)) throw new Error((data && data.error) || (error && error.message) || 'Không xóa được');
     showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
     
     // [v13.37] FULL RESET state — quan trọng để lần tiếp theo hoạt động đúng

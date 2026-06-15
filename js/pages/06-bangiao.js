@@ -765,7 +765,7 @@ async function bgSubmit(){
           p_tieu_de: LBL,
           p_mo_ta: note,
           p_so_lieu: { loai:k, so_tien: bgState[k].so_tien||0 },
-          p_anh_urls: [], p_muc_do: 'KHAN_CAP'
+          p_anh_urls: [], p_muc_do: (k === 'tien_chi' ? 'QUAN_TRONG' : 'KHAN_CAP')
         });
         svCount++;
       }
