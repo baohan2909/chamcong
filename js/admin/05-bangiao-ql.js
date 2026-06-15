@@ -570,8 +570,8 @@ async function bgqlLoadTimeline(){
     const { from, to } = bgqlTimelineGetRange();
     const { data, error } = await supa.rpc('fn_ban_giao_timeline_ql', {
       p_tu_ngay: from, p_den_ngay: to,
-      p_ma_ch: bgqlTimelineFilter.ma_ch || null,
-      p_khu_vuc: (bgqlTimelineFilter.khu_vuc && bgqlTimelineFilter.khu_vuc !== 'all') ? bgqlTimelineFilter.khu_vuc : null,
+      p_ma_ch: null,
+      p_khu_vuc: null,
       p_limit: 500
     });
     if (error) throw error;
@@ -675,14 +675,18 @@ window.bgqlSetTLRange = function(r){
 };
 window.bgqlSetTLCustomFrom = function(v){ bgqlTLCustomFrom = v; if (bgqlTLCustomTo) bgqlLoadTimeline(); };
 window.bgqlSetTLCustomTo = function(v){ bgqlTLCustomTo = v; if (bgqlTLCustomFrom) bgqlLoadTimeline(); };
-window.bgqlSetTLKV = function(v){ bgqlTimelineFilter.khu_vuc = v || 'all'; bgqlLoadTimeline(); };
-window.bgqlSetTLCh = function(v){ bgqlTimelineFilter.ma_ch = v || null; bgqlLoadTimeline(); };
+window.bgqlSetTLKV = function(v){ bgqlTimelineFilter.khu_vuc = v || 'all'; bgqlRenderTimeline(); };
+window.bgqlSetTLCh = function(v){ bgqlTimelineFilter.ma_ch = v || null; bgqlRenderTimeline(); };
 
 function bgqlRenderTimeline(){
   const list = document.getElementById('bgql-timeline-list');
   if (!list) return;
   let arr = (bgqlTimelineCache || []).slice();
-  
+
+  // [v13.70] Lọc khu vực + cửa hàng phía client → dropdown luôn đầy đủ, không bị mất
+  if (bgqlTimelineFilter.khu_vuc && bgqlTimelineFilter.khu_vuc !== 'all') arr = arr.filter(b => b.khu_vuc === bgqlTimelineFilter.khu_vuc);
+  if (bgqlTimelineFilter.ma_ch) arr = arr.filter(b => b.ma_ch === bgqlTimelineFilter.ma_ch);
+
   // Apply cond filter
   if (bgqlTLCond === 'binh_thuong') arr = arr.filter(b => (b.so_su_vu||0) === 0);
   else if (bgqlTLCond === 'co_su_vu') arr = arr.filter(b => (b.so_su_vu||0) > 0);
@@ -1067,6 +1071,8 @@ let bgqlPrintFilterKV = null;     // [v13.31] khu vực filter
 let bgqlPrintFilterCH = null;     // [v13.31] CH filter
 let bgqlPrintSelectedCH = new Set();  // CH đã tick chọn
 let bgqlPrintLayout = '1';        // [v13.30] '1' default — 1 ảnh/trang, 2 mặt cố định
+let bgqlPrintFilterSV = 'all';    // [v13.70] 'all' | 'co' | 'binh_thuong'
+let bgqlPrintFilterTT = 'all';    // [v13.70] 'all' | 'MOI_TAO' | 'DANG_XU_LY' | 'HOAN_TAT'
 
 async function bgqlLoadPrint(){
   const cont = document.getElementById('bgql-print-content');
@@ -1088,7 +1094,7 @@ async function bgqlLoadPrint(){
     (data || []).forEach(bg => {
       if (!byCH[bg.ma_ch]) byCH[bg.ma_ch] = { 
         ma_ch: bg.ma_ch, ten_ch: bg.ten_ch_snapshot, khu_vuc: bg.khu_vuc,
-        bg_list: [], total_anh: 0
+        bg_list: [], total_anh: 0, total_su_vu: 0, _sv_tt: new Set()
       };
       const urls = bg.anh_urls || [];
       byCH[bg.ma_ch].bg_list.push({
@@ -1101,9 +1107,18 @@ async function bgqlLoadPrint(){
         so_khan: bg.so_su_vu_khan||0
       });
       byCH[bg.ma_ch].total_anh += urls.length;
+      byCH[bg.ma_ch].total_su_vu += (bg.so_su_vu||0);
     });
     
     bgqlPrintCache = byCH;
+    // [v13.70] Lấy trạng thái sự vụ per CH (phục vụ bộ lọc "Trạng thái xử lý")
+    try {
+      const { data: svs } = await supa.rpc('fn_su_vu_list', { p_tu_ngay: from, p_den_ngay: to, p_limit: 1000 });
+      (svs||[]).forEach(sv => {
+        const c = byCH[sv.ma_ch];
+        if (c && sv.trang_thai) c._sv_tt.add(sv.trang_thai);
+      });
+    } catch(e){ /* non-blocking */ }
     bgqlRenderPrintList();
   } catch(e){
     cont.innerHTML = bgqlRenderPrintHeader() + 
@@ -1152,6 +1167,19 @@ function bgqlRenderPrintHeader(){
           <option value="4"${bgqlPrintLayout==='4'?' selected':''}>4 ảnh / trang</option>
         </select>
       </div>
+      <div class="bgql-print-bar-left" style="margin-top:8px">
+        <select class="bg-tl-dropdown" onchange="bgqlPrintSetSV(this.value)">
+          <option value="all"${bgqlPrintFilterSV==='all'?' selected':''}>Sự vụ: Tất cả</option>
+          <option value="co"${bgqlPrintFilterSV==='co'?' selected':''}>Có sự vụ</option>
+          <option value="binh_thuong"${bgqlPrintFilterSV==='binh_thuong'?' selected':''}>Bình thường</option>
+        </select>
+        <select class="bg-tl-dropdown" onchange="bgqlPrintSetTT(this.value)">
+          <option value="all"${bgqlPrintFilterTT==='all'?' selected':''}>Trạng thái: Tất cả</option>
+          <option value="MOI_TAO"${bgqlPrintFilterTT==='MOI_TAO'?' selected':''}>Chưa xử lý</option>
+          <option value="DANG_XU_LY"${bgqlPrintFilterTT==='DANG_XU_LY'?' selected':''}>Đang xử lý</option>
+          <option value="HOAN_TAT"${bgqlPrintFilterTT==='HOAN_TAT'?' selected':''}>Hoàn tất</option>
+        </select>
+      </div>
       ${bgqlPrintRange === 'custom' ? `
       <div class="bgql-print-bar-left" style="margin-top:8px">
         <input type="date" class="bg-tl-dropdown" value="${bgqlPrintCustomFrom||''}" onchange="bgqlPrintSetCustomFrom(this.value)" placeholder="Từ ngày">
@@ -1194,6 +1222,8 @@ window.bgqlPrintSetCH = function(v){
   bgqlPrintSelectedCH.clear();
   bgqlRenderPrintList(); 
 };
+window.bgqlPrintSetSV = function(v){ bgqlPrintFilterSV = v || 'all'; bgqlPrintSelectedCH.clear(); bgqlRenderPrintList(); };
+window.bgqlPrintSetTT = function(v){ bgqlPrintFilterTT = v || 'all'; bgqlPrintSelectedCH.clear(); bgqlRenderPrintList(); };
 
 function bgqlRenderPrintList(){
   const cont = document.getElementById('bgql-print-content');
@@ -1202,6 +1232,10 @@ function bgqlRenderPrintList(){
   let arr = Object.values(cache);
   if (bgqlPrintFilterKV) arr = arr.filter(c => c.khu_vuc === bgqlPrintFilterKV);
   if (bgqlPrintFilterCH) arr = arr.filter(c => c.ma_ch === bgqlPrintFilterCH);
+  // [v13.70] Lọc theo sự vụ + trạng thái xử lý
+  if (bgqlPrintFilterSV === 'co') arr = arr.filter(c => (c.total_su_vu||0) > 0);
+  else if (bgqlPrintFilterSV === 'binh_thuong') arr = arr.filter(c => (c.total_su_vu||0) === 0);
+  if (bgqlPrintFilterTT !== 'all') arr = arr.filter(c => c._sv_tt && c._sv_tt.has(bgqlPrintFilterTT));
   
   if (arr.length === 0){
     cont.innerHTML = bgqlRenderPrintHeader() + 
@@ -1231,8 +1265,8 @@ function bgqlRenderPrintList(){
               <div class="bgql-print-card-meta">${escHtml(ch.ma_ch)} · ${ch.bg_list.length} biên bản · ${ch.total_anh} ảnh</div>
             </div>
             <div class="bgql-print-card-thumbs">
-              ${showImgs.map(u => `<div class="bgql-print-thumb"><img src="${u}" loading="lazy"></div>`).join('')}
-              ${previewImgs.length > 4 ? `<div class="bgql-print-thumb bgql-print-thumb-more">+${previewImgs.length-4}</div>` : ''}
+              ${showImgs.map((u,i) => `<div class="bgql-print-thumb" onclick="event.stopPropagation(); bgqlPrintOpenGallery('${ch.ma_ch}', ${i})"><img src="${u}" loading="lazy"></div>`).join('')}
+              ${previewImgs.length > 4 ? `<div class="bgql-print-thumb bgql-print-thumb-more" onclick="event.stopPropagation(); bgqlPrintOpenGallery('${ch.ma_ch}', 4)">+${previewImgs.length-4}</div>` : ''}
             </div>
           </div>
         `;
@@ -1284,6 +1318,61 @@ function bgqlPrintUpdateBtnState(){
   btn.disabled = totalAnh === 0;
   btn.style.opacity = totalAnh === 0 ? '.5' : '1';
 }
+
+// ─── [v13.70] GALLERY ẢNH — xem ảnh CH, vuốt/bấm qua lại mượt như iPhone ──
+window.bgqlPrintOpenGallery = function(ma_ch, startIdx){
+  const cache = bgqlPrintCache || {};
+  const ch = cache[ma_ch];
+  if (!ch) return;
+  const imgs = [];
+  ch.bg_list.forEach(bg => (bg.anh_urls||[]).forEach(u => imgs.push(u)));
+  if (imgs.length === 0) return;
+  startIdx = Math.max(0, Math.min(startIdx||0, imgs.length-1));
+
+  let ov = document.getElementById('bgql-gal-overlay');
+  if (ov) ov.remove();
+  ov = document.createElement('div');
+  ov.id = 'bgql-gal-overlay';
+  ov.className = 'bgql-gal-overlay';
+  ov.innerHTML = `
+    <div class="bgql-gal-top">
+      <div class="bgql-gal-title">${escHtml(ch.ten_ch||ch.ma_ch)}</div>
+      <button class="bgql-gal-close" onclick="bgqlPrintCloseGallery()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bgql-gal-scroll" id="bgql-gal-scroll">
+      ${imgs.map(u => `<div class="bgql-gal-slide"><img src="${u}"></div>`).join('')}
+    </div>
+    <button class="bgql-gal-nav bgql-gal-prev" onclick="bgqlPrintGalNav(-1)" aria-label="Trước">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="bgql-gal-nav bgql-gal-next" onclick="bgqlPrintGalNav(1)" aria-label="Sau">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <div class="bgql-gal-counter"><span id="bgql-gal-cur">${startIdx+1}</span> / ${imgs.length}</div>
+  `;
+  document.body.appendChild(ov);
+  const scroll = document.getElementById('bgql-gal-scroll');
+  requestAnimationFrame(() => { scroll.scrollLeft = startIdx * scroll.clientWidth; });
+  scroll.addEventListener('scroll', () => {
+    const idx = Math.round(scroll.scrollLeft / Math.max(1, scroll.clientWidth));
+    const cur = document.getElementById('bgql-gal-cur');
+    if (cur) cur.textContent = Math.min(idx+1, imgs.length);
+  }, { passive: true });
+  ov.addEventListener('click', (e) => { if (e.target === ov) bgqlPrintCloseGallery(); });
+};
+window.bgqlPrintGalNav = function(dir){
+  const scroll = document.getElementById('bgql-gal-scroll');
+  if (!scroll) return;
+  const w = scroll.clientWidth;
+  const idx = Math.round(scroll.scrollLeft / Math.max(1, w));
+  scroll.scrollTo({ left: (idx + dir) * w, behavior: 'smooth' });
+};
+window.bgqlPrintCloseGallery = function(){
+  const ov = document.getElementById('bgql-gal-overlay');
+  if (ov) ov.remove();
+};
 
 // ─── DO PRINT — render print HTML letterhead + đợi ảnh load + window.print() ──
 window.bgqlDoPrint = async function(){
