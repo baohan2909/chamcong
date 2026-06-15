@@ -91,7 +91,7 @@ function bgqlRenderSuVuFilters(){
 
   if (bgqlInnerTab === 'suvu') {
     cont.innerHTML = `
-      <div class="bgql-flt-row">
+      <div class="bgql-flt-row bgql-flt-3">
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('muc_do', this.value)">
           <option value="all"${bgqlSuVuFilter.muc_do==='all'?' selected':''}>Mức độ: Tất cả</option>
           <option value="KHAN_CAP"${bgqlSuVuFilter.muc_do==='KHAN_CAP'?' selected':''}>Khẩn cấp</option>
@@ -104,8 +104,6 @@ function bgqlRenderSuVuFilters(){
           <option value="closed"${bgqlSuVuFilter.trang_thai==='closed'?' selected':''}>Đã đóng</option>
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
         </select>
-      </div>
-      <div class="bgql-flt-row">
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span>Hạng mục</span>
@@ -117,7 +115,7 @@ function bgqlRenderSuVuFilters(){
         ${[['tien','Tiền mặt & doanh thu'],['kv1','Mặt tiền - hạ tầng'],['kv2','Quầy thu ngân & IT'],['kv4','Kho, sinh hoạt, công cụ'],['hang','Hàng hóa & tồn kho']].map(([v,lbl])=>`<label class="bgql-nhom-chk"><input type="checkbox" value="${v}"${bgqlSuVuFilter.nhom.includes(v)?' checked':''} onchange="bgqlToggleNhom('${v}')"><span>${lbl}</span></label>`).join('')}
         <button class="bgql-nhom-done" onclick="bgqlToggleNhomPanel()">Xong</button>
       </div>
-      <div class="bgql-flt-row">
+      <div class="bgql-flt-row bgql-tool-3">
         ${multiBtn||''}
         <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportSuVu()">Xuất Excel</button>
         <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlEnablePush(this)">Bật thông báo đẩy</button>
@@ -235,10 +233,8 @@ window.bgqlSetFilter = function(k, v){
 };
 
 
-function bgqlRenderSuVuList(){
-  const list = document.getElementById('bgql-suvu-list');
+function bgqlGetFilteredSuVu(){
   let arr = bgqlSuVuCache || [];
-  
   if (bgqlSuVuFilter.trang_thai === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   else if (bgqlSuVuFilter.trang_thai === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
   else if (bgqlSuVuFilter.trang_thai === 'overdue') {
@@ -250,6 +246,11 @@ function bgqlRenderSuVuList(){
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
   arr = arr.filter(bgqlSvMatchNhom);
+  return arr;
+}
+function bgqlRenderSuVuList(){
+  const list = document.getElementById('bgql-suvu-list');
+  let arr = bgqlGetFilteredSuVu();
 
   // Sort: KHAN_CAP first, then created_at desc
   arr = arr.slice().sort((a,b) => {
@@ -1763,8 +1764,8 @@ window.bgqlToggleSelect = function(id){
 };
 
 window.bgqlSelectAll = function(){
-  // [v13.37] Clean ID không còn trong cache (tránh stale state)
-  const cache = bgqlSuVuCache || [];
+  // [v13.68] Chỉ chọn các sự vụ ĐANG hiển thị (sau bộ lọc hiện tại)
+  const cache = bgqlGetFilteredSuVu();
   const validIds = cache.map(s => s.id);
   const validIdSet = new Set(validIds);
   // Filter selected — chỉ giữ ID hợp lệ
@@ -1795,8 +1796,8 @@ function bgqlRenderMultiSelectBar(){
     bar.className = 'bgql-multiselect-bar';
     document.body.appendChild(bar);
   }
-  // [v13.37] Tính total dựa trên cache HIỆN TẠI
-  const cache = bgqlSuVuCache || [];
+  // [v13.68] Tổng dựa trên danh sách đã lọc (đồng bộ với Chọn tất cả)
+  const cache = bgqlGetFilteredSuVu();
   const validIdSet = new Set(cache.map(s => s.id));
   // Đảm bảo selectedIds chỉ chứa ID còn tồn tại
   bgqlSelectedIds = new Set(Array.from(bgqlSelectedIds).filter(id => validIdSet.has(id)));
@@ -2203,11 +2204,6 @@ function bgqlRenderAibcUI(){
   }
   const isCustom = bgqlAibcSelectedRange === 'custom';
   cont.innerHTML = `
-    <div class="aibc-intro">
-      <div class="aibc-intro-ttl">Nhân viên AI · Báo cáo theo yêu cầu</div>
-      <div class="aibc-intro-sub">Phân tích chi tiết hoạt động bàn giao, sự vụ, tài chính, thiết bị hư lặp lại. Số tiền chỉ hiện khi có lệch tiền.</div>
-    </div>
-
     <div class="aibc-range-grid">
       <button class="aibc-range ${bgqlAibcSelectedRange==='today'?'active':''}" onclick="bgqlAibcSetRange('today')">Hôm nay</button>
       <button class="aibc-range ${bgqlAibcSelectedRange==='7d'?'active':''}" onclick="bgqlAibcSetRange('7d')">7 ngày</button>
