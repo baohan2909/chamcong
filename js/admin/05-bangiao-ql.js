@@ -18,7 +18,7 @@ let bgqlSub = 'suvu';
 let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
 let bgqlTienChiCache = null;
-let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d', customFrom:null, customTo:null };
+let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], range:'7d', customFrom:null, customTo:null };
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -104,6 +104,18 @@ function bgqlRenderSuVuFilters(){
           <option value="closed"${bgqlSuVuFilter.trang_thai==='closed'?' selected':''}>Đã đóng</option>
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
         </select>
+      </div>
+      <div class="bgql-flt-row">
+        <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Hạng mục</span>
+          <span class="bgql-nhom-badge" id="bgql-nhom-badge"${bgqlSuVuFilter.nhom.length?'':' style="display:none"'}>${bgqlSuVuFilter.nhom.length||''}</span>
+          <svg class="bgql-nhom-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div class="bgql-nhom-panel" id="bgql-nhom-panel" style="display:none">
+        ${[['tien','Tiền mặt & doanh thu'],['kv1','Mặt tiền - hạ tầng'],['kv2','Quầy thu ngân & IT'],['kv4','Kho, sinh hoạt, công cụ'],['hang','Hàng hóa & tồn kho']].map(([v,lbl])=>`<label class="bgql-nhom-chk"><input type="checkbox" value="${v}"${bgqlSuVuFilter.nhom.includes(v)?' checked':''} onchange="bgqlToggleNhom('${v}')"><span>${lbl}</span></label>`).join('')}
+        <button class="bgql-nhom-done" onclick="bgqlToggleNhomPanel()">Xong</button>
       </div>
       <div class="bgql-flt-row">
         ${multiBtn||''}
@@ -213,7 +225,7 @@ window.bgqlSwitchInnerTab = function(t){
 
 // Legacy compat (cho code khác có thể gọi)
 window.bgqlSetFilter = function(k, v){
-  if (k === 'reset') bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, range:'7d' };
+  if (k === 'reset') bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], range:'7d' };
   else if (k === 'trang_thai') bgqlSuVuFilter.trang_thai = bgqlSuVuFilter.trang_thai === v ? 'all' : v;
   else if (k === 'muc_do') bgqlSuVuFilter.muc_do = bgqlSuVuFilter.muc_do === v ? 'all' : v;
   else if (k === 'khu_vuc') bgqlSuVuFilter.khu_vuc = v || 'all';
@@ -237,6 +249,7 @@ function bgqlRenderSuVuList(){
   if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
+  arr = arr.filter(bgqlSvMatchNhom);
 
   // Sort: KHAN_CAP first, then created_at desc
   arr = arr.slice().sort((a,b) => {
@@ -2345,3 +2358,46 @@ window.bgqlAibcDeleteReport = async function(id){
     await bgqlAibcLoadHistory();
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
 };
+
+/* ════════════════════════════════════════════════════════════════════════
+ *  [v13.67] BỘ LỌC HẠNG MỤC — 5 nhóm lớn của bàn giao (gọn, xổ/thu)
+ *  Map: tien=TIEN_LECH · hang=HANG_CHENH/HANG_HOA · kv1/2/4=TAI_SAN_KHONG_DAT
+ *  với so_lieu.khu_vuc = 1/2/4.
+ * ════════════════════════════════════════════════════════════════════════ */
+window.bgqlToggleNhomPanel = function(){
+  const p = document.getElementById('bgql-nhom-panel');
+  const t = document.getElementById('bgql-nhom-toggle');
+  if (!p) return;
+  const show = (p.style.display === 'none' || !p.style.display);
+  p.style.display = show ? 'flex' : 'none';
+  if (t) t.classList.toggle('open', show);
+};
+window.bgqlToggleNhom = function(v){
+  const arr = bgqlSuVuFilter.nhom || [];
+  const i = arr.indexOf(v);
+  if (i >= 0) arr.splice(i,1); else arr.push(v);
+  bgqlSuVuFilter.nhom = arr;
+  const b = document.getElementById('bgql-nhom-badge');
+  if (b) { if (arr.length) { b.style.display=''; b.textContent = arr.length; } else b.style.display='none'; }
+  bgqlRenderSuVuList();
+};
+function bgqlSvParseSoLieu(s){
+  if (!s || !s.so_lieu) return null;
+  if (typeof s.so_lieu === 'object') return s.so_lieu;
+  try { return JSON.parse(s.so_lieu); } catch(e){ return null; }
+}
+function bgqlSvMatchNhom(s){
+  const sel = bgqlSuVuFilter.nhom || [];
+  if (!sel.length) return true;
+  const loai = s.loai || '';
+  const sl = bgqlSvParseSoLieu(s);
+  const kv = sl && sl.khu_vuc != null ? String(sl.khu_vuc) : '';
+  for (const n of sel){
+    if (n==='tien' && loai==='TIEN_LECH') return true;
+    if (n==='hang' && (loai==='HANG_CHENH' || loai==='HANG_HOA')) return true;
+    if (n==='kv1' && loai==='TAI_SAN_KHONG_DAT' && kv==='1') return true;
+    if (n==='kv2' && loai==='TAI_SAN_KHONG_DAT' && kv==='2') return true;
+    if (n==='kv4' && loai==='TAI_SAN_KHONG_DAT' && kv==='4') return true;
+  }
+  return false;
+}
