@@ -275,9 +275,9 @@ function bgItemTaiSanHtml(it){
     <div class="chk-item-row">
       <div class="chk-item-name">${escHtml(it.ten)}${it.don_vi?` <small style="color:#94A3B8">(${escHtml(it.don_vi)})</small>`:''}</div>
       <div class="chk-item-toggle">
-        <button class="chk-tg bt ${st.status==='BT'?'active':''}" onclick="bgSetTaiSan('${it.id}','BT')">Bình thường</button>
         <button class="chk-tg ko ${st.status==='KO'?'active':''}" onclick="bgSetTaiSan('${it.id}','KO')">Không có</button>
-        <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có vấn đề</button>
+        <button class="chk-tg bt ${st.status==='BT'?'active':''}" onclick="bgSetTaiSan('${it.id}','BT')">Bình thường</button>
+        <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có sự cố</button>
       </div>
     </div>
     <div id="bg-detail-${it.id}">${showDetail?bgItemTaiSanDetailHtml(it):''}</div>

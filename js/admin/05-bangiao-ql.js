@@ -21,6 +21,7 @@ let bgqlTienChiCache = null;
 let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
 let bgqlDanhMucTS = null;          // [v13.71] danh mục tài sản — cho lọc hạng mục 2 cấp
 let bgqlHmExpanded = {};           // [v13.71] {key:true} nhóm đang xổ con
+let bgqlSuVuSort = 'muc_do';       // [v13.72] muc_do | cua_hang | thoi_gian
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -125,19 +126,19 @@ function bgqlRenderSuVuFilters(){
       <div class="bgql-flt-row bgql-tool-3">
         ${multiBtn||''}
         <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportSuVu()">Xuất Excel</button>
-        <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlEnablePush(this)">Bật thông báo đẩy</button>
       </div>
-      ${(khuVucs.length>1 || chList.length>5) ? `
-      <div class="bgql-flt-row">
-        ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('khu_vuc', this.value)">
-          <option value="all"${bgqlSuVuFilter.khu_vuc==='all'?' selected':''}>Mọi khu vực</option>
-          ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
-        </select>` : ''}
-        ${chList.length>5 ? `<select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('ma_ch', this.value)">
-          <option value="">Mọi cửa hàng</option>
-          ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlSuVuFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
-        </select>` : ''}
-      </div>` : ''}
+      <div class="bgql-flt-row bgql-srch-row">
+        <input class="bgql-srch-input" list="bgql-sv-srch-dl" placeholder="Tìm cửa hàng / khu vực" value="${escHtml(bgqlSvSearchLabel())}" oninput="bgqlSvSearchPick(this.value)">
+        <datalist id="bgql-sv-srch-dl">
+          ${khuVucs.map(k=>`<option value="Khu vực: ${escHtml(k)}"></option>`).join('')}
+          ${chList.map(([k,v])=>`<option value="${escHtml(v)}"></option>`).join('')}
+        </datalist>
+        <select class="bg-tl-dropdown" onchange="bgqlSetSort(this.value)">
+          <option value="muc_do"${bgqlSuVuSort==='muc_do'?' selected':''}>Sắp: Mức độ</option>
+          <option value="cua_hang"${bgqlSuVuSort==='cua_hang'?' selected':''}>Sắp: Cửa hàng</option>
+          <option value="thoi_gian"${bgqlSuVuSort==='thoi_gian'?' selected':''}>Sắp: Thời gian gửi</option>
+        </select>
+      </div>
     `;
   } else if (bgqlInnerTab === 'tienchi') {
     const tc = bgqlTienChiCache || [];
@@ -204,6 +205,28 @@ window.bgqlSetFilterDD = function(key, value){
   else bgqlRenderTienChiList();
 };
 
+// [v13.72] Ô tìm cửa hàng / khu vực + sắp xếp
+function bgqlSvSearchLabel(){
+  if (bgqlSuVuFilter.ma_ch) {
+    const f = (bgqlSuVuCache||[]).find(s=>s.ma_ch===bgqlSuVuFilter.ma_ch);
+    return f ? (f.ten_ch_snapshot||f.ma_ch) : bgqlSuVuFilter.ma_ch;
+  }
+  if (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc!=='all') return 'Khu vực: ' + bgqlSuVuFilter.khu_vuc;
+  return '';
+}
+window.bgqlSvSearchPick = function(val){
+  val = (val||'').trim();
+  if (!val) { bgqlSuVuFilter.ma_ch=null; bgqlSuVuFilter.khu_vuc='all'; bgqlRenderSuVuList(); return; }
+  if (val.indexOf('Khu vực: ')===0) {
+    bgqlSuVuFilter.khu_vuc = val.slice(9).trim(); bgqlSuVuFilter.ma_ch = null;
+    bgqlRenderSuVuList(); return;
+  }
+  const found = (bgqlSuVuCache||[]).find(s => (s.ten_ch_snapshot||s.ma_ch) === val);
+  if (found) { bgqlSuVuFilter.ma_ch = found.ma_ch; bgqlSuVuFilter.khu_vuc = 'all'; bgqlRenderSuVuList(); }
+  // chưa khớp hoàn toàn → đợi gõ tiếp
+};
+window.bgqlSetSort = function(v){ bgqlSuVuSort = v || 'muc_do'; bgqlRenderSuVuList(); };
+
 // [v13.31] Datepicker custom cho Tiền chi
 window.bgqlSetTcCustomFrom = function(v){ 
   bgqlSuVuFilter.customFrom = v; 
@@ -259,8 +282,16 @@ function bgqlRenderSuVuList(){
   const list = document.getElementById('bgql-suvu-list');
   let arr = bgqlGetFilteredSuVu();
 
-  // Sort: KHAN_CAP first, then created_at desc
+  // Sort theo lựa chọn: muc_do (mặc định) | cua_hang | thoi_gian
   arr = arr.slice().sort((a,b) => {
+    if (bgqlSuVuSort === 'cua_hang') {
+      const c = (a.ten_ch_snapshot||a.ma_ch||'').localeCompare(b.ten_ch_snapshot||b.ma_ch||'', 'vi');
+      if (c !== 0) return c;
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
+    if (bgqlSuVuSort === 'thoi_gian') {
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
     const mdOrder = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
     const da = mdOrder[a.muc_do] || 9, db = mdOrder[b.muc_do] || 9;
     if (da !== db) return da - db;
@@ -274,6 +305,43 @@ function bgqlRenderSuVuList(){
   list.innerHTML = arr.map(bgqlSuVuCardHtml).join('');
 }
 
+// [v13.73] Badge "tuổi" sự vụ — mở bao lâu / xử lý mất bao lâu
+function bgqlSuVuAge(s){
+  const created = new Date(s.created_at);
+  if (s.trang_thai === 'HUY') return `<span class="bgql-age cancel">Đã hủy</span>`;
+  if (s.trang_thai === 'HOAN_TAT') {
+    const end = s.thoi_gian_dong ? new Date(s.thoi_gian_dong) : new Date();
+    const days = Math.max(0, Math.round((end - created)/86400000));
+    return `<span class="bgql-age done">Xử lý ${days===0?'trong ngày':days+' ngày'}</span>`;
+  }
+  const days = Math.floor((Date.now() - created)/86400000);
+  const overdue = s.deadline_xu_ly && new Date(s.deadline_xu_ly) < new Date();
+  const cls = (overdue || days>4) ? 'hot' : (days>=2 ? 'warm' : 'cool');
+  return `<span class="bgql-age ${cls}">Mở ${days===0?'hôm nay':days+' ngày'}${overdue?' · quá hạn':''}</span>`;
+}
+// [v13.73] Đường tiến độ 3 mốc: Tạo → Xử lý → Hoàn tất
+function bgqlSuVuProgress(s){
+  if (s.trang_thai === 'HUY') return '';
+  const done2 = !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','HOAN_TAT'].includes(s.trang_thai);
+  const done3 = s.trang_thai === 'HOAN_TAT';
+  const fd = (t) => { if(!t) return '—'; const x=new Date(t); return pad(x.getDate())+'/'+pad(x.getMonth()+1); };
+  const chk = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const dot = (done, cur) => `<div class="bgql-pg-dot${done?' done':''}${cur?' cur':''}">${done?chk:''}</div>`;
+  return `<div class="bgql-pg">
+    <div class="bgql-pg-track">
+      ${dot(true, !done2)}
+      <div class="bgql-pg-line${done2?' done':''}"></div>
+      ${dot(done2, done2 && !done3)}
+      <div class="bgql-pg-line${done3?' done':''}"></div>
+      ${dot(done3, done3)}
+    </div>
+    <div class="bgql-pg-labels">
+      <div class="bgql-pg-lb"><span>Tạo</span><small>${fd(s.created_at)}</small></div>
+      <div class="bgql-pg-lb mid"><span>Xử lý</span><small>${fd(s.thoi_gian_phan_hoi)}</small></div>
+      <div class="bgql-pg-lb end"><span>Hoàn tất</span><small>${fd(s.thoi_gian_dong)}</small></div>
+    </div>
+  </div>`;
+}
 function bgqlSuVuCardHtml(s){
   const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
   // [v13.34] Bỏ icon ⚠️ 🔴 📋 — chỉ dùng màu nền + chữ
@@ -322,12 +390,14 @@ function bgqlSuVuCardHtml(s){
       ${stLbl?`<span class="bgql-st-tag ${isOpen?'open':'closed'}">${stLbl}</span>`:''}
       ${s.ma_sv?`<span class="bgql-masv">${escHtml(s.ma_sv)}</span>`:''}
       <span class="bgql-time">${bgqlFmtTimeShort(s.created_at)}</span>
+      ${bgqlSuVuAge(s)}
     </div>
     <div class="bgql-card-title">${escHtml(s.tieu_de)}</div>
     <div class="bgql-card-meta">
       <b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}
     </div>
     ${(s.nguoi_xu_ly_ten||s.nguoi_phu_trach_ten)?`<div class="bgql-card-meta">${s.nguoi_xu_ly_ten?'Xử lý: <b>'+escHtml(s.nguoi_xu_ly_ten)+'</b>':'Phụ trách: <b>'+escHtml(s.nguoi_phu_trach_ten)+'</b>'}</div>`:''}
+    ${bgqlSuVuProgress(s)}
     ${s.mo_ta?`<div class="bgql-card-body">${escHtml(s.mo_ta).slice(0,220)}${s.mo_ta.length>220?'...':''}</div>`:''}
     ${s.phan_hoi_xu_ly?`<div class="bgql-reply">
       <div class="bgql-reply-l">Phản hồi · ${escHtml(s.nguoi_phu_trach_ten||'QL')}</div>
