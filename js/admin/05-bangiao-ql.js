@@ -18,7 +18,7 @@ let bgqlSub = 'suvu';
 let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
 let bgqlTienChiCache = null;
-let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
+let bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
 let bgqlDanhMucTS = null;          // [v13.71] danh mục tài sản — cho lọc hạng mục 2 cấp
 let bgqlHmExpanded = {};           // [v13.71] {key:true} nhóm đang xổ con
 let bgqlSuVuSort = 'muc_do';       // [v13.72] muc_do | cua_hang | thoi_gian
@@ -93,6 +93,10 @@ function bgqlRenderSuVuFilters(){
   if (!cont) return;
   const all = bgqlSuVuCache || [];
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+  const _cMoi = all.filter(s => s.trang_thai === 'MOI_TAO').length;
+  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length;
+  const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
+  const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
   // [v13.36] Nút Chọn nhiều — chỉ ADMIN, chỉ tab "suvu"
@@ -112,10 +116,11 @@ function bgqlRenderSuVuFilters(){
           <option value="CAN_THIET"${bgqlSuVuFilter.muc_do==='CAN_THIET'?' selected':''}>Cần thiết</option>
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
-          <option value="open"${bgqlSuVuFilter.trang_thai==='open'?' selected':''}>Đang xử lý (${open.length})</option>
-          <option value="overdue"${bgqlSuVuFilter.trang_thai==='overdue'?' selected':''}>Quá deadline</option>
-          <option value="closed"${bgqlSuVuFilter.trang_thai==='closed'?' selected':''}>Đã đóng</option>
-          <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả</option>
+          <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả (${all.length})</option>
+          <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
+          <option value="dang_xu_ly"${bgqlSuVuFilter.trang_thai==='dang_xu_ly'?' selected':''}>Đang xử lý (${_cXuLy})</option>
+          <option value="hoan_tat"${bgqlSuVuFilter.trang_thai==='hoan_tat'?' selected':''}>Hoàn tất (${_cXong})</option>
+          <option value="huy"${bgqlSuVuFilter.trang_thai==='huy'?' selected':''}>Hủy (${_cHuy})</option>
         </select>
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -315,13 +320,15 @@ window.bgqlSetFilter = function(k, v){
 
 function bgqlGetFilteredSuVu(){
   let arr = bgqlSuVuCache || [];
-  if (bgqlSuVuFilter.trang_thai === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  else if (bgqlSuVuFilter.trang_thai === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
-  else if (bgqlSuVuFilter.trang_thai === 'overdue') {
-    // [v13.38] Quá deadline + chưa đóng
-    const nowT = Date.now();
-    arr = arr.filter(s => s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < nowT && !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  }
+  // [v13.78] Lọc theo 5 trạng thái rõ ràng
+  const _tt = bgqlSuVuFilter.trang_thai;
+  if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
+  else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai));
+  else if (_tt === 'hoan_tat') arr = arr.filter(s => s.trang_thai === 'HOAN_TAT');
+  else if (_tt === 'huy') arr = arr.filter(s => s.trang_thai === 'HUY');
+  else if (_tt === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+  else if (_tt === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
+  // 'all' → không lọc trạng thái
   if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);

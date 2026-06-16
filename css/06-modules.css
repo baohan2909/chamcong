@@ -3378,8 +3378,8 @@ body.nvai-active #bottom-nav { display: none !important; }
 .bgql-flt-3 > * { flex: 1 1 0; min-width: 0; }
 .bgql-flt-3 .bgql-nhom-toggle { flex: 1 1 0; justify-content: center; padding: 9px 6px; }
 .bgql-flt-3 .bgql-nhom-toggle span:not(.bgql-nhom-badge) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bgql-tool-3 { flex-wrap: nowrap; }
-.bgql-tool-3 > * { flex: 1 1 0; min-width: 0; justify-content: center; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bgql-tool-3 { flex-wrap: nowrap; justify-content: flex-start; }
+.bgql-tool-3 > * { flex: 0 0 calc((100% - 16px) / 3) !important; min-width: 0; justify-content: center; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
 
 /* [v13.70] Gallery ảnh in ấn — vuốt/bấm qua lại mượt như iPhone */
 .bgql-print-thumb { cursor: pointer; }
