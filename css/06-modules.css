@@ -3441,3 +3441,11 @@ body.nvai-active #bottom-nav { display: none !important; }
 .bgql-pg-lb.end { align-items:flex-end; }
 .bgql-pg-lb span { font-size:10.5px; font-weight:700; color:#334155; line-height:1.2; }
 .bgql-pg-lb small { font-size:10px; color:#94A3B8; }
+
+/* [v13.76] Dropdown gợi ý CH/KV (tab sự vụ): nằm trong dòng chảy, đẩy hàng dưới xuống thay vì đè */
+.bgql-flt-3 { align-items: flex-start; }
+.bgql-flt-3 .bgql-stats-search-dd {
+  position: static; top: auto; left: auto; right: auto;
+  margin-top: 6px; box-shadow: none; border: 1.5px solid #E2E8F0;
+}
+.bgql-flt-3 .bgql-stats-search-clear { top: 19px; }
