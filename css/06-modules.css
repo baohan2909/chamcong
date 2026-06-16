@@ -3449,3 +3449,8 @@ body.nvai-active #bottom-nav { display: none !important; }
   margin-top: 6px; box-shadow: none; border: 1.5px solid #E2E8F0;
 }
 .bgql-flt-3 .bgql-stats-search-clear { top: 19px; }
+
+/* [v13.77] Hàng lọc 3 cột — ép 3 cột đều nhau, chống tràn do nhãn dài (desktop) */
+.bgql-flt-3 { width: 100%; box-sizing: border-box; }
+.bgql-flt-3 > * { flex: 1 1 0 !important; min-width: 0 !important; max-width: 100%; box-sizing: border-box; }
+.bgql-flt-3 .bgql-stats-search-input { width: 100%; box-sizing: border-box; }
