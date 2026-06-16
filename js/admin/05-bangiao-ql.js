@@ -27,6 +27,7 @@ let bgqlSvCustomFrom = null;
 let bgqlSvCustomTo = null;
 let bgqlSvSearchTimer = null;
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
+let bgqlTLSort = 'moi';            // [v13.76] moi | cu | suvu
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
 
@@ -788,6 +789,11 @@ function bgqlRenderTimelineHeader(){
         <option value="co_su_vu"${bgqlTLCond==='co_su_vu'?' selected':''}>Có sự vụ</option>
         <option value="KHAN_CAP"${bgqlTLCond==='KHAN_CAP'?' selected':''}>Khẩn cấp</option>
       </select>
+      <select class="bg-tl-dropdown" onchange="bgqlSetTLSort(this.value)">
+        <option value="moi"${bgqlTLSort==='moi'?' selected':''}>Mới nhất</option>
+        <option value="cu"${bgqlTLSort==='cu'?' selected':''}>Cũ nhất</option>
+        <option value="suvu"${bgqlTLSort==='suvu'?' selected':''}>Nhiều sự vụ</option>
+      </select>
     </div>
     ${bgqlTLRange === 'custom' ? `<div class="bg-tl-filters-row">
       <input type="date" class="bg-tl-dropdown" value="${bgqlTLCustomFrom||''}" onchange="bgqlSetTLCustomFrom(this.value)">
@@ -808,6 +814,7 @@ function bgqlRenderTimelineHeader(){
 
 window.bgqlSetTLMode = function(m){ bgqlTLMode = m; bgqlRenderTimeline(); };
 window.bgqlSetTLCond = function(c){ bgqlTLCond = c; bgqlRenderTimeline(); };
+window.bgqlSetTLSort = function(s){ bgqlTLSort = s || 'moi'; bgqlRenderTimeline(); };
 window.bgqlSetTLRange = function(r){ 
   bgqlTLRange = r; 
   if (r !== 'custom') bgqlLoadTimeline();
@@ -937,6 +944,7 @@ let bgqlStatsData = null;        // jsonb từ fn_bg_thong_ke_ch
 let bgqlStatsKhuVuc = null;      // filter khu vực
 let bgqlStatsMaCh = null;        // filter ma_ch
 let bgqlStatsCardFilter = 'all'; // 'all' | 'da_gui' | 'chua_gui' | 'co_sv'
+let bgqlStatsSort = 'suvu'; // [v13.75] suvu|khan|ten|khu_vuc
 let bgqlStatsOpenedCh = null;    // ma_ch đang xem chi tiết sự vụ
 
 async function bgqlLoadStats(){
@@ -1091,6 +1099,7 @@ window.bgqlOpenChDetail = function(ma_ch){
   bgqlStatsOpenedCh = bgqlStatsOpenedCh === ma_ch ? null : ma_ch;
   bgqlRenderStats();
 };
+window.bgqlSetStatsSort = function(s){ bgqlStatsSort = s || 'suvu'; bgqlRenderStats(); };
 
 function bgqlRenderStats(){
   const cont = document.getElementById('bgql-stats-content');
@@ -1103,6 +1112,15 @@ function bgqlRenderStats(){
   if (bgqlStatsCardFilter === 'da_gui') dsFiltered = ds.filter(c => c.so_bg > 0);
   else if (bgqlStatsCardFilter === 'chua_gui') dsFiltered = ds.filter(c => c.so_bg === 0);
   else if (bgqlStatsCardFilter === 'co_sv') dsFiltered = ds.filter(c => c.so_su_vu > 0);
+
+  // [v13.75] Sắp xếp danh sách cửa hàng
+  const statsSortFn = {
+    suvu: (a,b)=>(b.so_su_vu||0)-(a.so_su_vu||0),
+    khan: (a,b)=>(b.so_su_vu_khan||0)-(a.so_su_vu_khan||0),
+    ten: (a,b)=>(a.ten_ch||a.ma_ch||'').localeCompare(b.ten_ch||b.ma_ch||'','vi'),
+    khu_vuc: (a,b)=>(a.khu_vuc||'').localeCompare(b.khu_vuc||'','vi'),
+  }[bgqlStatsSort];
+  if (statsSortFn) dsFiltered = dsFiltered.slice().sort(statsSortFn);
 
   cont.innerHTML = bgqlRenderStatsTopBar() + `
     <div class="bgql-stats-compact">
@@ -1118,6 +1136,14 @@ function bgqlRenderStats(){
         <div class="bgql-stat-c-v">${tt.co_su_vu||0}</div>
         <div class="bgql-stat-c-l">Có sự vụ</div>
       </div>
+    </div>
+    <div class="bgql-flt-row" style="margin-top:10px">
+      <select class="bg-tl-dropdown" onchange="bgqlSetStatsSort(this.value)">
+        <option value="suvu"${bgqlStatsSort==='suvu'?' selected':''}>Sắp: Nhiều sự vụ</option>
+        <option value="khan"${bgqlStatsSort==='khan'?' selected':''}>Sắp: Nhiều khẩn cấp</option>
+        <option value="ten"${bgqlStatsSort==='ten'?' selected':''}>Sắp: Tên cửa hàng</option>
+        <option value="khu_vuc"${bgqlStatsSort==='khu_vuc'?' selected':''}>Sắp: Khu vực</option>
+      </select>
     </div>
     <div class="bgql-stats-chlist">
       ${dsFiltered.length === 0 

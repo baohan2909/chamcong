@@ -2412,8 +2412,10 @@
   margin-top: 4px;
   max-height: 280px;
   overflow-y: auto;
-  z-index: 50;
+  z-index: 500;
 }
+.bgql-flt-3 .bgql-stats-search { flex: 1 1 0; min-width: 0; z-index: 50; }
+.bgql-flt-3 .bgql-stats-search:focus-within { z-index: 400; }
 .bgql-stats-dd-l {
   font-size: 10px; font-weight: 800;
   color: #94A3B8;
