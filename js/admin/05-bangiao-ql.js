@@ -22,6 +22,10 @@ let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:nul
 let bgqlDanhMucTS = null;          // [v13.71] danh mục tài sản — cho lọc hạng mục 2 cấp
 let bgqlHmExpanded = {};           // [v13.71] {key:true} nhóm đang xổ con
 let bgqlSuVuSort = 'muc_do';       // [v13.72] muc_do | cua_hang | thoi_gian
+let bgqlSvTimeRange = 'all';       // [v13.74] all|today|7d|30d|custom
+let bgqlSvCustomFrom = null;
+let bgqlSvCustomTo = null;
+let bgqlSvSearchTimer = null;
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -67,7 +71,7 @@ async function bgqlLoadSuVu(){
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   try {
     const { data, error } = await supa.rpc('fn_su_vu_list', {
-      p_ma_ch: null, p_limit: 200, p_offset: 0
+      p_ma_ch: null, p_limit: 100000, p_offset: 0
     });
     if (error) throw error;
     bgqlSuVuCache = data || [];
@@ -123,21 +127,32 @@ function bgqlRenderSuVuFilters(){
         ${bgqlRenderHmTree()}
         <button class="bgql-nhom-done" onclick="bgqlToggleNhomPanel()">Xong</button>
       </div>
-      <div class="bgql-flt-row bgql-tool-3">
-        ${multiBtn||''}
-        <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportSuVu()">Xuất Excel</button>
-      </div>
-      <div class="bgql-flt-row bgql-srch-row">
-        <input class="bgql-srch-input" list="bgql-sv-srch-dl" placeholder="Tìm cửa hàng / khu vực" value="${escHtml(bgqlSvSearchLabel())}" oninput="bgqlSvSearchPick(this.value)">
-        <datalist id="bgql-sv-srch-dl">
-          ${khuVucs.map(k=>`<option value="Khu vực: ${escHtml(k)}"></option>`).join('')}
-          ${chList.map(([k,v])=>`<option value="${escHtml(v)}"></option>`).join('')}
-        </datalist>
+      <div class="bgql-flt-row bgql-flt-3">
+        <select class="bg-tl-dropdown" onchange="bgqlSetSvTime(this.value)">
+          <option value="all"${bgqlSvTimeRange==='all'?' selected':''}>Mọi lúc</option>
+          <option value="today"${bgqlSvTimeRange==='today'?' selected':''}>Hôm nay</option>
+          <option value="7d"${bgqlSvTimeRange==='7d'?' selected':''}>7 ngày qua</option>
+          <option value="30d"${bgqlSvTimeRange==='30d'?' selected':''}>30 ngày qua</option>
+          <option value="custom"${bgqlSvTimeRange==='custom'?' selected':''}>Khoảng ngày</option>
+        </select>
+        <div class="bgql-stats-search">
+          <input type="text" class="bg-tl-dropdown bgql-stats-search-input" placeholder="Cửa hàng / khu vực" value="${escHtml(bgqlSvSearchLabel())}" oninput="bgqlSvSearchInput(this.value)" onfocus="bgqlSvSearchInput(this.value)">
+          <div class="bgql-stats-search-dd" id="bgql-sv-search-dd" style="display:none"></div>
+          ${(bgqlSuVuFilter.ma_ch || (bgqlSuVuFilter.khu_vuc&&bgqlSuVuFilter.khu_vuc!=='all')) ? `<button class="bgql-stats-search-clear" onclick="bgqlSvSearchClear()">✕</button>` : ''}
+        </div>
         <select class="bg-tl-dropdown" onchange="bgqlSetSort(this.value)">
           <option value="muc_do"${bgqlSuVuSort==='muc_do'?' selected':''}>Sắp: Mức độ</option>
           <option value="cua_hang"${bgqlSuVuSort==='cua_hang'?' selected':''}>Sắp: Cửa hàng</option>
-          <option value="thoi_gian"${bgqlSuVuSort==='thoi_gian'?' selected':''}>Sắp: Thời gian gửi</option>
+          <option value="thoi_gian"${bgqlSuVuSort==='thoi_gian'?' selected':''}>Sắp: Ngày gửi</option>
         </select>
+      </div>
+      ${bgqlSvTimeRange==='custom' ? `<div class="bgql-flt-row">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlSvCustomFrom||''}" onchange="bgqlSetSvCustomFrom(this.value)">
+        <input type="date" class="bg-tl-dropdown" value="${bgqlSvCustomTo||''}" onchange="bgqlSetSvCustomTo(this.value)">
+      </div>` : ''}
+      <div class="bgql-flt-row bgql-tool-3">
+        ${multiBtn||''}
+        <button class="bgql-act bgql-act-ghost bgql-tool-btn" onclick="bgqlExportSuVu()">Xuất Excel</button>
       </div>
     `;
   } else if (bgqlInnerTab === 'tienchi') {
@@ -214,17 +229,51 @@ function bgqlSvSearchLabel(){
   if (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc!=='all') return 'Khu vực: ' + bgqlSuVuFilter.khu_vuc;
   return '';
 }
-window.bgqlSvSearchPick = function(val){
-  val = (val||'').trim();
-  if (!val) { bgqlSuVuFilter.ma_ch=null; bgqlSuVuFilter.khu_vuc='all'; bgqlRenderSuVuList(); return; }
-  if (val.indexOf('Khu vực: ')===0) {
-    bgqlSuVuFilter.khu_vuc = val.slice(9).trim(); bgqlSuVuFilter.ma_ch = null;
-    bgqlRenderSuVuList(); return;
-  }
-  const found = (bgqlSuVuCache||[]).find(s => (s.ten_ch_snapshot||s.ma_ch) === val);
-  if (found) { bgqlSuVuFilter.ma_ch = found.ma_ch; bgqlSuVuFilter.khu_vuc = 'all'; bgqlRenderSuVuList(); }
-  // chưa khớp hoàn toàn → đợi gõ tiếp
+// [v13.74] Autocomplete CH/KV — dropdown gợi ý (như chấm công)
+window.bgqlSvSearchInput = function(kw){
+  clearTimeout(bgqlSvSearchTimer);
+  const dd = document.getElementById('bgql-sv-search-dd');
+  if (!dd) return;
+  if (!kw || kw.length < 1) { dd.style.display='none'; return; }
+  bgqlSvSearchTimer = setTimeout(() => {
+    const all = bgqlSuVuCache || [];
+    const low = kw.toLowerCase();
+    const kvs = [...new Set(all.map(s=>s.khu_vuc).filter(k=>k && k.toLowerCase().includes(low)))].slice(0,3);
+    const chMap = new Map();
+    all.forEach(s => { if (s.ma_ch && !chMap.has(s.ma_ch)) {
+      const ten = s.ten_ch_snapshot||s.ma_ch;
+      if (ten.toLowerCase().includes(low) || s.ma_ch.toLowerCase().includes(low)) chMap.set(s.ma_ch, ten);
+    }});
+    const chs = [...chMap.entries()].slice(0,6);
+    let html = '';
+    if (kvs.length) html += '<div class="bgql-stats-dd-l">Khu vực</div>' + kvs.map(k=>`<div class="bgql-stats-dd-it" onclick="bgqlSvPickKV('${escHtml(k)}')">${escHtml(k)}</div>`).join('');
+    if (chs.length) html += '<div class="bgql-stats-dd-l">Cửa hàng</div>' + chs.map(([m,t])=>`<div class="bgql-stats-dd-it" onclick="bgqlSvPickCH('${escHtml(m)}','${escHtml(t)}')"><b>${escHtml(t)}</b> <small>${escHtml(m)}</small></div>`).join('');
+    if (!html) html = '<div class="bgql-stats-dd-empty">Không tìm thấy</div>';
+    dd.innerHTML = html; dd.style.display = '';
+  }, 180);
 };
+window.bgqlSvPickKV = function(kv){
+  bgqlSuVuFilter.khu_vuc = kv; bgqlSuVuFilter.ma_ch = null;
+  const dd = document.getElementById('bgql-sv-search-dd'); if (dd) dd.style.display='none';
+  bgqlRenderSuVuFilters(); bgqlRenderSuVuList();
+};
+window.bgqlSvPickCH = function(ma, ten){
+  bgqlSuVuFilter.ma_ch = ma; bgqlSuVuFilter.khu_vuc = 'all';
+  const dd = document.getElementById('bgql-sv-search-dd'); if (dd) dd.style.display='none';
+  bgqlRenderSuVuFilters(); bgqlRenderSuVuList();
+};
+window.bgqlSvSearchClear = function(){
+  bgqlSuVuFilter.ma_ch = null; bgqlSuVuFilter.khu_vuc = 'all';
+  bgqlRenderSuVuFilters(); bgqlRenderSuVuList();
+};
+// [v13.74] Lọc thời gian sự vụ (client, theo created_at)
+window.bgqlSetSvTime = function(v){
+  bgqlSvTimeRange = v || 'all';
+  if (v === 'custom' && (!bgqlSvCustomFrom || !bgqlSvCustomTo)) { bgqlRenderSuVuFilters(); return; }
+  bgqlRenderSuVuFilters(); bgqlRenderSuVuList();
+};
+window.bgqlSetSvCustomFrom = function(v){ bgqlSvCustomFrom = v; if (bgqlSvCustomTo) bgqlRenderSuVuList(); };
+window.bgqlSetSvCustomTo = function(v){ bgqlSvCustomTo = v; if (bgqlSvCustomFrom) bgqlRenderSuVuList(); };
 window.bgqlSetSort = function(v){ bgqlSuVuSort = v || 'muc_do'; bgqlRenderSuVuList(); };
 
 // [v13.31] Datepicker custom cho Tiền chi
@@ -275,6 +324,20 @@ function bgqlGetFilteredSuVu(){
   if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
+  // [v13.74] Lọc thời gian theo created_at
+  if (bgqlSvTimeRange !== 'all') {
+    const now = new Date();
+    let from = null, to = null;
+    if (bgqlSvTimeRange === 'today') from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    else if (bgqlSvTimeRange === '7d') from = new Date(now.getTime() - 7*86400000);
+    else if (bgqlSvTimeRange === '30d') from = new Date(now.getTime() - 30*86400000);
+    else if (bgqlSvTimeRange === 'custom') {
+      if (bgqlSvCustomFrom) from = new Date(bgqlSvCustomFrom + 'T00:00:00');
+      if (bgqlSvCustomTo) to = new Date(bgqlSvCustomTo + 'T23:59:59');
+    }
+    if (from) arr = arr.filter(s => new Date(s.created_at) >= from);
+    if (to) arr = arr.filter(s => new Date(s.created_at) <= to);
+  }
   arr = arr.filter(bgqlSvMatchNhom);
   return arr;
 }
@@ -649,7 +712,7 @@ async function bgqlLoadTimeline(){
       p_tu_ngay: from, p_den_ngay: to,
       p_ma_ch: null,
       p_khu_vuc: null,
-      p_limit: 500
+      p_limit: 100000
     });
     if (error) throw error;
     bgqlTimelineCache = Array.isArray(data) ? data : [];
@@ -1638,7 +1701,7 @@ async function bgqlLoadTienChi(){
       p_den_ngay: denStr,
       p_ma_ch: bgqlSuVuFilter.ma_ch || null,
       p_khu_vuc: (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc !== 'all') ? bgqlSuVuFilter.khu_vuc : null,
-      p_limit: 200
+      p_limit: 100000
     });
     if (error) throw error;
     bgqlTienChiCache = Array.isArray(data) ? data : [];
@@ -2107,12 +2170,41 @@ function bgqlExportCsv(filename, headers, rows){
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
+// [v13.74] Xuất Excel thật (.xlsx) qua SheetJS
+function _bgqlLoadSheetJS(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (window._xlsxLoading) return window._xlsxLoading;
+  window._xlsxLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = () => resolve(window.XLSX);
+    s.onerror = () => reject(new Error('Không tải được thư viện Excel'));
+    document.head.appendChild(s);
+  });
+  return window._xlsxLoading;
+}
+async function bgqlExportXlsx(filename, sheetName, headers, rows){
+  try {
+    const XLSX = await _bgqlLoadSheetJS();
+    const aoa = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = headers.map((_, ci) => {
+      let max = 8;
+      aoa.forEach(r => { const v = r[ci]!=null?String(r[ci]):''; if (v.length>max) max=v.length; });
+      return { wch: Math.min(max+2, 45) };
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Sheet1');
+    XLSX.writeFile(wb, filename);
+  } catch(e){ showToast('Lỗi xuất Excel: ' + e.message, 'warn'); }
+}
 window.bgqlExportSuVu = function(){
-  const arr = bgqlSuVuCache || [];
+  const arr = bgqlGetFilteredSuVu();
   if (arr.length === 0) { showToast('Không có dữ liệu để xuất', 'warn'); return; }
   const fmtT = t => t ? new Date(t).toLocaleString('vi-VN') : '';
-  bgqlExportCsv(
-    'su_vu_' + new Date().toISOString().slice(0,10) + '.csv',
+  bgqlExportXlsx(
+    'su_vu_' + new Date().toISOString().slice(0,10) + '.xlsx',
+    'Sự vụ',
     ['Mã sự vụ','Cửa hàng','Mã CH','Tiêu đề','Mô tả','Mức độ','Trạng thái','Người tạo','Người phụ trách','Người xử lý','Phản hồi','Deadline','Tạo lúc'],
     arr.map(s => [
       s.ma_sv||'', s.ten_ch_snapshot||'', s.ma_ch||'', s.tieu_de||'', s.mo_ta||'',
@@ -2126,8 +2218,9 @@ window.bgqlExportSuVu = function(){
 window.bgqlExportThongKe = function(){
   const ds = (bgqlStatsData && bgqlStatsData.ds_ch) || [];
   if (ds.length === 0) { showToast('Không có dữ liệu để xuất', 'warn'); return; }
-  bgqlExportCsv(
-    'thong_ke_bg_' + new Date().toISOString().slice(0,10) + '.csv',
+  bgqlExportXlsx(
+    'thong_ke_bg_' + new Date().toISOString().slice(0,10) + '.xlsx',
+    'Thống kê',
     ['Mã CH','Tên CH','Khu vực','Đã gửi BB','Số sự vụ','Số khẩn cấp'],
     ds.map(c => [c.ma_ch||'', c.ten_ch||'', c.khu_vuc||'', c.da_gui?'Có':'Chưa', c.so_su_vu||0, c.so_su_vu_khan||0])
   );
