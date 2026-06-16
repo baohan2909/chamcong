@@ -18,7 +18,9 @@ let bgqlSub = 'suvu';
 let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
 let bgqlTienChiCache = null;
-let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], range:'7d', customFrom:null, customTo:null };
+let bgqlSuVuFilter = { trang_thai:'open', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
+let bgqlDanhMucTS = null;          // [v13.71] danh mục tài sản — cho lọc hạng mục 2 cấp
+let bgqlHmExpanded = {};           // [v13.71] {key:true} nhóm đang xổ con
 let bgqlTimelineFilter = { content:'all', from:null, to:null, ma_ch:null, khu_vuc:'all' };
 let bgqlTimelineCache = null;
 let bgqlStatsRange = 'today'; // 'today' | 'week' | 'month' | 'custom'
@@ -68,6 +70,11 @@ async function bgqlLoadSuVu(){
     });
     if (error) throw error;
     bgqlSuVuCache = data || [];
+    // [v13.71] Nạp danh mục tài sản 1 lần (cho lọc hạng mục 2 cấp)
+    if (!bgqlDanhMucTS) {
+      try { const { data: dm } = await supa.rpc('fn_get_danh_muc_tai_san'); bgqlDanhMucTS = dm || []; }
+      catch(e){ bgqlDanhMucTS = []; }
+    }
     bgqlRenderSuVuFilters();
     bgqlRenderSuVuList();
   } catch(e){
@@ -107,12 +114,12 @@ function bgqlRenderSuVuFilters(){
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span>Hạng mục</span>
-          <span class="bgql-nhom-badge" id="bgql-nhom-badge"${bgqlSuVuFilter.nhom.length?'':' style="display:none"'}>${bgqlSuVuFilter.nhom.length||''}</span>
+          <span class="bgql-nhom-badge" id="bgql-nhom-badge"${bgqlSuVuFilter.muc_con.length?'':' style="display:none"'}>${bgqlSuVuFilter.muc_con.length||''}</span>
           <svg class="bgql-nhom-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
       </div>
       <div class="bgql-nhom-panel" id="bgql-nhom-panel" style="display:none">
-        ${[['tien','Tiền mặt & doanh thu'],['kv1','Mặt tiền - hạ tầng'],['kv2','Quầy thu ngân & IT'],['kv4','Kho, sinh hoạt, công cụ'],['hang','Hàng hóa & tồn kho']].map(([v,lbl])=>`<label class="bgql-nhom-chk"><input type="checkbox" value="${v}"${bgqlSuVuFilter.nhom.includes(v)?' checked':''} onchange="bgqlToggleNhom('${v}')"><span>${lbl}</span></label>`).join('')}
+        ${bgqlRenderHmTree()}
         <button class="bgql-nhom-done" onclick="bgqlToggleNhomPanel()">Xong</button>
       </div>
       <div class="bgql-flt-row bgql-tool-3">
@@ -223,7 +230,7 @@ window.bgqlSwitchInnerTab = function(t){
 
 // Legacy compat (cho code khác có thể gọi)
 window.bgqlSetFilter = function(k, v){
-  if (k === 'reset') bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], range:'7d' };
+  if (k === 'reset') bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d' };
   else if (k === 'trang_thai') bgqlSuVuFilter.trang_thai = bgqlSuVuFilter.trang_thai === v ? 'all' : v;
   else if (k === 'muc_do') bgqlSuVuFilter.muc_do = bgqlSuVuFilter.muc_do === v ? 'all' : v;
   else if (k === 'khu_vuc') bgqlSuVuFilter.khu_vuc = v || 'all';
@@ -2470,13 +2477,78 @@ window.bgqlToggleNhomPanel = function(){
   p.style.display = show ? 'flex' : 'none';
   if (t) t.classList.toggle('open', show);
 };
-window.bgqlToggleNhom = function(v){
-  const arr = bgqlSuVuFilter.nhom || [];
-  const i = arr.indexOf(v);
-  if (i >= 0) arr.splice(i,1); else arr.push(v);
-  bgqlSuVuFilter.nhom = arr;
+// [v13.71] Cây hạng mục 2 cấp: 5 nhóm lớn → các mục con (món tài sản / loại tiền / nhóm hàng)
+function bgqlBuildHmTree(){
+  const ts = bgqlDanhMucTS || [];
+  const mk = (arr) => arr.map(x => ({ ma:'ts:'+x.stt, ten:x.ten }));
+  return [
+    { key:'tien', ten:'Tiền mặt & doanh thu', children:[
+      {ma:'tien:tien_mat_ket', ten:'Tiền két'},
+      {ma:'tien:tien_ban_hang', ten:'Tiền bán hàng'},
+      {ma:'tien:tien_chi', ten:'Tiền chi'},
+    ]},
+    { key:'kv1', ten:'Mặt tiền - hạ tầng', children: mk(ts.filter(x=>x.khu_vuc===1)) },
+    { key:'kv2', ten:'Quầy thu ngân & IT', children: mk(ts.filter(x=>x.khu_vuc===2)) },
+    { key:'kv4', ten:'Kho, sinh hoạt, công cụ', children: mk(ts.filter(x=>x.khu_vuc===4)) },
+    { key:'hang', ten:'Hàng hóa & tồn kho', children:[
+      {ma:'hang:Nhóm Nón Vải', ten:'Nón Vải'},
+      {ma:'hang:Nhóm Nón Bảo Hiểm', ten:'Nón Bảo Hiểm'},
+      {ma:'hang:Nhóm Phụ Kiện (Lưới, kính...)', ten:'Phụ Kiện'},
+    ]},
+  ];
+}
+function bgqlRenderHmTree(){
+  const tree = bgqlBuildHmTree();
+  const sel = bgqlSuVuFilter.muc_con || [];
+  return tree.map(g => {
+    const childMas = g.children.map(c=>c.ma);
+    const cnt = childMas.filter(m=>sel.includes(m)).length;
+    const allChecked = cnt>0 && cnt===childMas.length;
+    const someChecked = cnt>0 && !allChecked;
+    const expanded = !!bgqlHmExpanded[g.key];
+    const partial = someChecked ? ` <span class="bgql-hm-partial">${cnt}/${childMas.length}</span>` : '';
+    const children = g.children.map(c =>
+      `<label class="bgql-hm-con"><input type="checkbox" ${sel.includes(c.ma)?'checked':''} onchange="bgqlToggleHmCon('${c.ma.replace(/'/g,"\\'")}')"><span>${c.ten}</span></label>`
+    ).join('');
+    return `<div class="bgql-hm-group">
+      <div class="bgql-hm-cha">
+        <label class="bgql-hm-cha-lbl"><input type="checkbox" ${allChecked?'checked':''} onchange="bgqlToggleHmCha('${g.key}')"><span class="bgql-hm-cha-ten">${g.ten}${partial}</span></label>
+        <button type="button" class="bgql-hm-exp${expanded?' open':''}" onclick="bgqlToggleHmExpand('${g.key}')" aria-label="Mở">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div class="bgql-hm-children" style="display:${expanded?'block':'none'}">${children}</div>
+    </div>`;
+  }).join('');
+}
+function bgqlRefreshHmPanel(){
+  const p = document.getElementById('bgql-nhom-panel');
+  if (p) p.innerHTML = bgqlRenderHmTree() + '<button class="bgql-nhom-done" onclick="bgqlToggleNhomPanel()">Xong</button>';
   const b = document.getElementById('bgql-nhom-badge');
-  if (b) { if (arr.length) { b.style.display=''; b.textContent = arr.length; } else b.style.display='none'; }
+  const n = (bgqlSuVuFilter.muc_con||[]).length;
+  if (b) { if (n) { b.style.display=''; b.textContent = n; } else b.style.display='none'; }
+}
+window.bgqlToggleHmExpand = function(key){
+  bgqlHmExpanded[key] = !bgqlHmExpanded[key];
+  bgqlRefreshHmPanel();
+};
+window.bgqlToggleHmCha = function(key){
+  const g = bgqlBuildHmTree().find(x=>x.key===key);
+  if (!g) return;
+  const childMas = g.children.map(c=>c.ma);
+  const sel = bgqlSuVuFilter.muc_con || [];
+  const allChecked = childMas.length>0 && childMas.every(m=>sel.includes(m));
+  bgqlSuVuFilter.muc_con = allChecked ? sel.filter(m=>!childMas.includes(m)) : Array.from(new Set(sel.concat(childMas)));
+  bgqlHmExpanded[key] = true;
+  bgqlRefreshHmPanel();
+  bgqlRenderSuVuList();
+};
+window.bgqlToggleHmCon = function(ma){
+  const sel = bgqlSuVuFilter.muc_con || [];
+  const i = sel.indexOf(ma);
+  if (i>=0) sel.splice(i,1); else sel.push(ma);
+  bgqlSuVuFilter.muc_con = sel;
+  bgqlRefreshHmPanel();
   bgqlRenderSuVuList();
 };
 function bgqlSvParseSoLieu(s){
@@ -2485,17 +2557,13 @@ function bgqlSvParseSoLieu(s){
   try { return JSON.parse(s.so_lieu); } catch(e){ return null; }
 }
 function bgqlSvMatchNhom(s){
-  const sel = bgqlSuVuFilter.nhom || [];
+  const sel = bgqlSuVuFilter.muc_con || [];
   if (!sel.length) return true;
   const loai = s.loai || '';
-  const sl = bgqlSvParseSoLieu(s);
-  const kv = sl && sl.khu_vuc != null ? String(sl.khu_vuc) : '';
-  for (const n of sel){
-    if (n==='tien' && loai==='TIEN_LECH') return true;
-    if (n==='hang' && (loai==='HANG_CHENH' || loai==='HANG_HOA')) return true;
-    if (n==='kv1' && loai==='TAI_SAN_KHONG_DAT' && kv==='1') return true;
-    if (n==='kv2' && loai==='TAI_SAN_KHONG_DAT' && kv==='2') return true;
-    if (n==='kv4' && loai==='TAI_SAN_KHONG_DAT' && kv==='4') return true;
-  }
-  return false;
+  const sl = bgqlSvParseSoLieu(s) || {};
+  let ma = null;
+  if (loai === 'TIEN_LECH') ma = 'tien:' + (sl.loai || '');
+  else if (loai === 'TAI_SAN_KHONG_DAT') ma = 'ts:' + (sl.stt != null ? sl.stt : '');
+  else if (loai === 'HANG_CHENH' || loai === 'HANG_HOA') ma = 'hang:' + (sl.nhom || '');
+  return ma != null && sel.includes(ma);
 }

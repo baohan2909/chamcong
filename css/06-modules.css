@@ -60,6 +60,7 @@
 .chk-tg { padding:5px 11px; border-radius:8px; border:1.5px solid #E2E8F0; background:#fff; font-size:11.5px; font-weight:700; cursor:pointer; transition:.12s; color:#94A3B8; white-space:nowrap; }
 .chk-tg.bt.active { background:#10B981; color:#fff; border-color:#10B981; }
 .chk-tg.vd.active { background:#DC2626; color:#fff; border-color:#DC2626; }
+.chk-tg.ko.active { background:#64748B; color:#fff; border-color:#64748B; }
 .chk-tg:active { transform:scale(.95); }
 
 /* Chi tiết vấn đề (hiện khi chọn VD) */
@@ -666,6 +667,12 @@
   color: #fff;
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(220,38,38,.40);
+}
+#page-bangiao .chk-tg.ko.active {
+  background: linear-gradient(135deg, #475569 0%, #64748B 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(71,85,105,.32);
 }
 
 /* Item */
@@ -3382,3 +3389,21 @@ body.nvai-active #bottom-nav { display: none !important; }
 .bgql-gal-prev { left: 10px; }
 .bgql-gal-next { right: 10px; }
 .bgql-gal-counter { position: fixed; bottom: calc(env(safe-area-inset-bottom,0px) + 18px); left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; font-weight: 700; background: rgba(0,0,0,.45); padding: 6px 14px; border-radius: 99px; z-index: 2; }
+
+/* [v13.71] Cây hạng mục 2 cấp (nhóm lớn → mục con) */
+.bgql-hm-group { border-bottom: 1px solid #F1F5F9; }
+.bgql-hm-group:last-of-type { border-bottom: none; }
+.bgql-hm-cha { display: flex; align-items: center; gap: 4px; }
+.bgql-hm-cha-lbl { flex: 1; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 9px; cursor: pointer; font-size: 13.5px; font-weight: 700; color: #1E293B; min-width: 0; }
+.bgql-hm-cha-lbl:active { background: #F4FBF8; }
+.bgql-hm-cha-lbl input { width: 18px; height: 18px; accent-color: #0F6E56; flex-shrink: 0; cursor: pointer; }
+.bgql-hm-cha-ten { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bgql-hm-partial { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 99px; background: #DCF3E8; color: #0F6E56; font-size: 11px; font-weight: 700; }
+.bgql-hm-exp { flex-shrink: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: #94A3B8; cursor: pointer; border-radius: 8px; }
+.bgql-hm-exp:active { background: #F1F5F9; }
+.bgql-hm-exp svg { transition: transform .2s; }
+.bgql-hm-exp.open svg { transform: rotate(180deg); color: #0F6E56; }
+.bgql-hm-children { padding: 0 6px 6px 18px; }
+.bgql-hm-con { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 12.5px; color: #475569; }
+.bgql-hm-con:active { background: #F4FBF8; }
+.bgql-hm-con input { width: 16px; height: 16px; accent-color: #0F6E56; flex-shrink: 0; cursor: pointer; }

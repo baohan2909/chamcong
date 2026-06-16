@@ -276,6 +276,7 @@ function bgItemTaiSanHtml(it){
       <div class="chk-item-name">${escHtml(it.ten)}${it.don_vi?` <small style="color:#94A3B8">(${escHtml(it.don_vi)})</small>`:''}</div>
       <div class="chk-item-toggle">
         <button class="chk-tg bt ${st.status==='BT'?'active':''}" onclick="bgSetTaiSan('${it.id}','BT')">Bình thường</button>
+        <button class="chk-tg ko ${st.status==='KO'?'active':''}" onclick="bgSetTaiSan('${it.id}','KO')">Không có</button>
         <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có vấn đề</button>
       </div>
     </div>
@@ -308,7 +309,7 @@ function bgItemTaiSanDetailHtml(it){
 window.bgSetTaiSan = function(id, status){
   if (!bgState[id]) bgState[id] = {};
   bgState[id].status = status;
-  if (status === 'BT') {
+  if (status === 'BT' || status === 'KO') {
     delete bgState[id].muc_do;
     delete bgState[id].mo_ta;
     delete bgState[id].anh_urls;
@@ -675,8 +676,8 @@ async function bgSubmit(){
     bgGroups.filter(g=>g.type==='taisan').forEach(g => {
       g.items.forEach(it => {
         const st = bgState[it.id] || {};
-        // [v13.38] FIX: chưa chọn hoặc 'K' → đánh dấu 'KHÔNG CÓ' (khớp confirm screen)
-        const isKhongCo = !st.status || st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO';
+        // [v13.71] "KHÔNG CÓ" chỉ khi NV bấm nút "Không có" (status KO); giữ backward các mã cũ
+        const isKhongCo = st.status === 'KO' || st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO';
         chi_tiet_tai_san.push({
           stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
           dat: st.status !== 'VD',
