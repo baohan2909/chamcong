@@ -2459,3 +2459,19 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-ch-chk { width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; border: 2px solid #CBD5E1; background: #fff; display: flex; align-items: center; justify-content: center; transition: all .15s; }
 .dh-ch-chk.on { background: linear-gradient(135deg,#1D9E75,#0F6E56); border-color: transparent; }
 .dh-ch-card.dh-ch-on { border-color: rgba(15,110,86,.45) !important; background: #F4FBF8 !important; }
+
+/* [v13.81] SePay — màn chờ thanh toán tự động */
+.dh-sepay-ov { position: fixed; inset: 0; background: rgba(14,30,46,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+.dh-sepay-card { background: #fff; border-radius: 20px; padding: 24px 22px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.dh-sepay-card.paid { box-shadow: 0 0 0 3px #1D9E75, 0 20px 60px rgba(0,0,0,.3); }
+.dh-sepay-title { font-size: 17px; font-weight: 700; color: #0F172A; }
+.dh-sepay-sub { font-size: 12.5px; color: #64748B; margin-top: 2px; }
+.dh-sepay-qr { width: 200px; height: 200px; margin: 16px auto 10px; display: block; border-radius: 12px; border: 1px solid #E2E8F0; }
+.dh-sepay-amt { font-size: 22px; font-weight: 800; color: #0F6E56; margin-bottom: 12px; }
+.dh-sepay-status { font-size: 14px; font-weight: 600; color: #475569; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
+.dh-sepay-spin { width: 16px; height: 16px; border: 2.5px solid #CBD5E1; border-top-color: #0F6E56; border-radius: 50%; display: inline-block; animation: dhspin .8s linear infinite; }
+@keyframes dhspin { to { transform: rotate(360deg); } }
+.dh-sepay-card.paid .dh-sepay-status { color: #0F6E56; }
+.dh-sepay-ok { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: linear-gradient(135deg,#1D9E75,#0F6E56); color: #fff; border-radius: 50%; font-weight: 800; font-size: 13px; }
+.dh-sepay-close { background: #F1F5F9; color: #475569; border: none; border-radius: 10px; padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
+.dh-sepay-close:active { background: #E2E8F0; }
