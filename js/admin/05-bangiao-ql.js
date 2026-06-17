@@ -99,8 +99,8 @@ function bgqlRenderSuVuFilters(){
   const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
-  // [v13.36] Nút Chọn nhiều — chỉ ADMIN, chỉ tab "suvu"
-  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
+  // [v13.91] Nút Chọn nhiều — mọi quản lý (ADMIN/QLNS/QLBH), chỉ tab "suvu"
+  const isAdmin = (typeof SESSION !== 'undefined' && SESSION && ['ADMIN','QLNS','QLBH'].includes(SESSION.vaiTro));
   const multiBtn = (isAdmin && bgqlInnerTab === 'suvu') ? 
     `<button class="bgql-act bgql-act-ghost bgql-msel-btn" onclick="bgqlToggleMultiSelect()">
       ${bgqlMultiSelectMode?'Đóng chọn':'Chọn nhiều để xóa'}
@@ -2004,8 +2004,8 @@ let bgqlDeleteArmTimer = null;
 
 // [v13.37] FIX bugs: full re-render thay vì partial → DOM luôn sync với state
 window.bgqlToggleMultiSelect = function(){
-  if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
-    showToast('Chỉ ADMIN có quyền xóa hàng loạt', 'warn');
+  if (!SESSION || !['ADMIN','QLNS','QLBH'].includes(SESSION.vaiTro)) {
+    showToast('Chỉ quản lý mới có quyền thao tác hàng loạt', 'warn');
     return;
   }
   bgqlMultiSelectMode = !bgqlMultiSelectMode;
@@ -2071,6 +2071,7 @@ function bgqlRenderMultiSelectBar(){
     <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
       <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
+      <button class="bgql-act bgql-act-primary" onclick="bgqlBulkPhanHoi()" ${sel===0?'disabled':''}>Phản hồi (${sel})</button>
       <button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>${bgqlDeleteArmed ? 'Bấm lần nữa để xóa' : 'Xóa ('+sel+')'}</button>
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
@@ -2098,21 +2099,82 @@ window.bgqlDeleteBulkConfirm = async function(){
     if (error || (data && data.ok === false)) throw new Error((data && data.error) || (error && error.message) || 'Không xóa được');
     showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
     
-    // [v13.37] FULL RESET state — quan trọng để lần tiếp theo hoạt động đúng
+    // [v13.91] GIỮ chế độ chọn nhiều để xóa tiếp — chỉ reset danh sách đã chọn
     bgqlSelectedIds = new Set();
-    bgqlMultiSelectMode = false;
     bgqlSuVuCache = null;
-    
-    // Remove bar khỏi DOM
-    const bar = document.getElementById('bgql-multiselect-bar');
-    if (bar) bar.remove();
-    
-    // Reload + re-render filter (button text reset về "Chọn nhiều để xóa")
-    await bgqlLoadSuVu();
+    await bgqlLoadSuVu();          // reload + render list (checkbox vẫn hiện vì mode còn bật)
     bgqlRenderSuVuFilters();
+    bgqlRenderMultiSelectBar();    // cập nhật bar (0 đã chọn), không gỡ bar
   } catch(e){ 
     showToast('Lỗi: ' + e.message, 'warn');
   }
+};
+
+// [v13.91] PHẢN HỒI HÀNG LOẠT — 1 nội dung/người xử lý/deadline áp cho nhiều sự vụ
+window.bgqlBulkPhanHoi = function(){
+  if (bgqlSelectedIds.size === 0) { showToast('Chưa chọn sự vụ nào', 'warn'); return; }
+  const n = bgqlSelectedIds.size;
+  const def = new Date(Date.now() + 86400000);
+  const pad = x => String(x).padStart(2,'0');
+  const defStr = `${def.getFullYear()}-${pad(def.getMonth()+1)}-${pad(def.getDate())}T${pad(def.getHours())}:${pad(def.getMinutes())}`;
+  const m = document.createElement('div');
+  m.className = 'bgql-modal-bg';
+  m.innerHTML = `
+    <div class="bgql-modal">
+      <div class="bgql-modal-head">
+        <div class="bgql-modal-ttl">Phản hồi ${n} sự vụ cùng lúc</div>
+        <button class="bgql-modal-x" onclick="this.closest('.bgql-modal-bg').remove()">✕</button>
+      </div>
+      <div class="bgql-modal-body">
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;background:#F4FBF8;border:1px solid #DCF3E8;border-radius:10px;padding:10px 12px">Nội dung, người xử lý và deadline dưới đây sẽ áp dụng cho cả <b>${n}</b> sự vụ đã chọn.</div>
+        <label class="bgql-modal-label">Nội dung phản hồi <span style="color:#DC2626">*</span></label>
+        <textarea id="bgql-ph-noidung" class="bgql-modal-input" rows="4" placeholder="Hướng xử lý chung cho các sự vụ này..."></textarea>
+        <label class="bgql-modal-label">Người trực tiếp xử lý</label>
+        <div class="bgql-xl-wrap">
+          <input type="text" id="bgql-ph-xl-search" class="bgql-modal-input bgql-xl-search" placeholder="Gõ mã hoặc tên (NV+QL)..." autocomplete="off" oninput="bgqlSearchNguoiXuLy(this.value)" onfocus="bgqlSearchNguoiXuLy(this.value)">
+          <input type="hidden" id="bgql-ph-xl-data" value="">
+          <div class="bgql-xl-dropdown" id="bgql-xl-dropdown" style="display:none"></div>
+        </div>
+        <div style="font-size:11px;color:#64748B;margin-top:4px;margin-bottom:14px">Cùng một người xử lý sẽ được gán cho tất cả sự vụ đã chọn.</div>
+        <label class="bgql-modal-label">Deadline xử lý <span style="color:#DC2626">*</span></label>
+        <input type="datetime-local" id="bgql-ph-deadline" class="bgql-modal-input bgql-modal-dl" value="${defStr}" step="900">
+        <button id="bgql-ph-submit" class="bgql-modal-submit" onclick="bgqlSubmitPhanHoiBulk()" style="margin-top:16px">Gửi phản hồi cho ${n} sự vụ</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+};
+
+window.bgqlSubmitPhanHoiBulk = async function(){
+  const noidung = document.getElementById('bgql-ph-noidung').value.trim();
+  const dlStr = document.getElementById('bgql-ph-deadline').value;
+  if (!noidung) { showToast('Nội dung phản hồi không được trống', 'warn'); return; }
+  if (!dlStr) { showToast('Deadline xử lý là bắt buộc', 'warn'); return; }
+  const dl = new Date(dlStr);
+  if (isNaN(dl.getTime()) || dl < new Date()) { showToast('Deadline phải sau thời điểm hiện tại', 'warn'); return; }
+  let xl = null;
+  try { const r = document.getElementById('bgql-ph-xl-data').value; if (r) xl = JSON.parse(r); } catch(e){}
+  const ids = Array.from(bgqlSelectedIds);
+  const btn = document.getElementById('bgql-ph-submit');
+  btn.disabled = true; btn.textContent = 'Đang gửi...';
+  let ok = 0, fail = 0;
+  for (const id of ids) {
+    try {
+      const { data, error } = await supa.rpc('fn_su_vu_phan_hoi', {
+        p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen||'', p_vai_tro: SESSION.vaiTro||'',
+        p_noi_dung: noidung, p_deadline_xu_ly: dl.toISOString(), p_anh_urls: null,
+        p_nguoi_xu_ly_ma: xl?xl.ma:null, p_nguoi_xu_ly_ten: xl?xl.ten:null,
+        p_nguoi_xu_ly_loai: xl?xl.loai:null, p_nguoi_xu_ly_ch: xl?(xl.ch_or_role||''):null
+      });
+      if (error || (data && data.ok === false)) fail++; else ok++;
+    } catch(e){ fail++; }
+  }
+  showToast(`✓ Đã phản hồi ${ok} sự vụ${fail?(' · '+fail+' lỗi'):''}`, fail?'warn':'ok');
+  const bg = document.querySelector('.bgql-modal-bg'); if (bg) bg.remove();
+  bgqlSelectedIds = new Set();
+  bgqlSuVuCache = null;
+  await bgqlLoadSuVu();
+  bgqlRenderSuVuFilters();
+  bgqlRenderMultiSelectBar();
 };
 
 
