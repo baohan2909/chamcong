@@ -2098,7 +2098,12 @@ window.bgqlDeleteBulkConfirm = async function(){
       p_ids: ids, p_ma_nv: SESSION.ma
     });
     if (error || (data && data.ok === false)) throw new Error((data && data.error) || (error && error.message) || 'Không xóa được');
-    showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
+    if (data.so_loi && data.so_loi > 0) {
+      showToast(`Đã xóa ${data.so_xoa} · ${data.so_loi} không xóa được (còn dữ liệu liên quan)`, 'warn');
+      if (data.loi) console.warn('[su_vu_delete] lý do:', data.loi);
+    } else {
+      showToast(`✓ Đã xóa ${data.so_xoa} sự vụ`, 'ok');
+    }
     
     // [v13.91] GIỮ chế độ chọn nhiều để xóa tiếp — chỉ reset danh sách đã chọn
     bgqlSelectedIds = new Set();
