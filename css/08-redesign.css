@@ -2509,3 +2509,17 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-lydo-ta:focus { outline: none; border-color: #0F6E56; }
 .dh-lydo-send { width: 100%; padding: 10px; border: none; border-radius: 10px; background: #DC2626; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
 .dh-lydo-send:active { background: #B91C1C; }
+
+/* [v13.88] Popup nhận đơn: người tạo + NV xử lý */
+.dh-pop-creator-row { display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 13px; color: #475569; }
+.dh-pop-creator-row svg { color: #94A3B8; flex: 0 0 auto; }
+.dh-pop-creator-row b { color: #0F172A; font-weight: 600; }
+.dh-pop-nv { position: relative; margin: 12px 0 6px; }
+.dh-pop-nv-lbl { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+.dh-pop-nv-input { width: 100%; box-sizing: border-box; border: 1px solid #E2E8F0; border-radius: 10px; padding: 9px 11px; font-size: 14px; font-family: inherit; }
+.dh-pop-nv-input:focus { outline: none; border-color: #0F6E56; }
+.dh-pop-nv-dd { display: none; position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 30; max-height: 200px; overflow-y: auto; }
+.dh-pop-nv-dd.on { display: block; }
+.dh-pop-nv-item { padding: 9px 12px; font-size: 14px; cursor: pointer; border-bottom: 1px solid #F1F5F9; }
+.dh-pop-nv-item:last-child { border-bottom: none; }
+.dh-pop-nv-item:active { background: #F4FBF8; }

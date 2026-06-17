@@ -33,6 +33,7 @@ window.dhNhanInit = function(){
   }
 
   dhNhanSeen = {};
+  dhNhanLoadNV();
   dhNhanPoll();
   if (dhNhanPollTimer) clearInterval(dhNhanPollTimer);
   dhNhanPollTimer = setInterval(dhNhanPoll, 4000);
@@ -70,6 +71,34 @@ function _dhPtBadge(d){
   return '<span class="dh-nhan-pt dh-pt-ck">Chuyển khoản</span>' +
          '<span class="dh-nhan-tt ' + (da?'dh-tt-da':'dh-tt-cho') + '">' + (da?'Đã thanh toán':'Chờ thanh toán') + '</span>';
 }
+
+// [v13.88] Autocomplete nhân viên xử lý (nhập tên/mã, gợi ý như chấm công)
+let dhNhanNVList = null;
+let dhNhanNvSel  = null;
+async function dhNhanLoadNV(){
+  if (dhNhanNVList) return dhNhanNVList;
+  try {
+    const { data } = await supa.from('nhan_vien').select('ma_nv, ho_ten').order('ho_ten');
+    dhNhanNVList = (data||[]).map(r => ({ ma: r.ma_nv, ten: r.ho_ten || r.ma_nv }));
+  } catch(e){ dhNhanNVList = []; }
+  return dhNhanNVList;
+}
+window.dhNhanNvInput = function(q){
+  dhNhanNvSel = null;
+  const dd = document.getElementById('dh-pop-nv-dd');
+  if (!dd) return;
+  const k = (q||'').trim().toLowerCase();
+  if (!k || !dhNhanNVList) { dd.classList.remove('on'); dd.innerHTML=''; return; }
+  const hits = dhNhanNVList.filter(n => (n.ten||'').toLowerCase().includes(k) || (n.ma||'').toLowerCase().includes(k)).slice(0,6);
+  if (!hits.length) { dd.classList.remove('on'); dd.innerHTML=''; return; }
+  dd.innerHTML = hits.map(n => `<div class="dh-pop-nv-item" data-ma="${escHtml(n.ma)}" data-ten="${escHtml(n.ten)}" onclick="dhNhanNvPickEl(this)">${escHtml(n.ten)} · ${escHtml(n.ma)}</div>`).join('');
+  dd.classList.add('on');
+};
+window.dhNhanNvPickEl = function(el){
+  dhNhanNvSel = { ma: el.dataset.ma, ten: el.dataset.ten };
+  const inp = document.getElementById('dh-pop-nv-input'); if (inp) inp.value = dhNhanNvSel.ten + ' · ' + dhNhanNvSel.ma;
+  const dd = document.getElementById('dh-pop-nv-dd'); if (dd) { dd.classList.remove('on'); dd.innerHTML=''; }
+};
 
 function dhNhanRenderList(list){
   const box = document.getElementById('dh-nhan-list');
@@ -113,6 +142,10 @@ function dhNhanShowPopup(d){
   document.getElementById('dh-pop-gt').textContent = _dhTien(d.gia_tri) + 'đ';
   document.getElementById('dh-pop-pt').textContent = _dhIsCK(d) ? ('Chuyển khoản' + (d.tt_trang_thai==='DA_TT' ? ' · Đã thanh toán' : ' · Chờ thanh toán')) : 'COD - thu khi giao';
   document.getElementById('dh-pop-diachi').textContent = d.dia_chi_full || '';
+  const crEl = document.getElementById('dh-pop-creator'); if (crEl) crEl.textContent = d.tu_van_ten || '—';
+  dhNhanNvSel = null;
+  const nvInp = document.getElementById('dh-pop-nv-input'); if (nvInp) nvInp.value = '';
+  const nvDd = document.getElementById('dh-pop-nv-dd'); if (nvDd) { nvDd.classList.remove('on'); nvDd.innerHTML=''; }
   // ẩn modal lý do nếu đang mở
   const lydo = document.getElementById('dh-pop-lydo'); if (lydo) lydo.style.display = 'none';
 
@@ -146,6 +179,7 @@ window.dhNhanClosePopup = dhNhanClosePopup;
 window.dhNhanAccept = async function(){
   const d = dhNhanPopupDon;
   if (!d) return;
+  if (!dhNhanNvSel) { showToast && showToast('Chọn nhân viên xử lý đơn', 'warn'); return; }
   const btn = document.getElementById('dh-pop-btn-nhan');
   if (btn) { btn.disabled = true; btn.textContent = 'Đang nhận...'; }
   try {
@@ -154,7 +188,8 @@ window.dhNhanAccept = async function(){
     });
     if (error) throw error;
     if (data && data.ok) {
-      showToast && showToast('Đã nhận đơn ' + (d.ma_don||'') + ' — chuẩn bị hàng + lên POS', 'success');
+      try { await supa.rpc('dh_fn_ghi_nv_nhan', { p_don_id: d.don_id, p_nv_ma: dhNhanNvSel.ma, p_nv_ten: dhNhanNvSel.ten }); } catch(e){}
+      showToast && showToast('Đã nhận đơn ' + (d.ma_don||'') + ' — ' + dhNhanNvSel.ten, 'success');
       dhNhanClosePopup();
       dhNhanPoll();
     } else {

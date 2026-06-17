@@ -530,7 +530,7 @@ function dhUpdateQR(){
   if (pttt === 'SEPAY') {
     acc = DH_SEPAY;
     if (!dhPayCode) dhPayCode = 'NS' + Math.random().toString(36).slice(2,10).toUpperCase();
-    const des = 'NONSON ' + dhPayCode;
+    const des = 'NONSON ' + dhPayCode + (sdt ? ' ' + sdt : '');
     url = `https://qr.sepay.vn/img?acc=${acc.stk}&bank=${acc.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
     note = 'Nội dung CK: ' + des + ' — hệ thống tự xác nhận khi nhận đúng tiền.';
   } else {
