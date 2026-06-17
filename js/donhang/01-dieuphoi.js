@@ -6,6 +6,7 @@
  * ════════════════════════════════════════════════════════════════════════ */
 
 let dhLastCHRanked = [];    // CH đã xếp hạng sau OSRM
+let dhCHChecked    = new Set(); // [v13.80] mã CH đang được chọn để gửi
 let dhKhachLatLng  = null;  // tọa độ khách (geocode)
 
 // Quyền truy cập phân hệ: live = mọi người; demo = CHỈ NS00490 (admin khác cũng chặn)
@@ -35,6 +36,7 @@ window.dhDieuPhoiInit = function(){
 
 function dhResetForm(){
   dhLastCHRanked = [];
+  dhCHChecked    = new Set();
   dhKhachLatLng  = null;
   dhSelectedSp   = null;
   ['dh-khach-ten','dh-khach-sdt','dh-diachi','dh-addr-street','dh-sp-search','dh-sp-ck','dh-addr-tinh','dh-addr-huyen','dh-addr-xa']
@@ -174,35 +176,46 @@ window.dhTimCuaHang = async function(){
 // ─── Render danh sách CH + đánh dấu đợt 1 (bán kính +Nkm) ────────────────
 function dhRenderCHList(list){
   const banKinh = parseFloat(_getSetting('donhang.ban_kinh_km', 2)) || 2;
-  const nearest = list[0].km_sort;
-  const nguong  = nearest + banKinh;
-
+  const nguong  = list[0].km_sort + banKinh;
+  // [v13.80] mặc định chọn sẵn CH trong bán kính (đợt 1); khách có thể tick thêm / bỏ
+  dhCHChecked = new Set(list.filter(ch => ch.km_sort <= nguong + 0.001).map(ch => ch.ma));
+  dhPaintCHList(list);
+}
+function dhPaintCHList(list){
+  const banKinh = parseFloat(_getSetting('donhang.ban_kinh_km', 2)) || 2;
+  const nguong  = list[0].km_sort + banKinh;
   let html = '';
-  list.forEach((ch,i) => {
-    const dot1   = ch.km_sort <= nguong + 0.001;
+  list.forEach((ch) => {
+    const gan    = ch.km_sort <= nguong + 0.001;
+    const checked= dhCHChecked.has(ch.ma);
     const kmTxt  = ch.di_chuyen != null ? ch.di_chuyen.toFixed(1) + ' km' : '~' + ch.chim_bay.toFixed(1) + ' km';
     const loai   = ch.di_chuyen != null ? 'di chuyển' : 'đường thẳng';
     html += `
-      <div class="dh-ch-card ${dot1 ? 'dh-ch-dot1' : ''}">
-        <div class="dh-ch-idx">${String.fromCharCode(65 + i)}</div>
+      <div class="dh-ch-card ${checked ? 'dh-ch-on' : ''}" onclick="dhToggleCH('${escHtml(ch.ma)}')">
+        <div class="dh-ch-chk ${checked?'on':''}">${checked?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
         <div class="dh-ch-info">
           <div class="dh-ch-ten">${escHtml(ch.ten || ch.ma)}</div>
           <div class="dh-ch-sub">${escHtml(ch.ma)} · ${loai}${ch.ton!=null?(' · còn '+ch.ton):''}</div>
         </div>
         <div class="dh-ch-km">
           <div class="dh-ch-km-num">${kmTxt}</div>
-          ${dot1 ? '<div class="dh-ch-dot1-tag">đợt 1</div>' : '<div class="dh-ch-wait">chờ đợt 2</div>'}
+          ${gan ? '<div class="dh-ch-dot1-tag">gần</div>' : '<div class="dh-ch-wait">xa hơn</div>'}
         </div>
       </div>`;
   });
-
-  const soDot1 = list.filter(ch => ch.km_sort <= nguong + 0.001).length;
   document.getElementById('dh-ch-list').innerHTML = html;
-
+  dhUpdateSendBtn();
+}
+window.dhToggleCH = function(ma){
+  if (dhCHChecked.has(ma)) dhCHChecked.delete(ma); else dhCHChecked.add(ma);
+  if (dhLastCHRanked.length) dhPaintCHList(dhLastCHRanked);
+};
+function dhUpdateSendBtn(){
   const sw = document.getElementById('dh-send-wrap');
   const gb = document.getElementById('dh-btn-gui');
+  const n = dhCHChecked.size;
   if (sw) sw.style.display = 'block';
-  if (gb) { gb.disabled = false; gb.textContent = 'Gửi yêu cầu đến ' + soDot1 + ' cửa hàng'; }
+  if (gb) { gb.disabled = (n === 0); gb.textContent = n > 0 ? ('Gửi yêu cầu đến ' + n + ' cửa hàng') : 'Chọn ít nhất 1 cửa hàng'; }
 }
 
 // ─── Gửi yêu cầu: tạo đơn + điều phối đợt 1 ─────────────────────────────
@@ -227,12 +240,10 @@ window.dhGuiYeuCau = async function(){
   const addrXa   = dhAddrText('dh-addr-xa');
   const addrConLai = [ (document.getElementById('dh-addr-street').value||'').trim(), dhAddrText('dh-addr-huyen') ].filter(Boolean).join(', ');
 
-  const banKinh = parseFloat(_getSetting('donhang.ban_kinh_km', 2)) || 2;
-  const nguong  = dhLastCHRanked[0].km_sort + banKinh;
   const dot1 = dhLastCHRanked
-    .filter(ch => ch.km_sort <= nguong + 0.001)
+    .filter(ch => dhCHChecked.has(ch.ma))
     .map(ch => ({ ma_ch: ch.ma, ten_ch: ch.ten, km: +(ch.km_sort.toFixed(2)) }));
-  if (!dot1.length) { showToast && showToast('Không có CH trong bán kính', 'warn'); return; }
+  if (!dot1.length) { showToast && showToast('Chọn ít nhất 1 cửa hàng', 'warn'); return; }
 
   const btn = document.getElementById('dh-btn-gui');
   if (btn) { btn.disabled = true; btn.textContent = 'Đang gửi...'; }
@@ -470,6 +481,8 @@ async function dhGeocodeSmart(){
  *  STK test; đổi sang STK Nón Sơn khi chạy thật (có thể đưa vào app_settings).
  * ════════════════════════════════════════════════════════════════════════ */
 const DH_QR = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
+// [v13.80] SePay — đổi STK/bank sang tài khoản đã kết nối SePay khi chạy thật
+const DH_SEPAY = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
 
 function dhDonAmount(){
   if (!dhSelectedSp) return 0;
@@ -485,12 +498,26 @@ function dhUpdateQR(){
   const box = document.getElementById('dh-qr-box');
   if (!box) return;
   const pttt = (document.getElementById('dh-pttt')||{}).value;
-  if (pttt !== 'CK_TRUOC') { box.style.display='none'; return; }
+  if (pttt !== 'CK_TRUOC' && pttt !== 'SEPAY') { box.style.display='none'; return; }
   const amt = dhDonAmount();
   const sdt = ((document.getElementById('dh-khach-sdt')||{}).value || '').trim();
-  const info = encodeURIComponent(('NonSon ' + sdt).trim());
-  const url = `https://img.vietqr.io/image/${DH_QR.bank}-${DH_QR.stk}-compact2.png?amount=${amt}&addInfo=${info}&accountName=${encodeURIComponent(DH_QR.owner)}`;
+  let url, note, acc;
+  if (pttt === 'SEPAY') {
+    acc = DH_SEPAY;
+    const des = ('NONSON ' + sdt).trim();
+    url = `https://qr.sepay.vn/img?acc=${acc.stk}&bank=${acc.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
+    note = 'Hệ thống tự động xác nhận ngay khi nhận được tiền (qua SePay).';
+  } else {
+    acc = DH_QR;
+    const info = encodeURIComponent(('NonSon ' + sdt).trim());
+    url = `https://img.vietqr.io/image/${acc.bank}-${acc.stk}-compact2.png?amount=${amt}&addInfo=${info}&accountName=${encodeURIComponent(acc.owner)}`;
+    note = 'Mã QR gắn sẵn số tiền + nội dung. Khách quét app ngân hàng để chuyển; anh tự kiểm tra biến động số dư.';
+  }
   const img = document.getElementById('dh-pqr-img'); if (img) img.src = url;
   const amtEl = document.getElementById('dh-pqr-amt'); if (amtEl) amtEl.textContent = dhFmtTien(amt);
+  const noteEl = document.getElementById('dh-pqr-note'); if (noteEl) noteEl.textContent = note;
+  const bn = document.getElementById('dh-qr-bankname'); if (bn) bn.textContent = acc.bank;
+  const st = document.getElementById('dh-qr-stk'); if (st) st.textContent = acc.stk;
+  const ow = document.getElementById('dh-qr-owner'); if (ow) ow.textContent = acc.owner;
   box.style.display='block';
 }

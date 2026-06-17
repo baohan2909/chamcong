@@ -2453,3 +2453,9 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-addr-dd-it { padding: 10px 12px; font-size: 13.5px; color: #1E293B; cursor: pointer; border-bottom: 1px solid #F1F5F9; }
 .dh-addr-dd-it:last-child { border-bottom: none; }
 .dh-addr-dd-it:active { background: #DCF3E8; }
+
+/* [v13.80] Checkbox chọn/bỏ cửa hàng (thay số thứ tự) */
+.dh-ch-card { cursor: pointer; }
+.dh-ch-chk { width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; border: 2px solid #CBD5E1; background: #fff; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.dh-ch-chk.on { background: linear-gradient(135deg,#1D9E75,#0F6E56); border-color: transparent; }
+.dh-ch-card.dh-ch-on { border-color: rgba(15,110,86,.45) !important; background: #F4FBF8 !important; }
