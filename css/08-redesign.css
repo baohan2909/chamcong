@@ -1746,7 +1746,7 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
   background: #0E1E2E;
   min-height: 100vh;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 0 calc(96px + env(safe-area-inset-bottom, 0px)) !important;
 }
 .dh-shell {
   max-width: 640px; margin: 0 auto;
@@ -2444,3 +2444,12 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-qr-info-row { color: var(--text-m) !important; }
 .dh-qr-info-row b { color: var(--text) !important; }
 .dh-qr-confirm { background: linear-gradient(135deg,#1D9E75,#0F6E56) !important; color: #fff !important; }
+
+/* [v13.79] Địa chỉ autocomplete — ô nhập + gợi ý (3 dòng) */
+.dh-addr-ac { position: relative; }
+.dh-row2 .dh-addr-ac { flex: 1 1 0; min-width: 0; }
+.dh-addr-dd { position: absolute; top: calc(100% + 3px); left: 0; right: 0; background: #fff; border: 1.5px solid #E2E8F0; border-radius: 10px; box-shadow: 0 8px 24px rgba(15,23,42,.12); z-index: 60; overflow: hidden; display: none; }
+.dh-addr-dd.on { display: block; }
+.dh-addr-dd-it { padding: 10px 12px; font-size: 13.5px; color: #1E293B; cursor: pointer; border-bottom: 1px solid #F1F5F9; }
+.dh-addr-dd-it:last-child { border-bottom: none; }
+.dh-addr-dd-it:active { background: #DCF3E8; }

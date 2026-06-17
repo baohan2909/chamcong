@@ -37,11 +37,13 @@ function dhResetForm(){
   dhLastCHRanked = [];
   dhKhachLatLng  = null;
   dhSelectedSp   = null;
-  ['dh-khach-ten','dh-khach-sdt','dh-diachi','dh-addr-street','dh-sp-search','dh-sp-ck']
+  ['dh-khach-ten','dh-khach-sdt','dh-diachi','dh-addr-street','dh-sp-search','dh-sp-ck','dh-addr-tinh','dh-addr-huyen','dh-addr-xa']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['dh-addr-tinh','dh-addr-huyen','dh-addr-xa'].forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
-  const selH = document.getElementById('dh-addr-huyen'); if (selH){ selH.innerHTML='<option value="">Quận / Huyện...</option>'; selH.disabled=true; }
-  const selX = document.getElementById('dh-addr-xa'); if (selX){ selX.innerHTML='<option value="">Phường / Xã...</option>'; selX.disabled=true; }
+  // [v13.79] reset trạng thái địa chỉ autocomplete
+  dhSelTinh = null; dhSelHuyen = null; dhSelXa = null; dhHuyenList = []; dhXaList = [];
+  const hi = document.getElementById('dh-addr-huyen'); if (hi) hi.disabled = true;
+  const xi = document.getElementById('dh-addr-xa'); if (xi) xi.disabled = true;
+  ['dh-addr-tinh-dd','dh-addr-huyen-dd','dh-addr-xa-dd'].forEach(id => { const el=document.getElementById(id); if(el){ el.innerHTML=''; el.classList.remove('on'); } });
   const sl = document.getElementById('dh-sp-sl'); if (sl) sl.value = '1';
   if (typeof dhRenderSpChosen === 'function') dhRenderSpChosen();
   const mb = document.getElementById('dh-money-box'); if (mb) mb.style.display='none';
@@ -266,6 +268,9 @@ window.dhGuiYeuCau = async function(){
 let dhSelectedSp = null;   // sản phẩm đã chọn (object từ BH.spList)
 let dhAcItems    = [];     // kết quả gợi ý hiện tại
 let dhTinhList   = [];     // danh sách tỉnh/thành
+let dhHuyenList  = [];     // [v13.79] huyện của tỉnh đang chọn
+let dhXaList     = [];     // [v13.79] xã của huyện đang chọn
+let dhSelTinh = null, dhSelHuyen = null, dhSelXa = null; // [v13.79] {code,name} đã chọn
 
 function dhFmtTien(n){ n = Math.round(n||0); return n.toLocaleString('vi-VN') + 'đ'; }
 function dhGiaSp(sp){ return (sp && sp.giaSale>0) ? sp.giaSale : (sp ? sp.giaNY : 0); }
@@ -341,48 +346,80 @@ window.dhCalcTien = function(){
 };
 
 // ─── Địa chỉ: phân cấp Tỉnh → Huyện → Xã (provinces.open-api.vn, miễn phí) ───
+function _dhNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').trim(); }
+function _dhAddrShowDD(ddId, items, pickFn){
+  const dd = document.getElementById(ddId);
+  if (!dd) return;
+  if (!items.length) { dd.classList.remove('on'); dd.innerHTML=''; return; }
+  dd.innerHTML = items.slice(0,3).map(it=>`<div class="dh-addr-dd-it" onclick="${pickFn}(${it.code})">${escHtml(it.name)}</div>`).join('');
+  dd.classList.add('on');
+}
 async function dhLoadTinh(){
-  const sel = document.getElementById('dh-addr-tinh');
-  if (!sel || dhTinhList.length) return;
+  if (dhTinhList.length) return;
   try {
     const r = await fetch('https://provinces.open-api.vn/api/p/', { signal: AbortSignal.timeout(9000) });
     dhTinhList = await r.json();
-    sel.innerHTML = '<option value="">Tỉnh / Thành...</option>' +
-      dhTinhList.map(t=>`<option value="${t.code}">${escHtml(t.name)}</option>`).join('');
   } catch(e){ console.warn('[DH] load tỉnh:', e); }
 }
-window.dhAddrTinhChange = async function(){
-  const code = document.getElementById('dh-addr-tinh').value;
-  const selH = document.getElementById('dh-addr-huyen');
-  const selX = document.getElementById('dh-addr-xa');
-  selH.innerHTML = '<option value="">Quận / Huyện...</option>'; selH.disabled = true;
-  selX.innerHTML = '<option value="">Phường / Xã...</option>'; selX.disabled = true;
+window.dhAddrTinhInput = function(kw){
+  if (!dhTinhList.length) { dhLoadTinh().then(()=>dhAddrTinhInput(kw)); return; }
+  const low = _dhNorm(kw);
+  const items = low ? dhTinhList.filter(t=>_dhNorm(t.name).includes(low)) : dhTinhList;
+  _dhAddrShowDD('dh-addr-tinh-dd', items, 'dhPickTinh');
+};
+window.dhPickTinh = async function(code){
+  const t = dhTinhList.find(x=>x.code==code); if(!t) return;
+  dhSelTinh = {code:t.code, name:t.name};
+  document.getElementById('dh-addr-tinh').value = t.name;
+  document.getElementById('dh-addr-tinh-dd').classList.remove('on');
+  dhSelHuyen = null; dhSelXa = null; dhHuyenList = []; dhXaList = [];
+  const hi=document.getElementById('dh-addr-huyen'); if(hi){ hi.value=''; hi.disabled=false; }
+  const xi=document.getElementById('dh-addr-xa'); if(xi){ xi.value=''; xi.disabled=true; }
   dhAddrCompose();
-  if (!code) return;
   try {
     const r = await fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`, { signal: AbortSignal.timeout(9000) });
-    const d = await r.json();
-    (d.districts||[]).forEach(h=>{ const o=document.createElement('option'); o.value=h.code; o.textContent=h.name; selH.appendChild(o); });
-    selH.disabled = false;
+    const d = await r.json(); dhHuyenList = d.districts||[];
   } catch(e){ console.warn('[DH] load huyện:', e); }
 };
-window.dhAddrHuyenChange = async function(){
-  const code = document.getElementById('dh-addr-huyen').value;
-  const selX = document.getElementById('dh-addr-xa');
-  selX.innerHTML = '<option value="">Phường / Xã...</option>'; selX.disabled = true;
+window.dhAddrHuyenInput = function(kw){
+  const low = _dhNorm(kw);
+  const items = low ? dhHuyenList.filter(h=>_dhNorm(h.name).includes(low)) : dhHuyenList;
+  _dhAddrShowDD('dh-addr-huyen-dd', items, 'dhPickHuyen');
+};
+window.dhPickHuyen = async function(code){
+  const h = dhHuyenList.find(x=>x.code==code); if(!h) return;
+  dhSelHuyen = {code:h.code, name:h.name};
+  document.getElementById('dh-addr-huyen').value = h.name;
+  document.getElementById('dh-addr-huyen-dd').classList.remove('on');
+  dhSelXa = null; dhXaList = [];
+  const xi=document.getElementById('dh-addr-xa'); if(xi){ xi.value=''; xi.disabled=false; }
   dhAddrCompose();
-  if (!code) return;
   try {
     const r = await fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`, { signal: AbortSignal.timeout(9000) });
-    const d = await r.json();
-    (d.wards||[]).forEach(x=>{ const o=document.createElement('option'); o.value=x.code; o.textContent=x.name; selX.appendChild(o); });
-    selX.disabled = false;
+    const d = await r.json(); dhXaList = d.wards||[];
   } catch(e){ console.warn('[DH] load xã:', e); }
 };
-function dhAddrText(selId){ const s=document.getElementById(selId); return (s && s.selectedIndex>0) ? s.options[s.selectedIndex].text : ''; }
+window.dhAddrXaInput = function(kw){
+  const low = _dhNorm(kw);
+  const items = low ? dhXaList.filter(x=>_dhNorm(x.name).includes(low)) : dhXaList;
+  _dhAddrShowDD('dh-addr-xa-dd', items, 'dhPickXa');
+};
+window.dhPickXa = function(code){
+  const x = dhXaList.find(w=>w.code==code); if(!x) return;
+  dhSelXa = {code:x.code, name:x.name};
+  document.getElementById('dh-addr-xa').value = x.name;
+  document.getElementById('dh-addr-xa-dd').classList.remove('on');
+  dhAddrCompose();
+};
+function dhAddrText(selId){
+  if (selId === 'dh-addr-tinh') return dhSelTinh ? dhSelTinh.name : '';
+  if (selId === 'dh-addr-huyen') return dhSelHuyen ? dhSelHuyen.name : '';
+  if (selId === 'dh-addr-xa') return dhSelXa ? dhSelXa.name : '';
+  return '';
+}
 window.dhAddrCompose = function(){
   const street = (document.getElementById('dh-addr-street').value||'').trim();
-  const parts = [street, dhAddrText('dh-addr-xa'), dhAddrText('dh-addr-huyen'), dhAddrText('dh-addr-tinh')].filter(Boolean);
+  const parts = [street, dhSelXa?dhSelXa.name:'', dhSelHuyen?dhSelHuyen.name:'', dhSelTinh?dhSelTinh.name:''].filter(Boolean);
   const ta = document.getElementById('dh-diachi');
   if (ta) ta.value = parts.join(', ');
 };
@@ -391,6 +428,8 @@ window.dhAddrCompose = function(){
 document.addEventListener('click', function(e){
   const w = e.target.closest('.dh-ac-wrap');
   if (!w) { const box = document.getElementById('dh-sp-aclist'); if (box) box.classList.remove('on'); }
+  const aw = e.target.closest('.dh-addr-ac');
+  if (!aw) { ['dh-addr-tinh-dd','dh-addr-huyen-dd','dh-addr-xa-dd'].forEach(id=>{ const d=document.getElementById(id); if(d) d.classList.remove('on'); }); }
 }, true);
 
 /* ════════════════════════════════════════════════════════════════════════
