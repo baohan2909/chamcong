@@ -103,7 +103,7 @@ function bgqlRenderSuVuFilters(){
   const isAdmin = (typeof SESSION !== 'undefined' && SESSION && ['ADMIN','QLNS','QLBH'].includes(SESSION.vaiTro));
   const multiBtn = (isAdmin && bgqlInnerTab === 'suvu') ? 
     `<button class="bgql-act bgql-act-ghost bgql-msel-btn" onclick="bgqlToggleMultiSelect()">
-      ${bgqlMultiSelectMode?'Đóng chọn':'Chọn nhiều để xóa'}
+      ${bgqlMultiSelectMode?'Đóng chọn':'Chọn nhiều'}
     </button>` : '';
 
   if (bgqlInnerTab === 'suvu') {
@@ -2067,12 +2067,13 @@ function bgqlRenderMultiSelectBar(){
   const sel = bgqlSelectedIds.size;
   const allSelected = sel === total && total > 0;
   
+  const isAdminReal = (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
   bar.innerHTML = `
     <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
       <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn tất cả':'Chọn tất cả'}</button>
       <button class="bgql-act bgql-act-primary" onclick="bgqlBulkPhanHoi()" ${sel===0?'disabled':''}>Phản hồi (${sel})</button>
-      <button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>${bgqlDeleteArmed ? 'Bấm lần nữa để xóa' : 'Xóa ('+sel+')'}</button>
+      ${isAdminReal ? `<button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>${bgqlDeleteArmed ? 'Bấm lần nữa để xóa' : 'Xóa ('+sel+')'}</button>` : ''}
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
   `;
