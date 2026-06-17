@@ -2479,3 +2479,8 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 /* [v13.83] Đếm ngược hiệu lực QR */
 .dh-qr-count { margin-top: 6px; font-size: 12px; font-weight: 600; color: #0F6E56; text-align: center; }
 .dh-sepay-count { font-size: 13px; font-weight: 600; color: #0F6E56; margin-bottom: 12px; }
+
+/* [v13.84] QR hết hạn (mã chết) */
+.dh-sepay-card.expired .dh-sepay-qr { filter: grayscale(1) opacity(.35); }
+.dh-sepay-card.expired .dh-sepay-status { color: #B91C1C; }
+.dh-sepay-card.expired .dh-sepay-count { color: #B91C1C; }
