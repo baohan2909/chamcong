@@ -549,12 +549,14 @@ function dhUpdateQR(){
 
 // ─── [v13.81] SePay: màn chờ thanh toán + tự động xác nhận ──────────────
 let dhTTPollTimer = null;
-window.dhShowSepayWait = function(donId, amt, sdt, maDon){
+window.dhShowSepayWait = async function(donId, amt, sdt, maDon){
   let ov = document.getElementById('dh-sepay-wait');
   if (!ov) { ov = document.createElement('div'); ov.id = 'dh-sepay-wait'; ov.className = 'dh-sepay-ov'; document.body.appendChild(ov); }
   const des = ('NONSON ' + (sdt||'')).trim();
   const qr = `https://qr.sepay.vn/img?acc=${DH_SEPAY.stk}&bank=${DH_SEPAY.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
-  const openAt = new Date().toISOString();
+  // Mốc ID hiện tại (server) — chỉ nhận giao dịch MỚI sau đây, không lệ thuộc đồng hồ
+  let baseId = 0;
+  try { const r = await supa.rpc('dh_fn_tt_maxid'); baseId = (r && r.data != null) ? r.data : 0; } catch(e){}
   ov.innerHTML = `
     <div class="dh-sepay-card" id="dh-sepay-card">
       <div class="dh-sepay-title">Chờ khách thanh toán</div>
@@ -563,21 +565,22 @@ window.dhShowSepayWait = function(donId, amt, sdt, maDon){
       <img class="dh-sepay-qr" src="${qr}" alt="QR SePay">
       <div class="dh-sepay-amt">${dhFmtTien(amt)}</div>
       <div class="dh-sepay-status" id="dh-sepay-status"><span class="dh-sepay-spin"></span> Đang chờ chuyển khoản…</div>
+      <div class="dh-sepay-dbg" id="dh-sepay-dbg"></div>
       <button class="dh-sepay-close" onclick="dhCloseSepayWait()">Đóng</button>
     </div>`;
   ov.style.display = 'flex';
-  // Đồng hồ chỉ để nhắc — mã KHÔNG chết, khách chuyển lúc nào cũng nhận
   dhStartQRCountdown('dh-sepay-count', () => {
     const cnt = document.getElementById('dh-sepay-count'); if (cnt) cnt.textContent = 'Mã vẫn dùng được — khách chuyển lúc nào cũng nhận.';
   });
-  // Kiểm tra tiền vào theo nội dung (SĐT) + số tiền, kể từ lúc mở mã
   clearInterval(dhTTPollTimer);
   let tries = 0;
   dhTTPollTimer = setInterval(async () => {
     tries++;
-    if (tries > 450) { clearInterval(dhTTPollTimer); return; }  // ~30 phút thì dừng poll
+    if (tries > 450) { clearInterval(dhTTPollTimer); return; }
     try {
-      const { data } = await supa.rpc('dh_fn_check_tt_sepay', { p_sdt: sdt||'', p_so_tien: amt, p_tu: openAt });
+      const { data, error } = await supa.rpc('dh_fn_check_tt_sepay', { p_sdt: sdt||'', p_so_tien: amt, p_after_id: baseId });
+      const dbg = document.getElementById('dh-sepay-dbg');
+      if (dbg) dbg.textContent = `kiểm tra lần ${tries} · sdt=${sdt||'(trống)'} · tiền=${amt} · từ id>${baseId} · kết quả=${JSON.stringify(data)}${error?(' · lỗi='+error.message):''}`;
       if (data === true) {
         clearInterval(dhTTPollTimer);
         clearInterval(dhQRCountTimer);
@@ -585,10 +588,13 @@ window.dhShowSepayWait = function(donId, amt, sdt, maDon){
         if (st) st.innerHTML = '<span class="dh-sepay-ok">✓</span> Đã chuyển khoản thành công';
         const card = document.getElementById('dh-sepay-card'); if (card) card.classList.add('paid');
         const cnt = document.getElementById('dh-sepay-count'); if (cnt) cnt.textContent = '';
+        if (dbg) dbg.textContent = '';
         showToast && showToast('✓ Đã nhận chuyển khoản' + (maDon?(' · Đơn '+maDon):''), 'success');
         setTimeout(() => { dhCloseSepayWait(); dhResetForm(); }, 2400);
       }
-    } catch(e){}
+    } catch(e){
+      const dbg = document.getElementById('dh-sepay-dbg'); if (dbg) dbg.textContent = 'lỗi gọi: ' + e.message;
+    }
   }, 4000);
 };
 window.dhCloseSepayWait = function(){

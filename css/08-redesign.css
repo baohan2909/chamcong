@@ -2484,3 +2484,6 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-sepay-card.expired .dh-sepay-qr { filter: grayscale(1) opacity(.35); }
 .dh-sepay-card.expired .dh-sepay-status { color: #B91C1C; }
 .dh-sepay-card.expired .dh-sepay-count { color: #B91C1C; }
+
+/* [v13.86] Dòng chẩn đoán tạm SePay */
+.dh-sepay-dbg { font-size: 10px; color: #94A3B8; margin: 4px 0 8px; word-break: break-all; line-height: 1.3; }
