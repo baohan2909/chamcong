@@ -2475,3 +2475,7 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .dh-sepay-ok { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: linear-gradient(135deg,#1D9E75,#0F6E56); color: #fff; border-radius: 50%; font-weight: 800; font-size: 13px; }
 .dh-sepay-close { background: #F1F5F9; color: #475569; border: none; border-radius: 10px; padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
 .dh-sepay-close:active { background: #E2E8F0; }
+
+/* [v13.83] Đếm ngược hiệu lực QR */
+.dh-qr-count { margin-top: 6px; font-size: 12px; font-weight: 600; color: #0F6E56; text-align: center; }
+.dh-sepay-count { font-size: 13px; font-weight: 600; color: #0F6E56; margin-bottom: 12px; }

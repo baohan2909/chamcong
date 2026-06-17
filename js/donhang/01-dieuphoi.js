@@ -495,6 +495,28 @@ function dhDonAmount(){
 
 window.dhPtttChange = function(){ dhUpdateQR(); };
 
+// [v13.83] Đếm ngược hiệu lực QR (hết thì tạo lại mã) — chuẩn 10 phút
+const DH_QR_TTL = 600;
+let dhQRCountTimer = null;
+function dhStartQRCountdown(elId, onExpire){
+  clearInterval(dhQRCountTimer);
+  let left = DH_QR_TTL;
+  const render = () => {
+    const el = document.getElementById(elId);
+    if (!el) { clearInterval(dhQRCountTimer); return; }
+    if (left <= 0) {
+      clearInterval(dhQRCountTimer);
+      el.textContent = 'Mã đã hết hạn — đang tạo lại…';
+      if (onExpire) setTimeout(onExpire, 600);
+      return;
+    }
+    const m = Math.floor(left/60), s = left % 60;
+    el.textContent = 'Mã có hiệu lực trong ' + m + ':' + String(s).padStart(2,'0');
+    left--;
+  };
+  render();
+  dhQRCountTimer = setInterval(render, 1000);
+}
 function dhUpdateQR(){
   const box = document.getElementById('dh-qr-box');
   if (!box) return;
@@ -521,6 +543,7 @@ function dhUpdateQR(){
   const st = document.getElementById('dh-qr-stk'); if (st) st.textContent = acc.stk;
   const ow = document.getElementById('dh-qr-owner'); if (ow) ow.textContent = acc.owner;
   box.style.display='block';
+  dhStartQRCountdown('dh-pqr-count', () => dhUpdateQR());
 }
 
 // ─── [v13.81] SePay: màn chờ thanh toán + tự động xác nhận ──────────────
@@ -536,10 +559,15 @@ window.dhShowSepayWait = function(donId, amt, sdt, maDon){
       <div class="dh-sepay-sub">Đơn ${escHtml(maDon||'')}</div>
       <img class="dh-sepay-qr" src="${qr}" alt="QR SePay">
       <div class="dh-sepay-amt">${dhFmtTien(amt)}</div>
+      <div class="dh-sepay-count" id="dh-sepay-count"></div>
       <div class="dh-sepay-status" id="dh-sepay-status"><span class="dh-sepay-spin"></span> Đang chờ chuyển khoản…</div>
       <button class="dh-sepay-close" onclick="dhCloseSepayWait()">Đóng</button>
     </div>`;
   ov.style.display = 'flex';
+  dhStartQRCountdown('dh-sepay-count', () => {
+    const o = document.getElementById('dh-sepay-wait');
+    if (o && o.style.display !== 'none') dhShowSepayWait(donId, amt, sdt, maDon);
+  });
   clearInterval(dhTTPollTimer);
   let tries = 0;
   dhTTPollTimer = setInterval(async () => {
@@ -560,6 +588,7 @@ window.dhShowSepayWait = function(donId, amt, sdt, maDon){
 };
 window.dhCloseSepayWait = function(){
   clearInterval(dhTTPollTimer);
+  clearInterval(dhQRCountTimer);
   const ov = document.getElementById('dh-sepay-wait');
   if (ov) ov.style.display = 'none';
 };
