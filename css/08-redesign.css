@@ -2490,3 +2490,22 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 
 /* [v13.87] Trạng thái thanh toán dưới QR xem trước */
 .dh-qr-status { margin-top: 8px; font-size: 13px; font-weight: 600; color: #0F6E56; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 18px; }
+
+/* [v13.88] Màn nhận chuyển khoản thành công (thay QR + giờ) */
+.dh-qr-success { padding: 24px 16px; text-align: center; }
+.dh-qr-succ-icon { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: linear-gradient(135deg,#1D9E75,#0F6E56); color: #fff; font-size: 34px; line-height: 64px; font-weight: 700; }
+.dh-qr-succ-title { font-size: 18px; font-weight: 700; color: #0F6E56; margin-bottom: 16px; }
+.dh-qr-succ-info { text-align: left; background: #F4FBF8; border: 1px solid #DCF3E8; border-radius: 12px; padding: 12px 14px; }
+.dh-qr-succ-info .dh-qr-line { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; font-size: 13px; }
+.dh-qr-succ-info .dh-qr-line span { color: #64748B; flex: 0 0 auto; }
+.dh-qr-succ-info .dh-qr-line b { color: #0F172A; text-align: right; word-break: break-all; }
+
+/* [v13.88] Badge trạng thái thanh toán + từ chối nhập tay */
+.dh-nhan-tt { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
+.dh-tt-da { background: #DCF3E8; color: #0F6E56; }
+.dh-tt-cho { background: #FEF3C7; color: #B45309; }
+.dh-pop-lydo { flex-direction: column; }
+.dh-lydo-ta { width: 100%; box-sizing: border-box; border: 1px solid #E2E8F0; border-radius: 10px; padding: 9px 11px; font-size: 14px; font-family: inherit; resize: vertical; }
+.dh-lydo-ta:focus { outline: none; border-color: #0F6E56; }
+.dh-lydo-send { width: 100%; padding: 10px; border: none; border-radius: 10px; background: #DC2626; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
+.dh-lydo-send:active { background: #B91C1C; }

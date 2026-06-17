@@ -63,6 +63,13 @@ async function dhNhanPoll(){
 }
 
 function _dhTien(x){ return Number(x||0).toLocaleString('vi-VN'); }
+function _dhIsCK(d){ return d.phuong_thuc_tt === 'CK_TRUOC' || d.phuong_thuc_tt === 'SEPAY'; }
+function _dhPtBadge(d){
+  if (!_dhIsCK(d)) return '<span class="dh-nhan-pt">COD</span>';
+  const da = d.tt_trang_thai === 'DA_TT';
+  return '<span class="dh-nhan-pt dh-pt-ck">Chuyển khoản</span>' +
+         '<span class="dh-nhan-tt ' + (da?'dh-tt-da':'dh-tt-cho') + '">' + (da?'Đã thanh toán':'Chờ thanh toán') + '</span>';
+}
 
 function dhNhanRenderList(list){
   const box = document.getElementById('dh-nhan-list');
@@ -80,7 +87,7 @@ function dhNhanRenderList(list){
       <div class="dh-nhan-sp">${escHtml(d.sp_ten||'')}${d.sp_size?(' · '+escHtml(d.sp_size)):''} · SL ${d.so_luong||1}</div>
       <div class="dh-nhan-meta">
         <span class="dh-nhan-gt">${_dhTien(d.gia_tri)}đ</span>
-        <span class="dh-nhan-pt ${d.phuong_thuc_tt==='CK_TRUOC'?'dh-pt-ck':''}">${d.phuong_thuc_tt==='CK_TRUOC'?'CK trước':'COD'}</span>
+        ${_dhPtBadge(d)}
       </div>
     </div>`).join('');
   // lưu để mở popup theo id
@@ -104,7 +111,7 @@ function dhNhanShowPopup(d){
   document.getElementById('dh-pop-sl').textContent = 'SL ' + (d.so_luong||1);
   document.getElementById('dh-pop-km').textContent = (d.km!=null? Number(d.km).toFixed(1)+' km' : '--');
   document.getElementById('dh-pop-gt').textContent = _dhTien(d.gia_tri) + 'đ';
-  document.getElementById('dh-pop-pt').textContent = d.phuong_thuc_tt==='CK_TRUOC' ? 'Chuyển khoản trước' : 'COD - thu khi giao';
+  document.getElementById('dh-pop-pt').textContent = _dhIsCK(d) ? ('Chuyển khoản' + (d.tt_trang_thai==='DA_TT' ? ' · Đã thanh toán' : ' · Chờ thanh toán')) : 'COD - thu khi giao';
   document.getElementById('dh-pop-diachi').textContent = d.dia_chi_full || '';
   // ẩn modal lý do nếu đang mở
   const lydo = document.getElementById('dh-pop-lydo'); if (lydo) lydo.style.display = 'none';
@@ -166,10 +173,17 @@ window.dhNhanAccept = async function(){
 window.dhNhanOpenReject = function(){
   const lydo = document.getElementById('dh-pop-lydo');
   if (!lydo) return;
-  lydo.innerHTML = DH_LY_DO.map(l =>
-    `<button class="dh-lydo-btn" onclick="dhNhanReject('${l}')">${l}</button>`
-  ).join('');
+  lydo.innerHTML = '<textarea id="dh-lydo-text" class="dh-lydo-ta" placeholder="Nhập lý do từ chối..." rows="2"></textarea>'
+    + '<button class="dh-lydo-send" onclick="dhNhanRejectSubmit()">Gửi từ chối</button>';
   lydo.style.display = 'flex';
+  const ta = document.getElementById('dh-lydo-text'); if (ta) ta.focus();
+};
+
+window.dhNhanRejectSubmit = function(){
+  const ta = document.getElementById('dh-lydo-text');
+  const lyDo = (ta && ta.value || '').trim();
+  if (!lyDo) { showToast && showToast('Nhập lý do từ chối', 'warn'); return; }
+  dhNhanReject(lyDo);
 };
 
 window.dhNhanReject = async function(lyDo){

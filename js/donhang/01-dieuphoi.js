@@ -51,7 +51,7 @@ function dhResetForm(){
   const mb = document.getElementById('dh-money-box'); if (mb) mb.style.display='none';
   const pttt = document.getElementById('dh-pttt'); if (pttt) pttt.value = 'COD';
   const qr = document.getElementById('dh-qr-box'); if (qr) qr.style.display = 'none';
-  clearInterval(dhPreviewPoll);
+  clearInterval(dhPreviewPoll); dhPayCode = null; dhPaidConfirmed = false;
   const pqrst = document.getElementById('dh-pqr-status'); if (pqrst) pqrst.textContent = '';
   const ac = document.getElementById('dh-sp-aclist'); if (ac){ ac.classList.remove('on'); ac.innerHTML=''; }
   const box = document.getElementById('dh-ch-list'); if (box) box.innerHTML = '';
@@ -266,6 +266,8 @@ window.dhGuiYeuCau = async function(){
 
     const dp = await supa.rpc('dh_fn_dieu_phoi', { p_don_id: res.id, p_danh_sach: dot1, p_dot: 1 });
     if (dp.error) throw dp.error;
+
+    if (dhPaidConfirmed) { try { await supa.rpc('dh_fn_danh_dau_tt', { p_don_id: res.id }); } catch(e){} }
 
     showToast && showToast('Đã gửi đến ' + dot1.length + ' cửa hàng · Đơn ' + res.ma_don, 'success');
     dhResetForm();
@@ -527,9 +529,10 @@ function dhUpdateQR(){
   let url, note, acc;
   if (pttt === 'SEPAY') {
     acc = DH_SEPAY;
-    const des = ('NONSON ' + sdt).trim();
+    if (!dhPayCode) dhPayCode = 'NS' + Math.random().toString(36).slice(2,10).toUpperCase();
+    const des = 'NONSON ' + dhPayCode;
     url = `https://qr.sepay.vn/img?acc=${acc.stk}&bank=${acc.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
-    note = 'Hệ thống tự động xác nhận ngay khi nhận được tiền (qua SePay).';
+    note = 'Nội dung CK: ' + des + ' — hệ thống tự xác nhận khi nhận đúng tiền.';
   } else {
     acc = DH_QR;
     const info = encodeURIComponent(('NonSon ' + sdt).trim());
@@ -543,20 +546,24 @@ function dhUpdateQR(){
   const st = document.getElementById('dh-qr-stk'); if (st) st.textContent = acc.stk;
   const ow = document.getElementById('dh-qr-owner'); if (ow) ow.textContent = acc.owner;
   box.style.display='block';
+  const _ct = document.getElementById('dh-qr-content'); if (_ct) _ct.style.display = 'block';
+  const _sc = document.getElementById('dh-qr-success'); if (_sc) _sc.style.display = 'none';
   dhStartQRCountdown('dh-pqr-count', () => {
     const c = document.getElementById('dh-pqr-count'); if (c) c.textContent = 'Mã vẫn dùng được — khách có thể chuyển bất cứ lúc nào.';
   });
   const stEl = document.getElementById('dh-pqr-status');
-  if (pttt === 'SEPAY') { dhStartSepayCheck(sdt, amt); }
+  if (pttt === 'SEPAY') { dhStartSepayCheck(dhPayCode, amt); }
   else { clearInterval(dhPreviewPoll); if (stEl) stEl.textContent = ''; }
 }
 
-// [v13.87] Kiểm tra tiền vào ngầm ngay tại QR xem trước (SePay) — không cần màn chờ riêng
+// [v13.88] Kiểm tra tiền vào ngầm tại QR xem trước (SePay) — mã định danh duy nhất, không cần màn chờ
 let dhPreviewPoll = null;
-async function dhStartSepayCheck(sdt, amt){
+let dhPayCode = null;
+let dhPaidConfirmed = false;
+async function dhStartSepayCheck(code, amt){
   clearInterval(dhPreviewPoll);
   const stEl = document.getElementById('dh-pqr-status');
-  if (!sdt) { if (stEl) stEl.textContent = 'Nhập số điện thoại khách để hệ thống tự xác nhận thanh toán.'; return; }
+  if (!code) { if (stEl) stEl.textContent = ''; return; }
   if (stEl) stEl.innerHTML = '<span class="dh-sepay-spin"></span> Đang chờ khách chuyển khoản…';
   let baseId = 0;
   try { const r = await supa.rpc('dh_fn_tt_maxid'); baseId = (r && r.data != null) ? r.data : 0; } catch(e){}
@@ -565,15 +572,33 @@ async function dhStartSepayCheck(sdt, amt){
     tries++;
     if (tries > 450) { clearInterval(dhPreviewPoll); return; }
     try {
-      const { data } = await supa.rpc('dh_fn_check_tt_sepay', { p_sdt: sdt, p_so_tien: amt, p_after_id: baseId });
-      if (data === true) {
+      const { data } = await supa.rpc('dh_fn_check_tt_sepay', { p_ma: code, p_so_tien: amt, p_after_id: baseId });
+      if (data) {
         clearInterval(dhPreviewPoll);
-        const st = document.getElementById('dh-pqr-status');
-        if (st) st.innerHTML = '<span class="dh-sepay-ok">✓</span> Đã nhận chuyển khoản';
+        clearInterval(dhQRCountTimer);
+        dhRenderTTSuccess(data);
         showToast && showToast('✓ Đã nhận chuyển khoản từ khách', 'success');
       }
     } catch(e){}
   }, 4000);
+}
+function dhRenderTTSuccess(g){
+  const content = document.getElementById('dh-qr-content');
+  const succ = document.getElementById('dh-qr-success');
+  if (content) content.style.display = 'none';
+  if (!succ) return;
+  let tStr = '';
+  try { tStr = new Date(g.created_at).toLocaleString('vi-VN'); } catch(e){ tStr = g.created_at || ''; }
+  succ.innerHTML = `
+    <div class="dh-qr-succ-icon">✓</div>
+    <div class="dh-qr-succ-title">Đã nhận chuyển khoản</div>
+    <div class="dh-qr-succ-info">
+      <div class="dh-qr-line"><span>Số tiền</span><b>${dhFmtTien(g.so_tien)}</b></div>
+      <div class="dh-qr-line"><span>Thời gian</span><b>${escHtml(tStr)}</b></div>
+      <div class="dh-qr-line"><span>Nội dung CK</span><b>${escHtml(g.noi_dung||'')}</b></div>
+    </div>`;
+  succ.style.display = 'block';
+  dhPaidConfirmed = true;
 }
 
 // ─── [v13.81] SePay: màn chờ thanh toán + tự động xác nhận ──────────────
