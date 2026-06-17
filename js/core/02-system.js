@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v13.89',
+  'sys.cache_version': 'v13.90',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -849,7 +849,9 @@ function khoiDongApp(){
   // [v11.8] Bật tab "Mẫu nón" ở bottom nav cho mọi role (NV/CTV/CH/QLBH/ADMIN/QLNS)
   // Tất cả NV đều cần gửi mẫu nón hàng tuần → đưa ra nav chính
   const nMN = document.getElementById('nav-muanon');
-  if (nMN) nMN.style.display = '';
+  if (nMN) nMN.style.display = isCH ? 'none' : '';   // [v13.90] CH dùng tab Khách Online thay Mẫu nón
+  const nKO = document.getElementById('nav-khachonline');
+  if (nKO) nKO.style.display = isCH ? '' : 'none';
 
   // [v12.0] Load trạng thái đăng ký khuôn mặt cho Tài khoản tab
   try {
@@ -965,6 +967,8 @@ function khoiDongApp(){
     // [v13.49] CH KHÔNG quản lý/duyệt nhân sự — chỉ giữ Dashboard doanh số.
     // Ẩn: Nhân sự, Lịch ca QL (các mục quản lý). Duyệt yêu cầu giữ ẩn (chờ RPC lọc theo CH).
     _showCH('menu-dashboard');
+    // [v13.90] Bật nhận đơn Khách Online chạy nền — popup hiện ở mọi tab
+    setTimeout(()=>{ try{ if(typeof dhNhanStartGlobal==='function') dhNhanStartGlobal(); }catch(e){} }, 800);
     // Chuyển trang mặc định sang Bán hàng
     setTimeout(()=>{ try{ goToPage('banhang'); }catch(e){} }, 100);
   }

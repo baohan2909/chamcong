@@ -10,11 +10,8 @@ let dhCHChecked    = new Set(); // [v13.80] mã CH đang được chọn để g
 let dhKhachLatLng  = null;  // tọa độ khách (geocode)
 
 // Quyền truy cập phân hệ: live = mọi người; demo = CHỈ NS00490 (admin khác cũng chặn)
-window._dhCanAccess = function(){
-  const cheDo = _getSetting('donhang.che_do', 'demo');
-  if (cheDo === 'live') return true;
-  return (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490');
-};
+// [v13.90] Chạy chính thức — mở cho mọi tài khoản (nav quyết định ai thấy tab)
+window._dhCanAccess = function(){ return true; };
 
 // ─── Init khi vào page ──────────────────────────────────────────────────
 window.dhDieuPhoiInit = function(){

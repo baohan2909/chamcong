@@ -40,8 +40,31 @@ window.dhNhanInit = function(){
 };
 
 window.dhNhanLeave = function(){
+  const isCH = (SESSION && SESSION.vaiTro === 'CUA_HANG');
+  if (isCH && dhNhanMaCh) return;  // [v13.90] CH: giữ poll nền chạy ở mọi tab
   if (dhNhanPollTimer) { clearInterval(dhNhanPollTimer); dhNhanPollTimer = null; }
   dhNhanClosePopup();
+};
+
+// [v13.90] Popup nhận đơn chạy nền cho CỬA HÀNG — hiện ở mọi tab
+let dhNhanNotified = {};
+function _dhNhanEnsureGlobal(){
+  const ov = document.getElementById('dh-nhan-popup');
+  if (ov && ov.parentElement !== document.body) document.body.appendChild(ov);
+}
+window.dhNhanStartGlobal = async function(){
+  const isCH = (SESSION && SESSION.vaiTro === 'CUA_HANG');
+  dhNhanMaCh = (isCH && SESSION.cuaHangMa) ? SESSION.cuaHangMa : null;
+  if (!dhNhanMaCh) return;
+  _dhNhanEnsureGlobal();
+  dhNhanLoadNV();
+  // Lần đầu: nạp đơn hiện có, đánh dấu đã thấy để không bung loạt popup cũ
+  try {
+    const { data } = await supa.rpc('dh_fn_don_cho_ch', { p_ma_ch: dhNhanMaCh });
+    (Array.isArray(data)?data:[]).forEach(d => { dhNhanSeen[d.dp_id] = true; });
+  } catch(e){}
+  if (dhNhanPollTimer) clearInterval(dhNhanPollTimer);
+  dhNhanPollTimer = setInterval(dhNhanPoll, 4000);
 };
 
 // ─── Polling: lấy đơn chờ → render list + popup nếu có đơn mới ───────────
@@ -54,10 +77,20 @@ async function dhNhanPoll(){
 
     // Phát hiện đơn mới (chưa từng thấy) → hiện popup cho đơn mới nhất
     const moi = list.filter(d => !dhNhanSeen[d.dp_id]);
-    list.forEach(d => { dhNhanSeen[d.dp_id] = true; });
     if (moi.length && !dhNhanPopupDon) {
       dhNhanShowPopup(moi[0]);
     }
+    // [v13.90] Đơn đã thấy mà nay biến mất → cửa hàng khác đã nhận → báo
+    const conHien = new Set(list.map(d => d.dp_id));
+    Object.keys(dhNhanSeen).forEach(dpId => {
+      if (!conHien.has(Number(dpId)) && !dhNhanNotified[dpId]) {
+        dhNhanNotified[dpId] = true;
+        supa.rpc('dh_fn_ai_nhan', { p_dp_id: Number(dpId) }).then(({ data }) => {
+          if (data) showToast && showToast('Cửa hàng ' + data + ' đã nhận đơn', 'info');
+        }).catch(()=>{});
+      }
+    });
+    list.forEach(d => { dhNhanSeen[d.dp_id] = true; });
   } catch(e) {
     // im lặng, thử lại lần poll sau
   }
@@ -101,6 +134,7 @@ window.dhNhanNvPickEl = function(el){
 };
 
 function dhNhanRenderList(list){
+  const koCho = document.getElementById('ko-stat-cho'); if (koCho) koCho.textContent = list.length;
   const box = document.getElementById('dh-nhan-list');
   if (!box) return;
   if (!list.length) {
@@ -131,6 +165,7 @@ window.dhNhanShowPopupById = function(dpId){
 
 // ─── Popup nhận đơn + đếm ngược ─────────────────────────────────────────
 function dhNhanShowPopup(d){
+  _dhNhanEnsureGlobal();
   dhNhanPopupDon = d;
   const ov = document.getElementById('dh-nhan-popup');
   if (!ov) return;
@@ -189,6 +224,8 @@ window.dhNhanAccept = async function(){
     if (error) throw error;
     if (data && data.ok) {
       try { await supa.rpc('dh_fn_ghi_nv_nhan', { p_don_id: d.don_id, p_nv_ma: dhNhanNvSel.ma, p_nv_ten: dhNhanNvSel.ten }); } catch(e){}
+      dhNhanNotified[d.dp_id] = true;
+      const koN = document.getElementById('ko-stat-nhan'); if (koN) koN.textContent = (parseInt(koN.textContent)||0) + 1;
       showToast && showToast('Đã nhận đơn ' + (d.ma_don||'') + ' — ' + dhNhanNvSel.ten, 'success');
       dhNhanClosePopup();
       dhNhanPoll();

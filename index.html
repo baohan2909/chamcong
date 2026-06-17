@@ -26,17 +26,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=13.89">
-<link rel="stylesheet" href="css/01-base.css?v=13.89">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.89">
-<link rel="stylesheet" href="css/03-banhang.css?v=13.89">
-<link rel="stylesheet" href="css/04-responsive.css?v=13.89">
-<link rel="stylesheet" href="css/05-admin.css?v=13.89">
-<link rel="stylesheet" href="css/06-modules.css?v=13.89">
-<link rel="stylesheet" href="css/08-redesign.css?v=13.89">
-<link rel="stylesheet" href="css/09-muanon.css?v=13.89">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.89">
-<link rel="stylesheet" href="css/11-face.css?v=13.89">
+<link rel="stylesheet" href="css/00-tokens.css?v=13.90">
+<link rel="stylesheet" href="css/01-base.css?v=13.90">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=13.90">
+<link rel="stylesheet" href="css/03-banhang.css?v=13.90">
+<link rel="stylesheet" href="css/04-responsive.css?v=13.90">
+<link rel="stylesheet" href="css/05-admin.css?v=13.90">
+<link rel="stylesheet" href="css/06-modules.css?v=13.90">
+<link rel="stylesheet" href="css/08-redesign.css?v=13.90">
+<link rel="stylesheet" href="css/09-muanon.css?v=13.90">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=13.90">
+<link rel="stylesheet" href="css/11-face.css?v=13.90">
 </head>
 <body class="cc-redesign-active">
 
@@ -45,7 +45,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.89</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v13.90</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1035,8 +1035,8 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       </button>
       <div class="dh-hero-txt">
-        <div class="cc-hero-page-label">ĐƠN HÀNG ONLINE</div>
-        <div class="cc-hero-page-title">Đơn về cửa hàng</div>
+        <div class="cc-hero-page-label">KHÁCH HÀNG ONLINE</div>
+        <div class="cc-hero-page-title">Khách Online</div>
       </div>
       <span class="dh-hero-tag" id="dh-nhan-demo-tag">DEMO</span>
     </div>
@@ -1045,6 +1045,16 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="dh-nhan-scope">--</span>
         <span class="dh-nhan-live-dot"></span>
+      </div>
+      <div class="ko-stats">
+        <div class="ko-stat-card">
+          <div class="ko-stat-num" id="ko-stat-cho">0</div>
+          <div class="ko-stat-lbl">Đơn đang chờ</div>
+        </div>
+        <div class="ko-stat-card ko-stat-green">
+          <div class="ko-stat-num" id="ko-stat-nhan">0</div>
+          <div class="ko-stat-lbl">Đã nhận trong phiên</div>
+        </div>
       </div>
       <div id="dh-nhan-list"></div>
     </div>
@@ -2007,7 +2017,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.89 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v13.90 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -3233,6 +3243,12 @@
       </svg>
       <div class="nav-label">Mẫu nón</div>
     </button>
+    <!-- [v13.90] Tab Khách Online — cho CỬA HÀNG (thay Mẫu nón ở giữa nav) -->
+    <button class="nav-item nv-clr-emerald" id="nav-khachonline" onclick="goToPage('donhang-nhan')" style="display:none">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <div class="nav-label">Khách Online</div>
+      <span class="nav-badge" id="ko-nav-badge" style="display:none"></span>
+    </button>
     <!-- [v11] Tab Bán hàng — hiện khi vaiTro=CUA_HANG hoặc QLBH -->
     <button class="nav-item nv-clr-cam" id="nav-banhang" onclick="goToPage('banhang')" style="display:none">
       <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -3268,13 +3284,13 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=13.89"></script>
-<script src="js/core/02-system.js?v=13.89"></script>
+<script src="js/core/01-config.js?v=13.90"></script>
+<script src="js/core/02-system.js?v=13.90"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=13.89">
+<link rel="stylesheet" href="css/07-extras.css?v=13.90">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -3309,23 +3325,23 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=13.89"></script>
-<script src="js/pages/01-lichca.js?v=13.89"></script>
-<script src="js/pages/02-nhansu.js?v=13.89"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=13.89"></script>
-<script src="js/pages/04-misc.js?v=13.89"></script>
-<script src="js/pages/05-muanon.js?v=13.89"></script>
-<script src="js/lib/camscanner.js?v=13.89"></script>
-<script src="js/pages/06-bangiao.js?v=13.89"></script>
-<script src="js/admin/05-bangiao-ql.js?v=13.89"></script>
-<script src="js/admin/06-nvai.js?v=13.89"></script>
-<script src="js/ai/face-recognition.js?v=13.89"></script>
-<script src="js/admin/01-banhang.js?v=13.89"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.89"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.89"></script>
-<script src="js/admin/04-muanon-admin.js?v=13.89"></script>
-<script src="js/donhang/01-dieuphoi.js?v=13.89"></script>
-<script src="js/donhang/02-nhandon.js?v=13.89"></script>
-<script src="js/donhang/03-quanly.js?v=13.89"></script>
+<script src="js/core/03-router.js?v=13.90"></script>
+<script src="js/pages/01-lichca.js?v=13.90"></script>
+<script src="js/pages/02-nhansu.js?v=13.90"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=13.90"></script>
+<script src="js/pages/04-misc.js?v=13.90"></script>
+<script src="js/pages/05-muanon.js?v=13.90"></script>
+<script src="js/lib/camscanner.js?v=13.90"></script>
+<script src="js/pages/06-bangiao.js?v=13.90"></script>
+<script src="js/admin/05-bangiao-ql.js?v=13.90"></script>
+<script src="js/admin/06-nvai.js?v=13.90"></script>
+<script src="js/ai/face-recognition.js?v=13.90"></script>
+<script src="js/admin/01-banhang.js?v=13.90"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=13.90"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=13.90"></script>
+<script src="js/admin/04-muanon-admin.js?v=13.90"></script>
+<script src="js/donhang/01-dieuphoi.js?v=13.90"></script>
+<script src="js/donhang/02-nhandon.js?v=13.90"></script>
+<script src="js/donhang/03-quanly.js?v=13.90"></script>
 </body>
 </html>
