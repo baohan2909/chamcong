@@ -482,8 +482,8 @@ async function dhGeocodeSmart(){
  *  STK test; đổi sang STK Nón Sơn khi chạy thật (có thể đưa vào app_settings).
  * ════════════════════════════════════════════════════════════════════════ */
 const DH_QR = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
-// [v13.80] SePay — đổi STK/bank sang tài khoản đã kết nối SePay khi chạy thật
-const DH_SEPAY = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
+// [v13.80] SePay — tài khoản đã kết nối SePay
+const DH_SEPAY = { bank: 'TPBank', stk: '77999999999', owner: 'Nguyễn Phan Bảo Hân' };
 
 function dhDonAmount(){
   if (!dhSelectedSp) return 0;
