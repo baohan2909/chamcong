@@ -49,12 +49,30 @@ async function nsFaceEnsureLoaded() {
   }
 }
 
+// [v14.1] Phát hiện trình duyệt trong app (Zalo/Facebook/Messenger/Instagram...) — WebView hay làm camera đen.
+function _isInAppBrowser(){
+  const ua = (navigator.userAgent || '');
+  return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Zalo|MicroMessenger|Line\/|Messenger|GSA\//i.test(ua);
+}
+
 async function _openCam(videoEl) {
   // [v13.13] Stop stream cũ trên element nếu còn — tránh leak/conflict
   if (videoEl.srcObject) {
     try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(_){}
     videoEl.srcObject = null;
   }
+
+  // [v14.1] Hardening iOS/WebView: ép thuộc tính autoplay-friendly TRƯỚC khi attach stream.
+  // iOS chỉ tự phát video khi `muted` là PROPERTY (không chỉ attribute) + playsInline. Thiếu → video paused → màn đen.
+  try {
+    videoEl.muted = true;
+    videoEl.defaultMuted = true;
+    videoEl.playsInline = true;
+    videoEl.setAttribute('muted', '');
+    videoEl.setAttribute('autoplay', '');
+    videoEl.setAttribute('playsinline', '');
+    videoEl.setAttribute('webkit-playsinline', '');
+  } catch (_) {}
 
   // [v13.13] Relax constraints: facingMode `ideal` (không `exact`) + fallback `video:true`
   let stream;
@@ -70,9 +88,7 @@ async function _openCam(videoEl) {
 
   videoEl.srcObject = stream;
 
-  // [v13.13] FIX BUG CHÍNH: tránh race condition onloadedmetadata
-  // Bug cũ: nếu metadata đã load TRƯỚC khi set handler → Promise hang forever → camera đen.
-  // Fix: check readyState trước, dùng addEventListener once + timeout 5s phòng treo.
+  // [v13.13] Tránh race condition onloadedmetadata (timeout 5s phòng treo)
   if (videoEl.readyState < 1) {
     await new Promise((resolve, reject) => {
       const tid = setTimeout(() => reject(new Error('cam-timeout-metadata')), 5000);
@@ -86,6 +102,16 @@ async function _openCam(videoEl) {
   } catch (e) {
     await new Promise(r => setTimeout(r, 150));
     try { await videoEl.play(); } catch(_) {}
+  }
+
+  // [v14.1] Nếu autoplay bị chặn (iOS Low Power Mode / một số WebView) → play() xong nhưng video VẪN paused → màn đen câm.
+  // Gắn handler: chạm vào vùng camera sẽ play() trong user-gesture (luôn được phép). Caller hiện hướng dẫn nếu còn paused.
+  if (videoEl.paused) {
+    const tapTarget = videoEl.closest('.ns-face-stage') || videoEl;
+    const _tapPlay = () => { videoEl.play().catch(() => {}); };
+    tapTarget.addEventListener('click', _tapPlay);
+    tapTarget.addEventListener('touchstart', _tapPlay, { passive: true });
+    await new Promise(r => setTimeout(r, 250)); // cho iOS 1 nhịp tự phát nếu được
   }
 
   // [v13.13] Verify track còn active sau khi play
@@ -153,7 +179,7 @@ function _buildStage(containerEl, prefix) {
   containerEl.innerHTML = `
     <div class="ns-face-stage" id="${prefix}-stage">
       <div class="ns-face-cam">
-        <video id="${prefix}-video" autoplay muted playsinline></video>
+        <video id="${prefix}-video" autoplay muted playsinline webkit-playsinline></video>
       </div>
       <div class="ns-face-cam-overlay">
         <div class="ns-face-cam-check" id="${prefix}-check">
@@ -324,8 +350,10 @@ async function _startEnrollmentFlow() {
   if (!ok) { _setInstruction('fe', 'Lỗi tải máy quét'); return; }
 
   const video = document.getElementById('fe-video');
+  if (_isInAppBrowser()) _setInstruction('fe', 'Nên mở bằng Safari/Chrome — camera dễ bị đen khi mở trong Zalo/Facebook');
   try {
     _enrollStream = await _openCam(video);
+    if (video.paused) _setInstruction('fe', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
     // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
     const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
@@ -462,8 +490,10 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
   if (!ok) { _setSubstatus('fv', 'Lỗi tải máy quét', 'err'); return; }
 
   const video = document.getElementById('fv-video');
+  if (_isInAppBrowser()) _setSubstatus('fv', 'Nên mở bằng Safari/Chrome — camera dễ đen trong Zalo/Facebook', 'err');
   try {
     _verifyStream = await _openCam(video);
+    if (video.paused) _setInstruction('fv', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
     // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
     const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
