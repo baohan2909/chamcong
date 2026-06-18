@@ -2600,9 +2600,11 @@
 .bgql-ms-r .bgql-act {
   flex: 1 1 calc(50% - 3px);
   min-width: 0;
-  padding: 10px 12px;
+  box-sizing: border-box;
+  padding: 11px 12px;
   font-size: 13px;
   white-space: nowrap;
+  text-align: center;
 }
 .bgql-ms-r .bgql-act * { pointer-events: none; }
 
@@ -3463,5 +3465,5 @@ body.nvai-active #bottom-nav { display: none !important; }
 .bgql-suvu-list.bgql-ms-on { padding-bottom: 270px; }
 
 /* [v13.95] Mọi nút bgql-act: bấm toàn vùng nút, không hiện trỏ văn bản */
-.bgql-act { user-select: none; -webkit-user-select: none; cursor: pointer; }
+.bgql-act { user-select: none; -webkit-user-select: none; cursor: pointer; box-sizing: border-box; }
 .bgql-act * { pointer-events: none; }
