@@ -2595,14 +2595,14 @@
 }
 .bgql-ms-l b { color: #DC2626; font-weight: 800; font-size: 14px; }
 .bgql-ms-r {
-  display: flex; gap: 6px; flex-wrap: wrap;
+  display: flex; gap: 6px;
 }
 .bgql-ms-r .bgql-act {
-  flex: 1 1 calc(50% - 3px);
+  flex: 1 1 0;
   min-width: 0;
   box-sizing: border-box;
-  padding: 11px 12px;
-  font-size: 13px;
+  padding: 11px 6px;
+  font-size: 12px;
   white-space: nowrap;
   text-align: center;
 }
