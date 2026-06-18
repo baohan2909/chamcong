@@ -2048,8 +2048,10 @@ window.bgqlSelectAll = function(){
 
 function bgqlRenderMultiSelectBar(){
   let bar = document.getElementById('bgql-multiselect-bar');
+  const listEl = document.getElementById('bgql-suvu-list');
   if (!bgqlMultiSelectMode) {
     if (bar) bar.remove();
+    if (listEl) listEl.classList.remove('bgql-ms-on');
     return;
   }
   if (!bar) {
@@ -2058,6 +2060,7 @@ function bgqlRenderMultiSelectBar(){
     bar.className = 'bgql-multiselect-bar';
     document.body.appendChild(bar);
   }
+  if (listEl) listEl.classList.add('bgql-ms-on');
   // [v13.68] Tổng dựa trên danh sách đã lọc (đồng bộ với Chọn tất cả)
   const cache = bgqlGetFilteredSuVu();
   const validIdSet = new Set(cache.map(s => s.id));
