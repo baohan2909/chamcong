@@ -624,31 +624,25 @@ async function taiLichSuCC(){
     window._doiSaleMap = doiMap;
 
     const loaiLabel = { VAO_CA:'Vào ca', RA_CA:'Ra ca', VAO_GIUA_CA:'Vào giữa ca', RA_GIUA_CA:'Ra giữa ca' };
-    el.innerHTML = warning + list.map(r => {
+    // [v13.99] Item 1 lần chấm (gọn, dùng bên trong nhóm)
+    const _renderCCItem = (r) => {
       const gio = r.thoi_gian ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}) : '--:--';
-      const ngayFmt = r.ngay ? r.ngay.split('-').reverse().join('/') : '';
-
       let xnBadge;
       if (_ccIsHopLe(r.xac_nhan)) {
         xnBadge = '<span style="background:#DCFCE7;color:#15803D;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">HỢP LỆ</span>';
       } else {
-        // [v10.85] Hiển thị giá trị thật trong tooltip nếu là null hoặc enum khác KHONG_HOP_LE thông thường
         const u = r.xac_nhan ? r.xac_nhan.toString().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
         const isStandard = /KHONG_?HOP_?LE/.test(u);
         const extra = isStandard ? '' : ` <span style="background:#FECACA;color:#7F1D1D;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;margin-left:3px" title="Giá trị xac_nhan thật">${escHtml(r.xac_nhan || 'NULL')}</span>`;
         xnBadge = `<span style="background:#FEE2E2;color:#B91C1C;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">KHÔNG HỢP LỆ</span>${extra}`;
       }
-
       const ttoBadge = r.trang_thai_o === 'DANG_LAM_VIEC'
         ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">ĐANG LV</span>'
         : (r.trang_thai_o === 'RA_GIUA_CA' ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">RA GIỮA</span>' : '');
       const autoTag = r.nguon === 'AUTO_CLOSE'
         ? ' <span style="background:#F3E8FF;color:#7C3AED;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700">AUTO</span>' : '';
-      // [v10.85] Hiển thị tên CH: nếu bản ghi này TẠI Đội SALE → giữ nguyên tô tím
-      //         Nếu bản ghi là CH thực + cùng ngày NV có chấm Đội SALE → prefix "Đội SALE XX - "
       const _isDoiRec = /đội\s*sale/i.test(r.ten_ch_snapshot || '');
-      const _doiKey = r.ma_nv + ':' + r.ngay;
-      const _doiTen = doiMap[_doiKey];
+      const _doiTen = doiMap[r.ma_nv + ':' + r.ngay];
       let tenCH;
       if (_isDoiRec) {
         tenCH = `<span style="color:#7C3AED;font-weight:600">${escHtml(r.ten_ch_snapshot || '')}</span>`;
@@ -657,32 +651,70 @@ async function taiLichSuCC(){
       } else {
         tenCH = escHtml(r.ten_ch_snapshot || '');
       }
-
-      const nv2 = nvMap[r.ma_nv];
-      const avatarUrl = nv2 && nv2.avatar ? nv2.avatar : '';
-      const initial = (r.ten_nv_snapshot || r.ma_nv || '?').trim().charAt(0).toUpperCase();
-      const avatarHtml = avatarUrl
-        ? `<img class="lscc-avatar" src="${escHtml(avatarUrl)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-           <div class="lscc-avatar lscc-avatar-fallback" style="display:none">${escHtml(initial)}</div>`
-        : `<div class="lscc-avatar lscc-avatar-fallback">${escHtml(initial)}</div>`;
-
       return `
-        <div class="lsd-card lscc-card" style="margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">
-          <div class="lscc-avatar-wrap">${avatarHtml}</div>
-          <div style="flex:1;min-width:0">
-            <div class="lsd-card-head">
-              <div class="lsd-card-name">${escHtml(r.ten_nv_snapshot || r.ma_nv)} <span style="font-weight:400;color:#94A3B8;font-size:11px">· ${r.ma_nv}</span></div>
-              <div>${xnBadge}${ttoBadge}</div>
-            </div>
-            <div class="lsd-card-meta">
-              <strong>${loaiLabel[r.loai] || r.loai}</strong> · ${ngayFmt} <b>${gio}</b>${autoTag} · ${tenCH}
-            </div>
-            ${r.ghi_chu ? `<div class="lsd-card-noidung">${escHtml(r.ghi_chu)}</div>` : ''}
-            <div class="lsd-card-actions">
-              <button class="lsd-btn-mini lsd-btn-sua" onclick="adm2OpenSuaLog('${r.ma_nv}','${r.ngay}','')">✎ Sửa lịch ngày này</button>
-            </div>
+        <div class="lscc-item">
+          <div class="lscc-item-main">
+            <div class="lscc-item-line"><strong>${loaiLabel[r.loai] || r.loai}</strong> <b>${gio}</b>${autoTag} · ${tenCH}</div>
+            ${r.ghi_chu ? `<div class="lsd-card-noidung" style="margin-top:4px">${escHtml(r.ghi_chu)}</div>` : ''}
           </div>
+          <div class="lscc-item-badges">${xnBadge}${ttoBadge}</div>
         </div>`;
+    };
+
+    // [v13.99] Gộp lịch sử chấm công theo NV + ngày (1 dòng/nhóm, xổ ra xem từng lần chấm)
+    const _ccOrder = []; const _ccMap = {};
+    list.forEach(r => {
+      const k = (r.ma_nv || '?') + '|' + (r.ngay || '?');
+      if (!_ccMap[k]) { _ccMap[k] = []; _ccOrder.push(k); }
+      _ccMap[k].push(r);
+    });
+    const _isAdminCC = SESSION && (SESSION.vaiTro === 'QLNS' || SESSION.vaiTro === 'ADMIN');
+
+    el.innerHTML = warning + _ccOrder.map(k => {
+      const items = _ccMap[k];
+      const r0 = items[0];
+      const maNV = r0.ma_nv || '';
+      const tenNV = r0.ten_nv_snapshot || maNV;
+      const ngay = r0.ngay || '';
+      const ngayFmt = ngay ? ngay.split('-').reverse().join('/') : '';
+      const total = items.length;
+      const nKHL = items.filter(r => !_ccIsHopLe(r.xac_nhan)).length;
+      const loaiCount = {};
+      items.forEach(r => { const l = loaiLabel[r.loai] || r.loai || '—'; loaiCount[l] = (loaiCount[l] || 0) + 1; });
+      const chips = Object.keys(loaiCount).map(l =>
+        `<span class="lsd-gchip">${escHtml(l)}${loaiCount[l] > 1 ? ' ×' + loaiCount[l] : ''}</span>`).join('');
+      const gBadge = nKHL > 0
+        ? `<span class="lsd-gbadge lsd-gbadge-no">${nKHL} không hợp lệ</span>`
+        : `<span class="lsd-gbadge lsd-gbadge-ok">Hợp lệ</span>`;
+      const nv2 = nvMap[maNV];
+      const avatarUrl = nv2 && nv2.avatar ? nv2.avatar : '';
+      const initial = (tenNV || maNV || '?').trim().charAt(0).toUpperCase();
+      const avatarHtml = avatarUrl
+        ? `<img class="lscc-avatar" src="${escHtml(avatarUrl)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="lscc-avatar lscc-avatar-fallback" style="display:none">${escHtml(initial)}</div>`
+        : `<div class="lscc-avatar lscc-avatar-fallback">${escHtml(initial)}</div>`;
+      const gid = 'lscg_' + k.replace(/[^a-zA-Z0-9]/g, '_');
+      const gAction = _isAdminCC
+        ? `<div class="lsd-group-actions"><button class="lsd-btn-mini lsd-btn-sua" onclick="event.stopPropagation();adm2OpenSuaLog('${maNV}','${ngay}','')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1.5px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa lịch ngày này</button></div>`
+        : '';
+      return `
+      <div class="lsd-group lscc-group" id="${gid}_wrap">
+        <div class="lsd-group-head" onclick="_lsdToggleGroup('${gid}')">
+          <div class="lscc-avatar-wrap">${avatarHtml}</div>
+          <div class="lsd-group-main">
+            <div class="lsd-group-name">${escHtml(tenNV)} <span class="lsd-group-nv">${escHtml(maNV)}</span></div>
+            <div class="lsd-group-meta">${ngayFmt} · ${total} lần chấm</div>
+            <div class="lsd-group-chips">${chips}</div>
+          </div>
+          <div class="lsd-group-right">
+            ${gBadge}
+            <svg class="lsd-group-caret" id="${gid}_caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        ${gAction}
+        <div class="lsd-group-body" id="${gid}_body" style="display:none">
+          ${items.map(_renderCCItem).join('')}
+        </div>
+      </div>`;
     }).join('');
     if (typeof _lscUpdateActiveCard === 'function') _lscUpdateActiveCard();
   } catch (e) {

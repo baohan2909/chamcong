@@ -1374,6 +1374,17 @@ async function adm2LoadSuaLogBody() {
     const d = await adm2Rpc('fn_admin_get_logs_ngay', { p_ma_nv: _suaLogState.maNV, p_ngay: _suaLogState.ngay });
     const logs = (d && d.logs) || [];
     const cbs  = (d && d.cb)   || [];
+    // [v14.0] Lấy cảnh báo kèm giờ chấm → gắn lỗi vào từng lần chấm (map theo giờ HH:MM)
+    let cbByGio = {};
+    try {
+      const { data: cbRows } = await supa.from('canh_bao')
+        .select('id, gio_chamcong, loai_canh_bao, trang_thai')
+        .eq('ma_nv', _suaLogState.maNV).eq('ngay', _suaLogState.ngay);
+      (cbRows || []).forEach(cb => {
+        const g = cb.gio_chamcong ? String(cb.gio_chamcong).substring(0,5) : '';
+        if (g) { (cbByGio[g] = cbByGio[g] || []).push(cb); }
+      });
+    } catch (e) {}
     const LOAI_OPTIONS = ['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'];
     const LOAI_TEXT = {'VAO_CA':'Vào ca','RA_GIUA_CA':'Ra giữa ca','VAO_GIUA_CA':'Vào giữa ca','RA_CA':'Ra ca'};
 
@@ -1403,12 +1414,21 @@ async function adm2LoadSuaLogBody() {
             chHtml = adm2Esc(l.tenCH);
           }
         }
+        const _gioKey = (l.gio || '').toString().substring(0,5);
+        const _logCbs = cbByGio[_gioKey] || [];
+        const cbBadges = _logCbs.map(cb => {
+          const tt = cb.trang_thai;
+          const c  = tt==='DA_DUYET' ? '#15803D' : tt==='TU_CHOI' ? '#B91C1C' : '#B45309';
+          const bg = tt==='DA_DUYET' ? '#DCFCE7' : tt==='TU_CHOI' ? '#FEE2E2' : '#FEF3C7';
+          return `<span style="display:inline-block;padding:2px 8px;border-radius:5px;background:${bg};color:${c};font-size:10.5px;font-weight:700;margin:3px 4px 0 0">${adm2Esc(cb.loai_canh_bao || '')}</span>`;
+        }).join('');
         return `
         <div class="adm2-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#F9FAFB;margin-bottom:8px;border-radius:8px;border:1px solid #E5E7EB">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div style="flex:1;min-width:200px">
               <div style="font-weight:600;font-size:13px">${l.loaiText} · ${l.gio}</div>
               <div style="font-size:11px;color:#6B7280">${chHtml} · ${l.xacNhan} · ${l.soCB} CB</div>
+              ${cbBadges ? `<div style="margin-top:2px">${cbBadges}</div>` : ''}
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
               <input type="time" id="sua-gio-${l.id}" value="${l.gio}" style="padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
@@ -2176,11 +2196,41 @@ async function adm2DuyetAllCanhBao() {
 // ═══════════════════════════════════════════════════════════════════
 // [v10.86] CHUYỂN ĐỔI MÃ NV (CTV → NS)
 // ═══════════════════════════════════════════════════════════════════
+// [v13.99] Hướng chuyển đổi: 'CTV_NV' (mặc định) hoặc 'NV_CTV'. Logic chuyển/khóa mã giữ nguyên — chỉ đổi nhãn để rõ nghĩa.
+let cdmHuong = 'CTV_NV';
+function cdmSetHuong(h){
+  cdmHuong = h;
+  const isCtvNv = (h === 'CTV_NV');
+  const b1 = document.getElementById('cdm-huong-ctvnv');
+  const b2 = document.getElementById('cdm-huong-nvctv');
+  if (b1) b1.classList.toggle('active', isCtvNv);
+  if (b2) b2.classList.toggle('active', !isCtvNv);
+  const roleCu = isCtvNv ? 'CTV' : 'Nhân viên';
+  const roleMoi = isCtvNv ? 'Nhân viên' : 'CTV';
+  const lblCu = document.getElementById('cdm-lbl-cu');
+  const lblMoi = document.getElementById('cdm-lbl-moi');
+  if (lblCu) lblCu.textContent = 'MÃ CŨ (' + roleCu + ')';
+  if (lblMoi) lblMoi.textContent = 'MÃ MỚI (' + roleMoi + ')';
+  const fFrom = document.getElementById('cdm-flow-from');
+  const fTo = document.getElementById('cdm-flow-to');
+  if (fFrom) fFrom.textContent = isCtvNv ? 'Cộng tác viên' : 'Nhân viên';
+  if (fTo) fTo.textContent = isCtvNv ? 'Nhân viên' : 'Cộng tác viên';
+  const cuInp = document.getElementById('cdm-cu-inp');
+  const moiInp = document.getElementById('cdm-moi-inp');
+  if (cuInp) cuInp.placeholder = 'Gõ mã hoặc tên ' + roleCu + ' (mã cũ)...';
+  if (moiInp) moiInp.placeholder = 'Gõ mã hoặc tên ' + roleMoi + ' (mã mới, đã đồng bộ Sheet)...';
+  const lydo = document.getElementById('cdm-lydo');
+  if (lydo) lydo.placeholder = isCtvNv
+    ? 'VD: CTV ký HĐ chính thức tháng 6/2026...'
+    : 'VD: Chuyển nhân viên sang cộng tác viên tháng 6/2026...';
+}
+
 function cdmInit(){
   if (typeof _lsdLoadNVList === 'function' && !_lsdNVList) {
     _lsdLoadNVList().catch(()=>{});
   }
   cdmReset();
+  if (typeof cdmSetHuong === 'function') cdmSetHuong(cdmHuong || 'CTV_NV');
 }
 
 function cdmReset(){
