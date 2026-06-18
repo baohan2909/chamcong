@@ -2532,3 +2532,24 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .ko-stat-green .ko-stat-num { color: #fff; }
 .ko-stat-lbl { font-size: 12px; color: #64748B; margin-top: 5px; }
 .ko-stat-green .ko-stat-lbl { color: rgba(255,255,255,.85); }
+
+/* [v13.98] GỘP cảnh báo chấm công theo NV + ngày — 1 dòng/nhóm */
+.lsd-group { background:#fff; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:10px; overflow:hidden; }
+.lsd-group-head { display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer; user-select:none; -webkit-user-select:none; }
+.lsd-group-head:active { background:#F9FAFB; }
+.lsd-group-main { flex:1; min-width:0; }
+.lsd-group-name { font-size:14px; font-weight:700; color:#0F172A; }
+.lsd-group-nv { font-size:11px; font-weight:400; color:#94A3B8; margin-left:2px; }
+.lsd-group-meta { font-size:12px; color:#64748B; margin-top:2px; }
+.lsd-group-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.lsd-gchip { display:inline-block; padding:3px 8px; border-radius:6px; background:#F1F5F9; color:#475569; font-size:11px; font-weight:600; white-space:nowrap; }
+.lsd-group-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.lsd-gbadge { display:inline-flex; align-items:center; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
+.lsd-gbadge-wait { background:#FEF3C7; color:#92400E; }
+.lsd-gbadge-ok   { background:#DCF3E8; color:#0F6E56; }
+.lsd-gbadge-no   { background:#FEE2E2; color:#B91C1C; }
+.lsd-group-caret { color:#94A3B8; transition:transform .2s ease; flex-shrink:0; }
+.lsd-group-actions { display:flex; gap:8px; padding:0 14px 12px; }
+.lsd-group-actions .lsd-btn-mini { flex:1; justify-content:center; box-sizing:border-box; }
+.lsd-group-body { border-top:1px solid #F1F5F9; padding:10px 12px; background:#FBFCFD; display:flex; flex-direction:column; gap:8px; }
+.lsd-group-body .lsd-card { margin-bottom:0; }

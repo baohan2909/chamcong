@@ -1029,6 +1029,54 @@ function _lsdUpdateActiveStat(currentStatus){
   }
 }
 
+// [v13.98] Xổ/thu nhóm cảnh báo (gộp theo NV+ngày)
+function _lsdToggleGroup(gid){
+  const body = document.getElementById(gid + '_body');
+  const caret = document.getElementById(gid + '_caret');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (caret) caret.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+// [v13.98] Duyệt cả nhóm (mọi cảnh báo chờ duyệt của 1 NV trong 1 ngày)
+async function adm2DuyetNhom(maNV, ngay){
+  const list = window._lsdCachedList || [];
+  const isPend = (r) => (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH');
+  const pend = list.filter(r => (r.maNV || r.ma_nv) === maNV && r.ngay === ngay && isPend(r));
+  if (!pend.length) { showToast('Nhóm không còn cảnh báo chờ duyệt.', 'err'); return; }
+  // Còn lỗi SAI CA / THIẾU CA chưa sửa giờ → bắt sửa lịch trước
+  const needFix = pend.filter(r => r.loaiCB === 'SAI CA' || r.loaiCB === 'THIẾU CA');
+  if (needFix.length) {
+    showToast('Còn ' + needFix.length + ' lỗi SAI/THIẾU CA cần sửa giờ trước. Mở sửa lịch…', 'err');
+    if (typeof adm2OpenSuaLog === 'function') adm2OpenSuaLog(maNV, ngay, needFix[0].id);
+    return;
+  }
+  const ten = pend[0].tenNV || maNV;
+  const ngP = (ngay || '').split('-');
+  const ngayFmt = ngP.length === 3 ? ngP[2] + '/' + ngP[1] + '/' + ngP[0] : ngay;
+  const ok = await appConfirm(
+    'Duyệt tất cả ' + pend.length + ' cảnh báo của ' + ten + ' ngày ' + ngayFmt + '?',
+    { title: 'Duyệt nhóm', okLabel: 'Duyệt' }
+  );
+  if (!ok) return;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const ids = pend.map(r => r.id).filter(id => id && uuidRegex.test(String(id)));
+  if (!ids.length) { showToast('Không có ID hợp lệ để duyệt.', 'err'); return; }
+  supa.rpc('fn_duyet_batch', {
+    p_loai: 'GIAI_TRINH', p_quyet_dinh: 'Duyệt',
+    p_ma_nguoi_duyet: SESSION.ma, p_ids: ids, p_ghi_chu_qlns: null
+  }).then(({ data: res, error }) => {
+    if (!error && res && res.success) {
+      const c = res.count || 0;
+      showToast('✓ Đã duyệt ' + c + '/' + ids.length + ' cảnh báo.', c < ids.length ? 'err' : 'ok');
+      if (typeof taiLichSuDuyet === 'function') taiLichSuDuyet();
+    } else {
+      showToast((res && res.error) || (error && error.message) || 'Lỗi duyệt nhóm.', 'err');
+    }
+  }).catch(() => showToast('Lỗi kết nối khi duyệt nhóm.', 'err'));
+}
+
 async function taiLichSuDuyet(){
   const listEl = document.getElementById('lsd-list');
   if (!listEl) return;
@@ -1166,7 +1214,8 @@ async function taiLichSuDuyet(){
       return;
     }
 
-    listEl.innerHTML = list.map(r => {
+    const _isPendCB = (r) => (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH');
+    const _renderCBItem = (r) => {
       const ngayParts = (r.ngay||'').split('-');
       const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
       const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
@@ -1225,6 +1274,66 @@ async function taiLichSuDuyet(){
           <span>${gioDuyet}</span>
         </div>
         ${actionBtn}
+      </div>`;
+    };
+
+    // [v13.98] GỘP cảnh báo theo NV + ngày: 1 dòng/nhóm, xổ ra xem chi tiết.
+    // Giữ thứ tự list (đã sort mới→cũ) → nhóm có cảnh báo mới nhất nằm trên đầu.
+    const _grpOrder = []; const _grpMap = {};
+    list.forEach(r => {
+      const k = (r.maNV || r.ma_nv || '?') + '|' + (r.ngay || '?');
+      if (!_grpMap[k]) { _grpMap[k] = []; _grpOrder.push(k); }
+      _grpMap[k].push(r);
+    });
+    const _isAdminG = SESSION && (SESSION.vaiTro === 'QLNS' || SESSION.vaiTro === 'ADMIN');
+
+    listEl.innerHTML = _grpOrder.map(k => {
+      const items = _grpMap[k];
+      const r0 = items[0];
+      const maNV = r0.maNV || r0.ma_nv || '';
+      const tenNV = r0.tenNV || maNV;
+      const ngay = r0.ngay || '';
+      const ngP = ngay.split('-');
+      const ngayFmt = ngP.length === 3 ? ngP[2] + '/' + ngP[1] + '/' + ngP[0] : ngay;
+      // Đếm theo loại lỗi → chip
+      const loaiCount = {};
+      items.forEach(r => { const l = r.loaiCB || '—'; loaiCount[l] = (loaiCount[l] || 0) + 1; });
+      const chips = Object.keys(loaiCount).map(l =>
+        `<span class="lsd-gchip">${escHtml(l)}${loaiCount[l] > 1 ? ' ×' + loaiCount[l] : ''}</span>`).join('');
+      // Trạng thái tổng của nhóm
+      const nPend = items.filter(_isPendCB).length;
+      const nDuyet = items.filter(r => r.trangThai === 'DA_DUYET').length;
+      const nTuChoi = items.filter(r => r.trangThai === 'TU_CHOI').length;
+      const total = items.length;
+      let gBadge;
+      if (nPend > 0) gBadge = `<span class="lsd-gbadge lsd-gbadge-wait">${nPend} chờ duyệt</span>`;
+      else if (nTuChoi === total) gBadge = `<span class="lsd-gbadge lsd-gbadge-no">Đã từ chối</span>`;
+      else if (nTuChoi > 0) gBadge = `<span class="lsd-gbadge lsd-gbadge-ok">Đã xử lý</span>`;
+      else gBadge = `<span class="lsd-gbadge lsd-gbadge-ok">Đã duyệt</span>`;
+      const gid = 'lsdg_' + k.replace(/[^a-zA-Z0-9]/g, '_');
+      // Nút cấp nhóm (chỉ khi còn cảnh báo chờ duyệt)
+      const gActions = (_isAdminG && nPend > 0) ? `
+        <div class="lsd-group-actions">
+          <button class="lsd-btn-mini lsd-btn-sua" onclick="event.stopPropagation();adm2OpenSuaLog('${maNV}','${ngay}','${r0.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1.5px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa lịch</button>
+          <button class="lsd-btn-mini lsd-btn-duyet" onclick="event.stopPropagation();adm2DuyetNhom('${maNV}','${ngay}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Duyệt nhóm</button>
+        </div>` : '';
+      return `
+      <div class="lsd-group" id="${gid}_wrap">
+        <div class="lsd-group-head" onclick="_lsdToggleGroup('${gid}')">
+          <div class="lsd-group-main">
+            <div class="lsd-group-name">${escHtml(tenNV)} <span class="lsd-group-nv">${escHtml(maNV)}</span></div>
+            <div class="lsd-group-meta">${ngayFmt} · ${total} cảnh báo</div>
+            <div class="lsd-group-chips">${chips}</div>
+          </div>
+          <div class="lsd-group-right">
+            ${gBadge}
+            <svg class="lsd-group-caret" id="${gid}_caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        ${gActions}
+        <div class="lsd-group-body" id="${gid}_body" style="display:none">
+          ${items.map(_renderCBItem).join('')}
+        </div>
       </div>`;
     }).join('');
     // [v10.85] Reset opacity sau khi render thành công
