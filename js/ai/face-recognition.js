@@ -49,6 +49,23 @@ async function nsFaceEnsureLoaded() {
   }
 }
 
+// [v14.3] Nhận diện trình duyệt (rút gọn) để hiển thị khi camera lỗi → biết môi trường thật.
+function _briefUA(){
+  const ua = navigator.userAgent || '';
+  if (/Zalo/i.test(ua)) return 'Zalo';
+  if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return 'Facebook';
+  if (/Messenger/i.test(ua)) return 'Messenger';
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/Line\//i.test(ua)) return 'Line';
+  if (/CriOS/i.test(ua)) return 'Chrome (iOS)';
+  if (/FxiOS/i.test(ua)) return 'Firefox (iOS)';
+  if (/EdgiOS/i.test(ua)) return 'Edge (iOS)';
+  if (/iPhone|iPad/i.test(ua) && /Safari/i.test(ua)) return 'Safari (iOS)';
+  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
+  if (/Chrome/i.test(ua)) return 'Chrome';
+  return 'trình duyệt khác';
+}
+
 // [v14.1] Phát hiện trình duyệt trong app (Zalo/Facebook/Messenger/Instagram...) — WebView hay làm camera đen.
 function _isInAppBrowser(){
   const ua = (navigator.userAgent || '');
@@ -90,16 +107,32 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // [v13.13] Relax constraints + [v14.2] retry khi camera bận (NotReadableError)
-  let stream;
-  try {
-    stream = await _tryGUM({
-      video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
-      audio: false
-    }, 1);
-  } catch (e1) {
-    // Một số Android cũ không có front cam → thử bất kỳ camera nào
-    stream = await _tryGUM({ video: true, audio: false }, 1);
+  // [v13.13] Relax constraints + [v14.2] retry bận + [v14.3] enumerate deviceId fallback
+  let stream, gumErr;
+  const _attempts = [
+    { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+    { video: true, audio: false }
+  ];
+  for (const c of _attempts) {
+    try { stream = await _tryGUM(c, 1); break; } catch (e) { gumErr = e; }
+  }
+  // Nếu cấu hình chuẩn fail → liệt kê thiết bị, thử mở từng camera theo deviceId (cứu máy bị sai constraint)
+  if (!stream) {
+    let camCount = null;
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const cams = devs.filter(d => d.kind === 'videoinput');
+      camCount = cams.length;
+      for (const cam of cams) {
+        try { stream = await _tryGUM({ video: { deviceId: { exact: cam.deviceId } }, audio: false }, 0); break; }
+        catch (e) { gumErr = e; }
+      }
+    } catch (e) { gumErr = gumErr || e; }
+    if (!stream) {
+      const er = gumErr || new Error('cam-none');
+      try { er._camCount = camCount; } catch (_) {}
+      throw er;
+    }
   }
 
   videoEl.srcObject = stream;
@@ -382,7 +415,8 @@ async function _startEnrollmentFlow() {
     } else if (isBusy) {
       _setInstruction('fe', 'Camera đang bị app khác dùng — đóng hẳn Zalo/Camera/FaceTime rồi bấm "Thử lại"');
     } else if (isNone) {
-      _setInstruction('fe', 'Không tìm thấy camera trên máy này');
+      const cnt = (e && e._camCount != null) ? e._camCount : '?';
+      _setInstruction('fe', 'Trình duyệt "' + _briefUA() + '" không cấp camera quét mặt (thấy ' + cnt + ' camera). Nếu mở trong Zalo/Facebook, hãy mở bằng Safari/Chrome');
     } else {
       _setInstruction('fe', 'Không mở được camera (' + (nm || 'không rõ') + (msg ? ': ' + msg : '') + ') — bấm "Thử lại"');
     }
@@ -536,8 +570,9 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
       _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
       _addFallbackBtn();
     } else if (isNone) {
-      _setInstruction('fv', 'Không tìm thấy camera trên máy này');
-      _setSubstatus('fv', 'Chấm công bằng ảnh tay bên dưới', 'err');
+      const cnt = (e && e._camCount != null) ? e._camCount : '?';
+      _setInstruction('fv', 'Trình duyệt không cấp camera để quét mặt');
+      _setSubstatus('fv', 'Đang chạy trên: ' + _briefUA() + ' (thấy ' + cnt + ' camera). Nếu đang mở trong Zalo/Facebook, hãy mở app bằng Safari/Chrome để quét mặt. Tạm thời chấm bằng ảnh tay bên dưới.', 'err');
       _addFallbackBtn();
     } else {
       _setInstruction('fv', 'Không mở được camera');
