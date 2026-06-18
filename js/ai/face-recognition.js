@@ -55,6 +55,22 @@ function _isInAppBrowser(){
   return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Zalo|MicroMessenger|Line\/|Messenger|GSA\//i.test(ua);
 }
 
+// [v14.2] getUserMedia có retry cho lỗi camera bận (NotReadableError/TrackStartError/AbortError) —
+// thường do app khác (Zalo call, Camera, FaceTime) vừa dùng camera và nhả ra chậm.
+async function _tryGUM(constraints, retries){
+  let last;
+  for (let i = 0; i <= retries; i++) {
+    try { return await navigator.mediaDevices.getUserMedia(constraints); }
+    catch (e) {
+      last = e;
+      const busy = e && (e.name === 'NotReadableError' || e.name === 'TrackStartError' || e.name === 'AbortError');
+      if (busy && i < retries) { await new Promise(r => setTimeout(r, 600)); continue; }
+      throw e;
+    }
+  }
+  throw last;
+}
+
 async function _openCam(videoEl) {
   // [v13.13] Stop stream cũ trên element nếu còn — tránh leak/conflict
   if (videoEl.srcObject) {
@@ -74,16 +90,16 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // [v13.13] Relax constraints: facingMode `ideal` (không `exact`) + fallback `video:true`
+  // [v13.13] Relax constraints + [v14.2] retry khi camera bận (NotReadableError)
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
+    stream = await _tryGUM({
       video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
       audio: false
-    });
+    }, 1);
   } catch (e1) {
     // Một số Android cũ không có front cam → thử bất kỳ camera nào
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    stream = await _tryGUM({ video: true, audio: false }, 1);
   }
 
   videoEl.srcObject = stream;
@@ -355,14 +371,22 @@ async function _startEnrollmentFlow() {
     _enrollStream = await _openCam(video);
     if (video.paused) _setInstruction('fe', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
-    // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
-    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
+    // [v14.2] Phân loại chi tiết + hiện mã lỗi để chẩn đoán
+    const nm = (e && e.name) || '';
+    const msg = (e && e.message) || '';
+    const isPerm = nm === 'NotAllowedError' || nm === 'PermissionDeniedError' || /denied|permission/i.test(msg);
+    const isBusy = nm === 'NotReadableError' || nm === 'TrackStartError' || /in use|busy|could not start|starting video/i.test(msg);
+    const isNone = nm === 'NotFoundError' || nm === 'DevicesNotFoundError' || /not found|no.*device|requested device/i.test(msg);
     if (isPerm) {
-      _setInstruction('fe', 'Cần cấp quyền camera');
+      _setInstruction('fe', 'Cần cấp quyền camera — vào Cài đặt cho phép rồi bấm "Thử lại"');
+    } else if (isBusy) {
+      _setInstruction('fe', 'Camera đang bị app khác dùng — đóng hẳn Zalo/Camera/FaceTime rồi bấm "Thử lại"');
+    } else if (isNone) {
+      _setInstruction('fe', 'Không tìm thấy camera trên máy này');
     } else {
-      _setInstruction('fe', 'Không mở được camera — bấm "Thử lại"');
-      _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
+      _setInstruction('fe', 'Không mở được camera (' + (nm || 'không rõ') + (msg ? ': ' + msg : '') + ') — bấm "Thử lại"');
     }
+    if (!isNone) _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
     return;
   }
 
@@ -495,13 +519,29 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
     _verifyStream = await _openCam(video);
     if (video.paused) _setInstruction('fv', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
-    // [v13.13] Phân biệt lỗi quyền vs lỗi khởi tạo
-    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
+    // [v14.2] Phân loại chi tiết + hiện mã lỗi để chẩn đoán đúng máy
+    const nm = (e && e.name) || '';
+    const msg = (e && e.message) || '';
+    const isPerm = nm === 'NotAllowedError' || nm === 'PermissionDeniedError' || /denied|permission/i.test(msg);
+    const isBusy = nm === 'NotReadableError' || nm === 'TrackStartError' || /in use|busy|could not start|starting video/i.test(msg);
+    const isNone = nm === 'NotFoundError' || nm === 'DevicesNotFoundError' || /not found|no.*device|requested device/i.test(msg);
     if (isPerm) {
-      _setSubstatus('fv', 'Cần cấp quyền camera', 'err');
+      _setInstruction('fv', 'Cần cấp quyền camera');
+      _setSubstatus('fv', 'Vào Cài đặt → cho phép camera, rồi bấm "Thử lại"', 'err');
+      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
+      _addFallbackBtn();
+    } else if (isBusy) {
+      _setInstruction('fv', 'Camera đang bị ứng dụng khác dùng');
+      _setSubstatus('fv', 'Đóng hẳn Zalo/Camera/FaceTime (vuốt tắt app), rồi bấm "Thử lại"', 'err');
+      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
+      _addFallbackBtn();
+    } else if (isNone) {
+      _setInstruction('fv', 'Không tìm thấy camera trên máy này');
+      _setSubstatus('fv', 'Chấm công bằng ảnh tay bên dưới', 'err');
+      _addFallbackBtn();
     } else {
       _setInstruction('fv', 'Không mở được camera');
-      _setSubstatus('fv', 'Bấm "Thử lại" hoặc chấm công bằng ảnh tay', 'err');
+      _setSubstatus('fv', 'Mã lỗi: ' + (nm || 'không rõ') + (msg ? ' · ' + msg : '') + ' — bấm "Thử lại" hoặc chấm bằng ảnh tay', 'err');
       _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
       _addFallbackBtn();
     }
