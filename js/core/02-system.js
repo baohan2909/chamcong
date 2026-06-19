@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v14.6',
+  'sys.cache_version': 'v14.7',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1042,12 +1042,26 @@ function _laDoiSale(tenCH){
   return t.startsWith('đội sale') || t.startsWith('doi sale');
 }
 
+// [v14.7] CƠ ĐỘNG — vị trí di động, 1 ngày làm nhiều CH. Giống Đội SALE (phải nhập CH thực để
+// check GPS) NHƯNG được check-in/out KHÁC cửa hàng vẫn tính giờ (xử lý ở fn_tong_hop_ngay qua
+// cột nguon='CO_DONG'). Sai vị trí GPS thì vẫn báo như nhân viên thường.
+function _laCoDong(tenCH, maCH){
+  if (maCH && String(maCH).trim().toUpperCase() === 'CODONG') return true;
+  if (!tenCH) return false;
+  const t = tenCH.trim().toLowerCase();
+  return t.startsWith('cơ động') || t.startsWith('co dong');
+}
+// Vị trí di động = Đội SALE hoặc Cơ Động → đều cần ô nhập CH thực tế
+function _laViTriDiDong(tenCH, maCH){
+  return _laDoiSale(tenCH) || _laCoDong(tenCH, maCH);
+}
+
 function _capNhatUISaleTarget(tenCH){
   const card = document.getElementById('card-sale-target');
   const inp = document.getElementById('input-sale-target-display');
   const hid = document.getElementById('sel-sale-target');
   if (!card) return;
-  if (_laDoiSale(tenCH)){
+  if (_laViTriDiDong(tenCH)){
     card.style.display = 'block';
   } else {
     card.style.display = 'none';
@@ -1066,8 +1080,8 @@ function onSaleTargetInput(){
     if (!inp || !list) return;
     const q = inp.value.trim().toLowerCase();
     const src = (typeof CH_LIST !== 'undefined' && CH_LIST) ? CH_LIST : [];
-    // Loại bỏ các Đội SALE khỏi gợi ý
-    const candidates = src.filter(ch => !_laDoiSale(ch.ten));
+    // Loại bỏ các vị trí di động (Đội SALE + Cơ Động) khỏi gợi ý CH thực
+    const candidates = src.filter(ch => !_laViTriDiDong(ch.ten, ch.ma));
     let matched;
     if (!q){
       matched = candidates.slice(0, 8);
@@ -1480,9 +1494,9 @@ function updateSubmitBtn(){
   if(state.submitted)return;
   const maCH=document.getElementById('sel-cuahang').value;
   if(!maCH)       {setBtn('s-disabled','Chọn cửa hàng trước');return;}
-  // [v10.85 YC#8] Nếu CH chọn là Đội SALE → phải chọn thêm CH thực tế
+  // [v10.85 YC#8] Nếu CH chọn là vị trí di động (Đội SALE / Cơ Động) → phải chọn thêm CH thực tế
   const tenCHHien = document.getElementById('input-ch-display').value || '';
-  if (_laDoiSale(tenCHHien)){
+  if (_laViTriDiDong(tenCHHien)){
     const targetMa = document.getElementById('sel-sale-target').value;
     if (!targetMa){ setBtn('s-disabled','Chọn CH thực tế đang đến'); return; }
   }
@@ -1679,12 +1693,14 @@ function _doSubmitFinal(){
   //   Lưu tên Đội SALE gốc + đổi maCH sang CH thực tế.
   let _saleOriginMa = '';
   let _saleOriginTen = '';
-  if (typeof _laDoiSale === 'function' && _laDoiSale(tenCHDisplay)){
+  let _isCoDong = false;  // [v14.7] đánh dấu Cơ Động → ghi nguon='CO_DONG'
+  if (typeof _laViTriDiDong === 'function' && _laViTriDiDong(tenCHDisplay, maCH)){
     const tgMa = document.getElementById('sel-sale-target').value;
     const tgTen = document.getElementById('input-sale-target-display').value;
     if (tgMa){
       _saleOriginMa = maCH;
       _saleOriginTen = tenCHDisplay;
+      _isCoDong = (typeof _laCoDong === 'function') && _laCoDong(tenCHDisplay, maCH);
       maCH = tgMa;  // đổi sang CH thực tế để backend check GPS theo LAT/LNG đúng
     }
   }
@@ -1784,7 +1800,8 @@ function _doSubmitFinal(){
       p_anh_path: anhPath,
       p_truong_ca: !!truongCa,
       p_idempotency_key: idemKey,
-      p_device_info: _deviceInfo
+      p_device_info: _deviceInfo,
+      p_nguon: _isCoDong ? 'CO_DONG' : null
     });
     if (error) {
       console.error('CC error:', error);
