@@ -2016,6 +2016,18 @@ window.bgqlToggleMultiSelect = function(){
   bgqlRenderMultiSelectBar();
 };
 
+// [v15.2] Thoát chế độ chọn-nhiều + DỌN SẠCH thanh fixed. Gọi khi rời trang để thanh không
+// còn lơ lửng (ghost) đè lên trang khác và làm các nút bấm không ăn.
+window.bgqlForceExitMultiSelect = function(){
+  bgqlMultiSelectMode = false;
+  bgqlSelectedIds = new Set();
+  bgqlDeleteArmed = false;
+  if (bgqlDeleteArmTimer) { clearTimeout(bgqlDeleteArmTimer); bgqlDeleteArmTimer = null; }
+  document.querySelectorAll('#bgql-multiselect-bar').forEach(el => el.remove());
+  const listEl = document.getElementById('bgql-suvu-list');
+  if (listEl) listEl.classList.remove('bgql-ms-on');
+};
+
 window.bgqlToggleSelect = function(id){
   if (bgqlSelectedIds.has(id)) bgqlSelectedIds.delete(id);
   else bgqlSelectedIds.add(id);
@@ -2047,6 +2059,9 @@ window.bgqlSelectAll = function(){
 };
 
 function bgqlRenderMultiSelectBar(){
+  // [v15.2] Đảm bảo chỉ tồn tại 1 thanh — xóa mọi thanh trùng còn sót
+  const _bars = document.querySelectorAll('#bgql-multiselect-bar');
+  for (let i = 1; i < _bars.length; i++) _bars[i].remove();
   let bar = document.getElementById('bgql-multiselect-bar');
   const listEl = document.getElementById('bgql-suvu-list');
   if (!bgqlMultiSelectMode) {

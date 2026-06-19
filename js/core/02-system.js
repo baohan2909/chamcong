@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v15.1',
+  'sys.cache_version': 'v15.2',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -382,6 +382,9 @@ function _chanQuanLyNS(){
 
 function goToPage(page){
   currentPage=page;
+  // [v15.2] Rời trang → dọn thanh "chọn nhiều" của Bàn giao (thanh fixed, nếu không dọn sẽ
+  // lơ lửng đè lên trang khác khiến nút bấm không ăn).
+  if (typeof bgqlForceExitMultiSelect === 'function') bgqlForceExitMultiSelect();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
