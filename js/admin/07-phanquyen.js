@@ -70,6 +70,38 @@ const PQ_PRESETS = {
   nv:     { ten:'Nhân viên cơ bản', ids: PQ_ALL_IDS.filter(id => PQ_MAP[id].gd) },
 };
 
+// ─── Quyền MẶC ĐỊNH = ánh xạ đúng phân quyền cứng đang chạy trong app ───
+// Dùng khi một chức danh CHƯA được lưu quyền riêng → tab hiển thị sẵn để anh chỉnh.
+const PQ_DEF_NV = ['chamcong.tu_cham','giocong.xem_minh','bando.xem','lichca.xem_minh',
+                   'donnghi.tao','bangiao.ca','muanon.xem','chuongtrinh.xem','giaodien.dung'];
+const PQ_DEFAULT = {
+  ADMIN: PQ_ALL_IDS.slice(),
+  QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','duyetyc.duyet','giocong.xem_all',
+          'banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly'],
+  QLBH:  ['banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly','donnghi.tao'],
+  CUA_HANG: ['banhang.phien','banhang.dashboard','donhang.nhan','bangiao.ca','muanon.xem','muanon.quanly'],
+  NV:  PQ_DEF_NV.slice(),
+  CTV: PQ_DEF_NV.slice(),
+  CHT: PQ_DEF_NV.slice(),  // hiện chung quyền NV — anh chỉnh để phân biệt
+  TC:  PQ_DEF_NV.slice(),
+  CĐ:  PQ_DEF_NV.slice(),
+  TS:  PQ_DEF_NV.slice(),
+  DH:  PQ_DEF_NV.slice(),
+};
+function pqDefaultFor(cd){
+  if (PQ_DEFAULT[cd]) return PQ_DEFAULT[cd].slice();
+  if (/^QLBH/.test(cd)) return PQ_DEFAULT.QLBH.slice();
+  if (/^QL/.test(cd))   return PQ_DEFAULT.QLNS.slice();
+  if (cd === 'ADMIN')   return PQ_ALL_IDS.slice();
+  return PQ_DEF_NV.slice();
+}
+// Quyền hiệu dụng của 1 chức danh: đã lưu DB → dùng DB; chưa → mặc định hệ thống
+function pqQuyenHienHuu(cd){
+  const it = pqList.find(x => x.chuc_danh === cd);
+  if (it && it.daLuu) return it.quyen.slice();
+  return pqDefaultFor(cd);
+}
+
 // ─── State ───
 let pqList = [];            // [{chuc_danh, so_nguoi, ten_hien_thi, quyen[]}]
 let pqChon = new Set();     // chức danh đang chọn để set
@@ -100,6 +132,7 @@ async function pqInit(){
       so_nguoi: x.so_nguoi || 0,
       ten_hien_thi: x.ten_hien_thi || '',
       quyen: Array.isArray(x.quyen) ? x.quyen : [],
+      daLuu: Array.isArray(x.quyen) && x.quyen.length > 0,  // đã có quyền riêng trong DB
     }));
     pqChon = new Set(); pqTick = new Set(); pqDirty = false;
     PQ_GROUPS.forEach(g => pqGroupOpen[g.id] = false);
@@ -124,11 +157,11 @@ function pqRender(){
 function pqRenderChips(){
   const chips = pqList.map(cd => {
     const on = pqChon.has(cd.chuc_danh);
-    const sl = cd.quyen.length;
     const isAdmin = cd.chuc_danh === 'ADMIN';
-    return `<button class="pq-chip${on?' on':''}${isAdmin?' pq-chip-admin':''}" onclick="pqToggleCD('${cd.chuc_danh}')">
+    const meta = isAdmin ? 'full quyền' : (cd.daLuu ? (cd.quyen.length + ' quyền') : 'mặc định');
+    return `<button class="pq-chip${on?' on':''}${isAdmin?' pq-chip-admin':''}${(!cd.daLuu&&!isAdmin)?' pq-chip-def':''}" onclick="pqToggleCD('${cd.chuc_danh}')">
       <span class="pq-chip-ten">${pqTenChucDanh(cd.chuc_danh, cd.ten_hien_thi)}</span>
-      <span class="pq-chip-meta">${cd.so_nguoi} người · ${isAdmin?'full':sl+' quyền'}</span>
+      <span class="pq-chip-meta">${cd.so_nguoi} người · ${meta}</span>
     </button>`;
   }).join('');
   return `<div class="pq-head">
@@ -150,12 +183,15 @@ function pqRenderPanel(){
   const nhieu = pqChon.size > 1;
   const tenList = Array.from(pqChon).map(cd => pqTenChucDanh(cd, (pqList.find(x=>x.chuc_danh===cd)||{}).ten_hien_thi));
   const adminTrong = pqChon.has('ADMIN');
+  const cdDon = pqChon.size===1 ? Array.from(pqChon)[0] : null;
+  const dangMacDinh = cdDon && !(pqList.find(x=>x.chuc_danh===cdDon)||{}).daLuu && cdDon !== 'ADMIN';
 
   const banner = `<div class="pq-banner${nhieu?' multi':''}">
       <div class="pq-banner-l">
         <div class="pq-banner-ten">Đang thiết lập: ${tenList.join(', ')}</div>
         ${nhieu ? '<div class="pq-banner-warn">Quyền bên dưới sẽ GHI ĐÈ toàn bộ quyền của tất cả chức danh đã chọn.</div>'
-                : '<div class="pq-banner-note">Tick các quyền cần cấp cho chức danh này.</div>'}
+                : (dangMacDinh ? '<div class="pq-banner-note">Đang hiển thị <b>quyền mặc định theo hệ thống</b> (chưa lưu riêng). Chỉnh lại rồi bấm Lưu để áp dụng.</div>'
+                               : '<div class="pq-banner-note">Tick các quyền cần cấp cho chức danh này.</div>')}
         ${adminTrong ? '<div class="pq-banner-warn">ADMIN luôn có toàn quyền — thay đổi ở đây không giới hạn ADMIN.</div>' : ''}
       </div>
     </div>`;
@@ -166,8 +202,8 @@ function pqRenderPanel(){
         <input id="pq-search-inp" type="text" placeholder="Tìm phân hệ / quyền…" value="${pqSearch}" oninput="pqOnSearch(this.value)">
       </div>
       <div class="pq-tools">
+        <button class="pq-tool" onclick="pqRestoreDefault()">Khôi phục mặc định</button>
         <button class="pq-tool" onclick="pqApplyPreset('full')">Toàn quyền</button>
-        <button class="pq-tool" onclick="pqApplyPreset('nv')">NV cơ bản</button>
         <button class="pq-tool" onclick="pqApplyPreset('xemall')">Chỉ xem</button>
         <button class="pq-tool pq-tool-ghost" onclick="pqClearAll()">Bỏ hết</button>
         ${pqCopyMenu()}
@@ -230,13 +266,11 @@ function pqFooterSpacer(){ return '<div style="height:76px"></div>'; }
 // ─── Tương tác ───
 function pqToggleCD(cd){
   if (pqChon.has(cd)) pqChon.delete(cd); else pqChon.add(cd);
-  // Nạp lại tick theo tập chọn
+  // Nạp lại tick theo tập chọn — dùng quyền đã lưu, hoặc mặc định hệ thống nếu chưa lưu
   if (pqChon.size === 1){
-    const only = pqList.find(x => x.chuc_danh === Array.from(pqChon)[0]);
-    pqTick = new Set(only ? only.quyen : []);
+    pqTick = new Set(pqQuyenHienHuu(Array.from(pqChon)[0]));
   } else if (pqChon.size > 1){
-    // giao điểm quyền các chức danh đã chọn (gợi ý), sẽ ghi đè khi lưu
-    const sets = Array.from(pqChon).map(c => new Set((pqList.find(x=>x.chuc_danh===c)||{quyen:[]}).quyen));
+    const sets = Array.from(pqChon).map(c => new Set(pqQuyenHienHuu(c)));
     pqTick = new Set(Array.from(sets[0]||[]).filter(id => sets.every(s => s.has(id))));
   } else {
     pqTick = new Set();
@@ -281,6 +315,17 @@ function pqApplyPreset(key){
   pqDirty = true; pqRender();
 }
 function pqClearAll(){ pqTick = new Set(); pqDirty = true; pqRender(); }
+
+// Khôi phục về quyền mặc định của hệ thống (theo phân quyền cứng đang chạy)
+function pqRestoreDefault(){
+  if (pqChon.size === 1){
+    pqTick = new Set(pqDefaultFor(Array.from(pqChon)[0]));
+  } else if (pqChon.size > 1){
+    const sets = Array.from(pqChon).map(c => new Set(pqDefaultFor(c)));
+    pqTick = new Set(Array.from(sets[0]||[]).filter(id => sets.every(s => s.has(id))));
+  }
+  pqDirty = true; pqRender();
+}
 
 function pqCopyFrom(cd){
   if (!cd) return;

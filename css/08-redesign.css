@@ -2675,3 +2675,9 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .pq-footer-save { padding:11px 22px; border-radius:11px; border:none; background:var(--green); color:#fff; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s; box-shadow:0 4px 14px -3px var(--green); white-space:nowrap; }
 .pq-footer-save:hover { background:var(--green-m); }
 .pq-footer-save:disabled { opacity:.55; cursor:default; box-shadow:none; }
+
+/* [v15.5] Chip chức danh đang dùng quyền mặc định (chưa lưu riêng) */
+.pq-chip-def { border-style:dashed; }
+.pq-chip-def.on { border-style:solid; }
+.pq-chip-def .pq-chip-meta { color:#B45309; }
+.pq-chip-def.on .pq-chip-meta { color:var(--green-m); }
