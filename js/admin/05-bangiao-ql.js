@@ -2075,8 +2075,8 @@ function bgqlRenderMultiSelectBar(){
     <div class="bgql-ms-l">Đã chọn <b>${sel}</b> / ${total}</div>
     <div class="bgql-ms-r">
       <button class="bgql-act bgql-act-ghost" onclick="bgqlSelectAll()">${allSelected?'Bỏ chọn':'Tất cả'}</button>
-      <button class="bgql-act bgql-act-primary" onclick="bgqlBulkPhanHoi()" ${sel===0?'disabled':''}>Phản hồi</button>
-      ${isAdminReal ? `<button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()" ${sel===0?'disabled':''}>${bgqlDeleteArmed ? 'Xóa?' : 'Xóa'}</button>` : ''}
+      <button class="bgql-act bgql-act-primary" onclick="bgqlBulkPhanHoi()">Phản hồi</button>
+      ${isAdminReal ? `<button class="bgql-act bgql-act-danger" onclick="bgqlDeleteBulkConfirm()">${bgqlDeleteArmed ? 'Xóa?' : 'Xóa'}</button>` : ''}
       <button class="bgql-act bgql-act-ghost" onclick="bgqlToggleMultiSelect()">Hủy</button>
     </div>
   `;
