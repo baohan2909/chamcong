@@ -49,54 +49,14 @@ async function nsFaceEnsureLoaded() {
   }
 }
 
-// [v14.3] Nhận diện trình duyệt (rút gọn) để hiển thị khi camera lỗi → biết môi trường thật.
-function _briefUA(){
-  const ua = navigator.userAgent || '';
-  if (/Zalo/i.test(ua)) return 'Zalo';
-  if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return 'Facebook';
-  if (/Messenger/i.test(ua)) return 'Messenger';
-  if (/Instagram/i.test(ua)) return 'Instagram';
-  if (/Line\//i.test(ua)) return 'Line';
-  if (/CriOS/i.test(ua)) return 'Chrome (iOS)';
-  if (/FxiOS/i.test(ua)) return 'Firefox (iOS)';
-  if (/EdgiOS/i.test(ua)) return 'Edge (iOS)';
-  if (/iPhone|iPad/i.test(ua) && /Safari/i.test(ua)) return 'Safari (iOS)';
-  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
-  if (/Chrome/i.test(ua)) return 'Chrome';
-  return 'trình duyệt khác';
-}
-
-// [v14.1] Phát hiện trình duyệt trong app (Zalo/Facebook/Messenger/Instagram...) — WebView hay làm camera đen.
-function _isInAppBrowser(){
-  const ua = (navigator.userAgent || '');
-  return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Zalo|MicroMessenger|Line\/|Messenger|GSA\//i.test(ua);
-}
-
-// [v14.2] getUserMedia có retry cho lỗi camera bận (NotReadableError/TrackStartError/AbortError) —
-// thường do app khác (Zalo call, Camera, FaceTime) vừa dùng camera và nhả ra chậm.
-async function _tryGUM(constraints, retries){
-  let last;
-  for (let i = 0; i <= retries; i++) {
-    try { return await navigator.mediaDevices.getUserMedia(constraints); }
-    catch (e) {
-      last = e;
-      const busy = e && (e.name === 'NotReadableError' || e.name === 'TrackStartError' || e.name === 'AbortError');
-      if (busy && i < retries) { await new Promise(r => setTimeout(r, 600)); continue; }
-      throw e;
-    }
-  }
-  throw last;
-}
-
 async function _openCam(videoEl) {
-  // [v13.13] Stop stream cũ trên element nếu còn — tránh leak/conflict
+  // Stop stream cũ nếu còn
   if (videoEl.srcObject) {
     try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(_){}
     videoEl.srcObject = null;
   }
 
-  // [v14.1] Hardening iOS/WebView: ép thuộc tính autoplay-friendly TRƯỚC khi attach stream.
-  // iOS chỉ tự phát video khi `muted` là PROPERTY (không chỉ attribute) + playsInline. Thiếu → video paused → màn đen.
+  // Thuộc tính autoplay-friendly cho iOS (muted phải là PROPERTY mới tự phát được)
   try {
     videoEl.muted = true;
     videoEl.defaultMuted = true;
@@ -107,45 +67,24 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // [v13.13] Relax constraints + [v14.2] retry bận + [v14.3] enumerate deviceId fallback
-  let stream, gumErr;
-  const _attempts = [
-    { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
-    { video: true, audio: false }
-  ];
-  for (const c of _attempts) {
-    try { stream = await _tryGUM(c, 1); break; } catch (e) { gumErr = e; }
+  // Cấu hình tối giản, ổn định: chỉ camera trước, KHÔNG ép độ phân giải (tránh camera nhảy/refocus liên tục)
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+  } catch (e1) {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   }
-  // Nếu cấu hình chuẩn fail → liệt kê thiết bị, thử mở từng camera theo deviceId (cứu máy bị sai constraint)
-  if (!stream) {
-    let camCount = null;
-    try {
-      const devs = await navigator.mediaDevices.enumerateDevices();
-      const cams = devs.filter(d => d.kind === 'videoinput');
-      camCount = cams.length;
-      for (const cam of cams) {
-        try { stream = await _tryGUM({ video: { deviceId: { exact: cam.deviceId } }, audio: false }, 0); break; }
-        catch (e) { gumErr = e; }
-      }
-    } catch (e) { gumErr = gumErr || e; }
-    if (!stream) {
-      const er = gumErr || new Error('cam-none');
-      try { er._camCount = camCount; } catch (_) {}
-      throw er;
-    }
-  }
-
   videoEl.srcObject = stream;
 
-  // [v13.13] Tránh race condition onloadedmetadata (timeout 5s phòng treo)
+  // Đợi metadata (timeout 5s phòng treo)
   if (videoEl.readyState < 1) {
-    await new Promise((resolve, reject) => {
-      const tid = setTimeout(() => reject(new Error('cam-timeout-metadata')), 5000);
+    await new Promise((resolve) => {
+      const tid = setTimeout(resolve, 5000);
       videoEl.addEventListener('loadedmetadata', () => { clearTimeout(tid); resolve(); }, { once: true });
     });
   }
 
-  // [v13.13] play() có thể reject AbortError trên iOS Safari khi stream mới attach — retry 1 lần
+  // play() + retry 1 lần (iOS có thể reject AbortError khi stream vừa attach)
   try {
     await videoEl.play();
   } catch (e) {
@@ -153,21 +92,12 @@ async function _openCam(videoEl) {
     try { await videoEl.play(); } catch(_) {}
   }
 
-  // [v14.1] Nếu autoplay bị chặn (iOS Low Power Mode / một số WebView) → play() xong nhưng video VẪN paused → màn đen câm.
-  // Gắn handler: chạm vào vùng camera sẽ play() trong user-gesture (luôn được phép). Caller hiện hướng dẫn nếu còn paused.
+  // Autoplay bị chặn (tiết kiệm pin / một số trình duyệt) → chạm vào vùng camera để bật
   if (videoEl.paused) {
     const tapTarget = videoEl.closest('.ns-face-stage') || videoEl;
     const _tapPlay = () => { videoEl.play().catch(() => {}); };
     tapTarget.addEventListener('click', _tapPlay);
     tapTarget.addEventListener('touchstart', _tapPlay, { passive: true });
-    await new Promise(r => setTimeout(r, 250)); // cho iOS 1 nhịp tự phát nếu được
-  }
-
-  // [v13.13] Verify track còn active sau khi play
-  const track = stream.getVideoTracks()[0];
-  if (!track || track.readyState !== 'live') {
-    try { stream.getTracks().forEach(t => t.stop()); } catch(_){}
-    throw new Error('cam-stream-not-live');
   }
 
   return stream;
@@ -267,6 +197,13 @@ function _setSubstatus(prefix, text, type) {
 // ═════════════════════════════════════════════════════════════════════════
 async function _waitStable(video, prefix, abortRef) {
   let prev = null, stableCount = 0;
+  // Đợi video có khung hình thật trước khi nhận diện — tránh nghẽn CPU/đứng hình lúc camera vừa khởi tạo
+  let _ready = 0;
+  while (!abortRef.aborted && _ready < 30) {
+    if (video.videoWidth > 0 && video.readyState >= 2 && !video.paused) break;
+    await new Promise(r => setTimeout(r, 100));
+    _ready++;
+  }
   while (!abortRef.aborted) {
     const r = await _detectFace(video);
     if (!r) {
@@ -399,28 +336,17 @@ async function _startEnrollmentFlow() {
   if (!ok) { _setInstruction('fe', 'Lỗi tải máy quét'); return; }
 
   const video = document.getElementById('fe-video');
-  if (_isInAppBrowser()) _setInstruction('fe', 'Nên mở bằng Safari/Chrome — camera dễ bị đen khi mở trong Zalo/Facebook');
   try {
     _enrollStream = await _openCam(video);
     if (video.paused) _setInstruction('fe', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
-    // [v14.2] Phân loại chi tiết + hiện mã lỗi để chẩn đoán
-    const nm = (e && e.name) || '';
-    const msg = (e && e.message) || '';
-    const isPerm = nm === 'NotAllowedError' || nm === 'PermissionDeniedError' || /denied|permission/i.test(msg);
-    const isBusy = nm === 'NotReadableError' || nm === 'TrackStartError' || /in use|busy|could not start|starting video/i.test(msg);
-    const isNone = nm === 'NotFoundError' || nm === 'DevicesNotFoundError' || /not found|no.*device|requested device/i.test(msg);
+    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
     if (isPerm) {
       _setInstruction('fe', 'Cần cấp quyền camera — vào Cài đặt cho phép rồi bấm "Thử lại"');
-    } else if (isBusy) {
-      _setInstruction('fe', 'Camera đang bị app khác dùng — đóng hẳn Zalo/Camera/FaceTime rồi bấm "Thử lại"');
-    } else if (isNone) {
-      const cnt = (e && e._camCount != null) ? e._camCount : '?';
-      _setInstruction('fe', 'Trình duyệt "' + _briefUA() + '" không cấp camera quét mặt (thấy ' + cnt + ' camera). Nếu mở trong Zalo/Facebook, hãy mở bằng Safari/Chrome');
     } else {
-      _setInstruction('fe', 'Không mở được camera (' + (nm || 'không rõ') + (msg ? ': ' + msg : '') + ') — bấm "Thử lại"');
+      _setInstruction('fe', 'Không mở được camera — bấm "Thử lại"');
     }
-    if (!isNone) _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
+    _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
     return;
   }
 
@@ -548,38 +474,20 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
   if (!ok) { _setSubstatus('fv', 'Lỗi tải máy quét', 'err'); return; }
 
   const video = document.getElementById('fv-video');
-  if (_isInAppBrowser()) _setSubstatus('fv', 'Nên mở bằng Safari/Chrome — camera dễ đen trong Zalo/Facebook', 'err');
   try {
     _verifyStream = await _openCam(video);
     if (video.paused) _setInstruction('fv', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
-    // [v14.2] Phân loại chi tiết + hiện mã lỗi để chẩn đoán đúng máy
-    const nm = (e && e.name) || '';
-    const msg = (e && e.message) || '';
-    const isPerm = nm === 'NotAllowedError' || nm === 'PermissionDeniedError' || /denied|permission/i.test(msg);
-    const isBusy = nm === 'NotReadableError' || nm === 'TrackStartError' || /in use|busy|could not start|starting video/i.test(msg);
-    const isNone = nm === 'NotFoundError' || nm === 'DevicesNotFoundError' || /not found|no.*device|requested device/i.test(msg);
+    const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
     if (isPerm) {
       _setInstruction('fv', 'Cần cấp quyền camera');
-      _setSubstatus('fv', 'Vào Cài đặt → cho phép camera, rồi bấm "Thử lại"', 'err');
-      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
-      _addFallbackBtn();
-    } else if (isBusy) {
-      _setInstruction('fv', 'Camera đang bị ứng dụng khác dùng');
-      _setSubstatus('fv', 'Đóng hẳn Zalo/Camera/FaceTime (vuốt tắt app), rồi bấm "Thử lại"', 'err');
-      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
-      _addFallbackBtn();
-    } else if (isNone) {
-      const cnt = (e && e._camCount != null) ? e._camCount : '?';
-      _setInstruction('fv', 'Trình duyệt không cấp camera để quét mặt');
-      _setSubstatus('fv', 'Đang chạy trên: ' + _briefUA() + ' (thấy ' + cnt + ' camera). Nếu đang mở trong Zalo/Facebook, hãy mở app bằng Safari/Chrome để quét mặt. Tạm thời chấm bằng ảnh tay bên dưới.', 'err');
-      _addFallbackBtn();
+      _setSubstatus('fv', 'Vào Cài đặt cho phép camera, rồi bấm "Thử lại"', 'err');
     } else {
       _setInstruction('fv', 'Không mở được camera');
-      _setSubstatus('fv', 'Mã lỗi: ' + (nm || 'không rõ') + (msg ? ' · ' + msg : '') + ' — bấm "Thử lại" hoặc chấm bằng ảnh tay', 'err');
-      _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
-      _addFallbackBtn();
+      _setSubstatus('fv', 'Bấm "Thử lại" hoặc chấm công bằng ảnh tay', 'err');
     }
+    _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
+    _addFallbackBtn();
     return;
   }
 
