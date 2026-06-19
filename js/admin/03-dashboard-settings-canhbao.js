@@ -1263,6 +1263,14 @@ async function adm2RevertCanhBao(id){
   } catch(e) { adm2Toast(e.message, 'error'); }
 }
 
+// [v14.6] Dựng lại bảng cặp giờ công cho NV+ngày sau khi sửa/thêm/xóa log hoặc duyệt CB.
+// gio_cong_ngay_ch là bảng tính sẵn — nếu không gọi, giờ công KHÔNG cập nhật dù chấm công gốc đã đúng.
+async function _rebuildCong(maNV, ngay) {
+  if (!maNV || !ngay) return;
+  try { await adm2Rpc('fn_tong_hop_ngay', { p_ma_nv: maNV, p_ngay: ngay }); }
+  catch (e) { console.warn('[rebuild cong]', e); }
+}
+
 async function adm2DuyetCanhBao(id, loaiCb) {
   // [v10.85] SAI CA / THIẾU CA: tự động mở modal sửa lịch để user khỏi phải bấm nút khác
   const requireFix = (loaiCb === 'SAI CA' || loaiCb === 'THIẾU CA');
@@ -1278,6 +1286,9 @@ async function adm2DuyetCanhBao(id, loaiCb) {
       p_admin: SESSION.ma, p_cb_id: id, p_da_sua_gio: false, p_ly_do: ''
     });
     if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
+    // [v14.6] Dựng lại giờ công cho NV+ngày của cảnh báo này (để cộng giờ sau khi duyệt)
+    const _rec = (window._lsdCachedList || []).find(r => r.id === id);
+    if (_rec) await _rebuildCong(_rec.maNV || _rec.ma_nv, _rec.ngay);
     adm2Toast('Đã duyệt', 'success');
     // [v9.45] Reload list để cập nhật trạng thái
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
@@ -1527,6 +1538,7 @@ async function adm2SuaLog(id, ngay) {
     });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
     _suaLogState.daSuaGio = true;
+    await _rebuildCong(_suaLogState.maNV, _suaLogState.ngay);
     adm2Toast('Đã lưu', 'success');
     adm2LoadSuaLogBody();
   } catch (e) { adm2Toast(e.message, 'error'); }
@@ -1646,6 +1658,7 @@ async function adm2XoaLog(id) {
     const d = await adm2Rpc('fn_admin_xoa_cham_cong', { p_admin: SESSION.ma, p_id: id });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
     _suaLogState.daSuaGio = true;
+    await _rebuildCong(_suaLogState.maNV, _suaLogState.ngay);
     adm2Toast('Đã xóa log', 'success');
     adm2LoadSuaLogBody();
   } catch (e) { adm2Toast(e.message, 'error'); }
@@ -1657,7 +1670,7 @@ async function adm2ThemLogPrompt() {
     maNV: _suaLogState.maNV,
     ngay: _suaLogState.ngay,
     mode: 'add_log',
-    onSuccess: () => { _suaLogState.daSuaGio = true; adm2LoadSuaLogBody(); }
+    onSuccess: async () => { _suaLogState.daSuaGio = true; await _rebuildCong(_suaLogState.maNV, _suaLogState.ngay); adm2LoadSuaLogBody(); }
   });
 }
 
@@ -1673,6 +1686,7 @@ async function adm2DuyetCBSauSua() {
       adm2Toast(d.error || 'Lỗi', 'error');
       return;
     }
+    await _rebuildCong(_suaLogState.maNV, _suaLogState.ngay);
     adm2Toast('✓ Đã duyệt cảnh báo', 'success');
     adm2CloseSuaLog();
     // Remove CB row khỏi list

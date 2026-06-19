@@ -1098,9 +1098,10 @@ async function adm2DuyetNhom(maNV, ngay){
   supa.rpc('fn_duyet_batch', {
     p_loai: 'GIAI_TRINH', p_quyet_dinh: 'Duyệt',
     p_ma_nguoi_duyet: SESSION.ma, p_ids: ids, p_ghi_chu_qlns: null
-  }).then(({ data: res, error }) => {
+  }).then(async ({ data: res, error }) => {
     if (!error && res && res.success) {
       const c = res.count || 0;
+      try { await supa.rpc('fn_tong_hop_ngay', { p_ma_nv: maNV, p_ngay: ngay }); } catch (_) {}
       showToast('✓ Đã duyệt ' + c + '/' + ids.length + ' cảnh báo.', c < ids.length ? 'err' : 'ok');
       if (typeof taiLichSuDuyet === 'function') taiLichSuDuyet();
     } else {
