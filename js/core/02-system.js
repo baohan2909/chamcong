@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v15.2',
+  'sys.cache_version': 'v15.3',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4216,7 +4216,7 @@ function showToast(msg,type){
   let t=document.getElementById('_toast');
   if(!t){
     t=document.createElement('div');t.id='_toast';
-    t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:99999;max-width:320px;text-align:center;transition:opacity .3s;white-space:pre-line;box-shadow:0 4px 16px rgba(0,0,0,.18)';
+    t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:99999;max-width:320px;text-align:center;transition:opacity .3s;white-space:pre-line;box-shadow:0 4px 16px rgba(0,0,0,.18);pointer-events:none';
     document.body.appendChild(t);
   }
   t.style.background=type==='ok'?'var(--green)':'var(--red)';
