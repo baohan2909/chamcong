@@ -2576,9 +2576,10 @@
 .bgql-multiselect-bar {
   position: fixed;
   bottom: calc(102px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translate3d(-50%, 0, 0);
-  width: calc(100% - 24px);
+  left: 12px;
+  right: 12px;
+  margin-left: auto;
+  margin-right: auto;
   max-width: 480px;
   background: #fff;
   border: 1px solid #FCA5A5;
@@ -2605,6 +2606,8 @@
   font-size: 12px;
   white-space: nowrap;
   text-align: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,.06);
 }
 .bgql-ms-r .bgql-act * { pointer-events: none; }
 
