@@ -31,6 +31,7 @@ function adm2SwitchTab(tab) {
   if (tab === 'taikhoan') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); adm2SearchAcc(); }
   if (tab === 'phienbh')  { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
+  if (tab === 'phanquyen'){ adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); if (typeof pqInit === 'function') pqInit(); }
 }
 
 // ─── Helpers ───────────────────────────────────────────────
