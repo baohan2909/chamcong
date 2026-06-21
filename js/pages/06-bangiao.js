@@ -40,8 +40,10 @@ async function bgInitPage(){
   await bgXacDinhCH();
   if (!bgCurrentCH) {
     document.getElementById('bg-ch-name').textContent = 'Chưa xác định được cửa hàng';
-    document.getElementById('bg-ch-sub').textContent = 'Vui lòng chấm công vào ca trước.';
-    document.getElementById('bg-groups').innerHTML = '<div class="ns-empty">Vui lòng chấm công vào ca tại cửa hàng trước.</div>';
+    document.getElementById('bg-ch-sub').textContent = 'Chấm công vào ca để lập biên bản. Sự vụ được giao cho bạn xem ở tab Sự vụ.';
+    document.getElementById('bg-groups').innerHTML = '<div class="ns-empty">Cần chấm công vào ca tại cửa hàng để bàn giao.<br>Sự vụ được giao cho bạn vẫn xem được ở tab <b>Sự vụ</b> bên trên.</div>';
+    // [v15.8] Cơ động không có cửa hàng cố định → vẫn cho xem sự vụ được giao xử lý cho mình
+    try { bgSwitchSub('suvu'); bgRenderSuVu(); } catch(e){}
     return;
   }
   document.getElementById('bg-ch-name').textContent = bgCurrentCH.ten;
@@ -816,22 +818,35 @@ window.bgSubmit = bgSubmit;
 async function bgRenderSuVu(){
   const list = document.getElementById('bg-suvu-list');
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
-  if (!bgCurrentCH){ list.innerHTML = '<div class="ns-empty">Chưa xác định cửa hàng.</div>'; return; }
+  const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   try {
-    const { data, error } = await supa.rpc('fn_su_vu_list', {
-      p_ma_ch: bgCurrentCH.ma,
-      p_limit: 100, p_offset: 0
+    // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng — quan trọng cho Cơ động)
+    const reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 200, p_offset: 0 }) ];
+    // Nguồn 2: sự vụ của CỬA HÀNG mình (nếu có cửa hàng)
+    if (bgCurrentCH && bgCurrentCH.ma) {
+      reqs.push(supa.rpc('fn_su_vu_list', { p_ma_ch: bgCurrentCH.ma, p_limit: 200, p_offset: 0 }));
+    }
+    const results = await Promise.all(reqs);
+    let merged = [];
+    results.forEach(r => { if (!r.error && Array.isArray(r.data)) merged = merged.concat(r.data); });
+    // Gộp trùng theo id
+    const seen = new Set(); const data = [];
+    merged.forEach(s => { if (!seen.has(s.id)) { seen.add(s.id); data.push(s); } });
+    // Sắp xếp: đang mở trước, rồi mới nhất trước
+    data.sort((a,b)=>{
+      const oa = ['HOAN_TAT','HUY'].includes(a.trang_thai)?1:0;
+      const ob = ['HOAN_TAT','HUY'].includes(b.trang_thai)?1:0;
+      if (oa!==ob) return oa-ob;
+      return new Date(b.created_at) - new Date(a.created_at);
     });
-    if (error) throw error;
     const cnt = document.getElementById('bg-suvu-count');
-    const opened = (data||[]).filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-    if (!data || data.length === 0){
+    const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+    if (data.length === 0){
       list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
-      cnt.style.display = 'none';
+      if (cnt) cnt.style.display = 'none';
       return;
     }
-    if (opened.length > 0) { cnt.style.display=''; cnt.textContent = opened.length; }
-    else cnt.style.display = 'none';
+    if (cnt){ if (opened.length>0){ cnt.style.display=''; cnt.textContent = opened.length; } else cnt.style.display='none'; }
     list.innerHTML = data.map(bgSuVuCardHtml).join('');
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
 }
@@ -839,9 +854,22 @@ async function bgRenderSuVu(){
 function bgSuVuCardHtml(s){
   const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
   const mdCls = s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'vua':'nhe';
-  const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
+  const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', DA_XU_LY_XONG:'Chờ cửa hàng xác nhận', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
   const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
   const borderColor = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#F97316':'#1B4965';
+  const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
+  const laNguoiXuLy = s.nguoi_xu_ly_ma && s.nguoi_xu_ly_ma === ma;
+
+  // Nút hành động theo vai trò trong luồng
+  let actBtns = '';
+  if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
+  }
+  if (isOpen && s.trang_thai === 'DA_XU_LY_XONG'){
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Xác nhận hoàn tất & đóng</button>`;
+  }
+  const xlChip = s.nguoi_xu_ly_ten ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>` : '';
+
   return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:4px solid ${borderColor}">
     <div class="chk-rec-head">
       <div class="chk-rec-top">
@@ -849,13 +877,64 @@ function bgSuVuCardHtml(s){
         <span class="chk-mucdo-tag ${mdCls}" style="font-weight:700">${mdLbl}</span>
         <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
       </div>
-      <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}</div>
-      <div class="chk-rec-by">Tạo: ${escHtml(s.nguoi_tao_ten||'?')}${s.nguoi_phu_trach_ten?' · Phụ trách: '+escHtml(s.nguoi_phu_trach_ten):''}</div>
+      <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:600;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
+      <div class="chk-rec-by">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')} · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
+      ${xlChip}
       ${s.mo_ta?`<div class="chk-rec-note">${escHtml(s.mo_ta).slice(0,160)}</div>`:''}
       ${s.phan_hoi_xu_ly?`<div style="margin-top:6px;padding:8px 10px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:6px;font-size:12.5px;color:#0F2E45"><b style="color:#1B4965">Phản hồi:</b> ${escHtml(s.phan_hoi_xu_ly).slice(0,200)}</div>`:''}
+      ${bgSuVuLoTrinh(s)}
+      ${actBtns?`<div class="bg-sv-acts">${actBtns}</div>`:''}
     </div>
   </div>`;
 }
+
+// Lộ trình xử lý — dựng từ các mốc thời gian trong bảng su_vu
+function bgSuVuLoTrinh(s){
+  const steps = [];
+  steps.push({ lbl:'Tạo sự vụ', who:s.nguoi_tao_ten, t:s.created_at });
+  if (s.thoi_gian_tiep_nhan)     steps.push({ lbl:'Tiếp nhận', who:s.nguoi_phu_trach_ten, t:s.thoi_gian_tiep_nhan });
+  if (s.thoi_gian_bat_dau_xu_ly) steps.push({ lbl:'Bắt đầu xử lý', who:s.nguoi_phu_trach_ten, t:s.thoi_gian_bat_dau_xu_ly });
+  if (s.thoi_gian_phan_hoi)      steps.push({ lbl:'Phản hồi'+(s.nguoi_xu_ly_ten?' · giao '+s.nguoi_xu_ly_ten:''), t:s.thoi_gian_phan_hoi });
+  if (s.thoi_gian_xu_ly_xong)    steps.push({ lbl:'Đã xử lý xong', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_xu_ly_xong, hi:true });
+  if (s.thoi_gian_dong)          steps.push({ lbl:'Hoàn tất · đóng', who:s.nguoi_dong_ten, t:s.thoi_gian_dong, hi:true });
+  if (steps.length <= 1) return '';
+  return `<div class="bg-sv-lotrinh">
+    <div class="bg-sv-lt-title">Lộ trình xử lý</div>
+    ${steps.map((st,i)=>`<div class="bg-sv-step${st.hi?' hi':''}${i===steps.length-1?' last':''}">
+      <span class="bg-sv-dot"></span>
+      <span class="bg-sv-step-lbl">${escHtml(st.lbl)}${st.who?' · '+escHtml(st.who):''}</span>
+      <span class="bg-sv-step-t">${bgFmtDateTimeShort(st.t)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// Cơ động / người xử lý xác nhận đã xử lý xong
+window.bgSuVuXacNhanXong = async function(id){
+  if (!confirm('Xác nhận bạn đã xử lý xong sự vụ này?\nCửa hàng sẽ kiểm tra rồi xác nhận hoàn tất.')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_su_vu_xac_nhan_xong', {
+      p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
+    });
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã báo xử lý xong · chờ cửa hàng xác nhận', 'ok');
+    bgRenderSuVu();
+  } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+};
+
+// Nhân viên / cửa hàng xác nhận hoàn tất & đóng
+window.bgSuVuDong = async function(id){
+  const note = prompt('Ghi chú khi đóng (tùy chọn):', '');
+  if (note === null) return;
+  try {
+    const { data, error } = await supa.rpc('fn_su_vu_dong', {
+      p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'',
+      p_vai_tro_dong:SESSION.vaiTro||'NV', p_ghi_chu:note||null
+    });
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã xác nhận hoàn tất & đóng sự vụ', 'ok');
+    bgRenderSuVu();
+  } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+};
 
 function bgFmtDateTimeShort(s){
   if (!s) return '';

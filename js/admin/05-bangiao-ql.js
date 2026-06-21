@@ -94,7 +94,7 @@ function bgqlRenderSuVuFilters(){
   const all = bgqlSuVuCache || [];
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   const _cMoi = all.filter(s => s.trang_thai === 'MOI_TAO').length;
-  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length;
+  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)).length;
   const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
   const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
@@ -323,7 +323,7 @@ function bgqlGetFilteredSuVu(){
   // [v13.78] Lọc theo 5 trạng thái rõ ràng
   const _tt = bgqlSuVuFilter.trang_thai;
   if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
-  else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai));
+  else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
   else if (_tt === 'hoan_tat') arr = arr.filter(s => s.trang_thai === 'HOAN_TAT');
   else if (_tt === 'huy') arr = arr.filter(s => s.trang_thai === 'HUY');
   else if (_tt === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
@@ -426,7 +426,7 @@ function bgqlSuVuCardHtml(s){
   // DANG_XU_LY     → "Cập nhật phản hồi" + "Đóng (hoàn tất)"
   // (DA_TIEP_NHAN, DA_PHAN_HOI: legacy data, đối xử như DANG_XU_LY)
   let actions = '';
-  const isProcessing = ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai);
+  const isProcessing = ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai);
   if (s.trang_thai === 'MOI_TAO') {
     actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Phản hồi & xử lý</button>
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlHuy('${s.id}')">Hủy</button>`;
@@ -1196,7 +1196,7 @@ function bgqlChRowHtml(c, opened){
 
 function bgqlSvDetailHtml(sv){
   const mdMap = { 'KHAN_CAP':'Khẩn cấp', 'QUAN_TRONG':'Quan trọng', 'CAN_THIET':'Cần thiết' };
-  const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
+  const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'DA_PHAN_HOI':'Đã phản hồi', 'DA_XU_LY_XONG':'Chờ CH xác nhận', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
   const mdClass = sv.muc_do === 'KHAN_CAP' ? 'khan' : sv.muc_do === 'QUAN_TRONG' ? 'qt' : 'ct';
   const t = sv.created_at ? new Date(sv.created_at).toLocaleString('vi-VN', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
   return `
@@ -1851,7 +1851,7 @@ function bgqlRenderSuVuDetail(d){
   const anhBg = d.anh_bien_ban || [];
   
   const mdMap = { 'KHAN_CAP':'Khẩn cấp', 'QUAN_TRONG':'Quan trọng', 'CAN_THIET':'Cần thiết' };
-  const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
+  const stMap = { 'MOI_TAO':'Mới tạo', 'DA_TIEP_NHAN':'Đã tiếp nhận', 'DANG_XU_LY':'Đang xử lý', 'DA_PHAN_HOI':'Đã phản hồi', 'DA_XU_LY_XONG':'Chờ CH xác nhận', 'HOAN_TAT':'Hoàn tất', 'HUY':'Đã hủy' };
   const loaiMap = {
     'TAI_SAN_KHONG_DAT':'Tài sản không đạt',
     'TIEN_LECH':'Tiền lệch',
