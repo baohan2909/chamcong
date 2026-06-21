@@ -32,6 +32,7 @@ function adm2SwitchTab(tab) {
   if (tab === 'phienbh')  { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'chamcong') { adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); }
   if (tab === 'phanquyen'){ adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); if (typeof pqInit === 'function') pqInit(); }
+  if (tab === 'khancap'){ adm2StopPhienAutoRefresh(); adm2StopLiveTimer(); if (typeof xkcInit === 'function') xkcInit(); }
 }
 
 // ─── Helpers ───────────────────────────────────────────────
