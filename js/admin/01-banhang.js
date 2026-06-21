@@ -1308,10 +1308,9 @@ function bhBuildHistCardCh(p) {
   let label = 'Đã mua';
   let detail = '';
   if (p.trangThai === 'Đã mua') {
-    const total = parseFloat(p.tongGiaTri) || 0;
-    detail = total > 0 ? '<strong>' + bhFormatMoney(total) + 'đ</strong>' : '';
+    // [v16.0] Bỏ tổng tiền (doanh thu) — chỉ giữ số lượng SP
     if (p.spDaMua && p.spDaMua.length) {
-      detail += (detail ? ' · ' : '') + bhCountSpQty(p.spDaMua) + ' SP';
+      detail = bhCountSpQty(p.spDaMua) + ' SP';
     }
   } else {
     cls = (p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng') ? 'bh-hist-auto' : 'bh-hist-notbought';
@@ -1933,7 +1932,7 @@ function bhRenderSpSelectedQT() {
       <div class="bh-selected-item">
         <div class="bh-selected-item-main">
           <div class="bh-selected-item-name">${bhEscHtml(ten)}</div>
-          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong>${gia > 0 ? ' · Giá: <strong>' + bhFormatMoney(gia) + 'đ</strong>' : ''}</div>
+          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong></div>
         </div>
         <button class="bh-selected-rm" onclick="bhToggleSpQuanTam('${bhEscHtml(maCu)}')" title="Bỏ chọn">×</button>
       </div>`;
@@ -2241,12 +2240,11 @@ function bhRenderBoughtSelected() {
       <div class="bh-selected-item bh-selected-item-bought">
         <div class="bh-selected-item-main">
           <div class="bh-selected-item-name">${bhEscHtml(ten)}</div>
-          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong>${gia > 0 ? ' · Đơn giá: ' + bhFormatMoney(gia) + 'đ' : ''}</div>
+          <div class="bh-selected-item-meta">Mã: <strong>${bhEscHtml(ma)}</strong></div>
           <div class="bh-bought-item-row">
             <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',-1)">−</button>
             <span class="bh-qty-num">${it.qty}</span>
             <button class="bh-qty-btn" onclick="bhChangeQty('${bhEscHtml(it.maCu)}',1)">+</button>
-            <span class="bh-bought-item-price">${bhFormatMoney(subtotal)}đ</span>
           </div>
         </div>
         <button class="bh-selected-rm" onclick="bhRemoveBoughtSp('${bhEscHtml(it.maCu)}')">×</button>
@@ -2256,10 +2254,13 @@ function bhRenderBoughtSelected() {
 }
 
 function bhRenderBoughtTotal() {
-  let total = 0;
-  BH.tempItems.forEach(it => total += bhGiaSP(it.maCu) * it.qty);
+  // [v16.0] Bỏ hiển thị tổng tiền (doanh thu) — giá chưa trừ KM/chiết khấu nên không phản ánh đúng
   const el = document.getElementById('bh-bought-total');
-  if (el) el.textContent = total > 0 ? bhFormatMoney(total) + 'đ' : '0đ';
+  if (el) {
+    el.textContent = '';
+    const wrap = el.closest('.bh-bought-total-bar') || el.closest('.bh-bought-total-wrap') || el.parentElement;
+    if (wrap) wrap.style.display = 'none';
+  }
 }
 
 function bhUpdateBoughtConfirmBtn() {
@@ -2337,7 +2338,7 @@ async function bhBoughtConfirm() {
       }
     } catch(e) {}
   };
-  bhShowToast('✓ Phiên #' + s.num + ' - Đã mua' + (total > 0 ? ' · ' + bhFormatMoney(total) + 'đ' : ''), 'success', undoFn);
+  bhShowToast('✓ Phiên #' + s.num + ' - Đã mua', 'success', undoFn);
 
   // Gửi server NGẦM với retry (3 lần)
   bhSendKtPhienWithRetry({
@@ -3051,7 +3052,6 @@ function bhQlRenderHistory() {
           <div class="bh-hist-meta">
             ${ngayHienThi ? '<span style="color:#0F6E56;font-weight:600">'+ngayHienThi+'</span> · ' : ''}${bhEscHtml(p.maCH)} · ${p.gioBD} → ${p.gioKT || '--'} · ${p.thoiLuong || '--'}
             ${p.tenNV ? ' · NV: ' + bhEscHtml(p.tenNV) : ''}
-            ${p.tongGiaTri ? ' · <strong>' + bhFormatMoney(p.tongGiaTri) + 'đ</strong>' : ''}
           </div>
         </div>
         <div class="bh-hist-time">${ngayHienThi}</div>
@@ -3144,7 +3144,6 @@ function bhQlOpenDetail(idPhien) {
         ${spQTHtml}
         <div class="bh-field-label">Sản phẩm đã mua</div>
         ${spMuaHtml}
-        ${p.tongGiaTri ? '<div class="bh-field-label">Tổng giá trị</div><div style="font-size:14px;font-weight:600;color:var(--green)">' + bhFormatMoney(p.tongGiaTri) + 'đ</div>' : ''}
         ${p.lyDo ? '<div class="bh-field-label">Lý do không mua</div><div style="font-size:13px;color:var(--text-m)">' + bhEscHtml(p.lyDo) + '</div>' : ''}
         ${p.ghiChu ? '<div class="bh-field-label">Ghi chú</div><div style="font-size:13px;color:var(--text-m);white-space:pre-wrap">' + bhEscHtml(p.ghiChu) + '</div>' : ''}
       `;
@@ -3396,7 +3395,6 @@ async function bhQlLoadDashboard() {
         <div class="bh-dash-title">Tổng quan</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
           <div><div style="color:var(--text-m);font-size:11px">Tổng phiên</div><div style="font-size:18px;font-weight:600">${t.tongPhien || 0}</div></div>
-          <div><div style="color:var(--text-m);font-size:11px">Tổng giá trị</div><div style="font-size:16px;font-weight:600;color:var(--green)">${bhFormatMoney(t.tongGiaTri || 0)}đ</div></div>
           <div><div style="color:var(--text-m);font-size:11px">Tỷ lệ chuyển đổi</div><div style="font-size:18px;font-weight:600;color:var(--blue)">${t.tyLeChuyenDoi || 0}%</div></div>
           <div><div style="color:var(--text-m);font-size:11px">Thời lượng TB</div><div style="font-size:16px;font-weight:600">${t.thoiLuongTB || '0'} phút</div></div>
         </div>

@@ -1023,12 +1023,12 @@ async function settingsDownloadBHExcel(btn){
       if (offset > 50000) break;
     }
     if (!all.length) { _setActionBusy(btn, false); showToast('Không có dữ liệu tháng này', 'warn'); return; }
-    const rows = [['Ngày', 'Mã CH', 'Tên CH', 'Khu vực', 'Mã NV', 'Tên NV', 'Giờ mở', 'Giờ đóng', 'Trạng thái', 'Kết quả', 'Lý do không mua', 'Phút', 'Tổng giá trị', 'SP quan tâm', 'SP đã mua', 'Ghi chú']];
+    const rows = [['Ngày', 'Mã CH', 'Tên CH', 'Khu vực', 'Mã NV', 'Tên NV', 'Giờ mở', 'Giờ đóng', 'Trạng thái', 'Kết quả', 'Lý do không mua', 'Phút', 'SP quan tâm', 'SP đã mua', 'Ghi chú']];
     all.forEach(r => rows.push([
       r.ngay, r.ma_ch, r.ten_ch_snapshot||'', r.khu_vuc||'',
       r.ma_nv||'', r.ten_nv_snapshot||'', r.gio_mo||'', r.gio_dong||'',
       r.trang_thai||'', r.ket_qua||'', r.ly_do_khong_mua||'',
-      r.thoi_luong_phut||'', r.tong_gia_tri||'', r.sp_quan_tam_text||'', r.sp_da_mua_text||'', r.ghi_chu||''
+      r.thoi_luong_phut||'', r.sp_quan_tam_text||'', r.sp_da_mua_text||'', r.ghi_chu||''
     ]));
     await _xlsxDownload('ban_hang_' + yyyyMm + '.xlsx', 'Bán hàng ' + yyyyMm, rows);
     _setActionBusy(btn, false);
@@ -1800,7 +1800,7 @@ async function adm2RenderPhienHomNay(bodyEl){
         : '<span style="background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">—</span>';
       const ycXoa = p.yeu_cau_xoa ? '<span style="background:#FEE2E2;color:#991B1B;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:600;margin-left:4px">🗑 YC XÓA</span>' : '';
       const _soSP = p.sp_da_mua_text ? p.sp_da_mua_text.split(',').filter(x => x.trim()).length : 0;
-      const tien = p.tong_gia_tri ? `<div style="font-size:12px;color:#0F172A;margin-top:2px"><strong>${Number(p.tong_gia_tri).toLocaleString('vi-VN')}đ</strong> · ${_soSP} SP</div>` : '';
+      const tien = _soSP ? `<div style="font-size:12px;color:#0F172A;margin-top:2px">${_soSP} SP</div>` : '';
       const ghiChu = p.ghi_chu ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;font-style:italic">"${adm2Esc(p.ghi_chu)}"</div>` : '';
       
       return `
@@ -1882,10 +1882,6 @@ async function adm2EditPhien(id){
               <option value="DA_HUY" ${p.trang_thai==='DA_HUY'?'selected':''}>DA_HUY</option>
             </select>
           </div>
-          <div>
-            <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Tổng giá trị (VNĐ)</label>
-            <input id="aep-tong-tien" type="number" value="${p.tong_gia_tri||0}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
-          </div>
         </div>
         <div style="margin-bottom:14px">
           <label style="display:block;font-size:11px;color:#6B7280;margin-bottom:4px">Ghi chú</label>
@@ -1910,7 +1906,6 @@ async function adm2SaveEditPhien(id){
       gio_dong: document.getElementById('aep-gio-dong').value ? new Date(document.getElementById('aep-gio-dong').value).toISOString() : null,
       ket_qua: document.getElementById('aep-ket-qua').value || null,
       trang_thai: document.getElementById('aep-trang-thai').value,
-      tong_gia_tri: parseInt(document.getElementById('aep-tong-tien').value) || 0,
       ghi_chu: document.getElementById('aep-ghi-chu').value.trim() || null,
     };
     const { error } = await supa.from('phien_ban_hang').update(updates).eq('id', id);

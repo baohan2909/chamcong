@@ -38,7 +38,7 @@ const PQ_GROUPS = [
   ]},
   { id:'banhang', ten:'Bán hàng & Đơn hàng', quyen:[
     { id:'banhang.phien',     ten:'Phiên bán hàng' },
-    { id:'banhang.dashboard', ten:'Dashboard doanh số' },
+    { id:'banhang.dashboard', ten:'Dashboard bán hàng' },
     { id:'donhang.nhan',      ten:'Nhận đơn về cửa hàng' },
     { id:'donhang.quanly',    ten:'Quản lý / điều phối đơn hàng' },
   ]},

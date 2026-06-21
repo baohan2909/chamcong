@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v15.9',
+  'sys.cache_version': 'v16.0',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -524,7 +524,7 @@ const HUB_GROUPS = {
     title: 'Bán hàng hệ thống',
     items: [
       { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('banhang') },
-      { label:'Dashboard doanh số', desc:'Báo cáo doanh số',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('dashboard') },
+      { label:'Dashboard bán hàng', desc:'Theo dõi phiên bán hàng',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('dashboard') },
     ]
   },
   bangiao: {
@@ -998,7 +998,7 @@ function khoiDongApp(){
     if (mBHCh) mBHCh.style.display='';
     // [v13.28 FIX] Null-safe — menu-lichca-ql có thể đã retire
     const _showCH = (id) => { const el = document.getElementById(id); if (el) el.style.display = ''; };
-    // [v13.49] CH KHÔNG quản lý/duyệt nhân sự — chỉ giữ Dashboard doanh số.
+    // [v13.49] CH KHÔNG quản lý/duyệt nhân sự — chỉ giữ Dashboard bán hàng.
     // Ẩn: Nhân sự, Lịch ca QL (các mục quản lý). Duyệt yêu cầu giữ ẩn (chờ RPC lọc theo CH).
     _showCH('menu-dashboard');
     // [v13.90] Bật nhận đơn Khách Online chạy nền — popup hiện ở mọi tab

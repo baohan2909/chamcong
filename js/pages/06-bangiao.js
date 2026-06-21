@@ -105,7 +105,7 @@ function bgBuildGroups(){
 
   // Group 1: Tiền mặt
   bgGroups.push({
-    key:'tien', ten:'Tiền mặt & doanh thu', type:'tien',
+    key:'tien', ten:'Tiền mặt', type:'tien',
     items: [
       { id:'tien_mat_ket', ten:'Tiền mặt trong két & trong kho' },
       { id:'tien_ban_hang', ten:'Tiền bán hàng thu trong ca' },
@@ -1224,7 +1224,7 @@ function bgDetailRenderHtml(d){
   
   // Tiền section
   const tienHtml = `<div class="bgd-section">
-    <div class="bgd-section-l">Tiền mặt & doanh thu</div>
+    <div class="bgd-section-l">Tiền mặt</div>
     <div class="bgd-tien-row"><span>Tiền mặt két & kho</span><b>${fmt(h.tien_mat_ket)} đ</b></div>
     ${h.tien_mat_ket_ghi_chu?`<div class="bgd-note">${escHtml(h.tien_mat_ket_ghi_chu)}</div>`:''}
     <div class="bgd-tien-row"><span>Tiền bán hàng trong ca</span><b>${fmt(h.tien_ban_hang)} đ</b></div>

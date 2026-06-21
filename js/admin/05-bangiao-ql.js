@@ -2764,7 +2764,7 @@ function bgqlBuildHmTree(){
   const ts = bgqlDanhMucTS || [];
   const mk = (arr) => arr.map(x => ({ ma:'ts:'+x.stt, ten:x.ten }));
   return [
-    { key:'tien', ten:'Tiền mặt & doanh thu', children:[
+    { key:'tien', ten:'Tiền mặt', children:[
       {ma:'tien:tien_mat_ket', ten:'Tiền két'},
       {ma:'tien:tien_ban_hang', ten:'Tiền bán hàng'},
       {ma:'tien:tien_chi', ten:'Tiền chi'},
