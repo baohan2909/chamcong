@@ -102,6 +102,29 @@ function pqQuyenHienHuu(cd){
   return pqDefaultFor(cd);
 }
 
+// ─── Phạm vi dữ liệu (scope) — chiều "thấy của ai" ───
+const PQ_SCOPES = [
+  { id:'all',     ten:'Toàn hệ thống',           mo_ta:'Mọi khu vực, mọi cửa hàng',
+    ic:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>' },
+  { id:'khuvuc',  ten:'Theo khu vực phụ trách',  mo_ta:'Chỉ vùng mình quản lý (lấy theo dữ liệu)',
+    ic:'<path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>' },
+  { id:'cuahang', ten:'Theo cửa hàng',           mo_ta:'Cửa hàng mình + nhân sự trong đó',
+    ic:'<path d="M3 9l1-5h16l1 5M5 9v11h14V9M9 20v-6h6v6"/>' },
+  { id:'canhan',  ten:'Chỉ cá nhân',             mo_ta:'Chỉ thông tin của bản thân',
+    ic:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>' },
+];
+function pqDefaultScope(cd){
+  if (cd === 'ADMIN' || cd === 'QLNS') return 'all';
+  if (/^QLBH/.test(cd) || /^QL/.test(cd)) return 'khuvuc';
+  if (cd === 'CHT') return 'cuahang';
+  return 'canhan';
+}
+function pqScopeHienHuu(cd){
+  const it = pqList.find(x => x.chuc_danh === cd);
+  if (it && it.daLuu && it.pham_vi) return it.pham_vi;
+  return pqDefaultScope(cd);
+}
+
 // ─── State ───
 let pqList = [];            // [{chuc_danh, so_nguoi, ten_hien_thi, quyen[]}]
 let pqChon = new Set();     // chức danh đang chọn để set
@@ -109,6 +132,7 @@ let pqTick = new Set();     // quyền đang tick (áp khi lưu)
 let pqGroupOpen = {};       // nhóm nào đang mở
 let pqSearch = '';
 let pqDirty = false;        // có thay đổi chưa lưu
+let pqScope = 'canhan';     // phạm vi dữ liệu đang chọn
 
 // Tên hiển thị cho chức danh hệ thống
 const PQ_TEN_CD = {
@@ -132,6 +156,7 @@ async function pqInit(){
       so_nguoi: x.so_nguoi || 0,
       ten_hien_thi: x.ten_hien_thi || '',
       quyen: Array.isArray(x.quyen) ? x.quyen : [],
+      pham_vi: x.pham_vi || '',
       daLuu: Array.isArray(x.quyen) && x.quyen.length > 0,  // đã có quyền riêng trong DB
     }));
     pqChon = new Set(); pqTick = new Set(); pqDirty = false;
@@ -212,7 +237,22 @@ function pqRenderPanel(){
 
   const groups = PQ_GROUPS.map(g => pqRenderGroup(g)).filter(Boolean).join('');
 
-  return banner + toolbar + `<div class="pq-groups">${groups || '<div class="pq-noresult">Không có quyền khớp tìm kiếm.</div>'}</div>` + pqFooterSpacer();
+  const scopeUI = `<div class="pq-scope">
+      <div class="pq-scope-head">Phạm vi dữ liệu <span>— chức danh này được thấy dữ liệu của ai</span></div>
+      <div class="pq-scope-opts">
+        ${PQ_SCOPES.map(s => `<button class="pq-scope-opt${pqScope===s.id?' on':''}" onclick="pqSetScope('${s.id}')">
+          <span class="pq-scope-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${s.ic}</svg></span>
+          <span class="pq-scope-txt"><span class="pq-scope-ten">${s.ten}</span><span class="pq-scope-mt">${s.mo_ta}</span></span>
+          <span class="pq-scope-radio"></span>
+        </button>`).join('')}
+      </div>
+    </div>`;
+
+  const quyenHead = `<div class="pq-quyen-head">Hạng mục quyền</div>`;
+
+  return banner + scopeUI + quyenHead + toolbar
+    + `<div class="pq-groups">${groups || '<div class="pq-noresult">Không có quyền khớp tìm kiếm.</div>'}</div>`
+    + pqFooterSpacer();
 }
 
 // Menu sao chép từ chức danh khác
@@ -266,18 +306,23 @@ function pqFooterSpacer(){ return '<div style="height:76px"></div>'; }
 // ─── Tương tác ───
 function pqToggleCD(cd){
   if (pqChon.has(cd)) pqChon.delete(cd); else pqChon.add(cd);
-  // Nạp lại tick theo tập chọn — dùng quyền đã lưu, hoặc mặc định hệ thống nếu chưa lưu
+  // Nạp lại tick + phạm vi theo tập chọn
   if (pqChon.size === 1){
-    pqTick = new Set(pqQuyenHienHuu(Array.from(pqChon)[0]));
+    const c = Array.from(pqChon)[0];
+    pqTick = new Set(pqQuyenHienHuu(c));
+    pqScope = pqScopeHienHuu(c);
   } else if (pqChon.size > 1){
     const sets = Array.from(pqChon).map(c => new Set(pqQuyenHienHuu(c)));
     pqTick = new Set(Array.from(sets[0]||[]).filter(id => sets.every(s => s.has(id))));
+    pqScope = pqScopeHienHuu(Array.from(pqChon)[0]);  // gợi ý theo chức danh đầu
   } else {
     pqTick = new Set();
   }
   pqDirty = false;
   pqRender();
 }
+
+function pqSetScope(id){ pqScope = id; pqDirty = true; pqRender(); }
 
 function pqToggleQuyen(id){
   if (pqTick.has(id)){
@@ -351,8 +396,9 @@ function pqUpdateFooter(){
   if (pqChon.size === 0){ f.style.display = 'none'; return; }
   f.style.display = 'flex';
   const n = pqChon.size;
+  const scopeTen = (PQ_SCOPES.find(s => s.id === pqScope) || {}).ten || '';
   document.getElementById('pq-footer-info').innerHTML =
-    `<b>${pqTick.size}</b> quyền · áp cho <b>${n}</b> chức danh`;
+    `<b>${pqTick.size}</b> quyền · ${scopeTen} · áp cho <b>${n}</b> chức danh`;
   const btn = document.getElementById('pq-footer-save');
   btn.disabled = false;
 }
@@ -370,13 +416,13 @@ async function pqSave(){
     try {
       const ten = pqTenChucDanh(cd, (pqList.find(x=>x.chuc_danh===cd)||{}).ten_hien_thi);
       const { data, error } = await supa.rpc('fn_save_quyen_chuc_danh', {
-        p_admin: adminMa, p_chuc_danh: cd, p_ten: ten, p_quyen: quyenArr,
+        p_admin: adminMa, p_chuc_danh: cd, p_ten: ten, p_quyen: quyenArr, p_pham_vi: pqScope,
       });
       if (error || (data && data.success === false)) { fail.push(cd); }
       else {
         ok++;
         const item = pqList.find(x => x.chuc_danh === cd);
-        if (item) item.quyen = quyenArr.slice();
+        if (item) { item.quyen = quyenArr.slice(); item.pham_vi = pqScope; item.daLuu = true; }
       }
     } catch(e){ fail.push(cd); }
   }
