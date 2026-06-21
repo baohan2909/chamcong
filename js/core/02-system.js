@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v15.6',
+  'sys.cache_version': 'v15.7',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -722,7 +722,36 @@ function _setupKeyboardHandler(){
 }
 
 // ─── KHỞI ĐỘNG ──────────────────────────────────────────────
+// [v15.7] ───── RBAC: nạp quyền + phạm vi của người dùng ─────
+window.SESSION_QUYEN = []; window.SESSION_PHAMVI = 'canhan';
+window.SESSION_KV = null; window.SESSION_KVPT = []; window.SESSION_MACH = null; window.SESSION_CHUCDANH = '';
+window.SESSION_QUYEN_READY = false;
+function pqLoadQuyenSession(){
+  try{
+    if(typeof SESSION==='undefined'||!SESSION||!SESSION.ma) return;
+    supa.rpc('fn_get_quyen_user',{p_ma:SESSION.ma}).then(({data,error})=>{
+      if(error||!data||!data.success) return;
+      window.SESSION_QUYEN   = Array.isArray(data.quyen)?data.quyen:[];
+      window.SESSION_PHAMVI  = data.pham_vi||'canhan';
+      window.SESSION_KV      = data.khu_vuc||null;
+      window.SESSION_KVPT    = Array.isArray(data.khu_vuc_phu_trach)?data.khu_vuc_phu_trach:[];
+      window.SESSION_MACH    = data.ma_ch||null;
+      window.SESSION_CHUCDANH= data.chuc_danh||'';
+      window.SESSION_QUYEN_READY = true;
+    }).catch(()=>{});
+  }catch(e){}
+}
+// Kiểm quyền: ADMIN luôn full. (Phần áp dụng sẽ dùng hàm này, làm cuốn chiếu.)
+function coQuyen(maQuyen){
+  if(typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN') return true;
+  return (window.SESSION_QUYEN||[]).indexOf(maQuyen)!==-1;
+}
+function phamViData(){ return window.SESSION_PHAMVI||'canhan'; }
+function khuVucChoPhep(){ return window.SESSION_KVPT||[]; }
+window.coQuyen=coQuyen; window.phamViData=phamViData; window.khuVucChoPhep=khuVucChoPhep;
+
 function khoiDongApp(){
+  pqLoadQuyenSession();   // [v15.7] nạp quyền nền — chưa khống chế UI ở bước này
   document.getElementById('disp-ten-nv').textContent=SESSION.ten;
   document.getElementById('disp-ma-nv').textContent=SESSION.ma;
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
