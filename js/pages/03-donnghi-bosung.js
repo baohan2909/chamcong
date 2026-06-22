@@ -536,6 +536,16 @@ function _renderDashAlerts(alerts){
 let _accDnpRange='tatca'; // [v10 FIX #6] default 'Tất cả'
 let _accDnpData=null;
 
+// [v16.2] Nhận diện vị trí di động (Đội SALE + Cơ Động) — dùng cho form bổ sung ca
+function _bscLaDiDong(tenCH, maCH){
+  if (typeof _laViTriDiDong === 'function') return _laViTriDiDong(tenCH || '', maCH || '');
+  const t = (tenCH || '').trim().toLowerCase();
+  const m = (maCH || '').trim().toUpperCase();
+  return m === 'CODONG'
+    || t.startsWith('đội sale') || t.startsWith('doi sale')
+    || t.startsWith('cơ động')  || t.startsWith('co dong');
+}
+
 // [v7.0] MODAL: Xin bổ sung ca
 async function moModalBoSungCa(){
   const m = document.getElementById('bsc-modal');
@@ -628,9 +638,9 @@ function bscShowCHSug(){
   ).slice(0, 15);
   if (!matched.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = matched.map(ch => {
-    const isDoi = /đội\s*sale/i.test(ch.ten_ch || '');
+    const isDoi = _bscLaDiDong(ch.ten_ch || '', ch.ma_ch || '');
     const tagHtml = isDoi
-      ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>`
+      ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>`
       : '';
     return `<div onmousedown="event.preventDefault();bscPickCH('${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
          style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
@@ -650,8 +660,8 @@ function bscPickCH(ma, ten){
   document.getElementById('bsc-ch-sug').style.display = 'none';
   const hint = document.getElementById('bsc-ch-hint');
   if (hint) { hint.textContent = '✓ ' + ten; hint.style.color = '#059669'; }
-  // [v10.85] Nếu chọn Đội SALE → hiện field CH thực
-  const isDoi = /đội\s*sale/i.test(ten);
+  // [v16.2] Nếu chọn vị trí di động (Đội SALE hoặc Cơ Động) → hiện field CH thực
+  const isDoi = _bscLaDiDong(ten, ma);
   const wrap = document.getElementById('bsc-chthuc-wrap');
   if (wrap) {
     wrap.style.display = isDoi ? '' : 'none';
@@ -671,7 +681,7 @@ function bscOnCHThucInput() {
 function bscShowCHThucSug() {
   const inp = document.getElementById('bsc-chthuc-inp');
   const sug = document.getElementById('bsc-chthuc-sug');
-  const list = (window._bscChList || []).filter(ch => !/đội\s*sale/i.test(ch.ten_ch || ''));
+  const list = (window._bscChList || []).filter(ch => !_bscLaDiDong(ch.ten_ch || '', ch.ma_ch || ''));
   const q = inp.value.trim().toLowerCase();
   let matched;
   if (!q) matched = list.slice(0, 12);
@@ -740,14 +750,15 @@ async function guiBoSungCa(){
   if (!maCH) { errEl.textContent = 'Vui lòng chọn cửa hàng.'; errEl.style.display='block'; return; }
   if (lyDo.length < 10) { errEl.textContent = 'Lý do tối thiểu 10 ký tự.'; errEl.style.display='block'; return; }
 
-  // [v10.85] Nếu chọn Đội SALE → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
+  // [v16.2] Nếu chọn vị trí di động (Đội SALE/Cơ Động) → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
   let maChFinal = maCH;
-  const isDoi = /đội\s*sale/i.test(tenCHChon);
+  const isDoi = _bscLaDiDong(tenCHChon, maCH);
+  const isCoDong = !!(isDoi && (typeof _laCoDong === 'function') && _laCoDong(tenCHChon, maCH));
   if (isDoi) {
     const maChThuc = document.getElementById('bsc-chthuc').value.trim();
     const tenChThuc = document.getElementById('bsc-chthuc-inp').value;
     if (!maChThuc) {
-      errEl.textContent = 'Đã chọn Đội SALE — vui lòng chọn cửa hàng đang hỗ trợ.';
+      errEl.textContent = 'Đã chọn vị trí di động — vui lòng chọn cửa hàng đang hỗ trợ.';
       errEl.style.display = 'block'; return;
     }
     maChFinal = maChThuc;
@@ -767,7 +778,8 @@ async function guiBoSungCa(){
       p_gio: gio,
       p_loai: loai,
       p_ma_ch: maChFinal,
-      p_ly_do: lyDo
+      p_ly_do: lyDo,
+      p_nguon: isCoDong ? 'CO_DONG' : null
     });
     if (error) throw error;
     if (data && data.success === false) {

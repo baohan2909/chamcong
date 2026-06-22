@@ -1442,7 +1442,8 @@ function _buildDoiSaleMap(records) {
     // 3) ghi_chu format mới
     const ghi = r.ghi_chu || r.ghiChu || '';
     if (ghi) {
-      const m = ghi.match(/\[(đội\s*sale[^\]]*)\]/i);
+      // [v16.2] Bắt cả "[Cơ Động]" (không chỉ Đội SALE) → hiển thị ghép "Cơ Động - CH"
+      const m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
       if (m) map[key] = m[1].trim();
     }
   });

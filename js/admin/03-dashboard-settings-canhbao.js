@@ -1425,7 +1425,7 @@ async function adm2LoadSuaLogBody() {
         //  - còn lại → chỉ tên CH, KHÔNG tag
         let chHtml = '';
         if (l.tenCH) {
-          const mGhi = (l.ghiChu || '').match(/\[(đội\s*sale[^\]]*)\]/i);
+          const mGhi = (l.ghiChu || '').match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
           const di = l.deviceInfo || '';
           const mDi = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
           if (initIsDoi) {
@@ -1525,15 +1525,17 @@ async function adm2SuaLog(id, ngay) {
   const tenCHChon = document.getElementById('sua-ch-inp-' + id).value || '';
   if (!gio) { adm2Toast('Cần nhập giờ', 'error'); return; }
 
-  // [v10.85] Detect đội sale → bắt buộc nhập CH thực
+  // [v10.85] Detect vị trí di động → bắt buộc nhập CH thực
   let maChFinal = maCH || null;
   let lyDoFinal = 'Sửa từ form duyệt CB';
   const isDoi = maCH && _slLaDiDong(tenCHChon, maCH);
+  // [v16.2] Cơ Động cần ghi nguon='CO_DONG' để fn_tong_hop_ngay bỏ lỗi "khác CH" → tính giờ
+  const isCoDong = !!(isDoi && (typeof _laCoDong === 'function') && _laCoDong(tenCHChon, maCH));
   if (isDoi) {
     const maChThuc = (document.getElementById('sua-chthuc-' + id).value || '').trim();
     const tenChThuc = document.getElementById('sua-chthuc-inp-' + id).value || '';
     if (!maChThuc) {
-      adm2Toast('Đã chọn Đội SALE — vui lòng chọn cửa hàng đang hỗ trợ.', 'error');
+      adm2Toast('Đã chọn vị trí di động — vui lòng chọn cửa hàng đang hỗ trợ.', 'error');
       return;
     }
     maChFinal = maChThuc;
@@ -1547,7 +1549,8 @@ async function adm2SuaLog(id, ngay) {
     const d = await adm2Rpc('fn_admin_sua_cham_cong', {
       p_admin: SESSION.ma, p_id: id,
       p_thoi_gian: thoiGian, p_loai: loai,
-      p_ma_ch: maChFinal, p_ly_do: lyDoFinal
+      p_ma_ch: maChFinal, p_ly_do: lyDoFinal,
+      p_nguon: isCoDong ? 'CO_DONG' : null
     });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
     _suaLogState.daSuaGio = true;
