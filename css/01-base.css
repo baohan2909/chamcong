@@ -231,6 +231,9 @@
 .ch-input { width:100%; font-size:14px; font-weight:500; color:var(--text); border:none; outline:none; background:transparent; padding:0; }
 .ch-input::placeholder { color:var(--text-lt); font-weight:400; }
 .card-ch-overflow { overflow:visible !important; position:relative; z-index:50; }
+/* [v16.1] Card đang gõ (focus) nổi lên trên card kế bên — fix dropdown gợi ý ô "Cửa hàng chấm công"
+   bị card "CỬA HÀNG THỰC TẾ ĐANG LÀM" (và dòng chữ đỏ của nó) đè lên khi Cơ động/Đội SALE */
+.card-ch-overflow:focus-within { z-index:100; }
 .suggest-list { position:absolute; top:100%; left:0; right:0; z-index:999; background:white; border:0.5px solid var(--border); border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18); max-height:165px; overflow-y:auto; display:none; -webkit-overflow-scrolling:touch; margin-top:4px; }
 .suggest-item { padding:11px 16px; font-size:13px; border-bottom:0.5px solid var(--border); cursor:pointer; }
 .suggest-item:last-child { border-bottom:none; }

@@ -1332,6 +1332,17 @@ async function adm2TuChoiCanhBao(id) {
 // ═══════════════════════════════════════════════════════════════
 let _suaLogState = { maNV: null, ngay: null, cbId: null, daSuaGio: false };
 
+// [v16.1] Nhận diện vị trí di động (Đội SALE + Cơ Động) cho form sửa lịch.
+//   Ưu tiên hàm chuẩn _laViTriDiDong (js/core/02-system.js); fallback nếu chưa load.
+function _slLaDiDong(tenCH, maCH){
+  if (typeof _laViTriDiDong === 'function') return _laViTriDiDong(tenCH || '', maCH || '');
+  const t = (tenCH || '').trim().toLowerCase();
+  const m = (maCH || '').trim().toUpperCase();
+  return m === 'CODONG'
+    || t.startsWith('đội sale') || t.startsWith('doi sale')
+    || t.startsWith('cơ động')  || t.startsWith('co dong');
+}
+
 async function adm2OpenSuaLog(maNV, ngay, cbId) {
   _suaLogState = { maNV, ngay, cbId, daSuaGio: false };
   let modal = document.getElementById('adm2-sua-log-modal');
@@ -1406,7 +1417,7 @@ async function adm2LoadSuaLogBody() {
       : logs.map(l => {
         // [v10.85] Hiển thị value ban đầu: nếu là Đội SALE → tag tím
         const initVal = l.maCH ? ((l.tenCH || l.maCH) + ' (' + l.maCH + ')') : '';
-        const initIsDoi = /đội\s*sale/i.test(l.tenCH || '');
+        const initIsDoi = _slLaDiDong(l.tenCH || '', l.maCH || '');
         // [v13.11] Tag Đội SALE PER-RECORD (không lây từ log khác trong ngày):
         //  - tenCH là đội SALE → tô tím nguyên tên
         //  - ghiChu chứa "[Đội SALE X] hỗ trợ..." (format mới) → tag đội + tên CH thực
@@ -1517,7 +1528,7 @@ async function adm2SuaLog(id, ngay) {
   // [v10.85] Detect đội sale → bắt buộc nhập CH thực
   let maChFinal = maCH || null;
   let lyDoFinal = 'Sửa từ form duyệt CB';
-  const isDoi = maCH && /đội\s*sale/i.test(tenCHChon);
+  const isDoi = maCH && _slLaDiDong(tenCHChon, maCH);
   if (isDoi) {
     const maChThuc = (document.getElementById('sua-chthuc-' + id).value || '').trim();
     const tenChThuc = document.getElementById('sua-chthuc-inp-' + id).value || '';
@@ -1567,8 +1578,8 @@ function suaCHShowSug(logId) {
   ).slice(0, 15);
   if (!matched.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = matched.map(ch => {
-    const isDoi = /đội\s*sale/i.test(ch.ten_ch || '');
-    const tagHtml = isDoi ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>` : '';
+    const isDoi = _slLaDiDong(ch.ten_ch || '', ch.ma_ch || '');
+    const tagHtml = isDoi ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>` : '';
     return `<div onmousedown="event.preventDefault();suaCHPick('${logId}','${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
        style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
        onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
@@ -1583,7 +1594,7 @@ function suaCHPick(logId, ma, ten) {
   document.getElementById('sua-ch-inp-' + logId).value = ten + ' (' + ma + ')';
   document.getElementById('sua-ch-' + logId).value = ma;
   document.getElementById('sua-ch-sug-' + logId).style.display = 'none';
-  const isDoi = /đội\s*sale/i.test(ten);
+  const isDoi = _slLaDiDong(ten, ma);
   const wrap = document.getElementById('sua-chthuc-wrap-' + logId);
   if (wrap) {
     wrap.style.display = isDoi ? '' : 'none';
@@ -1604,7 +1615,7 @@ function suaCHThucOnInput(logId) {
 function suaCHThucShowSug(logId) {
   const inp = document.getElementById('sua-chthuc-inp-' + logId);
   const sug = document.getElementById('sua-chthuc-sug-' + logId);
-  const list = (window._bscChList || []).filter(ch => !/đội\s*sale/i.test(ch.ten_ch || ''));
+  const list = (window._bscChList || []).filter(ch => !_slLaDiDong(ch.ten_ch || '', ch.ma_ch || ''));
   if (!list.length) { sug.style.display = 'none'; return; }
   const q = inp.value.trim().toLowerCase();
   let matched;
