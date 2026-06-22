@@ -1301,7 +1301,7 @@
 .mna-tq-card.a-green  .mna-tq-card-icon { background: #ECFDF5; color: #0E7A5C; }
 .mna-tq-card.a-amber  .mna-tq-card-icon { background: #FEF3C7; color: #B45309; }
 .mna-tq-card.a-blue   .mna-tq-card-icon { background: #DBEAFE; color: #1D4ED8; }
-.mna-tq-card.a-violet .mna-tq-card-icon { background: #EDE9FE; color: #6D28D9; }
+.mna-tq-card.a-violet .mna-tq-card-icon { background: #F0FDFA; color: #0F766E; }
 .mna-tq-card.expanded {
   box-shadow: 0 0 0 2px #0F6E56, 0 2px 8px rgba(15,110,86,.15);
 }

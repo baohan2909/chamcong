@@ -55,7 +55,7 @@ if (!MUANON_ADMIN.tqSortStack || MUANON_ADMIN.tqSortStack.length === 0) {
 const MUANON_TAGS_ADMIN = [
   { code: 'MUBAOHIEM',    label: 'Mũ bảo hiểm',   color: '#185FA5' },
   { code: 'NONKETTHUONG', label: 'Nón kết',       color: '#0F6E56' },
-  { code: 'NONSNAPBACK',  label: 'Snapback',      color: '#7C3AED' },
+  { code: 'NONSNAPBACK',  label: 'Snapback',      color: '#0F766E' },
   { code: 'NONVANH',      label: 'Nón vành',      color: '#BA7517' },
   { code: 'NONDACBIET',   label: 'Đặc biệt',      color: '#DB2777' },
   { code: 'NONTREEM',     label: 'Trẻ em',        color: '#0891B2' },

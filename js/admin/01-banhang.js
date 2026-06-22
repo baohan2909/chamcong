@@ -678,7 +678,7 @@ function bxhConfetti() {
     container.id = 'bxh-confetti';
     document.body.appendChild(container);
   }
-  const colors = ['#C9A227', '#F5E6A8', '#A78BFA', '#60A5FA', '#10B981', '#F472B6'];
+  const colors = ['#C9A227', '#F5E6A8', '#5EEAD4', '#60A5FA', '#10B981', '#F472B6'];
   for (let i = 0; i < 35; i++) {
     const piece = document.createElement('div');
     piece.className = 'bxh-confetti-piece';

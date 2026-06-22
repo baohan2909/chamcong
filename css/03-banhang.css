@@ -939,7 +939,7 @@
 .bh-ql-stat.green { background:var(--green-lt); } .bh-ql-stat.green .n { color:var(--green); }
 .bh-ql-stat.blue { background:#FEF3C7; } .bh-ql-stat.blue .n { color:#92400E; }
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
-.bh-ql-stat.purple { background:#F3E8FF; } .bh-ql-stat.purple .n { color:#7C3AED; }
+.bh-ql-stat.purple { background:#F0FDFA; } .bh-ql-stat.purple .n { color:#0F766E; }
 /* [v11.8+] Thẻ stat 6 - YC xóa (cam) */
 .bh-ql-stat.orange { background:#FFEDD5; } .bh-ql-stat.orange .n { color:#9A3412; }
 .bh-ql-stat.orange.has-yc { animation:bhPulseOrange 1.5s ease-in-out infinite; }

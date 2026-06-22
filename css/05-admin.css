@@ -63,7 +63,7 @@
 .adm2-stat-icon.blue { background:#EFF6FF; color:#2563EB; }
 .adm2-stat-icon.amber { background:#FFFBEB; color:#D97706; }
 .adm2-stat-icon.emerald { background:#ECFDF5; color:#059669; }
-.adm2-stat-icon.violet { background:#F5F3FF; color:#7C3AED; }
+.adm2-stat-icon.violet { background:#F0FDFA; color:#0F766E; }
 .adm2-stat-icon.rose { background:#FFF1F2; color:#E11D48; }
 .adm2-stat-icon.slate { background:#F1F5F9; color:#475569; }
 .adm2-stat-label { font-size:11px; color:#6B7280; font-weight:500; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
@@ -133,7 +133,7 @@
 .adm2-badge.nv { background:#DBEAFE; color:#1E40AF; }
 .adm2-badge.ql { background:#FEF3C7; color:#92400E; }
 .adm2-badge.ch { background:#D1FAE5; color:#065F46; }
-.adm2-badge.role { background:#EDE9FE; color:#5B21B6; }
+.adm2-badge.role { background:#F0FDFA; color:#115E59; }
 .adm2-badge.active { background:#D1FAE5; color:#065F46; }
 .adm2-badge.inactive { background:#FEE2E2; color:#991B1B; }
 .adm2-badge.warn { background:#FEF3C7; color:#92400E; }

@@ -452,7 +452,7 @@ const SETTINGS_GROUP_META = {
   cham_cong:  { icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', accent:'#0F6E56', tint:'#ECFDF5' },
   nghi_phep:  { icon:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>', accent:'#BE185D', tint:'#FDF2F8' },
   duyet:      { icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>', accent:'#D97706', tint:'#FFFBEB' },
-  giao_dien:  { icon:'<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>', accent:'#7C3AED', tint:'#F5F3FF' },
+  giao_dien:  { icon:'<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>', accent:'#0F766E', tint:'#F0FDFA' },
   he_thong:   { icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>', accent:'#DC2626', tint:'#FEF2F2' },
   hanh_dong:  { icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', accent:'#0EA5E9', tint:'#F0F9FF' },
   checklist:  { icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', accent:'#0D9488', tint:'#F0FDFA' },
@@ -735,7 +735,7 @@ function _settingsRenderActions(){
     { key:'cache',    title:'Bump cache version', desc:'Buộc browser của mọi user xoá cache, tải lại bản mới nhất', color:'#0EA5E9', tint:'#F0F9FF',
       icon:'<polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/>',
       onclick:'settingsBumpCacheVersion(this)' },
-    { key:'cron',     title:'Áp dụng giờ auto-close mới', desc:'Reschedule cron job theo cài đặt cc.auto_close_gio', color:'#7C3AED', tint:'#F5F3FF',
+    { key:'cron',     title:'Áp dụng giờ auto-close mới', desc:'Reschedule cron job theo cài đặt cc.auto_close_gio', color:'#0F766E', tint:'#F0FDFA',
       icon:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
       onclick:'settingsRescheduleAutoClose(this)' },
     { key:'quota',    title:'Reset quota bổ sung ca', desc:'Đặt lại số lần bổ sung ca cho 1 NV trong tháng', color:'#D97706', tint:'#FFFBEB',
@@ -1429,11 +1429,11 @@ async function adm2LoadSuaLogBody() {
           const di = l.deviceInfo || '';
           const mDi = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
           if (initIsDoi) {
-            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(l.tenCH)}</span>`;
+            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(l.tenCH)}</span>`;
           } else if (mGhi) {
-            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(mGhi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
+            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(mGhi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
           } else if (mDi) {
-            chHtml = `<span style="color:#7C3AED;font-weight:600">${adm2Esc(mDi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
+            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(mDi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
           } else {
             chHtml = adm2Esc(l.tenCH);
           }
@@ -1472,8 +1472,8 @@ async function adm2LoadSuaLogBody() {
             </div>
           </div>
           <!-- [v10.85] Field CH thực khi đã chọn Đội SALE -->
-          <div id="sua-chthuc-wrap-${l.id}" style="display:${initIsDoi?'':'none'};padding:10px 12px;background:#FAF5FF;border:1.5px solid #C4B5FD;border-radius:8px">
-            <label style="display:block;font-size:11px;font-weight:700;color:#5B21B6;margin-bottom:4px">
+          <div id="sua-chthuc-wrap-${l.id}" style="display:${initIsDoi?'':'none'};padding:10px 12px;background:#F0FDFA;border:1.5px solid #99F6E4;border-radius:8px">
+            <label style="display:block;font-size:11px;font-weight:700;color:#115E59;margin-bottom:4px">
               🏬 Cửa hàng NV đang hỗ trợ <span style="color:#DC2626">*</span>
             </label>
             <div style="position:relative">
@@ -1483,7 +1483,7 @@ async function adm2LoadSuaLogBody() {
               <input type="hidden" id="sua-chthuc-${l.id}" value="">
               <div id="sua-chthuc-sug-${l.id}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.15);margin-top:4px;max-height:240px;overflow-y:auto;z-index:100"></div>
             </div>
-            <div style="font-size:11px;color:#7C3AED;margin-top:5px;line-height:1.4">
+            <div style="font-size:11px;color:#0F766E;margin-top:5px;line-height:1.4">
               Bản ghi này sẽ lưu vào CH thực, ghi chú prefix "<b>[Đội SALE X] hỗ trợ ...</b>"
             </div>
           </div>
@@ -1582,7 +1582,7 @@ function suaCHShowSug(logId) {
   if (!matched.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = matched.map(ch => {
     const isDoi = _slLaDiDong(ch.ten_ch || '', ch.ma_ch || '');
-    const tagHtml = isDoi ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>` : '';
+    const tagHtml = isDoi ? `<span style="background:#F0FDFA;color:#0F766E;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>` : '';
     return `<div onmousedown="event.preventDefault();suaCHPick('${logId}','${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
        style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
        onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">

@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.2',
+  'sys.cache_version': 'v16.3',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -251,8 +251,8 @@ function _hienBannerReload(newVer){
   if(document.getElementById('_ver-banner'))return;
   const el=document.createElement('div');
   el.id='_ver-banner';
-  el.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:white;padding:12px 16px;z-index:10000;text-align:center;font-weight:700;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:slideDown .3s';
-  el.innerHTML=`🎉 Có phiên bản mới (${newVer}) — tự động tải lại sau <span id="_ver-sec">5</span>s. <button onclick="location.reload()" style="margin-left:8px;background:white;color:#7c3aed;border:none;padding:4px 12px;border-radius:6px;font-weight:700;cursor:pointer">Tải ngay</button>`;
+  el.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#0F766E,#06b6d4);color:white;padding:12px 16px;z-index:10000;text-align:center;font-weight:700;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:slideDown .3s';
+  el.innerHTML=`🎉 Có phiên bản mới (${newVer}) — tự động tải lại sau <span id="_ver-sec">5</span>s. <button onclick="location.reload()" style="margin-left:8px;background:white;color:#0F766E;border:none;padding:4px 12px;border-radius:6px;font-weight:700;cursor:pointer">Tải ngay</button>`;
   document.body.appendChild(el);
   let s=5;
   const iv=setInterval(()=>{

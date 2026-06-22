@@ -640,7 +640,7 @@ function bscShowCHSug(){
   sug.innerHTML = matched.map(ch => {
     const isDoi = _bscLaDiDong(ch.ten_ch || '', ch.ma_ch || '');
     const tagHtml = isDoi
-      ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>`
+      ? `<span style="background:#F0FDFA;color:#0F766E;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>`
       : '';
     return `<div onmousedown="event.preventDefault();bscPickCH('${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
          style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"

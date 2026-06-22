@@ -303,7 +303,7 @@ function renderLCQL(){
   // SVG: location pin, store, user, calendar, chevron
   const _icoKV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
   const _icoCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
-  const _icoNV = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  const _icoNV = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
   const _icoCal= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
   // [v10.85 YC#2] Sort KV theo thứ tự: Hà Nội, Bắc Trung Bộ, Trung Tây Nguyên, HCM, Đông Nam Bộ, Tây Nam Bộ, còn lại
   const _kvSortLich = (a, b) => {
@@ -640,14 +640,14 @@ async function taiLichSuCC(){
         ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">ĐANG LV</span>'
         : (r.trang_thai_o === 'RA_GIUA_CA' ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">RA GIỮA</span>' : '');
       const autoTag = r.nguon === 'AUTO_CLOSE'
-        ? ' <span style="background:#F3E8FF;color:#7C3AED;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700">AUTO</span>' : '';
+        ? ' <span style="background:#F0FDFA;color:#0F766E;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700">AUTO</span>' : '';
       const _isDoiRec = /đội\s*sale/i.test(r.ten_ch_snapshot || '');
       const _doiTen = doiMap[r.ma_nv + ':' + r.ngay];
       let tenCH;
       if (_isDoiRec) {
-        tenCH = `<span style="color:#7C3AED;font-weight:600">${escHtml(r.ten_ch_snapshot || '')}</span>`;
+        tenCH = `<span style="color:#0F766E;font-weight:600">${escHtml(r.ten_ch_snapshot || '')}</span>`;
       } else if (_doiTen && r.ten_ch_snapshot) {
-        tenCH = `<span style="color:#7C3AED;font-weight:600">${escHtml(_doiTen)}</span> - ${escHtml(r.ten_ch_snapshot)}`;
+        tenCH = `<span style="color:#0F766E;font-weight:600">${escHtml(_doiTen)}</span> - ${escHtml(r.ten_ch_snapshot)}`;
       } else {
         tenCH = escHtml(r.ten_ch_snapshot || '');
       }
@@ -894,7 +894,7 @@ function atlShowCHSug() {
   if (!matched.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = matched.map(ch => {
     const isDoi = /đội\s*sale/i.test(ch.ten_ch || '');
-    const tagHtml = isDoi ? `<span style="background:#F5F3FF;color:#7C3AED;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>` : '';
+    const tagHtml = isDoi ? `<span style="background:#F0FDFA;color:#0F766E;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>` : '';
     return `<div onmousedown="event.preventDefault();atlPickCH('${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
          style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
          onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
@@ -1396,16 +1396,16 @@ function _fmtChVoiDoiSale(maNV, tenCH, ngay) {
   if (!tenCH) return '';
   // Bản ghi này TẠI Đội SALE → tô tím nguyên tên
   if (/đội\s*sale/i.test(tenCH)) {
-    return `<span style="color:#7C3AED;font-weight:600">${escHtml(tenCH)}</span>`;
+    return `<span style="color:#0F766E;font-weight:600">${escHtml(tenCH)}</span>`;
   }
   // Có map từ data thực + ngày → check cùng ngày NV có chấm tại đội nào không
   if (ngay && window._doiSaleMap) {
     const doi = window._doiSaleMap[maNV + ':' + ngay];
-    if (doi) return `<span style="color:#7C3AED;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
+    if (doi) return `<span style="color:#0F766E;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
   }
   // Fallback: NV có CH mặc định là đội sale (case NV cố định)
   const doi = _getDoiSaleNV(maNV);
-  if (doi) return `<span style="color:#7C3AED;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
+  if (doi) return `<span style="color:#0F766E;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
   return escHtml(tenCH);
 }
 

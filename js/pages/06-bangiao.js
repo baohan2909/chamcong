@@ -630,6 +630,12 @@ async function bgSubmit(){
     return;
   }
 
+  // [v16.3] Biên bản giấy phải up SỐ CHẴN (2,4,6...) — mỗi tờ gồm 2 mặt
+  if (bgPhotos.length === 0 || bgPhotos.length % 2 !== 0){
+    showToast('Số ảnh biên bản phải chẵn (2, 4, 6...). Hiện có ' + bgPhotos.length + ' ảnh — vui lòng up đủ cả 2 mặt mỗi tờ.', 'warn');
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = 'Đang gửi...';
 

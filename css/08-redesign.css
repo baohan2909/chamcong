@@ -2716,10 +2716,10 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .bg-sv-step-t { font-size:11px; color:#94A3B8; flex-shrink:0; font-variant-numeric:tabular-nums; }
 .bg-sv-acts { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 .bg-sv-btn { flex:1; min-width:140px; padding:11px 14px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; touch-action:manipulation; }
-.bg-sv-btn-done { background:#1D9E75; color:#fff; }
-.bg-sv-btn-done:active { background:#178563; }
-.bg-sv-btn-close { background:#1B4965; color:#fff; }
-.bg-sv-btn-close:active { background:#143751; }
+.bg-sv-btn-done { background:linear-gradient(135deg,#22A878,#0F6E56); color:#fff; box-shadow:0 2px 10px rgba(15,110,86,.28); }
+.bg-sv-btn-done:active { background:linear-gradient(135deg,#178563,#0B5A46); box-shadow:0 1px 4px rgba(15,110,86,.3); }
+.bg-sv-btn-close { background:linear-gradient(135deg,#1D9E75,#0B5A46); color:#fff; box-shadow:0 2px 10px rgba(11,90,70,.28); }
+.bg-sv-btn-close:active { background:linear-gradient(135deg,#178563,#094A3A); box-shadow:0 1px 4px rgba(11,90,70,.3); }
 
 /* [v15.9] Xóa dữ liệu khẩn cấp */
 .xkc-lock { padding:30px; text-align:center; color:#94A3B8; font-size:13px; }
