@@ -2703,6 +2703,31 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .pq-quyen-head { font-size:13px; font-weight:800; color:#0F172A; margin-bottom:8px; }
 @media (max-width:420px){ .pq-scope-opts { grid-template-columns:1fr; } }
 
+/* [v16.5 F] Ô nhập tên hiển thị cho chức danh */
+.pq-tenedit { background:#fff; border:1.5px solid #E8EDF2; border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.pq-tenedit-head { font-size:13px; font-weight:800; color:#0F172A; margin-bottom:8px; }
+.pq-tenedit-head span { font-weight:500; color:#94A3B8; font-size:11.5px; }
+.pq-tenedit-head b { color:var(--green); font-weight:800; }
+.pq-tenedit-inp { width:100%; box-sizing:border-box; padding:10px 12px; border:1.5px solid #E2E8F0; border-radius:10px; font-size:13.5px; font-weight:600; color:#1E293B; outline:none; transition:border-color .15s; }
+.pq-tenedit-inp:focus { border-color:var(--green); }
+.pq-tenedit-inp::placeholder { color:#A8B3C2; font-weight:500; }
+
+/* [v16.5 G] 6 khu vực phụ trách (multi-select) */
+.pq-kv { background:#fff; border:1.5px solid #E8EDF2; border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.pq-kv-head { font-size:13px; font-weight:800; color:#0F172A; margin-bottom:10px; }
+.pq-kv-head span { font-weight:500; color:#94A3B8; font-size:11.5px; }
+.pq-kv-opts { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.pq-kv-opt { display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:10px; border:1.5px solid #E2E8F0; background:#fff; cursor:pointer; text-align:left; transition:all .15s; }
+.pq-kv-opt:hover { border-color:#CBD5E1; background:#F8FAFC; }
+.pq-kv-opt.on { border-color:var(--green); background:var(--green-lt); }
+.pq-kv-check { flex-shrink:0; width:20px; height:20px; border-radius:6px; border:2px solid #CBD5E1; display:flex; align-items:center; justify-content:center; color:#fff; transition:all .15s; }
+.pq-kv-check svg { width:13px; height:13px; opacity:0; }
+.pq-kv-opt.on .pq-kv-check { background:var(--green); border-color:var(--green); }
+.pq-kv-opt.on .pq-kv-check svg { opacity:1; }
+.pq-kv-ten { font-size:12.5px; font-weight:700; color:#1E293B; }
+.pq-kv-opt.on .pq-kv-ten { color:var(--green); }
+@media (max-width:420px){ .pq-kv-opts { grid-template-columns:1fr; } }
+
 /* [v15.8] Sự vụ phía nhân viên: chip người xử lý + lộ trình + nút hành động */
 .bg-sv-xl-chip { display:inline-block; margin-top:5px; padding:3px 9px; background:#EEF6FF; border:1px solid #BFDBFE; border-radius:20px; font-size:11px; font-weight:600; color:#1D4ED8; }
 .bg-sv-lotrinh { margin-top:10px; padding:10px 12px; background:#F8FAFC; border:1px solid #EEF2F6; border-radius:10px; }
@@ -2720,6 +2745,27 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 .bg-sv-btn-done:active { background:linear-gradient(135deg,#178563,#0B5A46); box-shadow:0 1px 4px rgba(15,110,86,.3); }
 .bg-sv-btn-close { background:linear-gradient(135deg,#1D9E75,#0B5A46); color:#fff; box-shadow:0 2px 10px rgba(11,90,70,.28); }
 .bg-sv-btn-close:active { background:linear-gradient(135deg,#178563,#094A3A); box-shadow:0 1px 4px rgba(11,90,70,.3); }
+
+/* [v16.4] Đếm ngược deadline sự vụ */
+.bg-sv-deadline { display:flex; align-items:center; gap:9px; margin-top:8px; padding:8px 11px; background:#F0FDFA; border:1px solid #99F6E4; border-left:3px solid #0F766E; border-radius:8px; }
+.bg-sv-dl-icon { font-size:15px; line-height:1; }
+.bg-sv-dl-main { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
+.bg-sv-dl-label { font-size:11.5px; color:#0F5C4E; }
+.bg-sv-dl-label b { color:#0B4A3E; font-weight:700; }
+.bg-sv-dl-count { font-size:13px; font-weight:800; color:#0F766E; font-variant-numeric:tabular-nums; letter-spacing:.2px; }
+.bg-sv-deadline.soon { background:#FFF7ED; border-color:#FED7AA; border-left-color:#F97316; }
+.bg-sv-deadline.soon .bg-sv-dl-label { color:#9A3412; }
+.bg-sv-deadline.soon .bg-sv-dl-label b { color:#7C2D12; }
+.bg-sv-deadline.soon .bg-sv-dl-count { color:#EA580C; }
+.bg-sv-deadline.overdue { background:#FEF2F2; border-color:#FECACA; border-left-color:#DC2626; }
+.bg-sv-deadline.overdue .bg-sv-dl-label { color:#991B1B; }
+.bg-sv-deadline.overdue .bg-sv-dl-label b { color:#7F1D1D; }
+.bg-sv-deadline.overdue .bg-sv-dl-count { color:#DC2626; }
+
+/* [v16.4] Toggle Đang xử lý / Lịch sử cho cơ động */
+.bg-sv-viewtabs { display:flex; gap:6px; margin-bottom:10px; }
+.bg-sv-vtab { flex:1; padding:8px 12px; border-radius:9px; border:1px solid #D1D5DB; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer; transition:all .15s; }
+.bg-sv-vtab.active { background:linear-gradient(135deg,#16A085,#0F766E); border-color:#0F766E; color:#fff; box-shadow:0 2px 8px rgba(15,118,110,.25); }
 
 /* [v15.9] Xóa dữ liệu khẩn cấp */
 .xkc-lock { padding:30px; text-align:center; color:#94A3B8; font-size:13px; }

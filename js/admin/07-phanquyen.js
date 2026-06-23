@@ -133,6 +133,11 @@ let pqGroupOpen = {};       // nhóm nào đang mở
 let pqSearch = '';
 let pqDirty = false;        // có thay đổi chưa lưu
 let pqScope = 'canhan';     // phạm vi dữ liệu đang chọn
+let pqTenEdit = '';         // [v16.5 F] tên hiển thị đang sửa (chỉ khi chọn đúng 1 chức danh)
+let pqKhuVuc = new Set();   // [v16.5 G] khu vực phụ trách đang chọn (khi scope = khuvuc)
+
+// [v16.5 G] 6 khu vực cố định — chọn 1 hoặc nhiều cho từng chức danh
+const PQ_KHU_VUC = ['Hồ Chí Minh','Hà Nội','Bắc Trung Bộ','Trung Tây Nguyên','Đông Nam Bộ','Tây Nam Bộ'];
 
 // Tên hiển thị cho chức danh hệ thống
 const PQ_TEN_CD = {
@@ -237,6 +242,13 @@ function pqRenderPanel(){
 
   const groups = PQ_GROUPS.map(g => pqRenderGroup(g)).filter(Boolean).join('');
 
+  // [v16.5 F] Ô nhập tên hiển thị — chỉ khi chọn ĐÚNG 1 chức danh (trừ ADMIN)
+  const tenEditUI = (cdDon && cdDon !== 'ADMIN') ? `<div class="pq-tenedit">
+      <div class="pq-tenedit-head">Tên hiển thị <span>— mã cột M: <b>${cdDon}</b></span></div>
+      <input id="pq-ten-inp" class="pq-tenedit-inp" type="text" value="${(pqTenEdit||'').replace(/"/g,'&quot;')}"
+        placeholder="VD: Cơ động Sài Gòn" oninput="pqOnTenInput(this.value)">
+    </div>` : '';
+
   const scopeUI = `<div class="pq-scope">
       <div class="pq-scope-head">Phạm vi dữ liệu <span>— chức danh này được thấy dữ liệu của ai</span></div>
       <div class="pq-scope-opts">
@@ -248,9 +260,20 @@ function pqRenderPanel(){
       </div>
     </div>`;
 
+  // [v16.5 G] 6 khu vực phụ trách — chỉ hiện khi phạm vi = "theo khu vực"
+  const kvUI = (pqScope === 'khuvuc') ? `<div class="pq-kv">
+      <div class="pq-kv-head">Khu vực phụ trách <span>— chọn 1 hoặc nhiều</span></div>
+      <div class="pq-kv-opts">
+        ${PQ_KHU_VUC.map(kv => `<button type="button" class="pq-kv-opt${pqKhuVuc.has(kv)?' on':''}" onclick="pqToggleKhuVuc('${kv}')">
+          <span class="pq-kv-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="pq-kv-ten">${kv}</span>
+        </button>`).join('')}
+      </div>
+    </div>` : '';
+
   const quyenHead = `<div class="pq-quyen-head">Hạng mục quyền</div>`;
 
-  return banner + scopeUI + quyenHead + toolbar
+  return banner + tenEditUI + scopeUI + kvUI + quyenHead + toolbar
     + `<div class="pq-groups">${groups || '<div class="pq-noresult">Không có quyền khớp tìm kiếm.</div>'}</div>`
     + pqFooterSpacer();
 }
@@ -311,18 +334,29 @@ function pqToggleCD(cd){
     const c = Array.from(pqChon)[0];
     pqTick = new Set(pqQuyenHienHuu(c));
     pqScope = pqScopeHienHuu(c);
+    const _it = pqList.find(x=>x.chuc_danh===c) || {};                      // [v16.5]
+    pqTenEdit = _it.ten_hien_thi || PQ_TEN_CD[c] || '';                     // tên hiện có
+    pqKhuVuc = new Set(Array.isArray(_it.khu_vuc_phu_trach)?_it.khu_vuc_phu_trach:[]);
   } else if (pqChon.size > 1){
     const sets = Array.from(pqChon).map(c => new Set(pqQuyenHienHuu(c)));
     pqTick = new Set(Array.from(sets[0]||[]).filter(id => sets.every(s => s.has(id))));
     pqScope = pqScopeHienHuu(Array.from(pqChon)[0]);  // gợi ý theo chức danh đầu
+    pqTenEdit = '';                                                          // [v16.5] nhiều → ẩn ô tên
+    const _it0 = pqList.find(x=>x.chuc_danh===Array.from(pqChon)[0]) || {};  // khu vực lấy theo chức danh đầu
+    pqKhuVuc = new Set(Array.isArray(_it0.khu_vuc_phu_trach)?_it0.khu_vuc_phu_trach:[]);
   } else {
-    pqTick = new Set();
+    pqTick = new Set(); pqTenEdit = ''; pqKhuVuc = new Set();
   }
   pqDirty = false;
   pqRender();
 }
 
 function pqSetScope(id){ pqScope = id; pqDirty = true; pqRender(); }
+// [v16.5] Ô nhập tên: KHÔNG re-render (giữ focus), chỉ cập nhật state + footer
+function pqOnTenInput(v){ pqTenEdit = v; pqDirty = true; pqUpdateFooter(); }
+// [v16.5 G] Toggle 1 khu vực phụ trách
+function pqToggleKhuVuc(kv){ if(pqKhuVuc.has(kv)) pqKhuVuc.delete(kv); else pqKhuVuc.add(kv); pqDirty = true; pqRender(); }
+window.pqOnTenInput = pqOnTenInput; window.pqToggleKhuVuc = pqToggleKhuVuc;
 
 function pqToggleQuyen(id){
   if (pqTick.has(id)){
@@ -414,15 +448,25 @@ async function pqSave(){
   for (const cd of pqChon){
     if (cd === 'ADMIN'){ ok++; continue; } // ADMIN full, bỏ qua
     try {
-      const ten = pqTenChucDanh(cd, (pqList.find(x=>x.chuc_danh===cd)||{}).ten_hien_thi);
+      // [v16.5 F] tên: nếu đang chọn đúng 1 chức danh → dùng tên trong ô nhập
+      const ten = (pqChon.size === 1 && pqTenEdit.trim())
+        ? pqTenEdit.trim()
+        : pqTenChucDanh(cd, (pqList.find(x=>x.chuc_danh===cd)||{}).ten_hien_thi);
+      // [v16.5 G] khu vực chỉ lưu khi phạm vi = theo khu vực
+      const khuVucArr = (pqScope === 'khuvuc') ? Array.from(pqKhuVuc) : [];
       const { data, error } = await supa.rpc('fn_save_quyen_chuc_danh', {
-        p_admin: adminMa, p_chuc_danh: cd, p_ten: ten, p_quyen: quyenArr, p_pham_vi: pqScope,
+        p_admin: adminMa, p_chuc_danh: cd, p_ten: ten, p_quyen: quyenArr,
+        p_pham_vi: pqScope, p_khu_vuc: khuVucArr,
       });
       if (error || (data && data.success === false)) { fail.push(cd); }
       else {
         ok++;
         const item = pqList.find(x => x.chuc_danh === cd);
-        if (item) { item.quyen = quyenArr.slice(); item.pham_vi = pqScope; item.daLuu = true; }
+        if (item) {
+          item.quyen = quyenArr.slice(); item.pham_vi = pqScope;
+          item.ten_hien_thi = ten; item.khu_vuc_phu_trach = khuVucArr.slice();
+          item.daLuu = true;
+        }
       }
     } catch(e){ fail.push(cd); }
   }
