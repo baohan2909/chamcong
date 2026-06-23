@@ -2878,3 +2878,70 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 /* Nút Về theo chức danh */
 .pq-footer-reset { padding:10px 16px; border-radius:10px; border:1.5px solid #E2E8F0; background:#fff; color:#B45309; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
 .pq-footer-reset:hover { border-color:#E0A93E; background:#FFFBEB; }
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  [v16.73] PHÂN QUYỀN — multi-select + autocomplete + thao tác inline
+ * ═══════════════════════════════════════════════════════════════════ */
+/* Checkbox chọn mục */
+.pq-cb { width:20px; height:20px; border:2px solid #CBD5E1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; background:#fff; transition:all .12s; }
+.pq-cb svg { width:13px; height:13px; color:#fff; opacity:0; transition:opacity .12s; }
+.pq-cb:hover { border-color:var(--green); }
+.pq-cb.on { background:var(--green); border-color:var(--green); }
+.pq-cb.on svg { opacity:1; }
+
+/* Hàng chức danh / cá nhân / NV */
+.pq-row { display:flex; align-items:center; gap:8px; padding:6px; border-radius:9px; }
+.pq-row:hover { background:#F8FAFC; }
+.pq-row.checked { background:var(--green-lt); }
+.pq-cd-main, .pq-cn-main { flex:1; min-width:0; cursor:pointer; display:flex; flex-direction:column; gap:1px; }
+.pq-cd-ma-big { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:13px; font-weight:800; color:#0F172A; letter-spacing:.3px; }
+.pq-row.checked .pq-cd-ma-big { color:var(--green); }
+.pq-cd-sub { font-size:10.5px; color:#94A3B8; display:flex; align-items:center; gap:6px; }
+
+/* Thanh giỏ chọn */
+.pq-gio-bar { display:flex; align-items:center; gap:10px; background:var(--green-lt); border:1.5px solid var(--green-bd,#A7D7C5); border-radius:11px; padding:9px 12px; margin-bottom:10px; }
+.pq-gio-count { font-size:13px; font-weight:800; color:var(--green); flex:1; }
+.pq-gio-go { padding:7px 14px; border-radius:9px; border:0; background:var(--green); color:#fff; font-size:12.5px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.pq-gio-go:hover { filter:brightness(1.05); }
+.pq-gio-clear { padding:7px 11px; border-radius:9px; border:1.5px solid #E2E8F0; background:#fff; color:#64748B; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+/* Inline tạo nhóm / đổi tên */
+.pq-inline-add { display:flex; gap:7px; align-items:center; margin-bottom:10px; padding:8px; background:#F8FAFC; border:1.5px dashed #CBD5E1; border-radius:11px; }
+.pq-inline-add input { flex:1; border:1.5px solid #E2E8F0; border-radius:8px; padding:8px 11px; font-size:13px; outline:none; }
+.pq-inline-add input:focus { border-color:var(--green); }
+.pq-inline-ok { padding:8px 14px; border-radius:8px; border:0; background:var(--green); color:#fff; font-size:12.5px; font-weight:800; cursor:pointer; }
+.pq-inline-cancel { padding:8px 12px; border-radius:8px; border:1.5px solid #E2E8F0; background:#fff; color:#64748B; font-size:12px; font-weight:700; cursor:pointer; }
+.pq-nhom-rename { flex:1; min-width:0; border:1.5px solid var(--green); border-radius:7px; padding:5px 9px; font-size:13.5px; font-weight:700; outline:none; }
+
+/* Nút icon nhỏ trên nhóm */
+.pq-icobtn { width:28px; height:28px; border-radius:7px; border:1.5px solid transparent; background:transparent; color:#94A3B8; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; padding:0; }
+.pq-icobtn svg { width:15px; height:15px; }
+.pq-icobtn:hover { background:#fff; border-color:#E2E8F0; color:var(--green); }
+.pq-icobtn-del:hover { color:#DC2626; border-color:#FECACA; }
+.pq-icobtn-x { width:24px; height:24px; font-size:17px; font-weight:700; line-height:1; color:#CBD5E1; }
+.pq-icobtn-x:hover { background:#FEF2F2; color:#DC2626; border-color:#FECACA; }
+
+/* Ô thêm thành viên + autocomplete */
+.pq-addbox { margin:6px 6px 8px; background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:11px; padding:8px; }
+.pq-addbox-inp { display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--green); border-radius:9px; padding:8px 11px; }
+.pq-addbox-inp svg { width:15px; height:15px; color:#94A3B8; flex-shrink:0; }
+.pq-addbox-inp input { flex:1; border:0; outline:none; font-size:13px; background:transparent; }
+.pq-addbox-close { border:0; background:transparent; color:#94A3B8; font-size:19px; cursor:pointer; line-height:1; padding:0 4px; }
+.pq-ac-list { margin-top:6px; max-height:260px; overflow-y:auto; background:#fff; border:1px solid #EEF2F6; border-radius:9px; }
+.pq-ac-group { font-size:10px; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:.5px; padding:7px 11px 3px; }
+.pq-ac-item { display:flex; align-items:center; gap:9px; padding:8px 11px; cursor:pointer; border-radius:7px; }
+.pq-ac-item:hover { background:var(--green-lt); }
+.pq-ac-ma { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:12px; font-weight:800; color:#0F172A; }
+.pq-ac-ava { width:24px; height:24px; border-radius:50%; background:#E2E8F0; color:#475569; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pq-ac-ten { flex:1; font-size:12.5px; font-weight:600; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pq-ac-meta { font-size:10.5px; color:#94A3B8; font-family:'JetBrains Mono',ui-monospace,monospace; flex-shrink:0; }
+
+/* Chip đối tượng trong panel */
+.pq-targets { display:flex; flex-wrap:wrap; gap:6px; margin-top:7px; }
+.pq-target-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:20px; font-size:11.5px; font-weight:600; }
+.pq-target-chuc_danh { background:#DBEAFE; color:#1D4ED8; }
+.pq-target-chuc_danh b { font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:800; }
+.pq-target-ca_nhan { background:var(--green-lt); color:var(--green); }
+.pq-target-x { cursor:pointer; font-size:14px; line-height:1; opacity:.6; }
+.pq-target-x:hover { opacity:1; }
+.pq-nhom-ic-plain { color:#94A3B8 !important; }
