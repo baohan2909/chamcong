@@ -88,6 +88,18 @@ async function bgqlLoadSuVu(){
   }
 }
 
+// [v16.4] Sự vụ "trễ": quá deadline mà chưa hoàn tất, HOẶC tạo >12h mà QL chưa phản hồi
+function bgqlLaTre(s){
+  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  const now = Date.now();
+  if (s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < now) return true;
+  if (!s.thoi_gian_phan_hoi && s.created_at){
+    const tuoiGio = (now - new Date(s.created_at).getTime()) / 3600000;
+    if (tuoiGio > 12) return true;
+  }
+  return false;
+}
+
 function bgqlRenderSuVuFilters(){
   const cont = document.getElementById('bgql-suvu-filters');
   if (!cont) return;
@@ -97,6 +109,7 @@ function bgqlRenderSuVuFilters(){
   const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)).length;
   const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
   const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
+  const _cTre = all.filter(bgqlLaTre).length;
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
   // [v13.91] Nút Chọn nhiều — mọi quản lý (ADMIN/QLNS/QLBH), chỉ tab "suvu"
@@ -117,6 +130,7 @@ function bgqlRenderSuVuFilters(){
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả (${all.length})</option>
+          <option value="tre"${bgqlSuVuFilter.trang_thai==='tre'?' selected':''}>Cảnh báo trễ (${_cTre})</option>
           <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
           <option value="dang_xu_ly"${bgqlSuVuFilter.trang_thai==='dang_xu_ly'?' selected':''}>Đang xử lý (${_cXuLy})</option>
           <option value="hoan_tat"${bgqlSuVuFilter.trang_thai==='hoan_tat'?' selected':''}>Hoàn tất (${_cXong})</option>
@@ -323,6 +337,7 @@ function bgqlGetFilteredSuVu(){
   // [v13.78] Lọc theo 5 trạng thái rõ ràng
   const _tt = bgqlSuVuFilter.trang_thai;
   if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
+  else if (_tt === 'tre') arr = arr.filter(bgqlLaTre);
   else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
   else if (_tt === 'hoan_tat') arr = arr.filter(s => s.trang_thai === 'HOAN_TAT');
   else if (_tt === 'huy') arr = arr.filter(s => s.trang_thai === 'HUY');
@@ -458,6 +473,7 @@ function bgqlSuVuCardHtml(s){
     ${checkbox}
     <div class="bgql-card-head">
       <span class="bgql-md-tag bgql-md-${s.muc_do||'CAN_THIET'}">${mdLbl}</span>
+      ${bgqlLaTre(s)?`<span class="bgql-tre-tag">TRỄ</span>`:''}
       ${stLbl?`<span class="bgql-st-tag ${isOpen?'open':'closed'}">${stLbl}</span>`:''}
       ${s.ma_sv?`<span class="bgql-masv">${escHtml(s.ma_sv)}</span>`:''}
       <span class="bgql-time">${bgqlFmtTimeShort(s.created_at)}</span>
@@ -518,7 +534,7 @@ window.bgqlHoanTat = async function(id){
   try {
     const { data, error } = await supa.rpc('fn_su_vu_dong', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
-      p_vai_tro_dong: SESSION.vaiTro, p_ghi_chu: note || null
+      p_vai_tro_dong: 'QUAN_LY', p_ghi_chu: note || null   // [v16.6] khớp constraint su_vu
     });
     if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
     showToast('✓ Đã đóng sự vụ', 'ok');

@@ -821,6 +821,12 @@ window.bgSubmit = bgSubmit;
 // ═════════════════════════════════════════════════════════════════════════
 //  TAB 2: SỰ VỤ — danh sách sự vụ phát sinh từ biên bản bàn giao
 // ═════════════════════════════════════════════════════════════════════════
+// [v16.4] Chế độ xem: 'dang' = đang xử lý | 'lichsu' = đã hoàn tất/hủy (kiểm soát tập trung)
+let _bgSuVuViewMode = 'dang';
+window.bgSuVuSetView = function(mode){
+  _bgSuVuViewMode = mode;
+  bgRenderSuVu();
+};
 async function bgRenderSuVu(){
   const list = document.getElementById('bg-suvu-list');
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
@@ -847,13 +853,26 @@ async function bgRenderSuVu(){
     });
     const cnt = document.getElementById('bg-suvu-count');
     const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+    const closed = data.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
     if (data.length === 0){
       list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
       if (cnt) cnt.style.display = 'none';
       return;
     }
     if (cnt){ if (opened.length>0){ cnt.style.display=''; cnt.textContent = opened.length; } else cnt.style.display='none'; }
-    list.innerHTML = data.map(bgSuVuCardHtml).join('');
+    // [v16.4] Toggle Đang xử lý / Lịch sử — kiểm soát tập trung sự vụ đã xong
+    const viewData = (_bgSuVuViewMode==='lichsu') ? closed : opened;
+    const toggleHtml = `<div class="bg-sv-viewtabs">
+        <button class="bg-sv-vtab${_bgSuVuViewMode!=='lichsu'?' active':''}" onclick="bgSuVuSetView('dang')">Đang xử lý${opened.length?' ('+opened.length+')':''}</button>
+        <button class="bg-sv-vtab${_bgSuVuViewMode==='lichsu'?' active':''}" onclick="bgSuVuSetView('lichsu')">Lịch sử${closed.length?' ('+closed.length+')':''}</button>
+      </div>`;
+    if (viewData.length === 0){
+      list.innerHTML = toggleHtml + '<div class="ns-empty">'+(_bgSuVuViewMode==='lichsu'?'Chưa có sự vụ đã hoàn tất.':'Không có sự vụ đang xử lý.')+'</div>';
+      bgSuVuStopTimer();
+      return;
+    }
+    list.innerHTML = toggleHtml + viewData.map(bgSuVuCardHtml).join('');
+    bgSuVuStartTimer();
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
 }
 
@@ -886,6 +905,7 @@ function bgSuVuCardHtml(s){
       <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:600;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
       <div class="chk-rec-by">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')} · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
       ${xlChip}
+      ${bgSuVuDeadlineHtml(s)}
       ${s.mo_ta?`<div class="chk-rec-note">${escHtml(s.mo_ta).slice(0,160)}</div>`:''}
       ${s.phan_hoi_xu_ly?`<div style="margin-top:6px;padding:8px 10px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:6px;font-size:12.5px;color:#0F2E45"><b style="color:#1B4965">Phản hồi:</b> ${escHtml(s.phan_hoi_xu_ly).slice(0,200)}</div>`:''}
       ${bgSuVuLoTrinh(s)}
@@ -914,6 +934,63 @@ function bgSuVuLoTrinh(s){
   </div>`;
 }
 
+// ─── [v16.4] Đếm ngược deadline xử lý — đồng hồ chạy cho cơ động/người xử lý ───
+function bgSuVuDeadlineHtml(s){
+  if (!s.deadline_xu_ly) return '';
+  // Đã xử lý xong / hoàn tất / hủy → không cần đếm ngược nữa
+  if (['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return '';
+  return `<div class="bg-sv-deadline">
+    <span class="bg-sv-dl-icon">⏱</span>
+    <span class="bg-sv-dl-main">
+      <span class="bg-sv-dl-label">Hạn xử lý: <b>${bgFmtDateTimeShort(s.deadline_xu_ly)}</b></span>
+      <span class="bg-sv-dl-count" data-deadline="${escHtml(s.deadline_xu_ly)}">—</span>
+    </span>
+  </div>`;
+}
+
+function _bgFmtConLai(ms){
+  const tot = Math.floor(Math.abs(ms)/1000);
+  const d = Math.floor(tot/86400);
+  const h = Math.floor((tot%86400)/3600);
+  const m = Math.floor((tot%3600)/60);
+  const sec = tot%60;
+  if (d > 0) return d+' ngày '+h+'g '+m+'p';
+  if (h > 0) return h+'g '+m+'p '+sec+'s';
+  return m+'p '+sec+'s';
+}
+
+function bgSuVuTickCountdowns(){
+  const now = Date.now();
+  const els = document.querySelectorAll('.bg-sv-dl-count');
+  if (!els.length) { bgSuVuStopTimer(); return; }
+  els.forEach(el=>{
+    const dl = el.getAttribute('data-deadline');
+    if (!dl) return;
+    const diff = new Date(dl).getTime() - now;
+    const box = el.closest('.bg-sv-deadline');
+    if (diff <= 0){
+      el.textContent = 'QUÁ HẠN ' + _bgFmtConLai(diff);
+      if (box){ box.classList.add('overdue'); box.classList.remove('soon'); }
+    } else {
+      el.textContent = 'còn ' + _bgFmtConLai(diff);
+      if (box){
+        box.classList.remove('overdue');
+        box.classList.toggle('soon', diff < 2*3600*1000); // < 2 giờ → cảnh báo cam
+      }
+    }
+  });
+}
+
+let _bgSuVuTimer = null;
+function bgSuVuStartTimer(){
+  bgSuVuStopTimer();
+  bgSuVuTickCountdowns();
+  _bgSuVuTimer = setInterval(bgSuVuTickCountdowns, 1000);
+}
+function bgSuVuStopTimer(){
+  if (_bgSuVuTimer){ clearInterval(_bgSuVuTimer); _bgSuVuTimer = null; }
+}
+
 // Cơ động / người xử lý xác nhận đã xử lý xong
 window.bgSuVuXacNhanXong = async function(id){
   if (!confirm('Xác nhận bạn đã xử lý xong sự vụ này?\nCửa hàng sẽ kiểm tra rồi xác nhận hoàn tất.')) return;
@@ -932,9 +1009,11 @@ window.bgSuVuDong = async function(id){
   const note = prompt('Ghi chú khi đóng (tùy chọn):', '');
   if (note === null) return;
   try {
+    // [v16.6] Chuẩn hóa vai trò đóng theo constraint su_vu (TAI_KHOAN_CH | TRUONG_CA)
+    const vaiTroDong = (SESSION.vaiTro === 'CUA_HANG') ? 'TAI_KHOAN_CH' : 'TRUONG_CA';
     const { data, error } = await supa.rpc('fn_su_vu_dong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'',
-      p_vai_tro_dong:SESSION.vaiTro||'NV', p_ghi_chu:note||null
+      p_vai_tro_dong:vaiTroDong, p_ghi_chu:note||null
     });
     if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
     showToast('✓ Đã xác nhận hoàn tất & đóng sự vụ', 'ok');
