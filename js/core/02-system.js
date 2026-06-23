@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.6',
+  'sys.cache_version': 'v16.71',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1753,33 +1753,12 @@ function _doSubmitFinal(){
     }
   } catch(e){}
 
-  // Hiển thị thành công NGAY
-  setBtn('s-done', '✓ Đã chấm công thành công');
+  // [v16.7] KHÔNG báo thành công vội — CHỜ server xác nhận để tránh mất bản ghi khi mạng lỗi
+  setBtn('s-loading', '⏳ Đang chấm công...');
   const rb = document.getElementById('result-box');
   rb.style.display = 'block';
-  if (preCheckGPS === true) {
-    rb.className = 'result-box r-ok';
-    rb.innerHTML = '✓ <strong>' + state.loai + '</strong> · GPS hợp lệ · Cách ' + preKhoangCach + 'm · ' + nowStr;
-  } else if (preCheckGPS === false) {
-    rb.className = 'result-box r-warn';
-    rb.innerHTML = '⚠ <strong>' + state.loai + '</strong> · Ngoài vùng (' + preKhoangCach + 'm) · Đã cảnh báo QLNS';
-  } else {
-    rb.className = 'result-box r-ok';
-    rb.innerHTML = '✓ <strong>' + state.loai + '</strong> · ' + nowStr;
-  }
-
-  // Update lịch sử local NGAY
-  const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
-  const preIsLoi = preCheckGPS === false;
-  logs.unshift({
-    loai:state.loai, lbcls:lbMap[state.loai]||'lb-v',
-    time:nowStr,
-    dist: preKhoangCach !== null ? preKhoangCach + 'm' : '--',
-    ok:!preIsLoi, xacNhan:preIsLoi?'KHÔNG HỢP LỆ':'OK',
-    ghiChu:'', loiType: preIsLoi ? 'gps' : '',
-    tenCH:tenCHDisplay, ngay:ngayCham,
-  });
-  renderLog();
+  rb.className = 'result-box r-ok';
+  rb.innerHTML = '⏳ Đang gửi lên hệ thống, vui lòng đợi...';
 
   // [v12-P2] Gửi server qua Supabase Storage + RPC
   // 1) Upload ảnh selfie lên Storage trước (nếu có) → lấy URL
@@ -1821,32 +1800,66 @@ function _doSubmitFinal(){
       _deviceInfo = '[GPS_WEAK:' + state.gpsAcc + 'm] ' + _deviceInfo;
     }
 
-    // Gọi RPC ghi chấm công
-    const { data: res, error } = await supa.rpc('fn_ghi_cham_cong_v2', {
-      p_ma_nv: SESSION.ma,
-      p_ten_nv: SESSION.ten,
-      p_ma_ch: maCH,
-      p_loai: loaiEnum,
-      p_lat: state.lat,
-      p_lng: state.lng,
-      p_gps_accuracy: state.gpsAcc,
-      p_anh_url: anhUrl,
-      p_anh_path: anhPath,
-      p_truong_ca: !!truongCa,
-      p_idempotency_key: idemKey,
-      p_device_info: _deviceInfo,
-      p_nguon: _isCoDong ? 'CO_DONG' : null
-    });
-    if (error) {
-      console.error('CC error:', error);
-      showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
+    // [v16.7] Gọi RPC với retry — CHỜ xác nhận success=true mới báo thành công
+    let res = null, lastErr = null;
+    for (let attempt = 1; attempt <= 3; attempt++){
+      try {
+        const { data, error } = await supa.rpc('fn_ghi_cham_cong_v2', {
+          p_ma_nv: SESSION.ma,
+          p_ten_nv: SESSION.ten,
+          p_ma_ch: maCH,
+          p_loai: loaiEnum,
+          p_lat: state.lat,
+          p_lng: state.lng,
+          p_gps_accuracy: state.gpsAcc,
+          p_anh_url: anhUrl,
+          p_anh_path: anhPath,
+          p_truong_ca: !!truongCa,
+          p_idempotency_key: idemKey,
+          p_device_info: _deviceInfo,
+          p_nguon: _isCoDong ? 'CO_DONG' : null
+        });
+        if (!error && data && data.success !== false){ res = data; break; }
+        lastErr = (error && error.message) || (data && data.error) || 'Lỗi không xác định';
+      } catch(ex){ lastErr = (ex && ex.message) || 'Lỗi mạng'; }
+      // Chưa thành công → thử lại (trừ lần cuối), backoff tăng dần
+      if (attempt < 3){
+        setBtn('s-loading', '⏳ Mạng chậm, thử lại (' + attempt + '/3)...');
+        await new Promise(r => setTimeout(r, 1200 * attempt));
+      }
+    }
+
+    // [v16.7] Thất bại sau 3 lần → BÁO LỖI RÕ, KHÔNG thêm lịch sử, cho chấm lại
+    if (!res){
+      console.error('CC failed after retries:', lastErr);
+      _ccChamThatBai('Kiểm tra mạng rồi chấm lại');
       return;
     }
-    // [DEBUG] Log response để debug
-    console.log('CC response:', res);
-    console.log('coLoiGPS:', res?.coLoiGPS, 'coLoiThuTu:', res?.coLoiThuTu, 'canhBao:', res?.canhBao);
-    if (res && (res.coLoiGPS || res.coLoiThuTu || (res.canhBao && res.canhBao.length > 0))) {
-      if (state.loai === 'Ra ca') hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
+
+    // [v16.7] ĐÃ XÁC NHẬN từ server (idempotency_key chống ghi trùng) → giờ mới báo thành công
+    const realTime = res.timestamp ? res.timestamp.substring(11,19) : nowStr;
+    setBtn('s-done', '✓ Đã chấm công thành công');
+    if (res.coLoiGPS){
+      rb.className = 'result-box r-warn';
+      rb.innerHTML = '⚠ <strong>' + state.loai + '</strong> · Ngoài vùng (' + (res.khoangCach||preKhoangCach||'?') + 'm) · Đã cảnh báo QLNS';
+    } else {
+      rb.className = 'result-box r-ok';
+      rb.innerHTML = '✓ <strong>' + state.loai + '</strong> · ' + realTime;
+    }
+    // Thêm vào lịch sử local (giờ chắc chắn đã vào DB)
+    const lbMap = {'Vào ca':'lb-v','Ra ca':'lb-r','Ra giữa ca':'lb-rg','Vào giữa ca':'lb-vg'};
+    logs.unshift({
+      loai:state.loai, lbcls:lbMap[state.loai]||'lb-v', time:realTime,
+      dist: (res.khoangCach!=null ? res.khoangCach+'m' : (preKhoangCach!=null ? preKhoangCach+'m' : '--')),
+      ok: !res.coLoiGPS, xacNhan: res.coLoiGPS ? 'KHÔNG HỢP LỆ' : 'OK',
+      ghiChu:'', loiType: res.coLoiGPS ? 'gps' : '',
+      tenCH:tenCHDisplay, ngay:ngayCham,
+    });
+    renderLog();
+
+    // Xử lý cảnh báo / giải trình / đếm ngược
+    if (res.coLoiGPS || res.coLoiThuTu || (res.canhBao && res.canhBao.length > 0)) {
+      if (state.loai === 'Ra ca') hienTomTatCa(realTime);
       const khoangCach = res.khoangCach || preKhoangCach || '?';
       // [v12-FIX] Hiện rõ loại lỗi thay vì "Chấm công cần xác nhận"
       const loiParts = [];
@@ -1866,14 +1879,30 @@ function _doSubmitFinal(){
       _gtSetupSuaUI();
       startGtTimer(300);
     } else if (state.loai === 'Ra ca') {
-      hienTomTatCa(res.timestamp ? res.timestamp.substring(11,19) : nowStr);
+      hienTomTatCa(realTime);
       startCountdown(30);
     } else {
       startCountdown(30);
     }
-  })().catch(() => {
-    showToast('⚠ Server lỗi - dữ liệu đang đồng bộ lại', 'warn');
+  })().catch((e) => {
+    console.error('CC exception:', e);
+    _ccChamThatBai('Kiểm tra mạng rồi chấm lại');
   });
+}
+
+// [v16.7] Chấm công thất bại (mạng/server lỗi sau khi đã thử lại) — KHÔNG ghi lịch sử giả,
+//          reset nút để nhân viên chấm lại, báo lỗi rõ ràng.
+function _ccChamThatBai(msg){
+  state.submitting = false;
+  state.submitted = false;
+  const rb = document.getElementById('result-box');
+  if (rb){
+    rb.style.display = 'block';
+    rb.className = 'result-box r-warn';
+    rb.innerHTML = '✗ <strong>Chấm công CHƯA thành công</strong> · ' + (msg || 'Vui lòng chấm lại');
+  }
+  showToast('✗ Chưa gửi được — vui lòng chấm lại', 'warn');
+  updateSubmitBtn(); // dựng lại nút XÁC NHẬN để chấm lại
 }
 
 // ─── COUNTDOWN (reload trang) ────────────────────────────────
