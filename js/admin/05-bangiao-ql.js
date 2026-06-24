@@ -389,7 +389,39 @@ function bgqlRenderSuVuList(){
     return;
   }
   list.innerHTML = arr.map(bgqlSuVuCardHtml).join('');
+  bgqlStartSvTimer();
 }
+
+// [v16.74] Đồng hồ đếm ngược deadline — chạy realtime cho mọi sự vụ đang mở
+function _bgqlFmtConLai(ms){
+  const tot = Math.floor(Math.abs(ms)/1000);
+  const d = Math.floor(tot/86400);
+  const h = Math.floor((tot%86400)/3600);
+  const m = Math.floor((tot%3600)/60);
+  const sec = tot%60;
+  const p2 = n => String(n).padStart(2,'0');
+  return (d>0 ? d+' ngày ' : '') + p2(h)+'g '+p2(m)+'p '+p2(sec)+'s';
+}
+function bgqlTickSvCountdowns(){
+  const now = Date.now();
+  const els = document.querySelectorAll('.bgql-dl-count');
+  if (!els.length){ bgqlStopSvTimer(); return; }
+  els.forEach(el=>{
+    const dl = el.getAttribute('data-deadline'); if (!dl) return;
+    const diff = new Date(dl).getTime() - now;
+    const box = el.closest('.bgql-deadline');
+    if (diff <= 0){
+      el.textContent = ' · QUÁ HẠN ' + _bgqlFmtConLai(diff);
+      if (box){ box.classList.add('past'); }
+    } else {
+      el.textContent = ' · còn ' + _bgqlFmtConLai(diff);
+      if (box){ box.classList.toggle('soon', diff < 2*3600*1000); }
+    }
+  });
+}
+let _bgqlSvTimer = null;
+function bgqlStartSvTimer(){ bgqlStopSvTimer(); bgqlTickSvCountdowns(); _bgqlSvTimer = setInterval(bgqlTickSvCountdowns, 1000); }
+function bgqlStopSvTimer(){ if (_bgqlSvTimer){ clearInterval(_bgqlSvTimer); _bgqlSvTimer = null; } }
 
 // [v13.73] Badge "tuổi" sự vụ — mở bao lâu / xử lý mất bao lâu
 function bgqlSuVuAge(s){
@@ -455,10 +487,12 @@ function bgqlSuVuCardHtml(s){
     const dt = new Date(s.deadline_xu_ly);
     const now = new Date();
     const past = dt < now && isOpen;
+    const showCount = isOpen && !['DA_XU_LY_XONG'].includes(s.trang_thai);
     deadline = `<div class="bgql-deadline${past?' past':''}">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Deadline: ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} ${pad(dt.getHours())}:${pad(dt.getMinutes())}
-      ${past?'<span style="color:#DC2626;font-weight:800;margin-left:4px">QUÁ HẠN</span>':''}
+      Hạn: ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} ${pad(dt.getHours())}:${pad(dt.getMinutes())}
+      ${showCount ? `<span class="bgql-dl-count" data-deadline="${escHtml(s.deadline_xu_ly)}">—</span>`
+                  : (past?'<span style="color:#DC2626;font-weight:800;margin-left:4px">QUÁ HẠN</span>':'')}
     </div>`;
   }
 

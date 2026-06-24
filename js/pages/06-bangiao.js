@@ -739,6 +739,8 @@ async function bgSubmit(){
     // 6) Auto tạo sự vụ cho từng item VD + chênh tiền + chênh hàng
     btn.innerHTML = 'Tạo sự vụ...';
     let svCount = 0;
+    let svTrung = 0;
+    const _demSv = (r)=>{ if (r && r.data && r.data.trung) svTrung++; else svCount++; };
     for (const g of bgGroups.filter(g=>g.type==='taisan')){
       for (const it of g.items){
         const st = bgState[it.id];
@@ -756,8 +758,7 @@ async function bgSubmit(){
             p_so_lieu: { stt:it.stt, khu_vuc:it.khu_vuc, nhom_hang:null },
             p_anh_urls: itemAnh[it.id] || [],
             p_muc_do: st.muc_do || 'CAN_THIET'
-          });
-          svCount++;
+          }).then(_demSv);
         }
       }
     }
@@ -775,8 +776,7 @@ async function bgSubmit(){
           p_mo_ta: note,
           p_so_lieu: { loai:k, so_tien: bgState[k].so_tien||0 },
           p_anh_urls: [], p_muc_do: (k === 'tien_chi' ? 'QUAN_TRONG' : 'KHAN_CAP')
-        });
-        svCount++;
+        }).then(_demSv);
       }
     }
     // Hàng có ghi chú
@@ -798,13 +798,15 @@ async function bgSubmit(){
             p_mo_ta: st.ghi_chu,
             p_so_lieu: { khu_vuc:it.khu_vuc, nhom:it.nhom_hang, sl:st.so_luong||0 },
             p_anh_urls: [], p_muc_do: 'QUAN_TRONG'
-          });
-          svCount++;
+          }).then(_demSv);
         }
       }
     }
 
-    showToast(`✓ Đã gửi biên bản${svCount?' · '+svCount+' sự vụ':''}`, 'ok');
+    let _svMsg = '✓ Đã gửi biên bản';
+    if (svCount) _svMsg += ' · ' + svCount + ' sự vụ mới';
+    if (svTrung) _svMsg += ' · ' + svTrung + ' cập nhật vào sự vụ đang mở';
+    showToast(_svMsg, 'ok');
     // Reset
     bgState = {}; bgPhotos = [];
     document.getElementById('bg-ghichu').value = '';
@@ -884,13 +886,17 @@ function bgSuVuCardHtml(s){
   const borderColor = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#F97316':'#1B4965';
   const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   const laNguoiXuLy = s.nguoi_xu_ly_ma && s.nguoi_xu_ly_ma === ma;
+  // [v16.74] Quyền đóng: chỉ Ban Quản lý (ADMIN/QLNS/QLBH...) hoặc tài khoản cửa hàng
+  const _V = (typeof SESSION!=='undefined' && SESSION) ? (SESSION.vaiTro||'') : '';
+  const laBanQuanLy = _V==='ADMIN' || _V==='ADMINBH' || _V==='QLNS' || /^QLBH/.test(_V);
+  const laCuaHang = _V==='CUA_HANG';
 
   // Nút hành động theo vai trò trong luồng
   let actBtns = '';
   if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
-  if (isOpen && s.trang_thai === 'DA_XU_LY_XONG'){
+  if (isOpen && s.trang_thai === 'DA_XU_LY_XONG' && (laBanQuanLy || laCuaHang)){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Xác nhận hoàn tất & đóng</button>`;
   }
   const xlChip = s.nguoi_xu_ly_ten ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>` : '';
@@ -905,6 +911,7 @@ function bgSuVuCardHtml(s){
       <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:600;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
       <div class="chk-rec-by">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')} · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
       ${xlChip}
+      ${s.so_lan_bao_lai > 1 ? `<div class="bg-sv-baolai">🔁 Cửa hàng đã báo lại <b>${s.so_lan_bao_lai} lần</b> · đây là cùng một sự vụ đang xử lý, không tạo mới</div>` : ''}
       ${bgSuVuDeadlineHtml(s)}
       ${s.mo_ta?`<div class="chk-rec-note">${escHtml(s.mo_ta).slice(0,160)}</div>`:''}
       ${s.phan_hoi_xu_ly?`<div style="margin-top:6px;padding:8px 10px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:6px;font-size:12.5px;color:#0F2E45"><b style="color:#1B4965">Phản hồi:</b> ${escHtml(s.phan_hoi_xu_ly).slice(0,200)}</div>`:''}
@@ -954,9 +961,9 @@ function _bgFmtConLai(ms){
   const h = Math.floor((tot%86400)/3600);
   const m = Math.floor((tot%3600)/60);
   const sec = tot%60;
-  if (d > 0) return d+' ngày '+h+'g '+m+'p';
-  if (h > 0) return h+'g '+m+'p '+sec+'s';
-  return m+'p '+sec+'s';
+  const p2 = n => String(n).padStart(2,'0');
+  // [v16.74] Luôn hiện đủ ngày/giờ/phút/giây để bộ đếm chạy liên tục
+  return (d>0 ? d+' ngày ' : '') + p2(h)+'g '+p2(m)+'p '+p2(sec)+'s';
 }
 
 function bgSuVuTickCountdowns(){
@@ -1009,8 +1016,11 @@ window.bgSuVuDong = async function(id){
   const note = prompt('Ghi chú khi đóng (tùy chọn):', '');
   if (note === null) return;
   try {
-    // [v16.6] Chuẩn hóa vai trò đóng theo constraint su_vu (TAI_KHOAN_CH | TRUONG_CA)
-    const vaiTroDong = (SESSION.vaiTro === 'CUA_HANG') ? 'TAI_KHOAN_CH' : 'TRUONG_CA';
+    // [v16.74] Vai trò đóng đúng theo loại tài khoản (khớp constraint su_vu)
+    const _V = SESSION.vaiTro || '';
+    const vaiTroDong = _V === 'CUA_HANG' ? 'TAI_KHOAN_CH'
+                     : (_V==='ADMIN'||_V==='ADMINBH'||_V==='QLNS'||/^QLBH/.test(_V)) ? 'QUAN_LY'
+                     : 'TRUONG_CA';
     const { data, error } = await supa.rpc('fn_su_vu_dong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'',
       p_vai_tro_dong:vaiTroDong, p_ghi_chu:note||null
