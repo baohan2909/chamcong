@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.78',
+  'sys.cache_version': 'v16.79',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -538,6 +538,7 @@ const HUB_GROUPS = {
     title: 'Bàn giao hệ thống',
     items: [
       { label:'Bàn giao ca',        desc:'Bàn giao tại cửa hàng', ic:_hubIc.box,   roles:['NV','CTV','CUA_HANG'],    quyen:'bangiao.ca',       act:()=>goToPage('bangiao') },
+      { label:'Sự vụ khu vực',      desc:'Tiếp nhận & xử lý sự vụ vùng', ic:_hubIc.check, roles:[],           quyen:'suvu.codong',      act:()=>moSuVuCoDong() },
       { label:'Bàn giao (Quản lý)', desc:'Đối soát, sự vụ',       ic:_hubIc.check, roles:['QLNS','QLBH'],            quyen:'bangiao.quanly',   act:()=>goToPage('bangiao-ql') },
     ]
   },
@@ -559,6 +560,104 @@ function _hubItemVisible(it){
 }
 // moLichCaQL wrapper an toàn (taiLichCaQL nằm ở page nhân sự)
 function moLichCaQL_safe(){ try{ goToPage('lichca-ql'); }catch(e){ try{ taiLichCaQL(); }catch(_){} } }
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [B1] SỰ VỤ KHU VỰC — màn hình cho CƠ ĐỘNG (pool / nhận việc)
+//  Sự vụ tự hiện theo khu vực; hiển thị "Điều phối: Ban quản lý" (ẩn việc tự động).
+// ═════════════════════════════════════════════════════════════════════════
+function moSuVuCoDong(){
+  let ov = document.getElementById('svcd-overlay');
+  if(!ov){ ov = document.createElement('div'); ov.id='svcd-overlay'; document.body.appendChild(ov); }
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column;';
+  ov.innerHTML = `
+    <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+      <div style="font-weight:800;font-size:16px">Sự vụ khu vực</div>
+      <button onclick="document.getElementById('svcd-overlay').remove()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div id="svcd-body" style="flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch">
+      <div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>
+    </div>`;
+  svcdReload();
+}
+
+async function svcdReload(){
+  const body = document.getElementById('svcd-body');
+  if(!body) return;
+  try{
+    const ma = SESSION.ma;
+    const [r1, r2] = await Promise.all([
+      supa.rpc('fn_su_vu_co_dong_list',    { p_ma_nv: ma }),
+      supa.rpc('fn_su_vu_co_dong_cua_toi', { p_ma_nv: ma })
+    ]);
+    if(r1.error) throw r1.error;
+    const cho = Array.isArray(r1.data) ? r1.data : [];
+    const cua = Array.isArray(r2.data) ? r2.data : [];
+    body.innerHTML =
+      svcdSection('Chờ nhận', cho, 'nhan') +
+      svcdSection('Tôi đang xử lý', cua, 'xong');
+  }catch(e){
+    body.innerHTML = '<div style="text-align:center;color:#DC2626;padding:24px">Lỗi tải sự vụ: '+escHtml(e.message||'')+'</div>';
+  }
+}
+
+function svcdSection(title, list, mode){
+  const head = `<div style="font-weight:800;color:#0F2E45;font-size:14px;margin:6px 2px 10px">${title} <span style="color:#1D9E75">(${list.length})</span></div>`;
+  if(!list.length){
+    return head + `<div style="text-align:center;color:#94A3B8;padding:18px;font-size:13px;background:#fff;border-radius:10px;margin-bottom:16px">Không có sự vụ.</div>`;
+  }
+  return head + list.map(s => svcdCard(s, mode)).join('') + '<div style="height:8px"></div>';
+}
+
+function svcdCard(s, mode){
+  const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do] || s.muc_do;
+  const accent = s.muc_do==='KHAN_CAP' ? '#DC2626' : s.muc_do==='QUAN_TRONG' ? '#D97706' : '#1B4965';
+  let dl = '';
+  if(s.deadline_xu_ly){
+    const d = new Date(s.deadline_xu_ly);
+    const past = d.getTime() < Date.now();
+    dl = `<div style="font-size:12px;font-weight:700;margin-top:6px;color:${past?'#DC2626':'#475569'}">Hạn: ${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}${past?' · QUÁ HẠN':''}</div>`;
+  }
+  const btn = mode==='nhan'
+    ? `<button onclick="svcdNhanViec('${s.id}')" style="width:100%;margin-top:10px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer">Nhận việc</button>`
+    : `<button onclick="svcdXong('${s.id}')" style="width:100%;margin-top:10px;background:#0F6E56;color:#fff;border:none;padding:10px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer">Xác nhận đã xử lý xong</button>`;
+  return `<div style="background:#fff;border-left:4px solid ${accent};border-radius:10px;padding:12px 13px;margin-bottom:10px;box-shadow:0 1px 4px rgba(15,46,69,.06)">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap">
+      <span style="background:${accent};color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${mdLbl}</span>
+      ${s.ma_sv?`<span style="font-size:11px;color:#64748B;font-weight:600">${escHtml(s.ma_sv)}</span>`:''}
+    </div>
+    <div style="font-weight:700;color:#0F172A;font-size:14px">${escHtml(s.tieu_de||'')}</div>
+    <div style="font-size:12px;color:#475569;margin:3px 0"><b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</b></div>
+    <div style="font-size:12px;color:#1D9E75;font-weight:700">Điều phối: Ban quản lý</div>
+    ${s.mo_ta?`<div style="font-size:13px;color:#334155;margin-top:6px;line-height:1.45">${escHtml(s.mo_ta).slice(0,220)}${s.mo_ta.length>220?'…':''}</div>`:''}
+    ${dl}
+    ${btn}
+  </div>`;
+}
+
+window.svcdNhanViec = async function(id){
+  if(!confirm('Nhận xử lý sự vụ này?')) return;
+  try{
+    const { data, error } = await supa.rpc('fn_su_vu_co_dong_nhan_viec', {
+      p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: (SESSION.ten||SESSION.hoTen||SESSION.ma)
+    });
+    if(error || (data && data.ok===false)) throw new Error((data&&data.error) || (error&&error.message) || 'Lỗi');
+    if(typeof showToast==='function') showToast('✓ Đã nhận việc','ok');
+    svcdReload();
+  }catch(e){ if(typeof showToast==='function') showToast('⚠ '+e.message,'warn'); }
+};
+
+window.svcdXong = async function(id){
+  if(!confirm('Xác nhận đã xử lý xong sự vụ này?')) return;
+  try{
+    const { data, error } = await supa.rpc('fn_su_vu_xac_nhan_xong', {
+      p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: (SESSION.ten||SESSION.hoTen||SESSION.ma)
+    });
+    if(error || (data && data.ok===false)) throw new Error((data&&data.error) || (error&&error.message) || 'Lỗi');
+    if(typeof showToast==='function') showToast('✓ Đã xác nhận xong','ok');
+    svcdReload();
+  }catch(e){ if(typeof showToast==='function') showToast('⚠ '+e.message,'warn'); }
+};
+window.moSuVuCoDong = moSuVuCoDong;
 
 function hubOpenGroup(key){
   const g = HUB_GROUPS[key]; if(!g) return;
