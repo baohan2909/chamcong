@@ -34,6 +34,7 @@ const PQ_GROUPS = [
     { id:'bangiao.ca',     ten:'Bàn giao ca' },
     { id:'bangiao.quanly', ten:'Quản lý bàn giao (đối soát, sự vụ)' },
     { id:'bangiao.xoa',    ten:'Xóa sự vụ', can:['bangiao.quanly'] },
+    { id:'suvu.codong',    ten:'Sự vụ khu vực (cơ động nhận việc)' },
   ]},
   { id:'banhang', ten:'Bán hàng & Đơn hàng', quyen:[
     { id:'banhang.phien',     ten:'Phiên bán hàng' },
