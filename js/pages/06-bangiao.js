@@ -969,17 +969,30 @@ function bgSuVuCardCoDong(s){
   const accent = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#D97706':'#1B4965';
   const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', DA_XU_LY_XONG:'Chờ cửa hàng xác nhận', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
   const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
+  const tenCH = escHtml(s.ten_ch_snapshot||s.ma_ch||'');
+  const desc = (s.mo_ta||'').replace(/\s+/g,' ').trim();
+  const descShort = desc.length>72 ? desc.slice(0,72)+'…' : desc;
+  const baoLai = (s.so_lan_bao_lai>1) ? `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:600;white-space:nowrap">Đã gửi ${s.so_lan_bao_lai} lần</span>` : '';
   return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:3px solid ${accent};cursor:pointer" onclick="bgSuVuOpenDetail('${s.id}')">
     <div class="chk-rec-head">
-      <div class="chk-rec-top">
-        <span class="chk-rec-time">${bgFmtDateTimeShort(s.created_at)}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px">
         <span class="chk-mucdo-tag ${mdCls}">${mdLbl}</span>
+        ${bgSuVuCountChip(s)}
         <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
       </div>
-      <div style="font-weight:600;font-size:15px;color:#0F172A;margin-top:5px">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
-      <div style="font-weight:500;font-size:13.5px;color:#334155;margin-top:1px">${escHtml(s.tieu_de||'')}${s.ma_sv?` <span style="color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
-      ${bgSuVuDeadlineHtml(s)}
+      <div style="font-weight:600;font-size:15.5px;line-height:1.25;margin-bottom:2px;background:linear-gradient(135deg,#1D9E75,#0F6E56);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#0F6E56">${tenCH}</div>
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px">
+        <span style="color:#0F6E56;font-weight:600;font-size:12.5px">${bgFmtDateTimeShort(s.created_at)}</span>
+        <span style="color:#CBD5E1">·</span>
+        <span style="color:#334155;font-weight:600;font-size:13px">${escHtml(s.tieu_de||'')}</span>
+        ${s.ma_sv?`<span style="color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}
+      </div>
+      ${descShort?`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px">
+        <div style="flex:1;min-width:0;font-size:12.5px;color:#475569;line-height:1.45"><span style="color:#94A3B8">Chi tiết:</span> ${escHtml(descShort)}</div>
+        ${baoLai}
+      </div>`:(baoLai?`<div style="margin-bottom:9px">${baoLai}</div>`:'')}
       ${bgSuVuStepperHtml(s)}
+      ${isOpen?`<button onclick="event.stopPropagation();bgSuVuOpenDetail('${s.id}')" style="width:100%;margin-top:11px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:11px;border-radius:10px;font-weight:600;font-size:14.5px;cursor:pointer">Phản hồi / Đã xử lý</button>`:''}
     </div>
   </div>`;
 }
@@ -1039,8 +1052,8 @@ function bgSuVuCardHtml(s){
   } else if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
-  if (isOpen && s.trang_thai === 'DA_XU_LY_XONG' && (laBanQuanLy || laCuaHang)){
-    actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Xác nhận hoàn tất & đóng</button>`;
+  if (isOpen && (laBanQuanLy || laCuaHang)){
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Hoàn tất - Đóng sự vụ</button>`;
   }
   const xlChip = s.nguoi_xu_ly_ten
     ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>`
@@ -1088,15 +1101,31 @@ function bgSuVuLoTrinh(s){
 }
 
 // ─── [v16.4] Đếm ngược deadline xử lý — đồng hồ chạy cho cơ động/người xử lý ───
-function bgSuVuDeadlineHtml(s){
-  if (!s.deadline_xu_ly) return '';
-  // Đã xử lý xong / hoàn tất / hủy → không cần đếm ngược nữa
+// Deadline hiệu lực: ưu tiên giá trị lưu; thiếu thì tính từ created_at + cấp độ
+function _bgEffDeadline(s){
+  if (s.deadline_xu_ly) return s.deadline_xu_ly;
+  if (!s.created_at) return null;
+  const hrs = s.muc_do==='KHAN_CAP'?24:s.muc_do==='QUAN_TRONG'?48:168;
+  return new Date(new Date(s.created_at).getTime() + hrs*3600000).toISOString();
+}
+
+// Chip đồng hồ đếm ngược — gọn, tự đổi màu theo độ gấp (xanh→cam→đỏ), đồng bộ mọi thẻ
+function bgSuVuCountChip(s){
   if (['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return '';
+  const dl = _bgEffDeadline(s);
+  if (!dl) return '';
+  return `<span class="bg-sv-deadline" style="display:inline-flex;align-items:center;gap:5px;margin:0;padding:3px 10px;border-left-width:1px;border-radius:20px"><span style="font-size:11px;line-height:1">⏱</span><span class="bg-sv-dl-count" data-deadline="${escHtml(dl)}">—</span></span>`;
+}
+
+function bgSuVuDeadlineHtml(s){
+  if (['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return '';
+  const dl = _bgEffDeadline(s);
+  if (!dl) return '';
   return `<div class="bg-sv-deadline">
     <span class="bg-sv-dl-icon">⏱</span>
     <span class="bg-sv-dl-main">
-      <span class="bg-sv-dl-label">Hạn xử lý: <b>${bgFmtDateTimeShort(s.deadline_xu_ly)}</b></span>
-      <span class="bg-sv-dl-count" data-deadline="${escHtml(s.deadline_xu_ly)}">—</span>
+      <span class="bg-sv-dl-label">Hạn xử lý: <b>${bgFmtDateTimeShort(dl)}</b></span>
+      <span class="bg-sv-dl-count" data-deadline="${escHtml(dl)}">—</span>
     </span>
   </div>`;
 }
@@ -1184,7 +1213,7 @@ function bgSuVuDetailHtml(s){
           <input type="datetime-local" id="bgsv-ph-deadline" style="border:1px solid #CBD5E1;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit">
         </div>
         <button id="bgsv-ph-btn" onclick="bgSuVuDetailPhanHoi('${s.id}')" style="width:100%;margin-top:10px;background:#1B4965;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">Gửi phản hồi</button>
-        <button onclick="bgSuVuDetailHoanTat('${s.id}')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">Hoàn tất sự vụ</button>
+        <button onclick="bgSuVuDetailHoanTat('${s.id}')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">Đã xử lý</button>
       </div>`;
   }
 
@@ -1265,11 +1294,11 @@ window.bgSuVuDetailPhanHoi = async function(id){
 // Hoàn tất + HOÀN TÁC 10 GIÂY (hành động chỉ thực thi sau 10s)
 window.bgSuVuDetailHoanTat = function(id){
   bgSuVuCloseDetail();
-  bgUndoBar('Đã hoàn tất xử lý · chờ cửa hàng xác nhận', async ()=>{
+  bgUndoBar('Đã đánh dấu xử lý xong · chờ cửa hàng đóng sự vụ', async ()=>{
     try {
       const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', { p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'' });
       if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
-      showToast('✓ Đã hoàn tất xử lý', 'ok');
+      showToast('✓ Đã đánh dấu xử lý xong', 'ok');
     } catch(e){ showToast('⚠ '+e.message, 'warn'); }
     bgRenderSuVu();
   }, 10);
