@@ -875,6 +875,7 @@ async function bgRenderSuVu(){
       if (oa!==ob) return oa-ob;
       return new Date(b.created_at) - new Date(a.created_at);
     });
+    window._bgSuVuCache = data;   // [Lớp 1] để popup chi tiết tra theo id
     const cnt = document.getElementById('bg-suvu-count');
     const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
     const closed = data.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
@@ -916,9 +917,9 @@ function bgSuVuCardHtml(s){
   // Nút hành động theo vai trò trong luồng
   let actBtns = '';
   const laCD = _bgLaCoDong();
-  if (isOpen && laCD && s.trang_thai !== 'DA_XU_LY_XONG'){
-    // Cơ động: cả vùng đều xử lý được, không cần "nhận việc" trước
-    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuCoDongXong('${s.id}')">✓ Đã xử lý xong</button>`;
+  if (isOpen && laCD){
+    // Cơ động: mở popup chi tiết để phản hồi / gia hạn / hoàn tất
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="event.stopPropagation();bgSuVuOpenDetail('${s.id}')">Phản hồi / Hoàn tất</button>`;
   } else if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
@@ -929,7 +930,7 @@ function bgSuVuCardHtml(s){
     ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>`
     : (laCD ? `<span class="bg-sv-xl-chip">Điều phối: Ban quản lý</span>` : '');
 
-  return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:3px solid ${borderColor}">
+  return `<div class="chk-rec ${isOpen?'has-issue':''}"${laCD?` style="border-left:3px solid ${borderColor};cursor:pointer" onclick="bgSuVuOpenDetail('${s.id}')"`:` style="border-left:3px solid ${borderColor}"`}>
     <div class="chk-rec-head">
       <div class="chk-rec-top">
         <span class="chk-rec-time">${bgFmtDateTimeShort(s.created_at)}</span>
@@ -944,7 +945,7 @@ function bgSuVuCardHtml(s){
       ${bgSuVuDeadlineHtml(s)}
       ${s.mo_ta?`<div class="chk-rec-note">${escHtml(s.mo_ta).slice(0,160)}</div>`:''}
       ${s.phan_hoi_xu_ly?`<div style="margin-top:6px;padding:8px 10px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:6px;font-size:12.5px;color:#0F2E45"><b style="color:#1B4965">Phản hồi:</b> ${escHtml(s.phan_hoi_xu_ly).slice(0,200)}</div>`:''}
-      ${bgSuVuLoTrinh(s)}
+      ${laCD ? '' : bgSuVuLoTrinh(s)}
       ${actBtns?`<div class="bg-sv-acts">${actBtns}</div>`:''}
     </div>
   </div>`;
@@ -1026,6 +1027,157 @@ function bgSuVuStartTimer(){
 function bgSuVuStopTimer(){
   if (_bgSuVuTimer){ clearInterval(_bgSuVuTimer); _bgSuVuTimer = null; }
 }
+
+// ═════════════════════════════════════════════════════════════════════════
+//  [Lớp 1] POPUP CHI TIẾT SỰ VỤ (cơ động) — lộ trình + ảnh + phản hồi/hoàn tất
+// ═════════════════════════════════════════════════════════════════════════
+window.bgSuVuOpenDetail = function(id){
+  const s = (window._bgSuVuCache||[]).find(x => x.id === id);
+  if (!s){ showToast('Không tìm thấy sự vụ', 'warn'); return; }
+  let ov = document.getElementById('bgsv-detail');
+  if (!ov){ ov = document.createElement('div'); ov.id='bgsv-detail'; document.body.appendChild(ov); }
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center';
+  ov.onclick = bgSuVuCloseDetail;
+  ov.innerHTML = bgSuVuDetailHtml(s);
+  bgSuVuStartTimer();
+};
+window.bgSuVuCloseDetail = function(){ const o=document.getElementById('bgsv-detail'); if(o) o.remove(); };
+
+function bgSuVuDetailHtml(s){
+  const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
+  const accent = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#D97706':'#1B4965';
+  const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', DA_XU_LY_XONG:'Chờ cửa hàng xác nhận', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
+  const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
+  const laCD = _bgLaCoDong();
+
+  let imgs = '';
+  if (Array.isArray(s.anh_urls) && s.anh_urls.length){
+    imgs = `<div style="margin-top:14px"><div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:7px">Ảnh đính kèm (${s.anh_urls.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${s.anh_urls.map(u=>`<img src="${escHtml(u)}" loading="lazy" onclick="bgSuVuLightbox('${escHtml(u)}')" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in;border:1px solid #E2E8F0">`).join('')}</div></div>`;
+  }
+  const baoLai = s.so_lan_bao_lai>1 ? `<div style="margin-top:12px;padding:8px 11px;background:#FEF3C7;border-radius:8px;font-size:12.5px;color:#92400E">Cửa hàng đã báo lại <b>${s.so_lan_bao_lai} lần</b> · cùng một sự vụ, không tạo mới</div>` : '';
+  const phanHoiCu = s.phan_hoi_xu_ly ? `<div style="margin-top:12px;padding:10px 12px;background:#F0F7FB;border-left:3px solid #1B4965;border-radius:8px;font-size:13px;color:#0F2E45"><b style="color:#1B4965">Phản hồi gần nhất:</b> ${escHtml(s.phan_hoi_xu_ly)}</div>` : '';
+
+  let coDongActs = '';
+  if (laCD && isOpen){
+    coDongActs = `<div style="margin-top:16px;border-top:1px solid #EEF2F6;padding-top:14px">
+        <div style="font-size:13px;font-weight:700;color:#0F2E45;margin-bottom:8px">Trao đổi với cửa hàng (tùy chọn)</div>
+        <textarea id="bgsv-ph-noidung" rows="3" placeholder="Nhập nội dung phản hồi nếu cần..." style="width:100%;box-sizing:border-box;border:1px solid #CBD5E1;border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <span style="font-size:12.5px;color:#64748B">Gia hạn đến:</span>
+          <input type="datetime-local" id="bgsv-ph-deadline" style="border:1px solid #CBD5E1;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit">
+        </div>
+        <button id="bgsv-ph-btn" onclick="bgSuVuDetailPhanHoi('${s.id}')" style="width:100%;margin-top:10px;background:#1B4965;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer">Gửi phản hồi</button>
+        <button onclick="bgSuVuDetailHoanTat('${s.id}')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer">✓ Hoàn tất sự vụ</button>
+      </div>`;
+  }
+
+  return `<div class="bgsv-detail-sheet" onclick="event.stopPropagation()" style="background:#fff;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:18px 16px 22px;-webkit-overflow-scrolling:touch">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="background:${accent};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${mdLbl}</span>
+        <span style="font-size:12px;color:#64748B;font-weight:600">${stLbl}</span>
+      </div>
+      <button onclick="bgSuVuCloseDetail()" style="background:#F1F5F9;border:none;width:32px;height:32px;border-radius:9px;font-size:16px;cursor:pointer;color:#475569">✕</button>
+    </div>
+    <div style="font-weight:800;font-size:17px;color:#0F172A">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
+    <div style="font-weight:600;font-size:14px;color:#334155;margin-top:2px">${escHtml(s.tieu_de||'')}${s.ma_sv?` <span style="color:#94A3B8;font-size:11px;font-weight:500">#${escHtml(s.ma_sv)}</span>`:''}</div>
+    ${bgSuVuDeadlineHtml(s)}
+    ${s.mo_ta?`<div style="margin-top:12px;font-size:14px;color:#1E293B;line-height:1.5;white-space:pre-wrap">${escHtml(s.mo_ta)}</div>`:''}
+    ${baoLai}
+    ${imgs}
+    ${bgSuVuDetailFlow(s)}
+    ${phanHoiCu}
+    ${coDongActs}
+  </div>`;
+}
+
+// Lộ trình kết nối: tạo → điều phối → tiếp nhận → phản hồi → xong → hoàn tất
+function bgSuVuDetailFlow(s){
+  const steps = [];
+  steps.push({ lbl:'Cửa hàng tạo sự vụ', who:s.nguoi_tao_ten, t:s.created_at });
+  steps.push({ lbl:'Điều phối', who:'Ban quản lý', t:null });
+  if (s.thoi_gian_bat_dau_xu_ly || s.nguoi_xu_ly_ten) steps.push({ lbl:'Tiếp nhận xử lý', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_bat_dau_xu_ly });
+  if (s.thoi_gian_phan_hoi) steps.push({ lbl:'Phản hồi cửa hàng', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_phan_hoi });
+  if (s.thoi_gian_xu_ly_xong) steps.push({ lbl:'Đã xử lý xong', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_xu_ly_xong });
+  if (s.thoi_gian_dong) steps.push({ lbl:'Hoàn tất & đóng', who:s.nguoi_dong_ten, t:s.thoi_gian_dong });
+  return `<div style="margin-top:16px;border-top:1px solid #EEF2F6;padding-top:14px">
+    <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:10px">Lộ trình xử lý</div>
+    ${steps.map((st,i)=>{
+      const last = i===steps.length-1;
+      return `<div style="display:flex;gap:10px;align-items:stretch">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div style="width:11px;height:11px;border-radius:50%;background:${last?'#1D9E75':'#CBD5E1'};margin-top:3px;flex:none"></div>
+          ${last?'':'<div style="width:2px;flex:1;min-height:20px;background:#E2E8F0"></div>'}
+        </div>
+        <div style="padding-bottom:${last?'0':'12px'}">
+          <div style="font-size:13.5px;font-weight:600;color:#0F172A">${escHtml(st.lbl)}${st.who?` · <span style="color:#475569;font-weight:500">${escHtml(st.who)}</span>`:''}</div>
+          ${st.t?`<div style="font-size:11.5px;color:#94A3B8;margin-top:1px">${bgFmtDateTimeShort(st.t)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+window.bgSuVuLightbox = function(url){
+  let lb = document.getElementById('bgsv-lightbox');
+  if (!lb){ lb = document.createElement('div'); lb.id='bgsv-lightbox'; document.body.appendChild(lb); }
+  lb.style.cssText = 'position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  lb.onclick = function(){ lb.remove(); };
+  lb.innerHTML = `<img src="${escHtml(url)}" style="max-width:94vw;max-height:90vh;object-fit:contain;border-radius:8px">`;
+};
+
+window.bgSuVuDetailPhanHoi = async function(id){
+  const elN = document.getElementById('bgsv-ph-noidung');
+  const noidung = (elN && elN.value || '').trim();
+  if (!noidung){ showToast('Nhập nội dung phản hồi', 'warn'); return; }
+  const elD = document.getElementById('bgsv-ph-deadline');
+  let deadline = null;
+  if (elD && elD.value){ const d = new Date(elD.value); if (!isNaN(d.getTime())) deadline = d.toISOString(); }
+  const btn = document.getElementById('bgsv-ph-btn'); if (btn){ btn.disabled=true; btn.textContent='Đang gửi...'; }
+  try {
+    const { data, error } = await supa.rpc('fn_su_vu_co_dong_phan_hoi', {
+      p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'', p_noi_dung:noidung, p_deadline:deadline
+    });
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã gửi phản hồi', 'ok');
+    bgSuVuCloseDetail(); bgRenderSuVu();
+  } catch(e){ if (btn){ btn.disabled=false; btn.textContent='Gửi phản hồi'; } showToast('⚠ '+e.message, 'warn'); }
+};
+
+// Hoàn tất + HOÀN TÁC 10 GIÂY (hành động chỉ thực thi sau 10s)
+window.bgSuVuDetailHoanTat = function(id){
+  bgSuVuCloseDetail();
+  bgUndoBar('Đã hoàn tất xử lý · chờ cửa hàng xác nhận', async ()=>{
+    try {
+      const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', { p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'' });
+      if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+      showToast('✓ Đã hoàn tất xử lý', 'ok');
+    } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+    bgRenderSuVu();
+  }, 10);
+};
+
+// ─── Thanh hoàn tác dùng chung (10 giây) ───
+let _bgUndoTimer = null, _bgUndoCommit = null;
+function bgUndoBar(msg, onCommit, seconds){
+  seconds = seconds || 10;
+  bgUndoClear();
+  let bar = document.getElementById('bg-undo-bar');
+  if (!bar){ bar = document.createElement('div'); bar.id='bg-undo-bar'; document.body.appendChild(bar); }
+  bar.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:10000;background:#0F2E45;color:#fff;padding:11px 14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:12px;font-size:13.5px;max-width:92vw';
+  _bgUndoCommit = onCommit;
+  let left = seconds;
+  const render = ()=>{
+    bar.innerHTML = `<span>${escHtml(msg)}</span><button id="bg-undo-btn" style="background:#3FB6A8;color:#06241E;border:none;padding:7px 13px;border-radius:8px;font-weight:700;cursor:pointer;white-space:nowrap">Hoàn tác (${left})</button>`;
+    const b = document.getElementById('bg-undo-btn'); if (b) b.onclick = bgUndoCancel;
+  };
+  render();
+  _bgUndoTimer = setInterval(()=>{ left--; if (left<=0){ bgUndoFire(); } else render(); }, 1000);
+}
+function bgUndoClear(){ if(_bgUndoTimer){ clearInterval(_bgUndoTimer); _bgUndoTimer=null; } const b=document.getElementById('bg-undo-bar'); if(b) b.remove(); }
+function bgUndoCancel(){ _bgUndoCommit=null; bgUndoClear(); showToast('Đã hoàn tác', 'ok'); }
+async function bgUndoFire(){ const fn=_bgUndoCommit; _bgUndoCommit=null; bgUndoClear(); if(fn) await fn(); }
 
 // [B1] Cơ động xác nhận đã xử lý xong (bất kỳ ai trong vùng, không cần nhận việc)
 window.bgSuVuCoDongXong = async function(id){
