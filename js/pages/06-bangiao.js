@@ -21,6 +21,22 @@ let bgSub = 'new';
 let bgDanhMucCache = null;
 let bgPhotos = [];          // [{ blob, dataUrl }]
 
+// [B1] Cơ động = NV có phạm vi khu vực (chức danh CDxx) → xem sự vụ cả VÙNG
+function _bgLaCoDong(){
+  return (typeof SESSION!=='undefined' && SESSION && SESSION.vaiTro==='NV' &&
+          window.SESSION_PHAMVI==='khuvuc' && Array.isArray(window.SESSION_KVPT) && window.SESSION_KVPT.length>0)
+      || /^CD/.test(window.SESSION_CHUCDANH||'');
+}
+// Cơ động: ẩn tab "Tạo bàn giao" + "Timeline", chỉ chừa "Sự vụ"
+function _bgApDungTabCoDong(){
+  const co = _bgLaCoDong();
+  const tNew = document.getElementById('bg-subtab-new');
+  const tTl  = document.getElementById('bg-subtab-timeline');
+  if (tNew) tNew.style.display = co ? 'none' : '';
+  if (tTl)  tTl.style.display  = co ? 'none' : '';
+  return co;
+}
+
 // ═════════════════════════════════════════════════════════════════════════
 //  ENTRY POINT
 // ═════════════════════════════════════════════════════════════════════════
@@ -43,7 +59,7 @@ async function bgInitPage(){
     document.getElementById('bg-ch-sub').textContent = 'Chấm công vào ca để lập biên bản. Sự vụ được giao cho bạn xem ở tab Sự vụ.';
     document.getElementById('bg-groups').innerHTML = '<div class="ns-empty">Cần chấm công vào ca tại cửa hàng để bàn giao.<br>Sự vụ được giao cho bạn vẫn xem được ở tab <b>Sự vụ</b> bên trên.</div>';
     // [v15.8] Cơ động không có cửa hàng cố định → vẫn cho xem sự vụ được giao xử lý cho mình
-    try { bgSwitchSub('suvu'); bgRenderSuVu(); } catch(e){}
+    try { _bgApDungTabCoDong(); bgSwitchSub('suvu'); bgRenderSuVu(); } catch(e){}
     return;
   }
   document.getElementById('bg-ch-name').textContent = bgCurrentCH.ten;
@@ -64,7 +80,7 @@ async function bgInitPage(){
   bgState = {};
   bgPhotos = [];
   bgRenderForm();
-  bgSwitchSub('new');
+  if (_bgApDungTabCoDong()) { bgSwitchSub('suvu'); } else { bgSwitchSub('new'); }
 }
 
 // Xác định CH (giống chkXacDinhCH)
@@ -834,11 +850,20 @@ async function bgRenderSuVu(){
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   try {
-    // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng — quan trọng cho Cơ động)
-    const reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 200, p_offset: 0 }) ];
-    // Nguồn 2: sự vụ của CỬA HÀNG mình (nếu có cửa hàng)
-    if (bgCurrentCH && bgCurrentCH.ma) {
-      reqs.push(supa.rpc('fn_su_vu_list', { p_ma_ch: bgCurrentCH.ma, p_limit: 200, p_offset: 0 }));
+    // [B1] Cơ động: lấy cả KHU VỰC (chưa nhận) + việc mình đang xử lý
+    let reqs;
+    if (_bgLaCoDong()){
+      reqs = [
+        supa.rpc('fn_su_vu_co_dong_list',    { p_ma_nv: ma }),   // sự vụ vùng chưa ai nhận
+        supa.rpc('fn_su_vu_co_dong_cua_toi', { p_ma_nv: ma })    // việc mình đã nhận
+      ];
+    } else {
+      // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng)
+      reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 200, p_offset: 0 }) ];
+      // Nguồn 2: sự vụ của CỬA HÀNG mình (nếu có cửa hàng)
+      if (bgCurrentCH && bgCurrentCH.ma) {
+        reqs.push(supa.rpc('fn_su_vu_list', { p_ma_ch: bgCurrentCH.ma, p_limit: 200, p_offset: 0 }));
+      }
     }
     const results = await Promise.all(reqs);
     let merged = [];
@@ -893,13 +918,19 @@ function bgSuVuCardHtml(s){
 
   // Nút hành động theo vai trò trong luồng
   let actBtns = '';
+  const laCD = _bgLaCoDong();
+  if (isOpen && laCD && !s.nguoi_xu_ly_ma){
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuNhanViec('${s.id}')">Nhận việc</button>`;
+  }
   if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
   if (isOpen && s.trang_thai === 'DA_XU_LY_XONG' && (laBanQuanLy || laCuaHang)){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Xác nhận hoàn tất & đóng</button>`;
   }
-  const xlChip = s.nguoi_xu_ly_ten ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>` : '';
+  const xlChip = s.nguoi_xu_ly_ten
+    ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>`
+    : (laCD ? `<span class="bg-sv-xl-chip">Điều phối: Ban quản lý</span>` : '');
 
   return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:4px solid ${borderColor}">
     <div class="chk-rec-head">
@@ -997,6 +1028,19 @@ function bgSuVuStartTimer(){
 function bgSuVuStopTimer(){
   if (_bgSuVuTimer){ clearInterval(_bgSuVuTimer); _bgSuVuTimer = null; }
 }
+
+// [B1] Cơ động nhận việc → trở thành người xử lý
+window.bgSuVuNhanViec = async function(id){
+  if (!confirm('Nhận xử lý sự vụ này?')) return;
+  try {
+    const { data, error } = await supa.rpc('fn_su_vu_co_dong_nhan_viec', {
+      p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
+    });
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    showToast('✓ Đã nhận việc', 'ok');
+    bgRenderSuVu();
+  } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+};
 
 // Cơ động / người xử lý xác nhận đã xử lý xong
 window.bgSuVuXacNhanXong = async function(id){
