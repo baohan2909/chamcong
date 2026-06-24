@@ -850,13 +850,10 @@ async function bgRenderSuVu(){
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   try {
-    // [B1] Cơ động: lấy cả KHU VỰC (chưa nhận) + việc mình đang xử lý
+    // [B1] Cơ động: lấy CẢ KHU VỰC (mọi sự vụ đang mở) — ai trong vùng cũng xử lý được
     let reqs;
     if (_bgLaCoDong()){
-      reqs = [
-        supa.rpc('fn_su_vu_co_dong_list',    { p_ma_nv: ma }),   // sự vụ vùng chưa ai nhận
-        supa.rpc('fn_su_vu_co_dong_cua_toi', { p_ma_nv: ma })    // việc mình đã nhận
-      ];
+      reqs = [ supa.rpc('fn_su_vu_co_dong_list', { p_ma_nv: ma }) ];
     } else {
       // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng)
       reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 200, p_offset: 0 }) ];
@@ -919,10 +916,10 @@ function bgSuVuCardHtml(s){
   // Nút hành động theo vai trò trong luồng
   let actBtns = '';
   const laCD = _bgLaCoDong();
-  if (isOpen && laCD && !s.nguoi_xu_ly_ma){
-    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuNhanViec('${s.id}')">Nhận việc</button>`;
-  }
-  if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
+  if (isOpen && laCD && s.trang_thai !== 'DA_XU_LY_XONG'){
+    // Cơ động: cả vùng đều xử lý được, không cần "nhận việc" trước
+    actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuCoDongXong('${s.id}')">✓ Đã xử lý xong</button>`;
+  } else if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
   if (isOpen && s.trang_thai === 'DA_XU_LY_XONG' && (laBanQuanLy || laCuaHang)){
@@ -932,15 +929,16 @@ function bgSuVuCardHtml(s){
     ? `<span class="bg-sv-xl-chip">Người xử lý: ${escHtml(s.nguoi_xu_ly_ten)}${laNguoiXuLy?' (bạn)':''}</span>`
     : (laCD ? `<span class="bg-sv-xl-chip">Điều phối: Ban quản lý</span>` : '');
 
-  return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:4px solid ${borderColor}">
+  return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:3px solid ${borderColor}">
     <div class="chk-rec-head">
       <div class="chk-rec-top">
         <span class="chk-rec-time">${bgFmtDateTimeShort(s.created_at)}</span>
-        <span class="chk-mucdo-tag ${mdCls}" style="font-weight:700">${mdLbl}</span>
+        <span class="chk-mucdo-tag ${mdCls}">${mdLbl}</span>
         <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
       </div>
-      <div style="font-weight:700;font-size:14px;color:#0F172A;margin-top:4px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:600;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
-      <div class="chk-rec-by">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')} · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
+      <div style="font-weight:700;font-size:15px;color:#0F172A;margin-top:5px">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
+      <div style="font-weight:600;font-size:13.5px;color:#334155;margin-top:1px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:500;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
+      <div class="chk-rec-by">Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
       ${xlChip}
       ${s.so_lan_bao_lai > 1 ? `<div class="bg-sv-baolai">🔁 Cửa hàng đã báo lại <b>${s.so_lan_bao_lai} lần</b> · đây là cùng một sự vụ đang xử lý, không tạo mới</div>` : ''}
       ${bgSuVuDeadlineHtml(s)}
@@ -1029,15 +1027,15 @@ function bgSuVuStopTimer(){
   if (_bgSuVuTimer){ clearInterval(_bgSuVuTimer); _bgSuVuTimer = null; }
 }
 
-// [B1] Cơ động nhận việc → trở thành người xử lý
-window.bgSuVuNhanViec = async function(id){
-  if (!confirm('Nhận xử lý sự vụ này?')) return;
+// [B1] Cơ động xác nhận đã xử lý xong (bất kỳ ai trong vùng, không cần nhận việc)
+window.bgSuVuCoDongXong = async function(id){
+  if (!confirm('Xác nhận bạn đã xử lý xong sự vụ này?\nCửa hàng sẽ kiểm tra rồi xác nhận hoàn tất.')) return;
   try {
-    const { data, error } = await supa.rpc('fn_su_vu_co_dong_nhan_viec', {
+    const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
     });
     if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
-    showToast('✓ Đã nhận việc', 'ok');
+    showToast('✓ Đã xử lý xong · chờ cửa hàng xác nhận', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
 };
