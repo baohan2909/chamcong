@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.76',
+  'sys.cache_version': 'v16.77',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -366,8 +366,15 @@ const PAGE_TITLES={
 // Duyệt chấm công / nhân sự / lịch ca / nghỉ phép: CHỈ ADMIN + QLNS.
 // CH và các loại QL khác (QLBH...) đều KHÔNG được.
 function _canQuanLyNS(){
-  return (typeof SESSION!=='undefined' && SESSION &&
-          (SESSION.vaiTro==='ADMIN' || SESSION.vaiTro==='QLNS'));
+  if(!(typeof SESSION!=='undefined' && SESSION)) return false;
+  if(SESSION.vaiTro==='ADMIN' || SESSION.vaiTro==='QLNS') return true;
+  // [A2b] chức danh ĐÃ cấu hình quyền quản lý nhân sự (cộng thêm — không gỡ của ADMIN/QLNS)
+  if(typeof _quyenCauHinh==='function'){
+    return _quyenCauHinh('nhansu.xem') || _quyenCauHinh('nhansu.quanly') ||
+           _quyenCauHinh('duyetyc.duyet') || _quyenCauHinh('lichca.quanly') ||
+           _quyenCauHinh('giocong.xem_all') || _quyenCauHinh('giocong.duyet_cb');
+  }
+  return false;
 }
 // Trả về true nếu ĐÃ chặn (không có quyền) → hàm gọi nên return ngay
 function _chanQuanLyNS(){
