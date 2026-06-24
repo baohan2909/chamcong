@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.75',
+  'sys.cache_version': 'v16.76',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -508,44 +508,47 @@ const HUB_GROUPS = {
   cc_ns: {
     title: 'Chấm công & Nhân sự',
     items: [
-      { label:'Chấm công',          desc:'Vào ca / ra ca',        ic:_hubIc.cc,    roles:['NV','CTV'],               act:()=>goToPage('chamcong') },
-      { label:'Giờ công',           desc:'Bảng công của tôi',     ic:_hubIc.clock, roles:['NV','CTV'],               act:()=>navGioCong() },
-      { label:'Bản đồ chấm công',   desc:'Vị trí chấm công',      ic:_hubIc.map,   roles:['NV','CTV'],               act:()=>goToPage('bandochidung') },
-      { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               act:()=>moLichCa() },
-      { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               act:()=>moModalBoSungCa() },
+      { label:'Chấm công',          desc:'Vào ca / ra ca',        ic:_hubIc.cc,    roles:['NV','CTV'],               quyen:'chamcong.tu_cham', act:()=>goToPage('chamcong') },
+      { label:'Giờ công',           desc:'Bảng công của tôi',     ic:_hubIc.clock, roles:['NV','CTV'],               quyen:'giocong.xem_minh', act:()=>navGioCong() },
+      { label:'Bản đồ chấm công',   desc:'Vị trí chấm công',      ic:_hubIc.map,   roles:['NV','CTV'],               quyen:'bando.xem',        act:()=>goToPage('bandochidung') },
+      { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
+      { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
       { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV'],               act:()=>nsFaceOpenEnrollment() },
-      { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   act:()=>goToPage('nhansu') },
-      { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   act:()=>moLichCaQL_safe() },
-      { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   act:()=>goToPage('duyetyc') },
-      { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   act:()=>nsFaceOpenAdmin() },
+      { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
+      { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
+      { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
+      { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
     ]
   },
   banhang: {
     title: 'Bán hàng hệ thống',
     items: [
-      { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('banhang') },
-      { label:'Dashboard bán hàng', desc:'Theo dõi phiên bán hàng',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], act:()=>goToPage('dashboard') },
+      { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.phien',     act:()=>goToPage('banhang') },
+      { label:'Dashboard bán hàng', desc:'Theo dõi phiên bán hàng',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.dashboard', act:()=>goToPage('dashboard') },
     ]
   },
   bangiao: {
     title: 'Bàn giao hệ thống',
     items: [
-      { label:'Bàn giao ca',        desc:'Bàn giao tại cửa hàng', ic:_hubIc.box,   roles:['NV','CTV','CUA_HANG'],    act:()=>goToPage('bangiao') },
-      { label:'Bàn giao (Quản lý)', desc:'Đối soát, sự vụ',       ic:_hubIc.check, roles:['QLNS','QLBH'],            act:()=>goToPage('bangiao-ql') },
+      { label:'Bàn giao ca',        desc:'Bàn giao tại cửa hàng', ic:_hubIc.box,   roles:['NV','CTV','CUA_HANG'],    quyen:'bangiao.ca',       act:()=>goToPage('bangiao') },
+      { label:'Bàn giao (Quản lý)', desc:'Đối soát, sự vụ',       ic:_hubIc.check, roles:['QLNS','QLBH'],            quyen:'bangiao.quanly',   act:()=>goToPage('bangiao-ql') },
     ]
   },
   muanon: {
     title: 'Mẫu nón',
     items: [
-      { label:'Mẫu nón sưu tầm',    desc:'Ảnh sản phẩm hàng tuần',ic:_hubIc.img,   roles:[],                         act:()=>moPageMuanonAdmin() },
-      { label:'Mua nón',            desc:'Đăng ký mua nón',       ic:_hubIc.cart,  roles:['NV','CTV'],               act:()=>moPageMuanon() },
+      { label:'Mẫu nón sưu tầm',    desc:'Ảnh sản phẩm hàng tuần',ic:_hubIc.img,   roles:[],                         quyen:'muanon.quanly',    act:()=>moPageMuanonAdmin() },
+      { label:'Mua nón',            desc:'Đăng ký mua nón',       ic:_hubIc.cart,  roles:['NV','CTV'],               quyen:'muanon.xem',       act:()=>moPageMuanon() },
     ]
   },
 };
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
-  return Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
+  var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
+  // [A2] chức danh ĐÃ cấu hình rõ ràng có thể MỞ THÊM tile (cộng thêm, không gỡ của ai)
+  if(!baseVisible && it.quyen && typeof _quyenCauHinh==='function' && _quyenCauHinh(it.quyen)) return true;
+  return baseVisible;
 }
 // moLichCaQL wrapper an toàn (taiLichCaQL nằm ở page nhân sự)
 function moLichCaQL_safe(){ try{ goToPage('lichca-ql'); }catch(e){ try{ taiLichCaQL(); }catch(_){} } }
@@ -725,7 +728,7 @@ function _setupKeyboardHandler(){
 // [v15.7] ───── RBAC: nạp quyền + phạm vi của người dùng ─────
 window.SESSION_QUYEN = []; window.SESSION_PHAMVI = 'canhan';
 window.SESSION_KV = null; window.SESSION_KVPT = []; window.SESSION_MACH = null; window.SESSION_CHUCDANH = '';
-window.SESSION_QUYEN_READY = false;
+window.SESSION_QUYEN_READY = false; window.SESSION_DACAUHINH = false;
 function pqLoadQuyenSession(){
   try{
     if(typeof SESSION==='undefined'||!SESSION||!SESSION.ma) return;
@@ -737,18 +740,32 @@ function pqLoadQuyenSession(){
       window.SESSION_KVPT    = Array.isArray(data.khu_vuc_phu_trach)?data.khu_vuc_phu_trach:[];
       window.SESSION_MACH    = data.ma_ch||null;
       window.SESSION_CHUCDANH= data.chuc_danh||'';
+      window.SESSION_DACAUHINH = (data.da_cau_hinh === true);   // [A2] chức danh có dòng quyền riêng trong chuc_danh_quyen?
       window.SESSION_QUYEN_READY = true;
     }).catch(()=>{});
   }catch(e){}
 }
-// Kiểm quyền: ADMIN luôn full. (Phần áp dụng sẽ dùng hàm này, làm cuốn chiếu.)
+// [A2] Quyền đã CẤU HÌNH rõ ràng cho chức danh (KHÔNG fallback) — dùng để MỞ THÊM tile/nav, không gỡ của ai.
+function _quyenCauHinh(maQuyen){
+  return window.SESSION_DACAUHINH === true &&
+         (window.SESSION_QUYEN||[]).indexOf(maQuyen) !== -1;
+}
+// Kiểm quyền tổng quát: ADMIN full; chức danh ĐÃ cấu hình dùng quyền DB; CHƯA cấu hình → mặc định theo chức danh|vai trò (không khóa nhầm). Dành cho các slice enforcement kế tiếp.
 function coQuyen(maQuyen){
   if(typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN') return true;
-  return (window.SESSION_QUYEN||[]).indexOf(maQuyen)!==-1;
+  var ids;
+  if(window.SESSION_DACAUHINH===true){
+    ids = window.SESSION_QUYEN||[];
+  } else if(typeof pqDefaultFor==='function'){
+    ids = pqDefaultFor(window.SESSION_CHUCDANH || (typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro) || 'NV');
+  } else {
+    ids = window.SESSION_QUYEN||[];
+  }
+  return ids.indexOf(maQuyen)!==-1;
 }
 function phamViData(){ return window.SESSION_PHAMVI||'canhan'; }
 function khuVucChoPhep(){ return window.SESSION_KVPT||[]; }
-window.coQuyen=coQuyen; window.phamViData=phamViData; window.khuVucChoPhep=khuVucChoPhep;
+window.coQuyen=coQuyen; window._quyenCauHinh=_quyenCauHinh; window.phamViData=phamViData; window.khuVucChoPhep=khuVucChoPhep;
 
 function khoiDongApp(){
   pqLoadQuyenSession();   // [v15.7] nạp quyền nền — chưa khống chế UI ở bước này
