@@ -100,6 +100,18 @@ function bgqlLaTre(s){
   return false;
 }
 
+// [v16.78] Sự vụ "sắp hết hạn": còn mở, có deadline, CHƯA quá hạn, còn ≤ ngưỡng theo mức độ
+function bgqlSapHetHan(s){
+  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s.deadline_xu_ly) return false;
+  const now = Date.now();
+  const dl = new Date(s.deadline_xu_ly).getTime();
+  if (dl <= now) return false;                 // đã quá hạn → thuộc nhóm "trễ"
+  const conGio = (dl - now) / 3600000;
+  const nguong = s.muc_do==='KHAN_CAP' ? 6 : s.muc_do==='QUAN_TRONG' ? 12 : 24;  // giờ
+  return conGio <= nguong;
+}
+
 function bgqlRenderSuVuFilters(){
   const cont = document.getElementById('bgql-suvu-filters');
   if (!cont) return;
@@ -110,6 +122,7 @@ function bgqlRenderSuVuFilters(){
   const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
   const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
   const _cTre = all.filter(bgqlLaTre).length;
+  const _cSap = all.filter(bgqlSapHetHan).length;
   const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
   // [v13.91] Nút Chọn nhiều — mọi quản lý (ADMIN/QLNS/QLBH), chỉ tab "suvu"
@@ -131,6 +144,7 @@ function bgqlRenderSuVuFilters(){
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
           <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả (${all.length})</option>
           <option value="tre"${bgqlSuVuFilter.trang_thai==='tre'?' selected':''}>Cảnh báo trễ (${_cTre})</option>
+          <option value="sap_het_han"${bgqlSuVuFilter.trang_thai==='sap_het_han'?' selected':''}>Sắp hết hạn (${_cSap})</option>
           <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
           <option value="dang_xu_ly"${bgqlSuVuFilter.trang_thai==='dang_xu_ly'?' selected':''}>Đang xử lý (${_cXuLy})</option>
           <option value="hoan_tat"${bgqlSuVuFilter.trang_thai==='hoan_tat'?' selected':''}>Hoàn tất (${_cXong})</option>
@@ -338,6 +352,7 @@ function bgqlGetFilteredSuVu(){
   const _tt = bgqlSuVuFilter.trang_thai;
   if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
   else if (_tt === 'tre') arr = arr.filter(bgqlLaTre);
+  else if (_tt === 'sap_het_han') arr = arr.filter(bgqlSapHetHan);
   else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
   else if (_tt === 'hoan_tat') arr = arr.filter(s => s.trang_thai === 'HOAN_TAT');
   else if (_tt === 'huy') arr = arr.filter(s => s.trang_thai === 'HUY');
@@ -479,6 +494,8 @@ function bgqlSuVuCardHtml(s){
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlHuy('${s.id}')">Hủy</button>`;
   } else if (isProcessing) {
     actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Cập nhật phản hồi</button>
+               <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}','xl')">Đổi người</button>
+               <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}','deadline')">Gia hạn</button>
                <button class="bgql-act bgql-act-success" onclick="event.stopPropagation();bgqlHoanTat('${s.id}')">Đóng (hoàn tất)</button>`;
   }
 
@@ -592,7 +609,7 @@ window.bgqlHuy = async function(id){
 // ═════════════════════════════════════════════════════════════════════════
 //  MODAL PHẢN HỒI — deadline BẮT BUỘC
 // ═════════════════════════════════════════════════════════════════════════
-window.bgqlOpenPhanHoi = function(id){
+window.bgqlOpenPhanHoi = function(id, focusField){
   const sv = (bgqlSuVuCache || []).find(s => s.id === id);
   if (!sv) return;
   // Default deadline: 24h kể từ giờ, làm tròn 30 phút
@@ -658,7 +675,11 @@ window.bgqlOpenPhanHoi = function(id){
     </div>
   `;
   document.body.appendChild(m);
-  setTimeout(()=>{ document.getElementById('bgql-ph-noidung').focus(); }, 50);
+  setTimeout(()=>{
+    var _f = focusField==='xl' ? 'bgql-ph-xl-search' : focusField==='deadline' ? 'bgql-ph-deadline' : 'bgql-ph-noidung';
+    var _el = document.getElementById(_f);
+    if(_el){ try{ _el.focus(); }catch(_e){} if(_el.scrollIntoView) _el.scrollIntoView({block:'center'}); }
+  }, 50);
 };
 
 // [v13.35] Autocomplete tìm người xử lý (NV + QL)
