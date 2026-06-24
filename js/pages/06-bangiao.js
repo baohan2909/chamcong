@@ -843,7 +843,7 @@ window.bgSubmit = bgSubmit;
 let _bgSuVuViewMode = 'dang';
 window.bgSuVuSetView = function(mode){
   _bgSuVuViewMode = mode;
-  bgRenderSuVu();
+  if (window._bgSuVuCache) bgSuVuRenderFromCache(); else bgRenderSuVu();
 };
 async function bgRenderSuVu(){
   const list = document.getElementById('bg-suvu-list');
@@ -881,30 +881,86 @@ async function bgRenderSuVu(){
       return new Date(b.created_at) - new Date(a.created_at);
     });
     window._bgSuVuCache = data;   // [Lớp 1] để popup chi tiết tra theo id
-    const cnt = document.getElementById('bg-suvu-count');
-    const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-    const closed = data.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
-    if (data.length === 0){
-      list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
-      if (cnt) cnt.style.display = 'none';
-      return;
-    }
-    if (cnt){ if (opened.length>0){ cnt.style.display=''; cnt.textContent = opened.length; } else cnt.style.display='none'; }
-    // [v16.4] Toggle Đang xử lý / Lịch sử — kiểm soát tập trung sự vụ đã xong
-    const viewData = (_bgSuVuViewMode==='lichsu') ? closed : opened;
-    const toggleHtml = `<div class="bg-sv-viewtabs">
-        <button class="bg-sv-vtab${_bgSuVuViewMode!=='lichsu'?' active':''}" onclick="bgSuVuSetView('dang')">Đang xử lý${opened.length?' ('+opened.length+')':''}</button>
-        <button class="bg-sv-vtab${_bgSuVuViewMode==='lichsu'?' active':''}" onclick="bgSuVuSetView('lichsu')">Lịch sử${closed.length?' ('+closed.length+')':''}</button>
-      </div>`;
-    if (viewData.length === 0){
-      list.innerHTML = toggleHtml + '<div class="ns-empty">'+(_bgSuVuViewMode==='lichsu'?'Chưa có sự vụ đã hoàn tất.':'Không có sự vụ đang xử lý.')+'</div>';
-      bgSuVuStopTimer();
-      return;
-    }
-    list.innerHTML = toggleHtml + viewData.map(bgSuVuCardHtml).join('');
-    bgSuVuStartTimer();
+    bgSuVuRenderFromCache();
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
 }
+
+// [Lớp 2] Render danh sách từ cache + áp bộ lọc — dùng lại khi đổi tab/lọc (KHÔNG gọi RPC)
+function bgSuVuRenderFromCache(){
+  const list = document.getElementById('bg-suvu-list');
+  if (!list) return;
+  const all = window._bgSuVuCache || [];
+  const laCD = _bgLaCoDong();
+  const filterBar = laCD ? bgSvFilterBarHtml() : '';
+  const data = laCD ? bgSvApplyFilter(all) : all;
+  const cnt = document.getElementById('bg-suvu-count');
+  const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
+  const closed = data.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
+  if (all.length === 0){
+    list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
+    if (cnt) cnt.style.display = 'none';
+    return;
+  }
+  if (cnt){ if (opened.length>0){ cnt.style.display=''; cnt.textContent = opened.length; } else cnt.style.display='none'; }
+  const viewData = (_bgSuVuViewMode==='lichsu') ? closed : opened;
+  const toggleHtml = `<div class="bg-sv-viewtabs">
+      <button class="bg-sv-vtab${_bgSuVuViewMode!=='lichsu'?' active':''}" onclick="bgSuVuSetView('dang')">Đang xử lý${opened.length?' ('+opened.length+')':''}</button>
+      <button class="bg-sv-vtab${_bgSuVuViewMode==='lichsu'?' active':''}" onclick="bgSuVuSetView('lichsu')">Lịch sử${closed.length?' ('+closed.length+')':''}</button>
+    </div>`;
+  if (viewData.length === 0){
+    list.innerHTML = filterBar + toggleHtml + '<div class="ns-empty">'+(_bgSuVuViewMode==='lichsu'?'Chưa có sự vụ đã hoàn tất.':'Không có sự vụ phù hợp bộ lọc.')+'</div>';
+    bgSuVuStopTimer();
+    return;
+  }
+  list.innerHTML = filterBar + toggleHtml + viewData.map(bgSuVuCardHtml).join('');
+  bgSuVuStartTimer();
+}
+
+// [Lớp 2] Bộ lọc ngày + cửa hàng (cho cơ động)
+function bgSvApplyFilter(data){
+  const f = window._bgSvFilter || {};
+  let out = data;
+  if (f.date && f.date !== 'all'){
+    const now = new Date();
+    const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    let from=null, to=null;
+    if (f.date==='today'){ from=sod(now); to=new Date(from.getTime()+86400000); }
+    else if (f.date==='yesterday'){ to=sod(now); from=new Date(to.getTime()-86400000); }
+    else if (f.date==='month'){ from=new Date(now.getFullYear(),now.getMonth(),1); to=new Date(now.getFullYear(),now.getMonth()+1,1); }
+    else if (f.date==='range'){ if(f.from) from=new Date(f.from+'T00:00:00'); if(f.to) to=new Date(f.to+'T23:59:59'); }
+    out = out.filter(s=>{ const t=new Date(s.created_at).getTime(); if(from&&t<from.getTime())return false; if(to&&t>=to.getTime())return false; return true; });
+  }
+  if (f.store && f.store.trim()){
+    const q = f.store.trim().toLowerCase();
+    out = out.filter(s => ((s.ten_ch_snapshot||'')+' '+(s.ma_ch||'')).toLowerCase().includes(q));
+  }
+  return out;
+}
+
+function bgSvFilterBarHtml(){
+  const f = window._bgSvFilter = window._bgSvFilter || { date:'all', from:'', to:'', store:'' };
+  const chip = (id,lbl)=>`<button onclick="bgSvSetDate('${id}')" style="border:1px solid ${f.date===id?'#1D9E75':'#D1D5DB'};background:${f.date===id?'#1D9E75':'#fff'};color:${f.date===id?'#fff':'#374151'};padding:5px 11px;border-radius:20px;font-size:12.5px;cursor:pointer">${lbl}</button>`;
+  const stores = Array.from(new Set((window._bgSuVuCache||[]).map(s=>s.ten_ch_snapshot||s.ma_ch).filter(Boolean))).sort();
+  const opts = stores.map(n=>`<option value="${escHtml(n)}"></option>`).join('');
+  const rangeRow = f.date==='range' ? `<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+      <input type="date" value="${escHtml(f.from||'')}" onchange="bgSvSetRange('from',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
+      <span style="color:#94A3B8;font-size:12px">đến</span>
+      <input type="date" value="${escHtml(f.to||'')}" onchange="bgSvSetRange('to',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
+    </div>` : '';
+  return `<div style="margin-bottom:12px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${chip('all','Tất cả')}${chip('today','Hôm nay')}${chip('yesterday','Hôm qua')}${chip('month','Tháng này')}${chip('range','Khoảng')}</div>
+    ${rangeRow}
+    <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+      <input list="bg-sv-store-dl" value="${escHtml(f.store||'')}" oninput="(window._bgSvFilter=window._bgSvFilter||{}).store=this.value" onchange="bgSvSetStore(this.value)" placeholder="Lọc theo cửa hàng (gõ để gợi ý)..." style="flex:1;border:1px solid #D1D5DB;border-radius:9px;padding:8px 11px;font-size:13px">
+      ${f.store?`<button onclick="bgSvSetStore('')" style="border:1px solid #D1D5DB;background:#fff;color:#64748B;padding:8px 12px;border-radius:9px;font-size:12.5px;cursor:pointer">Xóa</button>`:''}
+    </div>
+    <datalist id="bg-sv-store-dl">${opts}</datalist>
+  </div>`;
+}
+
+window.bgSvSetDate = function(d){ (window._bgSvFilter=window._bgSvFilter||{}).date=d; bgSuVuRenderFromCache(); };
+window.bgSvSetRange = function(k,v){ (window._bgSvFilter=window._bgSvFilter||{})[k]=v; bgSuVuRenderFromCache(); };
+window.bgSvSetStore = function(v){ (window._bgSvFilter=window._bgSvFilter||{}).store=v; bgSuVuRenderFromCache(); };
 
 // [Điểm 2] Thẻ cơ động dạng STEPPER ngang — tên đội ở bước Xử lý
 function bgSuVuCardCoDong(s){
