@@ -937,7 +937,7 @@ function bgSuVuCardHtml(s){
         <span class="chk-mucdo-tag ${mdCls}">${mdLbl}</span>
         <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
       </div>
-      <div style="font-weight:700;font-size:15px;color:#0F172A;margin-top:5px">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
+      <div style="font-weight:600;font-size:15px;color:#0F172A;margin-top:5px">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
       <div style="font-weight:600;font-size:13.5px;color:#334155;margin-top:1px">${escHtml(s.tieu_de)}${s.ma_sv?` <span style="font-weight:500;color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
       <div class="chk-rec-by">Tạo: ${escHtml(s.nguoi_tao_ten||'?')}</div>
       ${xlChip}
@@ -987,13 +987,13 @@ function bgSuVuDeadlineHtml(s){
 
 function _bgFmtConLai(ms){
   const tot = Math.floor(Math.abs(ms)/1000);
-  const d = Math.floor(tot/86400);
-  const h = Math.floor((tot%86400)/3600);
+  const p2 = n => String(n).padStart(2,'0');
+  // >48 giờ: hiện theo NGÀY. ≤48 giờ: chạy đồng hồ giờ:phút:giây (giờ tính tổng, KHẨN=24, QUAN_TRONG=48)
+  if (tot > 48*3600) return Math.round(tot/86400) + ' ngày';
+  const h = Math.floor(tot/3600);
   const m = Math.floor((tot%3600)/60);
   const sec = tot%60;
-  const p2 = n => String(n).padStart(2,'0');
-  // [v16.74] Luôn hiện đủ ngày/giờ/phút/giây để bộ đếm chạy liên tục
-  return (d>0 ? d+' ngày ' : '') + p2(h)+'g '+p2(m)+'p '+p2(sec)+'s';
+  return p2(h)+':'+p2(m)+':'+p2(sec);
 }
 
 function bgSuVuTickCountdowns(){
@@ -1052,7 +1052,7 @@ function bgSuVuDetailHtml(s){
 
   let imgs = '';
   if (Array.isArray(s.anh_urls) && s.anh_urls.length){
-    imgs = `<div style="margin-top:14px"><div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:7px">Ảnh đính kèm (${s.anh_urls.length})</div>
+    imgs = `<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:7px">Ảnh đính kèm (${s.anh_urls.length})</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">${s.anh_urls.map(u=>`<img src="${escHtml(u)}" loading="lazy" onclick="bgSuVuLightbox('${escHtml(u)}')" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in;border:1px solid #E2E8F0">`).join('')}</div></div>`;
   }
   const baoLai = s.so_lan_bao_lai>1 ? `<div style="margin-top:12px;padding:8px 11px;background:#FEF3C7;border-radius:8px;font-size:12.5px;color:#92400E">Cửa hàng đã báo lại <b>${s.so_lan_bao_lai} lần</b> · cùng một sự vụ, không tạo mới</div>` : '';
@@ -1061,26 +1061,26 @@ function bgSuVuDetailHtml(s){
   let coDongActs = '';
   if (laCD && isOpen){
     coDongActs = `<div style="margin-top:16px;border-top:1px solid #EEF2F6;padding-top:14px">
-        <div style="font-size:13px;font-weight:700;color:#0F2E45;margin-bottom:8px">Trao đổi với cửa hàng (tùy chọn)</div>
+        <div style="font-size:13px;font-weight:600;color:#0F2E45;margin-bottom:8px">Trao đổi với cửa hàng (tùy chọn)</div>
         <textarea id="bgsv-ph-noidung" rows="3" placeholder="Nhập nội dung phản hồi nếu cần..." style="width:100%;box-sizing:border-box;border:1px solid #CBD5E1;border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
           <span style="font-size:12.5px;color:#64748B">Gia hạn đến:</span>
           <input type="datetime-local" id="bgsv-ph-deadline" style="border:1px solid #CBD5E1;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit">
         </div>
-        <button id="bgsv-ph-btn" onclick="bgSuVuDetailPhanHoi('${s.id}')" style="width:100%;margin-top:10px;background:#1B4965;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer">Gửi phản hồi</button>
-        <button onclick="bgSuVuDetailHoanTat('${s.id}')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer">✓ Hoàn tất sự vụ</button>
+        <button id="bgsv-ph-btn" onclick="bgSuVuDetailPhanHoi('${s.id}')" style="width:100%;margin-top:10px;background:#1B4965;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">Gửi phản hồi</button>
+        <button onclick="bgSuVuDetailHoanTat('${s.id}')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">Hoàn tất sự vụ</button>
       </div>`;
   }
 
   return `<div class="bgsv-detail-sheet" onclick="event.stopPropagation()" style="background:#fff;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:18px 16px 22px;-webkit-overflow-scrolling:touch">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="background:${accent};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${mdLbl}</span>
+        <span style="background:${accent};color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px">${mdLbl}</span>
         <span style="font-size:12px;color:#64748B;font-weight:600">${stLbl}</span>
       </div>
       <button onclick="bgSuVuCloseDetail()" style="background:#F1F5F9;border:none;width:32px;height:32px;border-radius:9px;font-size:16px;cursor:pointer;color:#475569">✕</button>
     </div>
-    <div style="font-weight:800;font-size:17px;color:#0F172A">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
+    <div style="font-weight:600;font-size:17px;color:#0F172A">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
     <div style="font-weight:600;font-size:14px;color:#334155;margin-top:2px">${escHtml(s.tieu_de||'')}${s.ma_sv?` <span style="color:#94A3B8;font-size:11px;font-weight:500">#${escHtml(s.ma_sv)}</span>`:''}</div>
     ${bgSuVuDeadlineHtml(s)}
     ${s.mo_ta?`<div style="margin-top:12px;font-size:14px;color:#1E293B;line-height:1.5;white-space:pre-wrap">${escHtml(s.mo_ta)}</div>`:''}
@@ -1102,7 +1102,7 @@ function bgSuVuDetailFlow(s){
   if (s.thoi_gian_xu_ly_xong) steps.push({ lbl:'Đã xử lý xong', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_xu_ly_xong });
   if (s.thoi_gian_dong) steps.push({ lbl:'Hoàn tất & đóng', who:s.nguoi_dong_ten, t:s.thoi_gian_dong });
   return `<div style="margin-top:16px;border-top:1px solid #EEF2F6;padding-top:14px">
-    <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:10px">Lộ trình xử lý</div>
+    <div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:10px">Lộ trình xử lý</div>
     ${steps.map((st,i)=>{
       const last = i===steps.length-1;
       return `<div style="display:flex;gap:10px;align-items:stretch">
@@ -1169,7 +1169,7 @@ function bgUndoBar(msg, onCommit, seconds){
   _bgUndoCommit = onCommit;
   let left = seconds;
   const render = ()=>{
-    bar.innerHTML = `<span>${escHtml(msg)}</span><button id="bg-undo-btn" style="background:#3FB6A8;color:#06241E;border:none;padding:7px 13px;border-radius:8px;font-weight:700;cursor:pointer;white-space:nowrap">Hoàn tác (${left})</button>`;
+    bar.innerHTML = `<span>${escHtml(msg)}</span><button id="bg-undo-btn" style="background:#3FB6A8;color:#06241E;border:none;padding:7px 13px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap">Hoàn tác (${left})</button>`;
     const b = document.getElementById('bg-undo-btn'); if (b) b.onclick = bgUndoCancel;
   };
   render();
