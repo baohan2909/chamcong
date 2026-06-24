@@ -850,6 +850,11 @@ async function bgRenderSuVu(){
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   try {
+    // [Lớp 1] Đội cơ động cùng nhóm (nạp 1 lần) — để hiện tên ở stepper + lộ trình
+    if (_bgLaCoDong() && !window._bgCoDongNhom){
+      try { const _r = await supa.rpc('fn_co_dong_cung_nhom', { p_ma_nv: ma }); window._bgCoDongNhom = (Array.isArray(_r.data)?_r.data:[]).map(x=>x.ho_ten).filter(Boolean); }
+      catch(_e){ window._bgCoDongNhom = []; }
+    }
     // [B1] Cơ động: lấy CẢ KHU VỰC (mọi sự vụ đang mở) — ai trong vùng cũng xử lý được
     let reqs;
     if (_bgLaCoDong()){
@@ -901,7 +906,62 @@ async function bgRenderSuVu(){
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
 }
 
+// [Điểm 2] Thẻ cơ động dạng STEPPER ngang — tên đội ở bước Xử lý
+function bgSuVuCardCoDong(s){
+  const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
+  const mdCls = s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'vua':'nhe';
+  const accent = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#D97706':'#1B4965';
+  const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', DA_XU_LY_XONG:'Chờ cửa hàng xác nhận', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
+  const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
+  return `<div class="chk-rec ${isOpen?'has-issue':''}" style="border-left:3px solid ${accent};cursor:pointer" onclick="bgSuVuOpenDetail('${s.id}')">
+    <div class="chk-rec-head">
+      <div class="chk-rec-top">
+        <span class="chk-rec-time">${bgFmtDateTimeShort(s.created_at)}</span>
+        <span class="chk-mucdo-tag ${mdCls}">${mdLbl}</span>
+        <span class="chk-rec-badge ${isOpen?'issue':'ok'}" style="margin-left:auto">${stLbl}</span>
+      </div>
+      <div style="font-weight:600;font-size:15px;color:#0F172A;margin-top:5px">${escHtml(s.ten_ch_snapshot||s.ma_ch||'')}</div>
+      <div style="font-weight:500;font-size:13.5px;color:#334155;margin-top:1px">${escHtml(s.tieu_de||'')}${s.ma_sv?` <span style="color:#94A3B8;font-size:11px">#${escHtml(s.ma_sv)}</span>`:''}</div>
+      ${bgSuVuDeadlineHtml(s)}
+      ${bgSuVuStepperHtml(s)}
+    </div>
+  </div>`;
+}
+
+function bgSuVuStepperHtml(s){
+  const team = window._bgCoDongNhom || [];
+  const tt = s.trang_thai;
+  const hoanTat = tt==='HOAN_TAT';
+  const xuLyXong = tt==='DA_XU_LY_XONG' || hoanTat;
+  const xlNames = s.nguoi_xu_ly_ten ? [s.nguoi_xu_ly_ten] : (team.length ? team : ['Cơ động khu vực']);
+  const htName = hoanTat ? (s.nguoi_dong_ten || s.nguoi_xu_ly_ten || '') : '';
+  const steps = [
+    { lbl:'Người tạo', names:[s.nguoi_tao_ten||'—'], reached:true },
+    { lbl:'Giao việc', names:['Ban quản lý'],        reached:true },
+    { lbl:'Xử lý',     names:xlNames,                reached:true, active:!xuLyXong },
+    { lbl:'Hoàn tất',  names:htName?[htName]:['—'],  reached:hoanTat }
+  ];
+  return `<div style="display:flex;margin-top:12px;border-top:1px solid #EEF2F6;padding-top:12px">
+    ${steps.map((st,i)=>{
+      const last = i===steps.length-1;
+      const dotColor = st.reached ? (st.active ? '#D97706' : '#1D9E75') : '#CBD5E1';
+      const leftLine = i===0 ? 'transparent' : (steps[i].reached ? '#1D9E75' : '#E2E8F0');
+      const rightLine = last ? 'transparent' : (steps[i+1].reached ? '#1D9E75' : '#E2E8F0');
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0">
+        <div style="display:flex;align-items:center;width:100%">
+          <div style="flex:1;height:2px;background:${leftLine}"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex:none"></div>
+          <div style="flex:1;height:2px;background:${rightLine}"></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:${st.reached?'#0F2E45':'#94A3B8'};margin-top:5px">${st.lbl}</div>
+        <div style="margin-top:3px;display:flex;flex-direction:column;gap:1px">${st.names.map(n=>`<span style="font-size:10.5px;color:#475569;line-height:1.3;word-break:break-word">${escHtml(n)}</span>`).join('')}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 function bgSuVuCardHtml(s){
+  if (_bgLaCoDong()) return bgSuVuCardCoDong(s);
   const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
   const mdCls = s.muc_do==='KHAN_CAP'?'khan':s.muc_do==='QUAN_TRONG'?'vua':'nhe';
   const stLbl = { MOI_TAO:'Mới tạo', DA_TIEP_NHAN:'Đã tiếp nhận', DANG_XU_LY:'Đang xử lý', DA_PHAN_HOI:'Đã phản hồi', DA_XU_LY_XONG:'Chờ cửa hàng xác nhận', HOAN_TAT:'Hoàn tất', HUY:'Hủy' }[s.trang_thai]||s.trang_thai;
@@ -1094,12 +1154,13 @@ function bgSuVuDetailHtml(s){
 
 // Lộ trình kết nối: tạo → điều phối → tiếp nhận → phản hồi → xong → hoàn tất
 function bgSuVuDetailFlow(s){
+  const team = window._bgCoDongNhom || [];
   const steps = [];
   steps.push({ lbl:'Cửa hàng tạo sự vụ', who:s.nguoi_tao_ten, t:s.created_at });
   steps.push({ lbl:'Điều phối', who:'Ban quản lý', t:null });
-  if (s.thoi_gian_bat_dau_xu_ly || s.nguoi_xu_ly_ten) steps.push({ lbl:'Tiếp nhận xử lý', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_bat_dau_xu_ly });
+  const xlWho = s.nguoi_xu_ly_ten || (team.length ? team.join(', ') : 'Cơ động khu vực');
+  steps.push({ lbl: s.thoi_gian_xu_ly_xong ? 'Đã xử lý xong' : 'Đang xử lý', who: xlWho, t: s.thoi_gian_xu_ly_xong || s.thoi_gian_bat_dau_xu_ly });
   if (s.thoi_gian_phan_hoi) steps.push({ lbl:'Phản hồi cửa hàng', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_phan_hoi });
-  if (s.thoi_gian_xu_ly_xong) steps.push({ lbl:'Đã xử lý xong', who:s.nguoi_xu_ly_ten, t:s.thoi_gian_xu_ly_xong });
   if (s.thoi_gian_dong) steps.push({ lbl:'Hoàn tất & đóng', who:s.nguoi_dong_ten, t:s.thoi_gian_dong });
   return `<div style="margin-top:16px;border-top:1px solid #EEF2F6;padding-top:14px">
     <div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:10px">Lộ trình xử lý</div>
