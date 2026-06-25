@@ -164,6 +164,8 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     _deferredPrompt = e;
+    window._pwaCanInstall = true;
+    if (typeof window.tkRefreshInstallCard === 'function') window.tkRefreshInstallCard();
     
     const dismissed = localStorage.getItem('pwa_install_dismissed');
     const dismissedDate = dismissed ? new Date(parseInt(dismissed)) : null;
@@ -189,6 +191,8 @@
       localStorage.removeItem('pwa_install_dismissed');
     }
     _deferredPrompt = null;
+    window._pwaCanInstall = false;
+    if (typeof window.tkRefreshInstallCard === 'function') window.tkRefreshInstallCard();
   };
   
   window.pwaDismissInstall = function() {
@@ -200,5 +204,7 @@
   window.addEventListener('appinstalled', () => {
     console.log('[PWA] Installed');
     localStorage.removeItem('pwa_install_dismissed');
+    window._pwaCanInstall = false;
+    if (typeof window.tkRefreshInstallCard === 'function') window.tkRefreshInstallCard();
   });
 })();

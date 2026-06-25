@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v16.94',
+  'sys.cache_version': 'v16.95',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2854,7 +2854,55 @@ function renderTaiKhoan(){
     el.textContent=vt==='ADMIN'?'👑 Admin':'🛡️ Quản lý nhân sự';
     el.style.display='inline-block';
   }
+
+  // [v16.95] Thẻ tải ứng dụng
+  if (typeof tkRefreshInstallCard === 'function') tkRefreshInstallCard();
 }
+
+// [v16.95] ─── Thẻ tải ứng dụng (PWA install) ───
+function tkRefreshInstallCard() {
+  const wrap = document.getElementById('tk-install-wrap');
+  const card = document.getElementById('tk-install-card');
+  if (!card) return;
+  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+  const ico = (path) => '<div style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1D9E75,#0F6E56);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg></div>';
+  const dlIcon = ico('<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="18" width="16" height="3" rx="1"/>');
+  let inner;
+  if (standalone) {
+    inner = '<div style="display:flex;align-items:center;gap:12px">' +
+      ico('<polyline points="20 6 9 17 4 12"/>') +
+      '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600;color:#0F172A">Đã cài đặt ứng dụng</div>' +
+      '<div style="font-size:12px;color:#94A3B8;margin-top:2px">Bạn đang dùng bản đã cài trên thiết bị này</div></div></div>';
+  } else if (window._pwaCanInstall) {
+    inner = '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+      '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">' + dlIcon +
+      '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600;color:#0F172A">Tải ứng dụng về máy</div>' +
+      '<div style="font-size:12px;color:#94A3B8;margin-top:2px">Cài Chấm công thành ứng dụng riêng trên máy</div></div></div>' +
+      '<button onclick="tkInstallApp()" style="flex-shrink:0;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Cài đặt</button></div>';
+  } else if (isIOS) {
+    inner = '<div style="display:flex;align-items:flex-start;gap:12px">' +
+      ico('<path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>') +
+      '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600;color:#0F172A">Thêm vào màn hình chính</div>' +
+      '<div style="font-size:12px;color:#64748B;margin-top:3px;line-height:1.5">Mở bằng Safari, bấm nút Chia sẻ ở thanh dưới, rồi chọn "Thêm vào MH chính".</div></div></div>';
+  } else {
+    inner = '<div style="display:flex;align-items:flex-start;gap:12px">' + dlIcon +
+      '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600;color:#0F172A">Tải ứng dụng về máy</div>' +
+      '<div style="font-size:12px;color:#64748B;margin-top:3px;line-height:1.5">Trên Chrome/Edge ở máy tính: mở menu <b>⋮</b> góc phải trên → chọn <b>"Cài đặt Chấm công…"</b> (hoặc bấm biểu tượng cài đặt ở thanh địa chỉ).</div></div></div>';
+  }
+  card.innerHTML = inner;
+  if (wrap) wrap.style.display = '';
+}
+window.tkRefreshInstallCard = tkRefreshInstallCard;
+
+function tkInstallApp() {
+  if (typeof window.pwaInstall === 'function' && window._pwaCanInstall) {
+    window.pwaInstall();
+  } else if (typeof showToast === 'function') {
+    showToast('Mở menu trình duyệt để cài ứng dụng.', 'warn');
+  }
+}
+window.tkInstallApp = tkInstallApp;
 
 // [v9.45] Helper render avatar UI dùng chung
 function _renderAvatarUI(avatarUrl, initialsText) {
