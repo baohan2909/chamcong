@@ -26,6 +26,7 @@ const MUANON_ADMIN = {
   galleryTotal: 0,
   galleryOffset: 0,
   galleryLimit: 100,
+  selectedTuanIds: [],   // [v16.93] chọn nhiều tuần cho gallery
   galleryOnlyFav: false,
   // [v11.9] Album + multi-select
   albums: [],
@@ -119,6 +120,7 @@ async function mnaLoadTuanList() {
 
     const openTuan = MUANON_ADMIN.tuanList.find(t => t.trang_thai === 'OPEN');
     MUANON_ADMIN.tuanId = openTuan ? openTuan.id : (MUANON_ADMIN.tuanList[0] && MUANON_ADMIN.tuanList[0].id);
+    MUANON_ADMIN.selectedTuanIds = MUANON_ADMIN.tuanId ? [MUANON_ADMIN.tuanId] : [];
 
     mnaRenderHeader();
   } catch (err) {
@@ -131,9 +133,13 @@ function mnaRenderHeader() {
   const headerEl = document.getElementById('muanon-admin-header');
   if (!headerEl) return;
 
-  const tuanOptions = MUANON_ADMIN.tuanList.map(t => {
-    const label = t.tuan_code + (t.trang_thai === 'OPEN' ? ' · Đang mở' : '');
-    return '<option value="' + t.id + '"' + (t.id === MUANON_ADMIN.tuanId ? ' selected' : '') + '>' + label + '</option>';
+  const _selTuan = MUANON_ADMIN.selectedTuanIds || [];
+  const _allTuanChecked = MUANON_ADMIN.tuanList.length > 0 && _selTuan.length === MUANON_ADMIN.tuanList.length;
+  const tuanRows = MUANON_ADMIN.tuanList.map(t => {
+    const checked = _selTuan.indexOf(t.id) > -1 ? ' checked' : '';
+    const openMark = t.trang_thai === 'OPEN' ? '<span class="mna-tuan-open">· Đang mở</span>' : '';
+    return '<label class="mna-tuan-opt"><input type="checkbox" class="mna-tuan-cb" data-tid="' + t.id + '"' + checked +
+      ' onchange="mnaToggleTuan(' + t.id + ', this.checked)"><span>' + escHtml(t.tuan_code) + ' ' + openMark + '</span></label>';
   }).join('');
 
   const tabs = [
@@ -150,7 +156,17 @@ function mnaRenderHeader() {
 
   headerEl.innerHTML = `
     <div class="mna-header-row">
-      <select class="mna-tuan-select" onchange="mnaChangeTuan(this.value)">${tuanOptions}</select>
+      <div class="mna-tuan-multi">
+        <button type="button" class="mna-tuan-select" onclick="mnaToggleTuanPanel()">
+          <span id="mna-tuan-summary">${escHtml(_mnaTuanSummary())}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="mna-tuan-panel" class="mna-tuan-panel" style="display:none">
+          <label class="mna-tuan-opt mna-tuan-all-opt"><input type="checkbox" id="mna-tuan-all"${_allTuanChecked ? ' checked' : ''} onchange="mnaToggleAllTuan(this.checked)"><span>Tất cả tuần</span></label>
+          <div class="mna-tuan-list">${tuanRows}</div>
+          <button type="button" class="mna-tuan-apply" onclick="mnaApplyTuan()">Áp dụng</button>
+        </div>
+      </div>
       <button class="mna-refresh-btn" onclick="mnaReload()" title="Tải lại">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.51-7.13"/><polyline points="21 4 21 10 15 10"/></svg>
       </button>
@@ -164,6 +180,61 @@ function mnaChangeTuan(tuanId) {
   MUANON_ADMIN.filters = { kv: null, ch: null, nv: null, tag: null };
   MUANON_ADMIN.selectedNV.clear();
   MUANON_ADMIN.galleryOffset = 0;
+  mnaSwitchTab(MUANON_ADMIN.currentTab);
+}
+
+// [v16.93] ─── Multi-select tuần (gallery gộp nhiều tuần) ───
+function _mnaTuanSummary() {
+  const sel = MUANON_ADMIN.selectedTuanIds || [];
+  const total = MUANON_ADMIN.tuanList.length;
+  if (sel.length === 0) return 'Chọn tuần';
+  if (total > 0 && sel.length === total) return 'Tất cả tuần (' + total + ')';
+  if (sel.length === 1) {
+    const t = MUANON_ADMIN.tuanList.find(x => x.id === sel[0]);
+    return t ? (t.tuan_code + (t.trang_thai === 'OPEN' ? ' · Đang mở' : '')) : '1 tuần';
+  }
+  return sel.length + ' tuần';
+}
+
+function _mnaSyncTuanUI() {
+  const sumEl = document.getElementById('mna-tuan-summary');
+  if (sumEl) sumEl.textContent = _mnaTuanSummary();
+  const allEl = document.getElementById('mna-tuan-all');
+  if (allEl) allEl.checked = (MUANON_ADMIN.tuanList.length > 0 &&
+    (MUANON_ADMIN.selectedTuanIds || []).length === MUANON_ADMIN.tuanList.length);
+}
+
+function mnaToggleTuanPanel() {
+  const p = document.getElementById('mna-tuan-panel');
+  if (!p) return;
+  p.style.display = (p.style.display === 'none' || !p.style.display) ? 'block' : 'none';
+}
+
+function mnaToggleTuan(id, checked) {
+  id = parseInt(id, 10);
+  const s = new Set(MUANON_ADMIN.selectedTuanIds || []);
+  if (checked) s.add(id); else s.delete(id);
+  MUANON_ADMIN.selectedTuanIds = Array.from(s);
+  _mnaSyncTuanUI();
+}
+
+function mnaToggleAllTuan(checked) {
+  MUANON_ADMIN.selectedTuanIds = checked ? MUANON_ADMIN.tuanList.map(t => t.id) : [];
+  document.querySelectorAll('.mna-tuan-cb').forEach(cb => { cb.checked = checked; });
+  _mnaSyncTuanUI();
+}
+
+function mnaApplyTuan() {
+  if (!(MUANON_ADMIN.selectedTuanIds || []).length) {
+    MUANON_ADMIN.selectedTuanIds = MUANON_ADMIN.tuanId ? [MUANON_ADMIN.tuanId] : [];
+  }
+  MUANON_ADMIN.tuanId = MUANON_ADMIN.selectedTuanIds[0];   // primary cho tab đơn-tuần
+  MUANON_ADMIN.filters = { kv: null, ch: null, nv: null, tag: null };
+  MUANON_ADMIN.selectedNV.clear();
+  MUANON_ADMIN.galleryOffset = 0;
+  const p = document.getElementById('mna-tuan-panel');
+  if (p) p.style.display = 'none';
+  mnaRenderHeader();
   mnaSwitchTab(MUANON_ADMIN.currentTab);
 }
 
@@ -579,16 +650,43 @@ async function mnaLoadGallery() {
     }
     // Mặc định: gallery thường theo tuần
     else {
-      res = await supa.rpc('fn_muanon_admin_list_anh', {
-        p_ma_admin: SESSION.ma,
-        p_tuan_id: MUANON_ADMIN.tuanId,
-        p_kv: MUANON_ADMIN.filters.kv,
-        p_ch: MUANON_ADMIN.filters.ch,
-        p_nv: MUANON_ADMIN.filters.nv,
-        p_tag: MUANON_ADMIN.filters.tag,
-        p_limit: MUANON_ADMIN.galleryLimit,
-        p_offset: MUANON_ADMIN.galleryOffset
-      });
+      const ids = (MUANON_ADMIN.selectedTuanIds && MUANON_ADMIN.selectedTuanIds.length)
+        ? MUANON_ADMIN.selectedTuanIds : [MUANON_ADMIN.tuanId];
+      if (ids.length > 1) {
+        // [v16.93] Gộp nhiều tuần: gọi RPC từng tuần (giữ đúng mapping URL/fav/lọc của server), trộn ở client
+        const per = await Promise.all(ids.map(tid => supa.rpc('fn_muanon_admin_list_anh', {
+          p_ma_admin: SESSION.ma,
+          p_tuan_id: tid,
+          p_kv: MUANON_ADMIN.filters.kv,
+          p_ch: MUANON_ADMIN.filters.ch,
+          p_nv: MUANON_ADMIN.filters.nv,
+          p_tag: MUANON_ADMIN.filters.tag,
+          p_limit: MUANON_ADMIN.galleryLimit,
+          p_offset: 0
+        })));
+        const errR = per.find(r => r.error);
+        if (errR) throw errR.error;
+        let merged = [];
+        let totalSum = 0;
+        per.forEach(r => {
+          const d = r.data || {};
+          if (d.data && d.data.length) merged = merged.concat(d.data);
+          totalSum += (d.total || 0);
+        });
+        if (MUANON_ADMIN.galleryLimit < 100000) merged = merged.slice(0, MUANON_ADMIN.galleryLimit);
+        res = { data: { ok: true, total: totalSum, data: merged }, error: null };
+      } else {
+        res = await supa.rpc('fn_muanon_admin_list_anh', {
+          p_ma_admin: SESSION.ma,
+          p_tuan_id: ids[0],
+          p_kv: MUANON_ADMIN.filters.kv,
+          p_ch: MUANON_ADMIN.filters.ch,
+          p_nv: MUANON_ADMIN.filters.nv,
+          p_tag: MUANON_ADMIN.filters.tag,
+          p_limit: MUANON_ADMIN.galleryLimit,
+          p_offset: MUANON_ADMIN.galleryOffset
+        });
+      }
     }
     const { data, error } = res;
     if (error) throw error;
@@ -2537,6 +2635,10 @@ window.mnaRetryFailed = mnaRetryFailed;
 // ════════════════════════════════════════════════════════════════════════════
 window.moPageMuanonAdmin = moPageMuanonAdmin;
 window.mnaChangeTuan = mnaChangeTuan;
+window.mnaToggleTuanPanel = mnaToggleTuanPanel;
+window.mnaToggleTuan = mnaToggleTuan;
+window.mnaToggleAllTuan = mnaToggleAllTuan;
+window.mnaApplyTuan = mnaApplyTuan;
 window.mnaReload = mnaReload;
 window.mnaSwitchTab = mnaSwitchTab;
 window.mnaSetFilter = mnaSetFilter;
