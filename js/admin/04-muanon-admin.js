@@ -2656,15 +2656,13 @@ async function mnaBulkRemoveFromAlbum() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// [v12.0] TAB "NHÓM AI" — AI Clustering ảnh mẫu nón
+// [v16.99] NHÓM AI THEO TAG NHÂN VIÊN
+//   Gom theo tag (ngành hàng nhân viên đã gắn) → trong mỗi tag cụm nón giống nhau
+//   (cùng màu + kiểu) → cụm nhiều ảnh nhất (nhiều CH gửi cùng mẫu) lên đầu.
+//   Không để AI tự phân ngành hàng. Dùng lại màu/kiểu đã phân tích, khỏi chạy lại.
 // ════════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════════
-// [v16.98] NHÓM ẢNH BẰNG AI — Claude Haiku gán {loại, màu, kiểu dáng}
-//   Phân tích thủ công theo lô · gom theo chiều tùy chọn (đổi view khỏi phân tích lại)
-// ════════════════════════════════════════════════════════════════════════════
-
-// Nhãn màu / kiểu dáng (loại dùng mnaTagLabel/mnaTagColor sẵn có)
+// Nhãn màu / kiểu dáng (tag dùng mnaTagLabel/mnaTagColor sẵn có)
 const MUANON_MAU_LABEL = {
   den: 'Đen', trang: 'Trắng', xam: 'Xám', do: 'Đỏ', cam: 'Cam', vang: 'Vàng',
   xanhla: 'Xanh lá', xanhduong: 'Xanh dương', nau: 'Nâu', be: 'Be',
@@ -2684,49 +2682,34 @@ function _mnaMauLabel(c) { return MUANON_MAU_LABEL[c] || c || 'Khác'; }
 function _mnaMauHex(c)   { return MUANON_MAU_HEX[c] || '#cbd5e1'; }
 function _mnaKieuLabel(c){ return MUANON_KIEU_LABEL[c] || c || 'Khác'; }
 
-// Các kiểu gom (nhãn chips)
-const MUANON_GROUPBY = [
-  { id: 'loai_kieu', label: 'Loại + Kiểu' },
-  { id: 'kieu',      label: 'Kiểu dáng' },
-  { id: 'loai',      label: 'Loại' },
-  { id: 'mau',       label: 'Màu' },
-  { id: 'loai_mau',  label: 'Loại + Màu' },
-  { id: 'mau_kieu',  label: 'Màu + Kiểu' }
-];
-
-// Nhãn tổng hợp cho 1 nhóm theo dim nào có giá trị
-function _mnaGroupLabel(loai, mau, kieu) {
+// Nhãn/màu cho tag (tag rỗng = chưa gắn thẻ)
+function _mnaTagLabelSafe(tag) { return tag ? mnaTagLabel(tag) : 'Chưa gắn thẻ'; }
+function _mnaTagColorSafe(tag) { return tag ? (mnaTagColor(tag) || '#64748b') : '#94a3b8'; }
+// Nhãn cụm trong 1 tag: "Màu · Kiểu"
+function _mnaClusterLabel(mau, kieu) {
   const parts = [];
-  if (loai) parts.push(mnaTagLabel(loai));
-  if (kieu) parts.push(_mnaKieuLabel(kieu));
   if (mau)  parts.push(_mnaMauLabel(mau));
+  if (kieu) parts.push(_mnaKieuLabel(kieu));
   return parts.length ? parts.join(' · ') : 'Khác';
 }
-// Chấm màu nhận diện nhóm (ưu tiên màu sản phẩm nếu gom theo màu)
-function _mnaGroupDot(loai, mau, kieu) {
-  if (mau)  return '<span class="mna-ai-swatch" style="background:' + _mnaMauHex(mau) + '"></span>';
-  if (loai) return '<span class="mna-ai-dot" style="background:' + (mnaTagColor(loai) || '#64748b') + '"></span>';
-  return '';
-}
 
-// ─── Tải tab Nhóm AI (stats + groups) ───────────────────────────────────────
+// ─── Tải tab Nhóm AI (stats + cụm theo tag) ──────────────────────────────────
 async function mnaLoadCluster() {
   const el = document.getElementById('muanon-admin-content');
   if (el && !MUANON_ADMIN.aiAnalyzing) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
 
   const scope = MUANON_ADMIN.clusterScope || 'all';
   const tuanId = scope === 'tuan' ? MUANON_ADMIN.tuanId : null;
-  const groupBy = MUANON_ADMIN.aiGroupBy || 'loai_kieu';
 
   try {
-    const [stRes, grRes] = await Promise.all([
+    const [stRes, tgRes] = await Promise.all([
       supa.rpc('fn_muanon_ai_stats',  { p_ma_admin: SESSION.ma, p_tuan_id: tuanId }),
-      supa.rpc('fn_muanon_ai_groups', { p_ma_admin: SESSION.ma, p_tuan_id: tuanId, p_group_by: groupBy })
+      supa.rpc('fn_muanon_ai_by_tag', { p_ma_admin: SESSION.ma, p_tuan_id: tuanId })
     ]);
     if (stRes.error) throw stRes.error;
-    if (grRes.error) throw grRes.error;
-    MUANON_ADMIN.aiStats  = (stRes.data && stRes.data.ok) ? stRes.data : { tong: 0, da_phan_tich: 0, con_lai: 0 };
-    MUANON_ADMIN.aiGroups = (grRes.data && grRes.data.ok) ? (grRes.data.data || []) : [];
+    if (tgRes.error) throw tgRes.error;
+    MUANON_ADMIN.aiStats = (stRes.data && stRes.data.ok) ? stRes.data : { tong: 0, da_phan_tich: 0, con_lai: 0 };
+    MUANON_ADMIN.aiByTag = (tgRes.data && tgRes.data.ok) ? (tgRes.data.data || []) : [];
     mnaRenderCluster();
   } catch (err) {
     if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
@@ -2739,17 +2722,11 @@ function mnaSetClusterScope(scope) {
   mnaLoadCluster();
 }
 
-function mnaSetGroupBy(gb) {
-  MUANON_ADMIN.aiGroupBy = gb;
-  mnaLoadCluster();
-}
-
-// ─── Render tab ──────────────────────────────────────────────────────────────
+// ─── Render tab: thẻ tiến độ + các section theo tag ──────────────────────────
 function mnaRenderCluster() {
   const stats = MUANON_ADMIN.aiStats || { tong: 0, da_phan_tich: 0, con_lai: 0 };
-  const groups = MUANON_ADMIN.aiGroups || [];
+  const rows = MUANON_ADMIN.aiByTag || [];
   const scope = MUANON_ADMIN.clusterScope || 'all';
-  const groupBy = MUANON_ADMIN.aiGroupBy || 'loai_kieu';
   const analyzing = !!MUANON_ADMIN.aiAnalyzing;
   const pct = stats.tong > 0 ? Math.round(stats.da_phan_tich * 100 / stats.tong) : 0;
 
@@ -2765,44 +2742,45 @@ function mnaRenderCluster() {
         <span class="mna-ai-stat-num"><b id="mna-ai-done">${stats.da_phan_tich}</b> / ${stats.tong} ảnh</span>
       </div>
       <div class="mna-ai-bar"><div class="mna-ai-bar-fill" id="mna-ai-fill" style="width:${pct}%"></div></div>
-      <div class="mna-ai-stat-foot" id="mna-ai-foot">
-        ${_mnaAnalyzeBtnHtml(stats, analyzing)}
-      </div>
+      <div class="mna-ai-stat-foot" id="mna-ai-foot">${_mnaAnalyzeBtnHtml(stats, analyzing)}</div>
     </div>
   `;
 
-  // Bộ chọn chiều gom
-  html += '<div class="mna-groupby-bar"><span class="mna-gb-label">Gom theo</span>';
-  MUANON_GROUPBY.forEach(g => {
-    html += `<button class="mna-gb-chip ${groupBy === g.id ? 'active' : ''}" onclick="mnaSetGroupBy('${g.id}')">${g.label}</button>`;
-  });
-  html += '</div>';
-
-  // Lưới nhóm
-  if (groups.length === 0) {
+  if (rows.length === 0) {
     html += `<div class="mna-empty">${
       stats.da_phan_tich === 0
         ? (stats.tong === 0 ? 'Chưa có ảnh nào được gửi.' : 'Chưa phân tích ảnh nào. Bấm "Phân tích AI" để bắt đầu.')
         : 'Không có nhóm phù hợp.'
     }</div>`;
   } else {
-    html += '<div class="mna-cluster-grid">';
-    groups.forEach(c => {
+    let curTag = '\u0000';
+    rows.forEach(c => {
+      const tagKey = (c.tag == null) ? '' : c.tag;
+      if (tagKey !== curTag) {
+        if (curTag !== '\u0000') html += '</div>';   // đóng grid của tag trước
+        curTag = tagKey;
+        html += `
+          <div class="mna-tag-head">
+            <span class="mna-tag-dot" style="background:${_mnaTagColorSafe(c.tag)}"></span>
+            <span class="mna-tag-name">${escHtml(_mnaTagLabelSafe(c.tag))}</span>
+            <span class="mna-tag-cnt">${c.tag_total} ảnh</span>
+          </div>
+          <div class="mna-cluster-grid">`;
+      }
       const cover = (c.samples && c.samples[0] && c.samples[0].url) || '';
-      const label = _mnaGroupLabel(c.loai, c.mau, c.kieu);
-      const dot = _mnaGroupDot(c.loai, c.mau, c.kieu);
-      const args = "'" + (c.loai || '') + "','" + (c.mau || '') + "','" + (c.kieu || '') + "'";
+      const sub = _mnaClusterLabel(c.mau, c.kieu);
+      const swatch = c.mau ? '<span class="mna-ai-swatch" style="background:' + _mnaMauHex(c.mau) + '"></span>' : '';
+      const args = "'" + (c.tag || '') + "','" + (c.mau || '') + "','" + (c.kieu || '') + "'";
       html += `
         <div class="mna-cluster-card" onclick="mnaOpenAIGroup(${args})">
           <div class="mna-cluster-cover">
             ${cover ? '<img src="' + _mnaEscAttr(cover) + '" loading="lazy"/>' : '<div class="mna-cluster-empty"></div>'}
             <span class="mna-cluster-count">${c.so_anh}</span>
           </div>
-          <div class="mna-cluster-label">${dot}<span>${escHtml(label)}</span></div>
-        </div>
-      `;
+          <div class="mna-cluster-label">${swatch}<span>${escHtml(sub)}</span></div>
+        </div>`;
     });
-    html += '</div>';
+    if (curTag !== '\u0000') html += '</div>';   // đóng grid cuối
   }
 
   const el = document.getElementById('muanon-admin-content');
@@ -2898,9 +2876,8 @@ async function _mnaFnErr(fnErr) {
   return m;
 }
 
-// ─── Mở 1 nhóm → xem hết ảnh (tái dùng lightbox) ─────────────────────────────
-async function mnaOpenAIGroup(loai, mau, kieu) {
-  loai = loai || null; mau = mau || null; kieu = kieu || null;
+// ─── Mở 1 cụm → xem hết ảnh (tái dùng lightbox) ──────────────────────────────
+async function mnaOpenAIGroup(tag, mau, kieu) {
   const el = document.getElementById('muanon-admin-content');
   if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm...</div>';
   const scope = MUANON_ADMIN.clusterScope || 'all';
@@ -2908,7 +2885,7 @@ async function mnaOpenAIGroup(loai, mau, kieu) {
 
   try {
     const { data, error } = await supa.rpc('fn_muanon_ai_group_anh', {
-      p_ma_admin: SESSION.ma, p_loai: loai, p_mau: mau, p_kieu: kieu,
+      p_ma_admin: SESSION.ma, p_tag: tag || '', p_mau: mau || '', p_kieu: kieu || '',
       p_tuan_id: tuanId, p_limit: 100000
     });
     if (error) throw error;
@@ -2918,15 +2895,18 @@ async function mnaOpenAIGroup(loai, mau, kieu) {
     const favSet = await _mnaEnsureFavSet();
     items.forEach(a => { a.is_fav = favSet.has(a.anh_id); });
     MUANON_ADMIN.galleryData = items;             // reuse lightbox
-    MUANON_ADMIN._aiGroupKey = { loai, mau, kieu };
-    mnaRenderAIGroupDetail(loai, mau, kieu, items);
+    MUANON_ADMIN._aiGroupKey = { tag, mau, kieu };
+    mnaRenderAIGroupDetail(tag, mau, kieu, items);
   } catch (err) {
     if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
   }
 }
 
-function mnaRenderAIGroupDetail(loai, mau, kieu, items) {
-  const label = _mnaGroupLabel(loai, mau, kieu);
+function mnaRenderAIGroupDetail(tag, mau, kieu, items) {
+  const parts = [_mnaTagLabelSafe(tag)];
+  if (mau || kieu) parts.push(_mnaClusterLabel(mau, kieu));
+  const label = parts.join(' · ');
+
   let html = `
     <div class="mna-album-header">
       <button class="mna-album-back" onclick="mnaSwitchTab('nhom')">
@@ -2983,7 +2963,6 @@ async function _mnaEnsureFavSet() {
 // ─── Globals ────────────────────────────────────────────────────────────
 window.mnaLoadCluster = mnaLoadCluster;
 window.mnaSetClusterScope = mnaSetClusterScope;
-window.mnaSetGroupBy = mnaSetGroupBy;
 window.mnaAIAnalyze = mnaAIAnalyze;
 window.mnaStopAnalyze = mnaStopAnalyze;
 window.mnaOpenAIGroup = mnaOpenAIGroup;
