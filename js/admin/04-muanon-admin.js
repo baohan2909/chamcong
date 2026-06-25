@@ -2656,44 +2656,17 @@ async function mnaBulkRemoveFromAlbum() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// [v16.99] NHÓM AI THEO TAG NHÂN VIÊN
-//   Gom theo tag (ngành hàng nhân viên đã gắn) → trong mỗi tag cụm nón giống nhau
-//   (cùng màu + kiểu) → cụm nhiều ảnh nhất (nhiều CH gửi cùng mẫu) lên đầu.
-//   Không để AI tự phân ngành hàng. Dùng lại màu/kiểu đã phân tích, khỏi chạy lại.
+// [v17.0] NHÓM AI THEO TAG — lưới ảnh như Gallery + thanh zoom
+//   Mỗi tag (ngành hàng nhân viên gắn khi đăng) là 1 section. Trong section:
+//   lưới ảnh thật, AI sắp mẫu giống nhau (cùng màu+kiểu) liền nhau,
+//   cụm nhiều ảnh nhất (nhiều CH gửi cùng mẫu) đứng trước. Khỏi chạy lại AI.
 // ════════════════════════════════════════════════════════════════════════════
-
-// Nhãn màu / kiểu dáng (tag dùng mnaTagLabel/mnaTagColor sẵn có)
-const MUANON_MAU_LABEL = {
-  den: 'Đen', trang: 'Trắng', xam: 'Xám', do: 'Đỏ', cam: 'Cam', vang: 'Vàng',
-  xanhla: 'Xanh lá', xanhduong: 'Xanh dương', nau: 'Nâu', be: 'Be',
-  hong: 'Hồng', tim: 'Tím', nhieumau: 'Nhiều màu', khac: 'Khác'
-};
-const MUANON_MAU_HEX = {
-  den: '#1f2937', trang: '#e2e8f0', xam: '#94a3b8', do: '#dc2626', cam: '#ea580c',
-  vang: '#eab308', xanhla: '#16a34a', xanhduong: '#2563eb', nau: '#78350f', be: '#d9cba8',
-  hong: '#ec4899', tim: '#7c3aed', nhieumau: '#64748b', khac: '#cbd5e1'
-};
-const MUANON_KIEU_LABEL = {
-  trum_dau: 'Trùm đầu', che_tai: 'Che tai 3/4', nua_dau: 'Nửa đầu',
-  vanh_rong: 'Vành rộng', vanh_vua: 'Vành vừa', luoi_trai: 'Lưỡi trai',
-  snapback: 'Snapback', bucket: 'Bucket', beret: 'Beret', khac: 'Khác'
-};
-function _mnaMauLabel(c) { return MUANON_MAU_LABEL[c] || c || 'Khác'; }
-function _mnaMauHex(c)   { return MUANON_MAU_HEX[c] || '#cbd5e1'; }
-function _mnaKieuLabel(c){ return MUANON_KIEU_LABEL[c] || c || 'Khác'; }
 
 // Nhãn/màu cho tag (tag rỗng = chưa gắn thẻ)
 function _mnaTagLabelSafe(tag) { return tag ? mnaTagLabel(tag) : 'Chưa gắn thẻ'; }
 function _mnaTagColorSafe(tag) { return tag ? (mnaTagColor(tag) || '#64748b') : '#94a3b8'; }
-// Nhãn cụm trong 1 tag: "Màu · Kiểu"
-function _mnaClusterLabel(mau, kieu) {
-  const parts = [];
-  if (mau)  parts.push(_mnaMauLabel(mau));
-  if (kieu) parts.push(_mnaKieuLabel(kieu));
-  return parts.length ? parts.join(' · ') : 'Khác';
-}
 
-// ─── Tải tab Nhóm AI (stats + cụm theo tag) ──────────────────────────────────
+// ─── Tải tab Nhóm AI (stats + ảnh đã sắp xếp theo cụm) ───────────────────────
 async function mnaLoadCluster() {
   const el = document.getElementById('muanon-admin-content');
   if (el && !MUANON_ADMIN.aiAnalyzing) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
@@ -2702,14 +2675,18 @@ async function mnaLoadCluster() {
   const tuanId = scope === 'tuan' ? MUANON_ADMIN.tuanId : null;
 
   try {
-    const [stRes, tgRes] = await Promise.all([
+    const [stRes, imRes] = await Promise.all([
       supa.rpc('fn_muanon_ai_stats',  { p_ma_admin: SESSION.ma, p_tuan_id: tuanId }),
-      supa.rpc('fn_muanon_ai_by_tag', { p_ma_admin: SESSION.ma, p_tuan_id: tuanId })
+      supa.rpc('fn_muanon_ai_sorted', { p_ma_admin: SESSION.ma, p_tuan_id: tuanId })
     ]);
     if (stRes.error) throw stRes.error;
-    if (tgRes.error) throw tgRes.error;
+    if (imRes.error) throw imRes.error;
     MUANON_ADMIN.aiStats = (stRes.data && stRes.data.ok) ? stRes.data : { tong: 0, da_phan_tich: 0, con_lai: 0 };
-    MUANON_ADMIN.aiByTag = (tgRes.data && tgRes.data.ok) ? (tgRes.data.data || []) : [];
+    const imgs = (imRes.data && imRes.data.ok) ? (imRes.data.data || []) : [];
+    const favSet = await _mnaEnsureFavSet();
+    imgs.forEach(a => { a.is_fav = favSet.has(a.anh_id); });
+    MUANON_ADMIN.aiImages = imgs;
+    MUANON_ADMIN.galleryData = imgs;   // tái dùng lightbox + điều hướng
     mnaRenderCluster();
   } catch (err) {
     if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
@@ -2722,13 +2699,23 @@ function mnaSetClusterScope(scope) {
   mnaLoadCluster();
 }
 
-// ─── Render tab: thẻ tiến độ + các section theo tag ──────────────────────────
+// Đổi cỡ ảnh (số cột) cho mọi nhóm — không render lại
+function mnaSetZoomAI(val) {
+  MUANON_ADMIN.gridCols = parseInt(val, 10);
+  localStorage.setItem('muanon_grid_cols', val);
+  document.querySelectorAll('.mna-ai-grid').forEach(g => g.style.setProperty('--mna-cols', val));
+  const lbl = document.getElementById('mna-ai-zoom-lbl');
+  if (lbl) lbl.textContent = val + ' cột';
+}
+
+// ─── Render tab: thẻ tiến độ + thanh zoom + các section theo tag ──────────────
 function mnaRenderCluster() {
   const stats = MUANON_ADMIN.aiStats || { tong: 0, da_phan_tich: 0, con_lai: 0 };
-  const rows = MUANON_ADMIN.aiByTag || [];
+  const imgs = MUANON_ADMIN.aiImages || [];
   const scope = MUANON_ADMIN.clusterScope || 'all';
   const analyzing = !!MUANON_ADMIN.aiAnalyzing;
   const pct = stats.tong > 0 ? Math.round(stats.da_phan_tich * 100 / stats.tong) : 0;
+  const cols = MUANON_ADMIN.gridCols || 3;
 
   let html = `
     <div class="mna-cluster-bar">
@@ -2746,42 +2733,58 @@ function mnaRenderCluster() {
     </div>
   `;
 
-  if (rows.length === 0) {
+  if (imgs.length === 0) {
     html += `<div class="mna-empty">${
       stats.da_phan_tich === 0
         ? (stats.tong === 0 ? 'Chưa có ảnh nào được gửi.' : 'Chưa phân tích ảnh nào. Bấm "Phân tích AI" để bắt đầu.')
-        : 'Không có nhóm phù hợp.'
+        : 'Không có ảnh.'
     }</div>`;
-  } else {
-    let curTag = '\u0000';
-    rows.forEach(c => {
-      const tagKey = (c.tag == null) ? '' : c.tag;
-      if (tagKey !== curTag) {
-        if (curTag !== '\u0000') html += '</div>';   // đóng grid của tag trước
-        curTag = tagKey;
-        html += `
-          <div class="mna-tag-head">
-            <span class="mna-tag-dot" style="background:${_mnaTagColorSafe(c.tag)}"></span>
-            <span class="mna-tag-name">${escHtml(_mnaTagLabelSafe(c.tag))}</span>
-            <span class="mna-tag-cnt">${c.tag_total} ảnh</span>
-          </div>
-          <div class="mna-cluster-grid">`;
-      }
-      const cover = (c.samples && c.samples[0] && c.samples[0].url) || '';
-      const sub = _mnaClusterLabel(c.mau, c.kieu);
-      const swatch = c.mau ? '<span class="mna-ai-swatch" style="background:' + _mnaMauHex(c.mau) + '"></span>' : '';
-      const args = "'" + (c.tag || '') + "','" + (c.mau || '') + "','" + (c.kieu || '') + "'";
-      html += `
-        <div class="mna-cluster-card" onclick="mnaOpenAIGroup(${args})">
-          <div class="mna-cluster-cover">
-            ${cover ? '<img src="' + _mnaEscAttr(cover) + '" loading="lazy"/>' : '<div class="mna-cluster-empty"></div>'}
-            <span class="mna-cluster-count">${c.so_anh}</span>
-          </div>
-          <div class="mna-cluster-label">${swatch}<span>${escHtml(sub)}</span></div>
-        </div>`;
-    });
-    if (curTag !== '\u0000') html += '</div>';   // đóng grid cuối
+    const el0 = document.getElementById('muanon-admin-content');
+    if (el0) el0.innerHTML = html;
+    return;
   }
+
+  // Thanh zoom (như Gallery) — chỉnh cỡ ảnh tất cả nhóm
+  html += `
+    <div class="mna-zoom-row">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      <input type="range" min="2" max="5" step="1" value="${cols}" class="mna-zoom-slider" oninput="mnaSetZoomAI(this.value)"/>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="mna-zoom-label" id="mna-ai-zoom-lbl">${cols} cột</span>
+    </div>
+  `;
+
+  let curTag = '\u0000';
+  let open = false;
+  imgs.forEach((a, idx) => {
+    const tagKey = (a.tag == null) ? '' : a.tag;
+    if (tagKey !== curTag) {
+      if (open) html += '</div>';
+      curTag = tagKey;
+      html += `
+        <div class="mna-tag-head">
+          <span class="mna-tag-dot" style="background:${_mnaTagColorSafe(a.tag)}"></span>
+          <span class="mna-tag-name">${escHtml(_mnaTagLabelSafe(a.tag))}</span>
+          <span class="mna-tag-cnt">${a.tag_total} ảnh</span>
+        </div>
+        <div class="mna-gallery-grid mna-ai-grid" style="--mna-cols:${cols}">`;
+      open = true;
+    }
+    const tagColor = a.tag ? mnaTagColor(a.tag) : null;
+    html += `
+      <div class="mna-gallery-item" data-anh-id="${a.anh_id}" onclick="mnaOpenLightbox(${idx})">
+        <img src="${_mnaEscAttr(a.url)}" loading="lazy"/>
+        ${a.tag ? '<span class="mna-gallery-tag" style="background:' + tagColor + '">' + escHtml(mnaTagLabel(a.tag)) + '</span>' : ''}
+        <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="mna-gallery-overlay">
+          <div class="mna-gallery-nv">${escHtml(a.ten_nv || '')}</div>
+          <div class="mna-gallery-ch">${escHtml(a.ten_ch || '')} · ${escHtml(a.khu_vuc || '')}</div>
+        </div>
+      </div>`;
+  });
+  if (open) html += '</div>';
 
   const el = document.getElementById('muanon-admin-content');
   if (el) el.innerHTML = html;
@@ -2876,76 +2879,6 @@ async function _mnaFnErr(fnErr) {
   return m;
 }
 
-// ─── Mở 1 cụm → xem hết ảnh (tái dùng lightbox) ──────────────────────────────
-async function mnaOpenAIGroup(tag, mau, kieu) {
-  const el = document.getElementById('muanon-admin-content');
-  if (el) el.innerHTML = '<div class="mna-loading">Đang tải nhóm...</div>';
-  const scope = MUANON_ADMIN.clusterScope || 'all';
-  const tuanId = scope === 'tuan' ? MUANON_ADMIN.tuanId : null;
-
-  try {
-    const { data, error } = await supa.rpc('fn_muanon_ai_group_anh', {
-      p_ma_admin: SESSION.ma, p_tag: tag || '', p_mau: mau || '', p_kieu: kieu || '',
-      p_tuan_id: tuanId, p_limit: 100000
-    });
-    if (error) throw error;
-    if (!data || !data.ok) throw new Error(data && data.message || 'Lỗi');
-
-    const items = data.data || [];
-    const favSet = await _mnaEnsureFavSet();
-    items.forEach(a => { a.is_fav = favSet.has(a.anh_id); });
-    MUANON_ADMIN.galleryData = items;             // reuse lightbox
-    MUANON_ADMIN._aiGroupKey = { tag, mau, kieu };
-    mnaRenderAIGroupDetail(tag, mau, kieu, items);
-  } catch (err) {
-    if (el) el.innerHTML = '<div class="mna-empty">Lỗi: ' + escHtml(err.message || 'network') + '</div>';
-  }
-}
-
-function mnaRenderAIGroupDetail(tag, mau, kieu, items) {
-  const parts = [_mnaTagLabelSafe(tag)];
-  if (mau || kieu) parts.push(_mnaClusterLabel(mau, kieu));
-  const label = parts.join(' · ');
-
-  let html = `
-    <div class="mna-album-header">
-      <button class="mna-album-back" onclick="mnaSwitchTab('nhom')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="mna-album-h-info">
-        <div class="mna-album-h-name">${escHtml(label)}</div>
-        <div class="mna-album-h-meta">${items.length} ảnh</div>
-      </div>
-    </div>
-  `;
-
-  if (items.length === 0) {
-    html += '<div class="mna-empty">Nhóm trống</div>';
-  } else {
-    html += `<div class="mna-gallery-grid" style="--mna-cols:${MUANON_ADMIN.gridCols || 3}">`;
-    items.forEach((a, idx) => {
-      const tagColor = a.tag ? mnaTagColor(a.tag) : null;
-      html += `
-        <div class="mna-gallery-item" data-anh-id="${a.anh_id}" onclick="mnaOpenLightbox(${idx})">
-          <img src="${_mnaEscAttr(a.url)}" loading="lazy"/>
-          ${a.tag ? `<span class="mna-gallery-tag" style="background:${tagColor}">${escHtml(mnaTagLabel(a.tag))}</span>` : ''}
-          <button class="mna-fav-btn ${a.is_fav ? 'on' : ''}" onclick="mnaToggleFav(${a.anh_id}, event)" aria-label="Yêu thích">
-            <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <div class="mna-gallery-overlay">
-            <div class="mna-gallery-nv">${escHtml(a.ten_nv || '')}</div>
-            <div class="mna-gallery-ch">${escHtml(a.ten_ch || '')} · ${escHtml(a.khu_vuc || '')}</div>
-          </div>
-        </div>
-      `;
-    });
-    html += '</div>';
-  }
-
-  const el = document.getElementById('muanon-admin-content');
-  if (el) el.innerHTML = html;
-}
-
 // Tập anh_id đã yêu thích (cache) — hiện đúng trạng thái tim trong nhóm
 async function _mnaEnsureFavSet() {
   if (MUANON_ADMIN._favIdSet) return MUANON_ADMIN._favIdSet;
@@ -2963,9 +2896,9 @@ async function _mnaEnsureFavSet() {
 // ─── Globals ────────────────────────────────────────────────────────────
 window.mnaLoadCluster = mnaLoadCluster;
 window.mnaSetClusterScope = mnaSetClusterScope;
+window.mnaSetZoomAI = mnaSetZoomAI;
 window.mnaAIAnalyze = mnaAIAnalyze;
 window.mnaStopAnalyze = mnaStopAnalyze;
-window.mnaOpenAIGroup = mnaOpenAIGroup;
 
 // ════════════════════════════════════════════════════════════════════════════
 // [v12.0] GLOBALS
