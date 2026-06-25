@@ -118,8 +118,26 @@ async function mnaLoadTuanList() {
     if (error) throw error;
     MUANON_ADMIN.tuanList = data || [];
 
-    const openTuan = MUANON_ADMIN.tuanList.find(t => t.trang_thai === 'OPEN');
-    MUANON_ADMIN.tuanId = openTuan ? openTuan.id : (MUANON_ADMIN.tuanList[0] && MUANON_ADMIN.tuanList[0].id);
+    // [v16.94] Mặc định chọn tuần MỚI NHẤT CÓ bài đã gửi (tránh nhảy vào tuần hiện tại còn rỗng)
+    let defaultTuanId = null;
+    try {
+      const { data: bgRows } = await supa
+        .from('muanon_baigui')
+        .select('tuan_id')
+        .eq('trang_thai', 'SUBMITTED')
+        .order('tuan_id', { ascending: false });
+      if (bgRows && bgRows.length) {
+        const idsCoNoiDung = new Set(bgRows.map(r => r.tuan_id));
+        const hit = MUANON_ADMIN.tuanList.find(t => idsCoNoiDung.has(t.id)); // tuanList đã id desc → tuần mới nhất có nội dung
+        if (hit) defaultTuanId = hit.id;
+      }
+    } catch (e) { /* dùng fallback bên dưới */ }
+
+    if (!defaultTuanId) {
+      const openTuan = MUANON_ADMIN.tuanList.find(t => t.trang_thai === 'OPEN');
+      defaultTuanId = openTuan ? openTuan.id : (MUANON_ADMIN.tuanList[0] && MUANON_ADMIN.tuanList[0].id);
+    }
+    MUANON_ADMIN.tuanId = defaultTuanId;
     MUANON_ADMIN.selectedTuanIds = MUANON_ADMIN.tuanId ? [MUANON_ADMIN.tuanId] : [];
 
     mnaRenderHeader();
