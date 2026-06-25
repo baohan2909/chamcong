@@ -27,6 +27,8 @@ const MUANON_ADMIN = {
   galleryOffset: 0,
   galleryLimit: 100,
   selectedTuanIds: [],   // [v16.93] chọn nhiều tuần cho gallery
+  facets: { stores: [], employees: [], regions: [] },   // [v16.96] nguồn gợi ý lọc
+  _facetsKey: null,
   galleryOnlyFav: false,
   // [v11.9] Album + multi-select
   albums: [],
@@ -147,10 +149,8 @@ async function mnaLoadTuanList() {
   }
 }
 
-function mnaRenderHeader() {
-  const headerEl = document.getElementById('muanon-admin-header');
-  if (!headerEl) return;
-
+// [v16.96] Khối chọn nhiều tuần (dùng chung cho header + toolbar gallery)
+function _mnaWeekSelectHtml() {
   const _selTuan = MUANON_ADMIN.selectedTuanIds || [];
   const _allTuanChecked = MUANON_ADMIN.tuanList.length > 0 && _selTuan.length === MUANON_ADMIN.tuanList.length;
   const tuanRows = MUANON_ADMIN.tuanList.map(t => {
@@ -159,6 +159,23 @@ function mnaRenderHeader() {
     return '<label class="mna-tuan-opt"><input type="checkbox" class="mna-tuan-cb" data-tid="' + t.id + '"' + checked +
       ' onchange="mnaToggleTuan(' + t.id + ', this.checked)"><span>' + escHtml(t.tuan_code) + ' ' + openMark + '</span></label>';
   }).join('');
+  return `
+      <div class="mna-tuan-multi">
+        <button type="button" class="mna-tuan-select" onclick="mnaToggleTuanPanel()">
+          <span id="mna-tuan-summary">${escHtml(_mnaTuanSummary())}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="mna-tuan-panel" class="mna-tuan-panel" style="display:none">
+          <label class="mna-tuan-opt mna-tuan-all-opt"><input type="checkbox" id="mna-tuan-all"${_allTuanChecked ? ' checked' : ''} onchange="mnaToggleAllTuan(this.checked)"><span>Tất cả tuần</span></label>
+          <div class="mna-tuan-list">${tuanRows}</div>
+          <button type="button" class="mna-tuan-apply" onclick="mnaApplyTuan()">Áp dụng</button>
+        </div>
+      </div>`;
+}
+
+function mnaRenderHeader() {
+  const headerEl = document.getElementById('muanon-admin-header');
+  if (!headerEl) return;
 
   const tabs = [
     { id: 'tongquan',   label: 'Tổng quan' },
@@ -172,19 +189,12 @@ function mnaRenderHeader() {
     '<button class="mna-tab' + (MUANON_ADMIN.currentTab === t.id ? ' active' : '') + '" onclick="mnaSwitchTab(\'' + t.id + '\')">' + t.label + '</button>'
   ).join('');
 
+  // [v16.96] Gallery có khối chọn tuần riêng trong toolbar → header ẩn để khỏi trùng id
+  const weekHtml = (MUANON_ADMIN.currentTab === 'gallery') ? '' : _mnaWeekSelectHtml();
+
   headerEl.innerHTML = `
     <div class="mna-header-row">
-      <div class="mna-tuan-multi">
-        <button type="button" class="mna-tuan-select" onclick="mnaToggleTuanPanel()">
-          <span id="mna-tuan-summary">${escHtml(_mnaTuanSummary())}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div id="mna-tuan-panel" class="mna-tuan-panel" style="display:none">
-          <label class="mna-tuan-opt mna-tuan-all-opt"><input type="checkbox" id="mna-tuan-all"${_allTuanChecked ? ' checked' : ''} onchange="mnaToggleAllTuan(this.checked)"><span>Tất cả tuần</span></label>
-          <div class="mna-tuan-list">${tuanRows}</div>
-          <button type="button" class="mna-tuan-apply" onclick="mnaApplyTuan()">Áp dụng</button>
-        </div>
-      </div>
+      ${weekHtml}
       <button class="mna-refresh-btn" onclick="mnaReload()" title="Tải lại">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.51-7.13"/><polyline points="21 4 21 10 15 10"/></svg>
       </button>
@@ -643,6 +653,7 @@ function mnaTqDrillDown(key, val) {
 async function mnaLoadGallery() {
   const el = document.getElementById('muanon-admin-content');
   if (el) el.classList.add('mna-fading');
+  _mnaLoadFacets();   // [v16.96] nạp gợi ý lọc (nền, idempotent)
 
   try {
     let res;
@@ -764,7 +775,16 @@ function mnaRenderGallery() {
   }
 
   html += `
-    <div class="mna-filter-sticky">
+    <div class="mna-filter-sticky">`;
+  // [v16.96] Hàng: chọn tuần (nửa trái) + lọc CH/NV/KV có gợi ý (nửa phải)
+  if (!selMode && !onlyFav && !inAlbum) {
+    html += `
+      <div class="mna-week-filter-row">
+        <div class="mna-wf-half">${_mnaWeekSelectHtml()}</div>
+        <div class="mna-wf-half">${_mnaFacetFilterInputHtml()}</div>
+      </div>`;
+  }
+  html += `
       <div class="mna-toolbar">`;
 
   if (selMode) {
@@ -775,11 +795,6 @@ function mnaRenderGallery() {
         <button class="mna-sel-all" onclick="mnaSelectAllGallery()">Chọn tất cả</button>`;
   } else {
     html += `
-        <input type="search" class="mna-search-input"
-          placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : (inAlbum ? 'Đang xem bộ sưu tập: ' + escHtml(albumName) : 'Tìm tên NV, mã NV, cửa hàng, khu vực...')}"
-          value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
-          oninput="mnaDebounceSearch(this.value)"
-          ${(onlyFav || inAlbum) ? 'disabled' : ''}/>
         <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}" ${inAlbum ? 'disabled' : ''}>
           <svg viewBox="0 0 24 24" fill="${onlyFav ? '#EF4444' : 'none'}" stroke="${onlyFav ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
@@ -809,6 +824,7 @@ function mnaRenderGallery() {
       <div class="mna-gallery-info" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <span>Hiển thị <b>${data.length}</b>/${MUANON_ADMIN.galleryTotal} ảnh</span>
         <span style="display:inline-flex;gap:5px">${[[100,'100'],[500,'500'],[100000,'Tất cả']].map(([v,lbl])=>{const on=(v>=100000)?(MUANON_ADMIN.galleryLimit>=100000):(MUANON_ADMIN.galleryLimit===v);return `<button onclick="mnaSetGalleryLimit(${v})" style="border:1px solid ${on?'#1D9E75':'#D1D5DB'};background:${on?'#1D9E75':'#fff'};color:${on?'#fff':'#475569'};padding:3px 11px;border-radius:16px;font-size:12px;cursor:pointer">${lbl}</button>`;}).join('')}</span>
+        <button onclick="mnaDownloadAll()" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #1D9E75;background:#fff;color:#0F6E56;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="18" width="16" height="3" rx="1"/></svg>${inAlbum ? 'Tải bộ sưu tập' : 'Tải tất cả'}</button>
       </div>
     </div>
   `;
@@ -983,6 +999,112 @@ function mnaDebounceSearch(val) {
   _mnaSearchTimer = setTimeout(() => {
     mnaSetFilter('nv', val.trim() || null);
   }, 350);
+}
+
+// [v16.96] ─── Lọc cửa hàng / nhân viên / khu vực có gợi ý (autocomplete) ───
+async function _mnaLoadFacets() {
+  if (MUANON_ADMIN.facets && MUANON_ADMIN.facets.stores && MUANON_ADMIN.facets.stores.length) return;
+  try {
+    const { data } = await supa
+      .from('muanon_baigui')
+      .select('ma_ch, ten_ch, ma_nv, ten_nv, khu_vuc')
+      .eq('trang_thai', 'SUBMITTED')
+      .limit(100000);
+    if (!data || !data.length) return;
+    const stMap = new Map(), nvMap = new Map(), kvSet = new Set();
+    data.forEach(r => {
+      if (r.ma_ch && !stMap.has(r.ma_ch)) stMap.set(r.ma_ch, r.ten_ch || r.ma_ch);
+      if (r.ma_nv && !nvMap.has(r.ma_nv)) nvMap.set(r.ma_nv, r.ten_nv || r.ma_nv);
+      if (r.khu_vuc) kvSet.add(r.khu_vuc);
+    });
+    const byTen = (a, b) => String(a.ten).localeCompare(String(b.ten), 'vi');
+    MUANON_ADMIN.facets = {
+      stores: Array.from(stMap, e => ({ ma: e[0], ten: e[1] })).sort(byTen),
+      employees: Array.from(nvMap, e => ({ ma: e[0], ten: e[1] })).sort(byTen),
+      regions: Array.from(kvSet).sort((a, b) => String(a).localeCompare(String(b), 'vi'))
+    };
+  } catch (e) { /* nạp lỗi: gõ + Enter vẫn tìm broad được */ }
+}
+
+function _mnaStoreLabel(ma) {
+  const fc = MUANON_ADMIN.facets;
+  if (fc && fc.stores) { const s = fc.stores.find(x => x.ma === ma); if (s) return s.ten; }
+  return ma;
+}
+
+function _mnaFacetFilterInputHtml() {
+  const f = MUANON_ADMIN.filters || {};
+  let cur = '';
+  if (f.ch) cur = _mnaStoreLabel(f.ch);
+  else if (f.kv) cur = f.kv;
+  else if (f.nv) cur = f.nv;
+  return '<div class="mna-facet-wrap">' +
+    '<input type="search" id="mna-facet-input" class="mna-facet-input" autocomplete="off" ' +
+    'placeholder="Lọc cửa hàng, nhân viên, khu vực…" value="' + _mnaEscAttr(cur) + '" ' +
+    'oninput="mnaFacetInput(this.value)" onfocus="mnaFacetInput(this.value)" ' +
+    'onkeydown="if(event.key===\'Enter\'){mnaFacetEnter(this.value)}" ' +
+    'onblur="setTimeout(function(){var d=document.getElementById(\'mna-facet-dropdown\');if(d)d.style.display=\'none\';},200)"/>' +
+    '<div id="mna-facet-dropdown" class="mna-facet-dropdown" style="display:none"></div>' +
+    '</div>';
+}
+
+let _mnaFacetTimer = null;
+function mnaFacetInput(val) {
+  clearTimeout(_mnaFacetTimer);
+  _mnaFacetTimer = setTimeout(function () { _mnaRenderFacetSuggestions(val); }, 150);
+}
+
+function _mnaRenderFacetSuggestions(val) {
+  const dd = document.getElementById('mna-facet-dropdown');
+  if (!dd) return;
+  const q = (val || '').trim().toLowerCase();
+  if (!q) { dd.style.display = 'none'; dd.innerHTML = ''; return; }
+  const fc = MUANON_ADMIN.facets || { stores: [], employees: [], regions: [] };
+  const m = (s) => (s || '').toLowerCase().indexOf(q) > -1;
+  const regions = (fc.regions || []).filter(m).slice(0, 5);
+  const stores = (fc.stores || []).filter(s => m(s.ten) || m(s.ma)).slice(0, 8);
+  const emps = (fc.employees || []).filter(e => m(e.ten) || m(e.ma)).slice(0, 8);
+  const typeLbl = { ch: 'Cửa hàng', nv: 'Nhân viên', kv: 'Khu vực' };
+  const row = (type, value, label, sub) =>
+    '<div class="mna-facet-item" data-ft="' + type + '" data-fv="' + _mnaEscAttr(value) + '" data-fl="' + _mnaEscAttr(label) + '" onclick="mnaFacetPickEl(this)">' +
+    '<span class="mna-facet-type mna-ft-' + type + '">' + typeLbl[type] + '</span>' +
+    '<span class="mna-facet-label">' + escHtml(label) + '</span>' +
+    (sub ? '<span class="mna-facet-sub">' + escHtml(sub) + '</span>' : '') + '</div>';
+  let html = '';
+  regions.forEach(kv => { html += row('kv', kv, kv, ''); });
+  stores.forEach(s => { html += row('ch', s.ma, s.ten, s.ma); });
+  emps.forEach(e => { html += row('nv', e.ten, e.ten, e.ma); });
+  if (!html) html = '<div class="mna-facet-empty">Không có gợi ý — bấm Enter để tìm “' + escHtml(val) + '”</div>';
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+}
+
+function mnaFacetPickEl(el) {
+  if (!el || !el.dataset) return;
+  mnaFacetPick(el.dataset.ft, el.dataset.fv, el.dataset.fl);
+}
+
+function mnaFacetPick(type, value) {
+  MUANON_ADMIN.filters.ch = null;
+  MUANON_ADMIN.filters.nv = null;
+  MUANON_ADMIN.filters.kv = null;
+  if (type === 'ch') MUANON_ADMIN.filters.ch = value;
+  else if (type === 'kv') MUANON_ADMIN.filters.kv = value;
+  else MUANON_ADMIN.filters.nv = value;   // nv: khớp text rộng (tên NV)
+  const dd = document.getElementById('mna-facet-dropdown');
+  if (dd) dd.style.display = 'none';
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaLoadGallery();
+}
+
+function mnaFacetEnter(val) {
+  const dd = document.getElementById('mna-facet-dropdown');
+  if (dd) dd.style.display = 'none';
+  MUANON_ADMIN.filters.ch = null;
+  MUANON_ADMIN.filters.kv = null;
+  MUANON_ADMIN.filters.nv = (val || '').trim() || null;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaLoadGallery();
 }
 
 function mnaSetZoom(val) {
@@ -1952,11 +2074,6 @@ function _mnaRenderToolbarOnly() {
       <button class="mna-sel-all" onclick="mnaSelectAllGallery()">Chọn tất cả</button>`;
   } else {
     html += `
-      <input type="search" class="mna-search-input"
-        placeholder="${onlyFav ? 'Đang xem ảnh yêu thích' : (inAlbum ? 'Đang xem bộ sưu tập: ' + escHtml(albumName) : 'Tìm tên NV, mã NV, cửa hàng, khu vực...')}"
-        value="${_mnaEscAttr(MUANON_ADMIN.filters.nv || '')}"
-        oninput="mnaDebounceSearch(this.value)"
-        ${(onlyFav || inAlbum) ? 'disabled' : ''}/>
       <button class="mna-filter-btn ${onlyFav ? 'on-fav' : ''}" onclick="mnaToggleOnlyFav()" title="${onlyFav ? 'Xem tất cả' : 'Chỉ yêu thích'}" ${inAlbum ? 'disabled' : ''}>
         <svg viewBox="0 0 24 24" fill="${onlyFav ? '#EF4444' : 'none'}" stroke="${onlyFav ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
@@ -1982,6 +2099,9 @@ function _mnaRenderToolbarOnly() {
     tmp.innerHTML = html;
     oldTb.replaceWith(tmp.firstElementChild);
   }
+  // [v16.96] Ẩn hàng chọn tuần + lọc khi đang chọn nhiều / xem yêu thích / xem album
+  const wfRow = sticky.querySelector('.mna-week-filter-row');
+  if (wfRow) wfRow.style.display = (selMode || onlyFav || inAlbum) ? 'none' : 'flex';
 }
 
 // Hiện/ẩn multi-bar bottom + update count
@@ -2121,19 +2241,7 @@ async function mnaBulkDownload() {
   if (ids.length === 0) return;
   const items = MUANON_ADMIN.galleryData.filter(a => ids.includes(a.anh_id));
   if (items.length === 0) return;
-
-  // Toast progress
-  showToast('Đang tải ' + items.length + ' ảnh...', 'ok');
-  let ok = 0;
-  for (const a of items) {
-    const url = a.url_full || a.url;
-    if (!url) continue;
-    const filename = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
-    const success = await _mnaDownloadFile(url, filename);
-    if (success) ok++;
-    await new Promise(r => setTimeout(r, 180));
-  }
-  showToast('✓ Đã tải ' + ok + '/' + items.length + ' ảnh', 'ok');
+  await _mnaDownloadZip(items, _mnaZipName('chon'));
 }
 
 // Tải 1 ảnh trong lightbox
@@ -2147,6 +2255,136 @@ async function mnaLightboxDownload() {
   const filename = 'NS_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + '.jpg';
   const ok = await _mnaDownloadFile(url, filename);
   showToast(ok ? '✓ Đã tải về máy' : 'Mở link mới (CORS)', ok ? 'ok' : 'err');
+}
+
+// [v16.96] ════════ TẢI ẢNH HÀNG LOẠT (nén ZIP 1 file) ════════
+function _mnaImgName(a) {
+  const tag = a.tag ? '_' + a.tag : '';
+  const raw = 'NS_' + (a.ma_ch || '') + '_' + (a.ma_nv || '') + '_' + (a.anh_id || '') + tag + '.jpg';
+  return raw.replace(/[\\/:*?"<>|\s]+/g, '_');
+}
+function _mnaZipName(prefix) {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const tag = prefix ? '_' + prefix : '';
+  return 'NonSon_anh' + tag + '_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.zip';
+}
+function _mnaEnsureJSZip() {
+  if (window.JSZip) return Promise.resolve(window.JSZip);
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload = () => res(window.JSZip);
+    s.onerror = () => rej(new Error('jszip load fail'));
+    document.head.appendChild(s);
+  });
+}
+// Overlay tiến độ tải (done<0 = ẩn)
+function _mnaDlProgress(done, total, phase) {
+  let box = document.getElementById('mna-dl-progress');
+  if (done < 0) { if (box) box.remove(); return; }
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'mna-dl-progress';
+    box.className = 'mna-dl-progress';
+    box.innerHTML = '<div class="mna-dl-title"></div><div class="mna-dl-track"><div class="mna-dl-fill"></div></div><div class="mna-dl-sub"></div>';
+    document.body.appendChild(box);
+  }
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  box.querySelector('.mna-dl-title').textContent = phase || 'Đang tải ảnh…';
+  box.querySelector('.mna-dl-fill').style.width = pct + '%';
+  box.querySelector('.mna-dl-sub').textContent = done + ' / ' + total + ' ảnh (' + pct + '%)';
+}
+
+async function _mnaDownloadZip(items, zipName) {
+  items = (items || []).filter(a => (a.url_full || a.url));
+  if (items.length === 0) { showToast('Không có ảnh để tải', 'err'); return; }
+
+  // Ít ảnh (≤3): tải lẻ cho nhanh, khỏi nén
+  if (items.length <= 3) {
+    for (const a of items) {
+      await _mnaDownloadFile(a.url_full || a.url, _mnaImgName(a));
+      await new Promise(r => setTimeout(r, 200));
+    }
+    showToast('✓ Đã tải ' + items.length + ' ảnh', 'ok');
+    return;
+  }
+
+  let JSZipLib;
+  try { JSZipLib = await _mnaEnsureJSZip(); }
+  catch (e) {
+    showToast('Không tải được bộ nén, chuyển tải từng ảnh…', 'err');
+    let ok2 = 0;
+    for (const a of items) { if (await _mnaDownloadFile(a.url_full || a.url, _mnaImgName(a))) ok2++; await new Promise(r => setTimeout(r, 200)); }
+    showToast('✓ Đã tải ' + ok2 + '/' + items.length + ' ảnh', 'ok');
+    return;
+  }
+
+  const zip = new JSZipLib();
+  const usedNames = {};
+  let ok = 0, fail = 0;
+  const total = items.length;
+  _mnaDlProgress(0, total, 'Đang tải ảnh để nén…');
+  for (let i = 0; i < total; i++) {
+    const a = items[i];
+    const url = a.url_full || a.url;
+    try {
+      const r = await fetch(url, { mode: 'cors' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const blob = await r.blob();
+      let name = _mnaImgName(a);
+      if (usedNames[name]) { name = name.replace(/\.jpg$/i, '') + '_' + (++usedNames[name]) + '.jpg'; }
+      else usedNames[name] = 1;
+      zip.file(name, blob);
+      ok++;
+    } catch (e) { fail++; }
+    _mnaDlProgress(i + 1, total, 'Đang tải ảnh để nén…');
+  }
+
+  if (ok === 0) {
+    // Toàn bộ bị CORS chặn (vd ảnh Google Drive) → fallback tải lẻ
+    _mnaDlProgress(-1);
+    showToast('Ảnh không cho tải gộp (CORS) — chuyển tải từng ảnh', 'err');
+    let done = 0;
+    for (const a of items) { if (await _mnaDownloadFile(a.url_full || a.url, _mnaImgName(a))) done++; await new Promise(r => setTimeout(r, 250)); }
+    showToast('Đã xử lý ' + done + '/' + items.length + ' ảnh', done ? 'ok' : 'err');
+    return;
+  }
+
+  _mnaDlProgress(ok, total, 'Đang nén file ZIP…');
+  let content;
+  try {
+    content = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  } catch (e) {
+    _mnaDlProgress(-1);
+    showToast('Lỗi nén file: ' + (e.message || ''), 'err');
+    return;
+  }
+  _mnaDlProgress(-1);
+
+  const objUrl = URL.createObjectURL(content);
+  const link = document.createElement('a');
+  link.href = objUrl;
+  link.download = zipName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(objUrl), 3000);
+  showToast('✓ Đã tải ' + ok + ' ảnh' + (fail ? ' (' + fail + ' lỗi)' : '') + ' — ' + zipName, 'ok');
+}
+
+// Tải TẤT CẢ ảnh đang xem (gallery theo tuần/lọc, yêu thích, hoặc bộ sưu tập)
+async function mnaDownloadAll() {
+  if (MUANON_ADMIN.galleryData.length < MUANON_ADMIN.galleryTotal) {
+    if (!confirm('Sẽ tải toàn bộ ' + MUANON_ADMIN.galleryTotal + ' ảnh đang lọc.\nNạp hết ảnh rồi nén thành 1 file ZIP. Tiếp tục?')) return;
+    showToast('Đang nạp toàn bộ ' + MUANON_ADMIN.galleryTotal + ' ảnh…', 'ok');
+    MUANON_ADMIN.galleryLimit = 100000;
+    await mnaLoadGallery();
+  }
+  const items = (MUANON_ADMIN.galleryData || []).slice();
+  if (items.length === 0) { showToast('Không có ảnh để tải', 'err'); return; }
+  const prefix = MUANON_ADMIN.currentAlbumId ? 'bosuutap' : (MUANON_ADMIN.galleryOnlyFav ? 'yeuthich' : 'tatca');
+  await _mnaDownloadZip(items, _mnaZipName(prefix));
 }
 
 // [v11.10] Xóa nhiều ảnh
@@ -2670,6 +2908,9 @@ window.mnaClearSelect = mnaClearSelect;
 window.mnaNhacBulk = mnaNhacBulk;
 window.mnaFilterCompliance = mnaFilterCompliance;
 window.mnaDebounceSearch = mnaDebounceSearch;
+window.mnaFacetInput = mnaFacetInput;
+window.mnaFacetEnter = mnaFacetEnter;
+window.mnaFacetPickEl = mnaFacetPickEl;
 window.mnaClearAllFilters = mnaClearAllFilters;
 // [v11.3] Timeline + Filter sheet
 window.mnaTimelinePage = mnaTimelinePage;
@@ -2713,3 +2954,4 @@ window.mnaItemClick = mnaItemClick;
 window.mnaBulkDelete = mnaBulkDelete;
 window.mnaLightboxDelete = mnaLightboxDelete;
 window.mnaLightboxDownload = mnaLightboxDownload;
+window.mnaDownloadAll = mnaDownloadAll;
