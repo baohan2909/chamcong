@@ -1083,11 +1083,11 @@
 .bh-input-money:focus { outline:none; border-color:#F97316; }
 
 /* Toast */
-.bh-toast { background:var(--text); color:#fff; padding:10px 16px; border-radius:22px; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow); animation:bhToastIn 0.3s ease-out; max-width:90%; pointer-events:auto; }
+.bh-toast { background:var(--text); color:#fff; padding:10px 16px; border-radius:22px; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow); animation:bhToastIn 0.3s ease-out; max-width:90%; pointer-events:none; }
 .bh-toast svg { width:14px; height:14px; flex-shrink:0; }
 .bh-toast.success { background:var(--green); }
 @keyframes bhToastIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 .bh-toast.out { animation:bhToastOut 0.25s ease-in forwards; }
 @keyframes bhToastOut { to { opacity:0; transform:translateY(10px); } }
-.bh-toast .undo { color:#FDBA74; font-weight:600; cursor:pointer; margin-left:4px; }
+.bh-toast .undo { color:#FDBA74; font-weight:600; cursor:pointer; margin-left:4px; pointer-events:auto; }
 

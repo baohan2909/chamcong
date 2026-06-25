@@ -1329,7 +1329,7 @@ async function bgqlLoadPrint(){
     // Fetch tất cả biên bản trong range (cross-CH, dùng RPC timeline_ql)
     const { data, error } = await supa.rpc('fn_ban_giao_timeline_ql', {
       p_tu_ngay: from, p_den_ngay: to,
-      p_ma_ch: null, p_khu_vuc: null, p_limit: 1000
+      p_ma_ch: null, p_khu_vuc: null, p_limit: 100000
     });
     if (error) throw error;
     
@@ -1357,7 +1357,7 @@ async function bgqlLoadPrint(){
     bgqlPrintCache = byCH;
     // [v13.70] Lấy trạng thái sự vụ per CH (phục vụ bộ lọc "Trạng thái xử lý")
     try {
-      const { data: svs } = await supa.rpc('fn_su_vu_list', { p_tu_ngay: from, p_den_ngay: to, p_limit: 1000 });
+      const { data: svs } = await supa.rpc('fn_su_vu_list', { p_tu_ngay: from, p_den_ngay: to, p_limit: 100000 });
       (svs||[]).forEach(sv => {
         const c = byCH[sv.ma_ch];
         if (c && sv.trang_thai) c._sv_tt.add(sv.trang_thai);
@@ -2684,7 +2684,7 @@ window.bgqlAibcSetRange = function(r){
 
 async function bgqlAibcLoadHistory(){
   try {
-    const { data, error } = await supa.rpc('fn_report_list', { p_ma_nv: SESSION.ma, p_limit: 20 });
+    const { data, error } = await supa.rpc('fn_report_list', { p_ma_nv: SESSION.ma, p_limit: 100000 });
     if (error) throw error;
     bgqlAibcCache = Array.isArray(data) ? data : [];
     bgqlAibcRenderHistory();

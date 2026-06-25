@@ -112,8 +112,7 @@ async function mnaLoadTuanList() {
     const { data, error } = await supa
       .from('muanon_tuan')
       .select('id, tuan_code, tuan_so, nam, ngay_bat_dau, ngay_ket_thuc, trang_thai, tong_nv_da_gui, tong_anh, ti_le_tuan_thu')
-      .order('id', { ascending: false })
-      .limit(20);
+      .order('id', { ascending: false });
 
     if (error) throw error;
     MUANON_ADMIN.tuanList = data || [];

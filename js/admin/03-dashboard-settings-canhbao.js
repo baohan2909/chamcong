@@ -2054,7 +2054,7 @@ async function adm2DetailLichCa(bodyEl) {
   try {
     const { data, error } = await supa.from('lich_ca')
       .select('id, ma_nv, ten_nv_snapshot, ma_ch, ngay, gio_bat_dau, gio_ket_thuc, loai, trang_thai')
-      .in('trang_thai',['CHO_DUYET','DA_GUI']).order('ngay').limit(200);
+      .in('trang_thai',['CHO_DUYET','DA_GUI']).order('ngay').limit(100000);
     if (error) throw error;
     if (!data.length) { bodyEl.innerHTML = '<div class="adm2-empty">Không có lịch ca chờ duyệt</div>'; return; }
     bodyEl.innerHTML = data.map(r => `

@@ -861,10 +861,10 @@ async function bgRenderSuVu(){
       reqs = [ supa.rpc('fn_su_vu_co_dong_list', { p_ma_nv: ma }) ];
     } else {
       // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng)
-      reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 200, p_offset: 0 }) ];
+      reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 100000, p_offset: 0 }) ];
       // Nguồn 2: sự vụ của CỬA HÀNG mình (nếu có cửa hàng)
       if (bgCurrentCH && bgCurrentCH.ma) {
-        reqs.push(supa.rpc('fn_su_vu_list', { p_ma_ch: bgCurrentCH.ma, p_limit: 200, p_offset: 0 }));
+        reqs.push(supa.rpc('fn_su_vu_list', { p_ma_ch: bgCurrentCH.ma, p_limit: 100000, p_offset: 0 }));
       }
     }
     const results = await Promise.all(reqs);
@@ -1416,7 +1416,7 @@ async function bgRenderTimeline(){
     try {
       // [v13.26] fn_bg_timeline_list — JOIN ban_giao_anh để có anh_urls
       const { data, error } = await supa.rpc('fn_bg_timeline_list', {
-        p_ma_ch: bgCurrentCH.ma, p_limit: 200
+        p_ma_ch: bgCurrentCH.ma, p_limit: 100000
       });
       if (error) throw error;
       bgTimelineCache = Array.isArray(data) ? data : [];
