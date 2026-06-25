@@ -25,7 +25,7 @@ const MUANON_ADMIN = {
   galleryData: [],
   galleryTotal: 0,
   galleryOffset: 0,
-  galleryLimit: 60,
+  galleryLimit: 100,
   galleryOnlyFav: false,
   // [v11.9] Album + multi-select
   albums: [],
@@ -690,7 +690,10 @@ function mnaRenderGallery() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         <span class="mna-zoom-label">${MUANON_ADMIN.gridCols} cột</span>
       </div>
-      <div class="mna-gallery-info">${MUANON_ADMIN.galleryTotal} ảnh</div>
+      <div class="mna-gallery-info" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span>Hiển thị <b>${data.length}</b>/${MUANON_ADMIN.galleryTotal} ảnh</span>
+        <span style="display:inline-flex;gap:5px">${[[100,'100'],[500,'500'],[100000,'Tất cả']].map(([v,lbl])=>{const on=(v>=100000)?(MUANON_ADMIN.galleryLimit>=100000):(MUANON_ADMIN.galleryLimit===v);return `<button onclick="mnaSetGalleryLimit(${v})" style="border:1px solid ${on?'#1D9E75':'#D1D5DB'};background:${on?'#1D9E75':'#fff'};color:${on?'#fff':'#475569'};padding:3px 11px;border-radius:16px;font-size:12px;cursor:pointer">${lbl}</button>`;}).join('')}</span>
+      </div>
     </div>
   `;
 
@@ -874,6 +877,13 @@ function mnaSetZoom(val) {
   const lbl = document.querySelector('.mna-zoom-label');
   if (lbl) lbl.textContent = val + ' cột';
 }
+
+// [v16.92] Chọn nhanh số ảnh hiển thị: 100 / 500 / Tất cả
+window.mnaSetGalleryLimit = function(n) {
+  MUANON_ADMIN.galleryLimit = n;
+  MUANON_ADMIN.galleryOffset = 0;
+  mnaLoadGallery();
+};
 
 function mnaOpenLightbox(idx) {
   MUANON_ADMIN.lightboxIdx = idx;
