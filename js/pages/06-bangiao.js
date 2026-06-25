@@ -1052,7 +1052,9 @@ function bgSuVuCardHtml(s){
   } else if (isOpen && laNguoiXuLy && s.trang_thai !== 'DA_XU_LY_XONG'){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-done" onclick="bgSuVuXacNhanXong('${s.id}')">✓ Đã xử lý xong</button>`;
   }
-  if (isOpen && (laBanQuanLy || laCuaHang)){
+  // [v16.89] Nhân sự đang trực đúng cửa hàng của sự vụ cũng được đóng
+  const laNhanSuCHNay = !!(bgCurrentCH && bgCurrentCH.ma && s.ma_ch && s.ma_ch === bgCurrentCH.ma);
+  if (isOpen && (laBanQuanLy || laCuaHang || laNhanSuCHNay)){
     actBtns += `<button class="bg-sv-btn bg-sv-btn-close" onclick="bgSuVuDong('${s.id}')">Hoàn tất - Đóng sự vụ</button>`;
   }
   const xlChip = s.nguoi_xu_ly_ten
