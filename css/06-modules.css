@@ -3470,3 +3470,16 @@ body.nvai-active #bottom-nav { display: none !important; }
 /* [v13.95] Mọi nút bgql-act: bấm toàn vùng nút, không hiện trỏ văn bản */
 .bgql-act { user-select: none; -webkit-user-select: none; cursor: pointer; box-sizing: border-box; }
 .bgql-act * { pointer-events: none; }
+
+/* [v17.2] Sự vụ QL — thẻ "Trễ" gọn (trước đây không có style → thô) + mô tả inline */
+.bgql-tre-tag {
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 9px; border-radius: 99px;
+  background: #FEE2E2; color: #B91C1C;
+  white-space: nowrap;
+}
+.bgql-card-desc {
+  font-size: 12.5px; color: #475569; line-height: 1.45;
+  margin: 7px 0 1px; word-break: break-word;
+}
+.bgql-card-desc span { color: #94A3B8; }

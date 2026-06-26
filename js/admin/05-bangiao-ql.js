@@ -452,27 +452,36 @@ function bgqlSuVuAge(s){
   const cls = (overdue || days>4) ? 'hot' : (days>=2 ? 'warm' : 'cool');
   return `<span class="bgql-age ${cls}">Mở ${days===0?'hôm nay':days+' ngày'}${overdue?' · quá hạn':''}</span>`;
 }
-// [v13.73] Đường tiến độ 3 mốc: Tạo → Xử lý → Hoàn tất
+// [v17.2] Đường tiến độ 4 mốc CÓ TÊN NGƯỜI (giống bảng cơ động)
 function bgqlSuVuProgress(s){
   if (s.trang_thai === 'HUY') return '';
-  const done2 = !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','HOAN_TAT'].includes(s.trang_thai);
-  const done3 = s.trang_thai === 'HOAN_TAT';
-  const fd = (t) => { if(!t) return '—'; const x=new Date(t); return pad(x.getDate())+'/'+pad(x.getMonth()+1); };
-  const chk = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  const dot = (done, cur) => `<div class="bgql-pg-dot${done?' done':''}${cur?' cur':''}">${done?chk:''}</div>`;
-  return `<div class="bgql-pg">
-    <div class="bgql-pg-track">
-      ${dot(true, !done2)}
-      <div class="bgql-pg-line${done2?' done':''}"></div>
-      ${dot(done2, done2 && !done3)}
-      <div class="bgql-pg-line${done3?' done':''}"></div>
-      ${dot(done3, done3)}
-    </div>
-    <div class="bgql-pg-labels">
-      <div class="bgql-pg-lb"><span>Tạo</span><small>${fd(s.created_at)}</small></div>
-      <div class="bgql-pg-lb mid"><span>Xử lý</span><small>${fd(s.thoi_gian_phan_hoi)}</small></div>
-      <div class="bgql-pg-lb end"><span>Hoàn tất</span><small>${fd(s.thoi_gian_dong)}</small></div>
-    </div>
+  const tt = s.trang_thai;
+  const hoanTat = tt === 'HOAN_TAT';
+  const daGiao = !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG','HOAN_TAT'].includes(tt);
+  const xlName = s.nguoi_xu_ly_ten || s.nguoi_phu_trach_ten || '—';
+  const htName = hoanTat ? (s.nguoi_dong_ten || s.nguoi_xu_ly_ten || '—') : '—';
+  const steps = [
+    { lbl:'Người tạo', name: s.nguoi_tao_ten || '—',                reached:true },
+    { lbl:'Giao việc', name: s.nguoi_phu_trach_ten || 'Ban quản lý', reached:daGiao },
+    { lbl:'Xử lý',     name: xlName,                                 reached:daGiao, active:daGiao && !hoanTat },
+    { lbl:'Hoàn tất',  name: htName,                                 reached:hoanTat }
+  ];
+  return `<div style="display:flex;margin-top:11px;border-top:1px solid #EEF2F6;padding-top:11px">
+    ${steps.map((st,i)=>{
+      const last = i===steps.length-1;
+      const dotColor = st.reached ? (st.active ? '#D97706' : '#1D9E75') : '#CBD5E1';
+      const leftLine = i===0 ? 'transparent' : (steps[i].reached ? '#1D9E75' : '#E2E8F0');
+      const rightLine = last ? 'transparent' : (steps[i+1].reached ? '#1D9E75' : '#E2E8F0');
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0">
+        <div style="display:flex;align-items:center;width:100%">
+          <div style="flex:1;height:2px;background:${leftLine}"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex:none"></div>
+          <div style="flex:1;height:2px;background:${rightLine}"></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:${st.reached?'#0F2E45':'#94A3B8'};margin-top:5px">${st.lbl}</div>
+        <div style="font-size:10.5px;color:#475569;line-height:1.3;margin-top:3px;word-break:break-word">${escHtml(st.name)}</div>
+      </div>`;
+    }).join('')}
   </div>`;
 }
 function bgqlSuVuCardHtml(s){
@@ -524,19 +533,14 @@ function bgqlSuVuCardHtml(s){
     ${checkbox}
     <div class="bgql-card-head">
       <span class="bgql-md-tag bgql-md-${s.muc_do||'CAN_THIET'}">${mdLbl}</span>
-      ${bgqlLaTre(s)?`<span class="bgql-tre-tag">TRỄ</span>`:''}
+      ${bgqlLaTre(s)?`<span class="bgql-tre-tag">Trễ</span>`:''}
       ${stLbl?`<span class="bgql-st-tag ${isOpen?'open':'closed'}">${stLbl}</span>`:''}
-      ${s.ma_sv?`<span class="bgql-masv">${escHtml(s.ma_sv)}</span>`:''}
-      <span class="bgql-time">${bgqlFmtTimeShort(s.created_at)}</span>
       ${bgqlSuVuAge(s)}
     </div>
     <div class="bgql-card-title">${escHtml(s.tieu_de)}</div>
-    <div class="bgql-card-meta">
-      <b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · Tạo: ${escHtml(s.nguoi_tao_ten||'?')}
-    </div>
-    ${(s.nguoi_xu_ly_ten||s.nguoi_phu_trach_ten)?`<div class="bgql-card-meta">${s.nguoi_xu_ly_ten?'Xử lý: <b>'+escHtml(s.nguoi_xu_ly_ten)+'</b>':'Phụ trách: <b>'+escHtml(s.nguoi_phu_trach_ten)+'</b>'}</div>`:''}
+    <div class="bgql-card-meta"><b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · ${bgqlFmtTimeShort(s.created_at)}${s.ma_sv?` · <span style="color:#94A3B8">#${escHtml(s.ma_sv)}</span>`:''}</div>
+    ${s.mo_ta?`<div class="bgql-card-desc"><span>Chi tiết:</span> ${escHtml((s.mo_ta||'').replace(/\s+/g,' ').trim().slice(0,160))}${(s.mo_ta||'').trim().length>160?'…':''}</div>`:''}
     ${bgqlSuVuProgress(s)}
-    ${s.mo_ta?`<div class="bgql-card-body">${escHtml(s.mo_ta).slice(0,220)}${s.mo_ta.length>220?'...':''}</div>`:''}
     ${s.phan_hoi_xu_ly?`<div class="bgql-reply">
       <div class="bgql-reply-l">Phản hồi · ${escHtml(s.nguoi_phu_trach_ten||'QL')}</div>
       <div class="bgql-reply-txt">${escHtml(s.phan_hoi_xu_ly).slice(0,300)}</div>
