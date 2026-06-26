@@ -190,7 +190,8 @@ function mnaRenderHeader() {
   ).join('');
 
   // [v16.96] Gallery có khối chọn tuần riêng trong toolbar → header ẩn để khỏi trùng id
-  const weekHtml = (MUANON_ADMIN.currentTab === 'gallery') ? '' : _mnaWeekSelectHtml();
+  // [v17.1] Nhóm AI cũng có khối chọn tuần riêng trong content → ẩn ở header
+  const weekHtml = (MUANON_ADMIN.currentTab === 'gallery' || MUANON_ADMIN.currentTab === 'nhom') ? '' : _mnaWeekSelectHtml();
 
   headerEl.innerHTML = `
     <div class="mna-header-row">
@@ -990,6 +991,7 @@ function mnaSetFilter(key, val) {
   if (MUANON_ADMIN.currentTab === 'gallery') mnaLoadGallery();
   else if (MUANON_ADMIN.currentTab === 'chuagui') mnaLoadChuaGui();
   else if (MUANON_ADMIN.currentTab === 'timeline') mnaLoadTimeline();
+  else if (MUANON_ADMIN.currentTab === 'nhom') mnaLoadCluster();
 }
 
 // [v11.2] Debounce search NV
@@ -1120,7 +1122,7 @@ function mnaFacetPick(type, value) {
   const dd = document.getElementById('mna-facet-dropdown');
   if (dd) dd.style.display = 'none';
   MUANON_ADMIN.galleryOffset = 0;
-  mnaLoadGallery();
+  if (MUANON_ADMIN.currentTab === 'nhom') mnaLoadCluster(); else mnaLoadGallery();
 }
 
 function mnaFacetEnter(val) {
@@ -1130,7 +1132,7 @@ function mnaFacetEnter(val) {
   MUANON_ADMIN.filters.kv = null;
   MUANON_ADMIN.filters.nv = (val || '').trim() || null;
   MUANON_ADMIN.galleryOffset = 0;
-  mnaLoadGallery();
+  if (MUANON_ADMIN.currentTab === 'nhom') mnaLoadCluster(); else mnaLoadGallery();
 }
 
 function mnaSetZoom(val) {
@@ -2671,13 +2673,16 @@ async function mnaLoadCluster() {
   const el = document.getElementById('muanon-admin-content');
   if (el && !MUANON_ADMIN.aiAnalyzing) el.innerHTML = '<div class="mna-loading">Đang tải nhóm AI...</div>';
 
-  const scope = MUANON_ADMIN.clusterScope || 'all';
-  const tuanId = scope === 'tuan' ? MUANON_ADMIN.tuanId : null;
+  _mnaLoadFacets();   // nạp gợi ý CH/NV/KV cho ô lọc
+  const f = MUANON_ADMIN.filters || {};
+  const sel = MUANON_ADMIN.selectedTuanIds || [];
+  const tuanIds = sel.length ? sel : null;
 
   try {
     const [stRes, imRes] = await Promise.all([
-      supa.rpc('fn_muanon_ai_stats',  { p_ma_admin: SESSION.ma, p_tuan_id: tuanId }),
-      supa.rpc('fn_muanon_ai_sorted', { p_ma_admin: SESSION.ma, p_tuan_id: tuanId })
+      supa.rpc('fn_muanon_ai_stats',  { p_ma_admin: SESSION.ma, p_tuan_id: null }),
+      supa.rpc('fn_muanon_ai_sorted', { p_ma_admin: SESSION.ma, p_tuan_ids: tuanIds,
+        p_kv: f.kv || null, p_ch: f.ch || null, p_nv: f.nv || null, p_tag: f.tag || null })
     ]);
     if (stRes.error) throw stRes.error;
     if (imRes.error) throw imRes.error;
@@ -2694,8 +2699,7 @@ async function mnaLoadCluster() {
 }
 
 function mnaSetClusterScope(scope) {
-  if (MUANON_ADMIN.aiAnalyzing) { showToast('Đang phân tích, dừng trước khi đổi phạm vi', 'err'); return; }
-  MUANON_ADMIN.clusterScope = scope;
+  // [v17.1] giữ lại để tương thích — scope thay bằng bộ lọc tuần (selectedTuanIds)
   mnaLoadCluster();
 }
 
@@ -2712,16 +2716,23 @@ function mnaSetZoomAI(val) {
 function mnaRenderCluster() {
   const stats = MUANON_ADMIN.aiStats || { tong: 0, da_phan_tich: 0, con_lai: 0 };
   const imgs = MUANON_ADMIN.aiImages || [];
-  const scope = MUANON_ADMIN.clusterScope || 'all';
+  const f = MUANON_ADMIN.filters || {};
   const analyzing = !!MUANON_ADMIN.aiAnalyzing;
   const pct = stats.tong > 0 ? Math.round(stats.da_phan_tich * 100 / stats.tong) : 0;
   const cols = MUANON_ADMIN.gridCols || 3;
 
+  // Chips lọc loại nón (gồm tất cả thẻ loại nón)
+  let tagChips = '<button class="mna-gb-chip ' + (!f.tag ? 'active' : '') + '" onclick="mnaSetFilter(\'tag\', null)">Tất cả</button>';
+  MUANON_TAGS_ADMIN.forEach(t => {
+    tagChips += '<button class="mna-gb-chip' + (f.tag === t.code ? ' active' : '') + '" onclick="mnaSetFilter(\'tag\', \'' + t.code + '\')">' + escHtml(t.label) + '</button>';
+  });
+
   let html = `
-    <div class="mna-cluster-bar">
-      <button class="mna-scope-btn ${scope === 'all' ? 'active' : ''}" onclick="mnaSetClusterScope('all')">Tất cả tuần</button>
-      <button class="mna-scope-btn ${scope === 'tuan' ? 'active' : ''}" onclick="mnaSetClusterScope('tuan')">Tuần này</button>
+    <div class="mna-week-filter-row">
+      <div class="mna-wf-half">${_mnaWeekSelectHtml()}</div>
+      <div class="mna-wf-half">${_mnaFacetFilterInputHtml()}</div>
     </div>
+    <div class="mna-groupby-bar"><span class="mna-gb-label">Loại nón</span>${tagChips}</div>
 
     <div class="mna-ai-stat" id="mna-ai-stat">
       <div class="mna-ai-stat-row">
@@ -2809,8 +2820,7 @@ async function mnaAIAnalyze() {
   if (MUANON_ADMIN.aiAnalyzing) return;
   MUANON_ADMIN.aiAnalyzing = true;
   MUANON_ADMIN._aiStop = false;
-  const scope = MUANON_ADMIN.clusterScope || 'all';
-  const tuanId = scope === 'tuan' ? MUANON_ADMIN.tuanId : null;
+  const tuanId = null;   // phân tích TẤT CẢ ảnh chưa phân tích (mọi tuần), không theo bộ lọc xem
   let saved = 0, errs = 0;
   mnaRenderCluster();
 
