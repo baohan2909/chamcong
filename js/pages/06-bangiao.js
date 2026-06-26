@@ -885,82 +885,151 @@ async function bgRenderSuVu(){
   } catch(e){ list.innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi: '+e.message+'</div>'; }
 }
 
-// [Lớp 2] Render danh sách từ cache + áp bộ lọc — dùng lại khi đổi tab/lọc (KHÔNG gọi RPC)
+// [v17.21] Render danh sách + áp bộ lọc. ẨN sự vụ ĐÃ HỦY ở mọi tài khoản.
+// Cơ động: dùng bộ lọc đầy đủ (giống admin), bỏ tab đang/lịch sử. NV thường: giữ tab.
 function bgSuVuRenderFromCache(){
   const list = document.getElementById('bg-suvu-list');
   if (!list) return;
-  const all = window._bgSuVuCache || [];
+  const all = (window._bgSuVuCache || []).filter(s => s.trang_thai !== 'HUY');  // ẩn hủy
   const laCD = _bgLaCoDong();
-  const filterBar = laCD ? bgSvFilterBarHtml() : '';
-  const data = laCD ? bgSvApplyFilter(all) : all;
   const cnt = document.getElementById('bg-suvu-count');
-  const opened = data.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  const closed = data.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
+  const openCnt = all.filter(s => s.trang_thai !== 'HOAN_TAT').length;
+  if (cnt){ if (openCnt>0){ cnt.style.display=''; cnt.textContent = openCnt; } else cnt.style.display='none'; }
+
   if (all.length === 0){
     list.innerHTML = '<div class="ns-empty">Chưa có sự vụ nào.</div>';
-    if (cnt) cnt.style.display = 'none';
+    bgSuVuStopTimer();
     return;
   }
-  if (cnt){ if (opened.length>0){ cnt.style.display=''; cnt.textContent = opened.length; } else cnt.style.display='none'; }
+
+  if (laCD){
+    const filterBar = bgSvFilterBarHtml();
+    let data = bgSvSortData(bgSvApplyFilter(all));
+    if (data.length === 0){
+      list.innerHTML = filterBar + '<div class="ns-empty">Không có sự vụ phù hợp bộ lọc.</div>';
+      bgSuVuStopTimer();
+      return;
+    }
+    list.innerHTML = filterBar + data.map(bgSuVuCardHtml).join('');
+    bgSuVuStartTimer();
+    return;
+  }
+
+  // NV thường: giữ tab Đang xử lý / Lịch sử
+  const opened = all.filter(s => s.trang_thai !== 'HOAN_TAT');
+  const closed = all.filter(s => s.trang_thai === 'HOAN_TAT');
   const viewData = (_bgSuVuViewMode==='lichsu') ? closed : opened;
   const toggleHtml = `<div class="bg-sv-viewtabs">
       <button class="bg-sv-vtab${_bgSuVuViewMode!=='lichsu'?' active':''}" onclick="bgSuVuSetView('dang')">Đang xử lý${opened.length?' ('+opened.length+')':''}</button>
       <button class="bg-sv-vtab${_bgSuVuViewMode==='lichsu'?' active':''}" onclick="bgSuVuSetView('lichsu')">Lịch sử${closed.length?' ('+closed.length+')':''}</button>
     </div>`;
   if (viewData.length === 0){
-    list.innerHTML = filterBar + toggleHtml + '<div class="ns-empty">'+(_bgSuVuViewMode==='lichsu'?'Chưa có sự vụ đã hoàn tất.':'Không có sự vụ phù hợp bộ lọc.')+'</div>';
+    list.innerHTML = toggleHtml + '<div class="ns-empty">'+(_bgSuVuViewMode==='lichsu'?'Chưa có sự vụ đã hoàn tất.':'Chưa có sự vụ đang xử lý.')+'</div>';
     bgSuVuStopTimer();
     return;
   }
-  list.innerHTML = filterBar + toggleHtml + viewData.map(bgSuVuCardHtml).join('');
+  list.innerHTML = toggleHtml + viewData.map(bgSuVuCardHtml).join('');
   bgSuVuStartTimer();
 }
 
-// [Lớp 2] Bộ lọc ngày + cửa hàng (cho cơ động)
+// ── Helper "trễ" / "sắp hết hạn" (port từ bộ lọc admin) ──
+function bgLaTre(s){
+  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  const now = Date.now();
+  if (s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < now) return true;
+  if (!s.thoi_gian_phan_hoi && s.created_at && (now - new Date(s.created_at).getTime())/3600000 > 12) return true;
+  return false;
+}
+function bgSapHetHan(s){
+  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s.deadline_xu_ly) return false;
+  const now = Date.now();
+  const dl = new Date(s.deadline_xu_ly).getTime();
+  if (dl <= now) return false;
+  const conGio = (dl - now)/3600000;
+  const nguong = s.muc_do==='KHAN_CAP' ? 6 : s.muc_do==='QUAN_TRONG' ? 12 : 24;
+  return conGio <= nguong;
+}
+
+// [v17.21] Bộ lọc đầy đủ giống admin: mức độ · trạng thái · thời gian · cửa hàng/khu vực
 function bgSvApplyFilter(data){
   const f = window._bgSvFilter || {};
   let out = data;
-  if (f.date && f.date !== 'all'){
+  if (f.muc_do && f.muc_do !== 'all') out = out.filter(s => s.muc_do === f.muc_do);
+  const tt = f.trang_thai;
+  if (tt === 'tre') out = out.filter(bgLaTre);
+  else if (tt === 'sap_het_han') out = out.filter(bgSapHetHan);
+  else if (tt === 'moi_tao') out = out.filter(s => s.trang_thai === 'MOI_TAO');
+  else if (tt === 'dang_xu_ly') out = out.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
+  else if (tt === 'hoan_tat') out = out.filter(s => s.trang_thai === 'HOAN_TAT');
+  if (f.time && f.time !== 'all'){
     const now = new Date();
-    const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
     let from=null, to=null;
-    if (f.date==='today'){ from=sod(now); to=new Date(from.getTime()+86400000); }
-    else if (f.date==='yesterday'){ to=sod(now); from=new Date(to.getTime()-86400000); }
-    else if (f.date==='month'){ from=new Date(now.getFullYear(),now.getMonth(),1); to=new Date(now.getFullYear(),now.getMonth()+1,1); }
-    else if (f.date==='range'){ if(f.from) from=new Date(f.from+'T00:00:00'); if(f.to) to=new Date(f.to+'T23:59:59'); }
-    out = out.filter(s=>{ const t=new Date(s.created_at).getTime(); if(from&&t<from.getTime())return false; if(to&&t>=to.getTime())return false; return true; });
+    if (f.time==='today') from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    else if (f.time==='7d') from = new Date(now.getTime() - 7*86400000);
+    else if (f.time==='30d') from = new Date(now.getTime() - 30*86400000);
+    else if (f.time==='custom'){ if (f.from) from = new Date(f.from+'T00:00:00'); if (f.to) to = new Date(f.to+'T23:59:59'); }
+    if (from) out = out.filter(s => new Date(s.created_at) >= from);
+    if (to) out = out.filter(s => new Date(s.created_at) <= to);
   }
   if (f.store && f.store.trim()){
     const q = f.store.trim().toLowerCase();
-    out = out.filter(s => ((s.ten_ch_snapshot||'')+' '+(s.ma_ch||'')).toLowerCase().includes(q));
+    out = out.filter(s => ((s.ten_ch_snapshot||'')+' '+(s.ma_ch||'')+' '+(s.khu_vuc||'')).toLowerCase().includes(q));
   }
   return out;
 }
 
+function bgSvSortData(data){
+  const sort = (window._bgSvFilter||{}).sort || 'muc_do';
+  const arr = data.slice();
+  if (sort === 'cua_hang'){
+    arr.sort((a,b)=>{ const c=(a.ten_ch_snapshot||a.ma_ch||'').localeCompare(b.ten_ch_snapshot||b.ma_ch||'','vi'); return c!==0?c:(new Date(b.created_at)-new Date(a.created_at)); });
+  } else if (sort === 'thoi_gian'){
+    arr.sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+  } else {
+    const md = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
+    arr.sort((a,b)=>{ const da=(md[a.muc_do]??9), db=(md[b.muc_do]??9); return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
+  }
+  return arr;
+}
+
 function bgSvFilterBarHtml(){
-  const f = window._bgSvFilter = window._bgSvFilter || { date:'all', from:'', to:'', store:'' };
-  const chip = (id,lbl)=>`<button onclick="bgSvSetDate('${id}')" style="border:1px solid ${f.date===id?'#1D9E75':'#D1D5DB'};background:${f.date===id?'#1D9E75':'#fff'};color:${f.date===id?'#fff':'#374151'};padding:5px 11px;border-radius:20px;font-size:12.5px;cursor:pointer">${lbl}</button>`;
-  const stores = Array.from(new Set((window._bgSuVuCache||[]).map(s=>s.ten_ch_snapshot||s.ma_ch).filter(Boolean))).sort();
+  const f = window._bgSvFilter = window._bgSvFilter || { muc_do:'all', trang_thai:'all', time:'all', from:'', to:'', store:'', sort:'muc_do' };
+  const all = (window._bgSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
+  const _c = fn => all.filter(fn).length;
+  const cMoi=_c(s=>s.trang_thai==='MOI_TAO'), cXuLy=_c(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)), cXong=_c(s=>s.trang_thai==='HOAN_TAT'), cTre=_c(bgLaTre), cSap=_c(bgSapHetHan);
+  const stores = Array.from(new Set(all.map(s=>s.ten_ch_snapshot||s.ma_ch).filter(Boolean))).sort();
   const opts = stores.map(n=>`<option value="${escHtml(n)}"></option>`).join('');
-  const rangeRow = f.date==='range' ? `<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
-      <input type="date" value="${escHtml(f.from||'')}" onchange="bgSvSetRange('from',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
+  const sel = 'flex:1;min-width:0;border:1px solid #D1D5DB;border-radius:9px;padding:8px 10px;font-size:12.5px;background:#fff;color:#334155;cursor:pointer';
+  const o = (v,cur,lbl)=>`<option value="${v}"${cur===v?' selected':''}>${lbl}</option>`;
+  const rangeRow = f.time==='custom' ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="date" value="${escHtml(f.from||'')}" onchange="bgSvSetField('from',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
       <span style="color:#94A3B8;font-size:12px">đến</span>
-      <input type="date" value="${escHtml(f.to||'')}" onchange="bgSvSetRange('to',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
+      <input type="date" value="${escHtml(f.to||'')}" onchange="bgSvSetField('to',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
     </div>` : '';
-  return `<div style="margin-bottom:12px">
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${chip('all','Tất cả')}${chip('today','Hôm nay')}${chip('yesterday','Hôm qua')}${chip('month','Tháng này')}${chip('range','Khoảng')}</div>
+  return `<div style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px">
+      <select onchange="bgSvSetField('muc_do',this.value)" style="${sel}">${o('all',f.muc_do,'Mức độ: Tất cả')}${o('KHAN_CAP',f.muc_do,'Khẩn cấp')}${o('QUAN_TRONG',f.muc_do,'Quan trọng')}${o('CAN_THIET',f.muc_do,'Cần thiết')}</select>
+      <select onchange="bgSvSetField('trang_thai',this.value)" style="${sel}">${o('all',f.trang_thai,'Tất cả ('+all.length+')')}${o('tre',f.trang_thai,'Cảnh báo trễ ('+cTre+')')}${o('sap_het_han',f.trang_thai,'Sắp hết hạn ('+cSap+')')}${o('moi_tao',f.trang_thai,'Đã tạo ('+cMoi+')')}${o('dang_xu_ly',f.trang_thai,'Đang xử lý ('+cXuLy+')')}${o('hoan_tat',f.trang_thai,'Hoàn tất ('+cXong+')')}</select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <select onchange="bgSvSetField('time',this.value)" style="${sel}">${o('all',f.time,'Mọi lúc')}${o('today',f.time,'Hôm nay')}${o('7d',f.time,'7 ngày qua')}${o('30d',f.time,'30 ngày qua')}${o('custom',f.time,'Khoảng ngày')}</select>
+      <select onchange="bgSvSetField('sort',this.value)" style="${sel}">${o('muc_do',f.sort,'Sắp: Mức độ')}${o('cua_hang',f.sort,'Sắp: Cửa hàng')}${o('thoi_gian',f.sort,'Sắp: Ngày gửi')}</select>
+    </div>
     ${rangeRow}
-    <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
-      <input list="bg-sv-store-dl" value="${escHtml(f.store||'')}" oninput="(window._bgSvFilter=window._bgSvFilter||{}).store=this.value" onchange="bgSvSetStore(this.value)" placeholder="Lọc theo cửa hàng (gõ để gợi ý)..." style="flex:1;border:1px solid #D1D5DB;border-radius:9px;padding:8px 11px;font-size:13px">
-      ${f.store?`<button onclick="bgSvSetStore('')" style="border:1px solid #D1D5DB;background:#fff;color:#64748B;padding:8px 12px;border-radius:9px;font-size:12.5px;cursor:pointer">Xóa</button>`:''}
+    <div style="display:flex;gap:6px;align-items:center">
+      <input list="bg-sv-store-dl" value="${escHtml(f.store||'')}" oninput="(window._bgSvFilter=window._bgSvFilter||{}).store=this.value" onchange="bgSvSetField('store',this.value)" placeholder="Cửa hàng / khu vực (gõ để gợi ý)…" style="flex:1;border:1px solid #D1D5DB;border-radius:9px;padding:8px 11px;font-size:13px">
+      ${f.store?`<button onclick="bgSvSetField('store','')" style="border:1px solid #D1D5DB;background:#fff;color:#64748B;padding:8px 12px;border-radius:9px;font-size:12.5px;cursor:pointer">Xóa</button>`:''}
     </div>
     <datalist id="bg-sv-store-dl">${opts}</datalist>
   </div>`;
 }
 
-window.bgSvSetDate = function(d){ (window._bgSvFilter=window._bgSvFilter||{}).date=d; bgSuVuRenderFromCache(); };
-window.bgSvSetRange = function(k,v){ (window._bgSvFilter=window._bgSvFilter||{})[k]=v; bgSuVuRenderFromCache(); };
-window.bgSvSetStore = function(v){ (window._bgSvFilter=window._bgSvFilter||{}).store=v; bgSuVuRenderFromCache(); };
+window.bgSvSetField = function(k,v){ (window._bgSvFilter=window._bgSvFilter||{})[k]=v; bgSuVuRenderFromCache(); };
+// Tương thích lời gọi cũ (nếu còn nơi khác gọi)
+window.bgSvSetDate  = function(d){ bgSvSetField('time', d); };
+window.bgSvSetRange = function(k,v){ bgSvSetField(k, v); };
+window.bgSvSetStore = function(v){ bgSvSetField('store', v); };
 
 // [Điểm 2] Thẻ cơ động dạng STEPPER ngang — tên đội ở bước Xử lý
 function bgSuVuCardCoDong(s){

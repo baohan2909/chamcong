@@ -115,7 +115,7 @@ function bgqlSapHetHan(s){
 function bgqlRenderSuVuFilters(){
   const cont = document.getElementById('bgql-suvu-filters');
   if (!cont) return;
-  const all = bgqlSuVuCache || [];
+  const all = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');  // [v17.21] trừ hủy
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   const _cMoi = all.filter(s => s.trang_thai === 'MOI_TAO').length;
   const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)).length;
@@ -148,7 +148,6 @@ function bgqlRenderSuVuFilters(){
           <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
           <option value="dang_xu_ly"${bgqlSuVuFilter.trang_thai==='dang_xu_ly'?' selected':''}>Đang xử lý (${_cXuLy})</option>
           <option value="hoan_tat"${bgqlSuVuFilter.trang_thai==='hoan_tat'?' selected':''}>Hoàn tất (${_cXong})</option>
-          <option value="huy"${bgqlSuVuFilter.trang_thai==='huy'?' selected':''}>Hủy (${_cHuy})</option>
         </select>
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -347,7 +346,8 @@ window.bgqlSetFilter = function(k, v){
 
 
 function bgqlGetFilteredSuVu(){
-  let arr = bgqlSuVuCache || [];
+  // [v17.21] Ẩn sự vụ ĐÃ HỦY ở mọi tài khoản — không hiển thị nữa
+  let arr = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
   // [v13.78] Lọc theo 5 trạng thái rõ ràng
   const _tt = bgqlSuVuFilter.trang_thai;
   if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
