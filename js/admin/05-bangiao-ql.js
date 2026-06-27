@@ -457,13 +457,15 @@ function bgqlSuVuProgress(s){
   if (s.trang_thai === 'HUY') return '';
   const tt = s.trang_thai;
   const hoanTat = tt === 'HOAN_TAT';
-  const daGiao = !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG','HOAN_TAT'].includes(tt);
-  const xlName = s.nguoi_xu_ly_ten || s.nguoi_phu_trach_ten || '—';
+  // Sự vụ tự động điều phối vào pool khu vực NGAY khi tạo → "Giao việc" luôn xong.
+  // "Xử lý" chỉ xanh khi đã có người nhận / QL phản hồi; chưa thì hiện "Chờ nhận".
+  const daXuLy = !!s.nguoi_xu_ly_ten || !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG','HOAN_TAT'].includes(tt);
+  const xlName = s.nguoi_xu_ly_ten || (daXuLy ? (s.nguoi_phu_trach_ten || '—') : 'Chờ nhận');
   const htName = hoanTat ? (s.nguoi_dong_ten || s.nguoi_xu_ly_ten || '—') : '—';
   const steps = [
     { lbl:'Người tạo', name: s.nguoi_tao_ten || '—',                reached:true },
-    { lbl:'Giao việc', name: s.nguoi_phu_trach_ten || 'Ban quản lý', reached:daGiao },
-    { lbl:'Xử lý',     name: xlName,                                 reached:daGiao, active:daGiao && !hoanTat },
+    { lbl:'Giao việc', name: s.nguoi_phu_trach_ten || 'Ban quản lý', reached:true },
+    { lbl:'Xử lý',     name: xlName,                                 reached:daXuLy, active:daXuLy && !hoanTat },
     { lbl:'Hoàn tất',  name: htName,                                 reached:hoanTat }
   ];
   return `<div style="display:flex;margin-top:11px;border-top:1px solid #EEF2F6;padding-top:11px">
