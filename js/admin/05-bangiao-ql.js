@@ -1031,6 +1031,27 @@ let bgqlStatsCardFilter = 'all'; // 'all' | 'da_gui' | 'chua_gui' | 'co_sv'
 let bgqlStatsSort = 'suvu'; // [v13.75] suvu|khan|ten|khu_vuc
 let bgqlStatsOpenedCh = null;    // ma_ch đang xem chi tiết sự vụ
 
+// [v17.23] Ẩn sự vụ HỦY khỏi Thống kê cho KHỚP tab Sự vụ (hủy đã ẩn ở mọi nơi).
+// su_vu_ds chứa đủ list → trừ hủy khỏi số đếm + lọc list + tính lại "có sự vụ".
+function bgqlStatsStripHuy(data){
+  if (!data || !Array.isArray(data.ds_ch)) return data;
+  let coSV = 0;
+  data.ds_ch.forEach(c => {
+    if (Array.isArray(c.su_vu_ds) && c.su_vu_ds.length){
+      const huy = c.su_vu_ds.filter(sv => sv.trang_thai === 'HUY');
+      if (huy.length){
+        const huyKhan = huy.filter(sv => sv.muc_do === 'KHAN_CAP').length;
+        c.so_su_vu = Math.max(0, (c.so_su_vu||0) - huy.length);
+        c.so_su_vu_khan = Math.max(0, (c.so_su_vu_khan||0) - huyKhan);
+        c.su_vu_ds = c.su_vu_ds.filter(sv => sv.trang_thai !== 'HUY');
+      }
+    }
+    if ((c.so_su_vu||0) > 0) coSV++;
+  });
+  if (data.tom_tat) data.tom_tat.co_su_vu = coSV;
+  return data;
+}
+
 async function bgqlLoadStats(){
   const cont = document.getElementById('bgql-stats-content');
   if (!cont) return;
@@ -1042,7 +1063,7 @@ async function bgqlLoadStats(){
       p_khu_vuc: bgqlStatsKhuVuc, p_ma_ch: bgqlStatsMaCh
     });
     if (error) throw error;
-    bgqlStatsData = data || {};
+    bgqlStatsData = bgqlStatsStripHuy(data || {});
     bgqlRenderStats();
   } catch(e){
     cont.innerHTML = bgqlRenderStatsTopBar() + 
