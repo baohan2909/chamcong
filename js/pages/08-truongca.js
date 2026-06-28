@@ -72,8 +72,8 @@ function tcUpdateHero(){
   const st=document.getElementById('cc-hero-status-txt'); if(!st) return; // không ở trang chấm công
   const loc=document.getElementById('cc-hero-loc-text');
   const ts=document.getElementById('cc-hero-time-start'), te=document.getElementById('cc-hero-time-end');
-  const row=document.getElementById('cc-hero-progress-row');
-  const bar=document.getElementById('cc-hero-progress-bar');
+  const row=document.querySelector('.cc-hero-progress-row');
+  const bar=document.querySelector('.cc-hero-progress-bar');
   const pad=n=>String(n).padStart(2,'0');
   if(_tcState.trongCa && _tcState.gioVao){
     const v=new Date(_tcState.gioVao);
