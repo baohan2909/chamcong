@@ -121,6 +121,7 @@ function _tcOnRelevantPage(){
 }
 function tcStartPoll(){
   if(_tcPollTimer) return;
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && SESSION && _tcOnRelevantPage()) tcRefreshBanner(); });
   _tcPollTimer=setInterval(()=>{
     if(document.visibilityState==='visible' && SESSION && _tcOnRelevantPage()) tcRefreshBanner();
   }, 60000);
@@ -186,6 +187,7 @@ function tcOpenTransfer(){
 }
 
 async function tcDoTransfer(denMaNv, denTen){
+  tcCloseModal();  // đóng bảng chọn TRƯỚC khi hỏi xác nhận (tránh 2 modal chồng nhau)
   const ok=await appConfirm('Chuyển Trưởng ca cho '+denTen+'?\nBạn sẽ trở lại vai trò nhân viên thường, hệ thống tự chốt giờ.', { title:'Chuyển Trưởng ca', okLabel:'Chuyển' });
   if(!ok) return;
   try{
@@ -195,7 +197,6 @@ async function tcDoTransfer(denMaNv, denTen){
       p_ma_ch:_tcState.maCh, p_ten_ch:tcStoreTen()
     });
     if(error||!data||!data.success){ showToast((data&&data.error)||(error&&error.message)||'Lỗi chuyển Trưởng ca','err'); return; }
-    tcCloseModal();
     showToast('✓ Đã chuyển Trưởng ca cho '+denTen,'ok');
     tcRefreshBanner();
   }catch(e){ showToast('Lỗi kết nối','err'); }
