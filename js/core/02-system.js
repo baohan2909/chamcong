@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.23',
+  'sys.cache_version': 'v17.24',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -334,6 +334,8 @@ const PAGE_TITLES={
   'donhang-ql': '',
   'lichca':    'LỊCH LÀM VIỆC',
   'lichca-ql': 'LỊCH CA HỆ THỐNG',
+  'lichhd-ch': 'LỊCH HOẠT ĐỘNG',
+  'lichhd-ql': 'LỊCH HOẠT ĐỘNG CỬA HÀNG',
   chamcong:'CHẤM CÔNG', giocong:'GIỜ CÔNG CỦA TÔI',
   'giocong-ql':'GIỜ CÔNG TOÀN HỆ THỐNG',
   taikhoan:'TÀI KHOẢN', bandochidung:'BẢN ĐỒ CỬA HÀNG',
@@ -413,7 +415,7 @@ function goToPage(page){
   // Giờ công: active nav-giocong cho cả 2 page
   if(page==='giocong'||page==='giocong-ql') document.getElementById('nav-giocong').classList.add('active');
   // Lịch ca: active nav-lichca cho cả NV và QLNS [SỬA v8]
-  if(page==='lichca'||page==='lichca-ql'){
+  if(page==='lichca'||page==='lichca-ql'||page==='lichhd-ch'){
     const lcNav=document.getElementById('nav-lichca');
     if(lcNav)lcNav.classList.add('active');
   }
@@ -523,6 +525,7 @@ const HUB_GROUPS = {
       { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV'],               act:()=>nsFaceOpenEnrollment() },
       { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
       { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
+      { label:'Lịch hoạt động CH',   desc:'Mở/đóng toàn hệ thống', ic:_hubIc.cal,   roles:['QLNS','QLBH'],            act:()=>moLichHDQL() },
       { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
     ]

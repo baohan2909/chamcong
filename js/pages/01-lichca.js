@@ -59,6 +59,8 @@ let _npCamB64={}; // base64 ảnh đơn theo ngày
 
 function moLichCa(){
   const now=new Date();
+  // [v17.24] Tài khoản cửa hàng → Lịch hoạt động cửa hàng (Mở/Đóng), không phải lịch ca NV
+  if(SESSION&&SESSION.vaiTro==='CUA_HANG'){ if(typeof moLichHD==='function'){ moLichHD(); return; } }
   const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
   if(isQL){ goToPage('lichca-ql'); return; }
   const dow=now.getDay();
