@@ -29,7 +29,7 @@ function lhdDurMin(bd,kt){ if(!bd||!kt) return 0; const a=bd.split(':').map(Numb
 //  CỬA HÀNG
 // ════════════════════════════════════════════════════════════════
 let lhdSelMonday=null, lhdTuan='', lhdEdit={}, lhdData=null, lhdSub='dangky', lhdQuickBd='08:00', lhdQuickKt='22:00';
-const LHD_TIME_INP='width:100%;box-sizing:border-box;border:1.5px solid #C7EBD9;border-radius:11px;padding:11px 8px;font-size:16px;font-weight:800;color:#06382f;background:#F2FBF7;accent-color:#0F6E56;text-align:center';
+const LHD_TIME_INP='width:100%;min-width:0;box-sizing:border-box;border:1.5px solid #C7EBD9;border-radius:11px;padding:11px 8px;font-size:16px;font-weight:800;color:#06382f;background:#F2FBF7;accent-color:#0F6E56;text-align:center';
 
 function moLichHD(){ goToPage('lichhd-ch'); lhdSub='dangky'; lhdSelMonday=lhdAddDays(lhdMondayOf(new Date()),7); taiLichHD(); }
 
@@ -101,12 +101,12 @@ function renderLichHD(){
       ${navBtn(canNext,1)}
     </div>
 
-    <div style="background:linear-gradient(135deg,#06382f 0%,#0F6E56 100%);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(6,56,47,.22)">
+    <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(6,56,47,.22)">
       <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.82);letter-spacing:.06em;margin-bottom:9px">ĐẶT NHANH CHO CẢ TUẦN</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <input type="time" value="${lhdQuickBd}" onchange="lhdQuickBd=this.value" style="flex:1;box-sizing:border-box;border:none;border-radius:11px;padding:11px 6px;font-size:16px;font-weight:800;color:#06382f;background:#fff;text-align:center;accent-color:#0F6E56">
+        <input type="time" value="${lhdQuickBd}" onchange="lhdQuickBd=this.value" style="flex:1;min-width:0;box-sizing:border-box;border:none;border-radius:11px;padding:11px 6px;font-size:16px;font-weight:800;color:#06382f;background:#fff;text-align:center;accent-color:#0F6E56">
         <span style="color:rgba(255,255,255,.6);font-size:16px">→</span>
-        <input type="time" value="${lhdQuickKt}" onchange="lhdQuickKt=this.value" style="flex:1;box-sizing:border-box;border:none;border-radius:11px;padding:11px 6px;font-size:16px;font-weight:800;color:#06382f;background:#fff;text-align:center;accent-color:#0F6E56">
+        <input type="time" value="${lhdQuickKt}" onchange="lhdQuickKt=this.value" style="flex:1;min-width:0;box-sizing:border-box;border:none;border-radius:11px;padding:11px 6px;font-size:16px;font-weight:800;color:#06382f;background:#fff;text-align:center;accent-color:#0F6E56">
         <button onclick="lhdApplyAll()" style="flex:none;border:none;border-radius:11px;padding:11px 14px;font-size:13.5px;font-weight:800;color:#0F6E56;background:#fff;cursor:pointer;white-space:nowrap">Áp dụng</button>
       </div>
     </div>
@@ -117,7 +117,7 @@ function renderLichHD(){
       <div id="lhd-total" style="font-size:13px;color:#475569;font-weight:600"></div>
       ${submitted?`<div style="font-size:11.5px;color:#0F6E56;margin-top:3px">Đã gửi ${lhdFmtDT(lhdData.submitted_at)}</div>`:''}
     </div>
-    <button id="lhd-submit" onclick="guiLichHD()" style="width:100%;margin-top:12px;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#0F6E56,#06382f);color:#fff;font-size:15px;font-weight:800;letter-spacing:.02em;cursor:pointer;box-shadow:0 5px 16px rgba(6,56,47,.28)">
+    <button id="lhd-submit" onclick="guiLichHD()" style="width:100%;margin-top:12px;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;font-size:15px;font-weight:800;letter-spacing:.02em;cursor:pointer;box-shadow:0 5px 16px rgba(6,56,47,.28)">
       ${submitted?'Cập nhật lịch tuần':'Gửi lịch tuần'}
     </button>
     <div style="margin-top:10px;font-size:11.5px;color:#9AA7B2;text-align:center;line-height:1.55">Hoàn tất đăng ký tuần kế tiếp trước Chủ Nhật · có thể chỉnh lại trong tuần khi cần</div>`;
@@ -127,17 +127,17 @@ function renderLichHD(){
 function lhdDayRow(dd){
   const e=lhdEdit[dd.ngay]||{}; const bd=e.gio_bd||'', kt=e.gio_kt||''; const p=n=>String(n).padStart(2,'0');
   return `<div style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #E6EBF0;border-radius:16px;padding:11px;box-shadow:0 1px 2px rgba(6,56,47,.05)">
-    <div style="flex:none;width:50px;height:54px;border-radius:13px;background:linear-gradient(140deg,#06382f,#0F6E56);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <div style="flex:none;width:50px;height:54px;border-radius:13px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
       <div style="font-size:15px;font-weight:800;line-height:1">${dd.dow}</div>
       <div style="font-size:10px;opacity:.85;margin-top:3px">${p(dd.ngayNum)}/${p(dd.thang)}</div>
     </div>
-    <div style="flex:1;display:flex;align-items:flex-end;gap:7px">
-      <div style="flex:1">
+    <div style="flex:1;min-width:0;display:flex;align-items:flex-end;gap:7px">
+      <div style="flex:1;min-width:0">
         <div style="font-size:9.5px;color:#9AA7B2;font-weight:700;margin:0 0 4px 2px;letter-spacing:.04em">BẮT ĐẦU</div>
         <input type="time" value="${bd}" onchange="setLHDTime('${dd.ngay}','gio_bd',this.value)" style="${LHD_TIME_INP}">
       </div>
       <div style="flex:none;color:#CBD5E1;font-size:15px;padding-bottom:11px">→</div>
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div style="font-size:9.5px;color:#9AA7B2;font-weight:700;margin:0 0 4px 2px;letter-spacing:.04em">KẾT THÚC</div>
         <input type="time" value="${kt}" onchange="setLHDTime('${dd.ngay}','gio_kt',this.value)" style="${LHD_TIME_INP}">
       </div>
@@ -238,7 +238,7 @@ function renderLichHDQL(){
   if(lhdqlKV) rows=rows.filter(r=>r.khu_vuc===lhdqlKV);
   if(lhdqlQ.trim()){ const q=lhdqlQ.trim().toLowerCase(); rows=rows.filter(r=>((r.ten_ch||'')+' '+(r.ma_ch||'')).toLowerCase().includes(q)); }
   const daGui=rows.filter(r=>r.submitted_at).length, chuaGui=rows.length-daGui;
-  const head=`<div style="display:flex;position:sticky;top:0;background:linear-gradient(135deg,#06382f,#0F6E56);color:#fff;font-size:11px;font-weight:800;z-index:1">
+  const head=`<div style="display:flex;position:sticky;top:0;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;font-size:11px;font-weight:800;z-index:1">
     <div style="flex:none;width:128px;padding:9px 10px">Cửa hàng (${rows.length})</div>
     ${days.map((dd,i)=>`<div style="flex:1;min-width:48px;text-align:center;padding:8px 2px;border-left:1px solid rgba(255,255,255,.14)">${nm[i]}<div style="font-size:9px;opacity:.85;font-weight:500">${p(dd.ngayNum)}/${p(dd.thang)}</div></div>`).join('')}
   </div>`;

@@ -25,7 +25,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.25',
+  'sys.cache_version': 'v17.27',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -441,6 +441,7 @@ function goToPage(page){
   }
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
+  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.27] Trưởng ca
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
@@ -1187,6 +1188,7 @@ function selectCH(ma,ten){
   // [v10.85 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
+  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.27] Trưởng ca theo cửa hàng
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
@@ -1762,7 +1764,9 @@ function doSubmit(){
   }
 
   // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
-  _doSubmitContinueWithGPS();
+  // [v17.27] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
+  if(typeof tcCheckDialogBeforeSubmit==='function'){ tcCheckDialogBeforeSubmit(_doSubmitContinueWithGPS); }
+  else { _doSubmitContinueWithGPS(); }
 }
 
 // [v12.2] Tách phần GPS pre-check ra thành hàm riêng để gọi sau face verify
