@@ -159,13 +159,20 @@ let _tcSubmitGuard=false;
 async function tcCheckDialogBeforeSubmit(proceed){
   if(_tcSubmitGuard) return;
   _tcSubmitGuard=true;
+  const cb=document.getElementById('tc-checkbox');
   const go=()=>{ _tcSubmitGuard=false; proceed(); setTimeout(tcRefreshBanner, 3500); };
   const laVaoCa=(typeof state!=='undefined' && state && state.loai==='Vào ca');
   if(!laVaoCa){ go(); return; }
-  const cb=document.getElementById('tc-checkbox');
-  if(cb && cb.checked){ go(); return; }
+  // [v17.37] Luôn kiểm tra lại Trưởng ca của cửa hàng ĐANG chấm — tránh tạo Trưởng ca thứ 2
   try{ await tcRefreshBanner(); }catch(e){}
-  if(_tcState.tc){ go(); return; }
+  if(_tcState.tc){
+    if(!tcLaToi()){
+      if(cb) cb.checked=false;  // ép vai trò nhân viên dù nút có gạt
+      if(typeof showToast==='function') showToast('Cửa hàng đã có Trưởng ca: '+((_tcState.tc&&_tcState.tc.ten)||'')+'. Bạn vào ca với vai trò nhân viên.','info');
+    }
+    go(); return;  // đã có TC → không hỏi dialog nữa
+  }
+  if(cb && cb.checked){ go(); return; }  // chưa có TC + người dùng tự gạt nút → làm Trưởng ca
   tcAskDialog(()=>{ if(cb) cb.checked=true; go(); }, ()=>{ if(cb) cb.checked=false; go(); });
 }
 
