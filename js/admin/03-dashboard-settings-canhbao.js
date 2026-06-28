@@ -411,6 +411,7 @@ const SETTINGS_SCHEMA = [
     { key:'duyet.gui_tb_qlns_bo_sung',  label:'Gửi thông báo QLNS khi NV bổ sung ca', type:'bool' },
   ]},
   { group: 'giao_dien', title: '🎨 Giao diện & Vận hành', items: [
+    { key:'lichhd.enabled',           label:'Bật tính năng Lịch hoạt động cửa hàng', type:'bool' },
     { key:'ui.nv_xem_bxh',            label:'Cho NV xem BXH bán hàng', type:'bool' },
     { key:'ui.bxh_top_n',             label:'Số NV trong BXH', type:'number', min:5, max:50 },
     { key:'ui.persistent_login',      label:'Persistent login (nhớ đăng nhập)', type:'bool' },
