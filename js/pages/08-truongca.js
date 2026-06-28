@@ -5,21 +5,26 @@
 //  • Tài khoản cửa hàng: dùng cửa hàng của mình (SESSION.cuaHangMa) → thẻ TC trên trang bán hàng.
 //  • Chính người là TC → có nút Chuyển + chip BẠN.
 // ════════════════════════════════════════════════════════════════════
-let _tcState = { tc:null, dangCa:[], maCh:'', tenCh:'', trongCa:false, gioVao:null };
+let _tcState = { tc:null, dangCa:[], maCh:'', tenCh:'', trongCa:false, gioVao:null, tcGiay:0, nvGiay:0, moLoai:null, moTu:null };
 let _tcPollTimer = null;
+let _tcTickTimer = null;
 const TC_FLAG_SVG='<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>';
 
 function tcToday(){ return new Date().toISOString().substring(0,10); }
 function tcLaToi(){ return !!(_tcState.tc && SESSION && _tcState.tc.ma_nv===SESSION.ma); }
 function tcStoreTen(){ if(_tcState.tenCh) return _tcState.tenCh; const el=document.getElementById('input-ch-display'); return el?(el.value||''):''; }
 
-function _tcSet(maCh, data, trongCa, tenCh, gioVao){
+function _tcSet(maCh, data, trongCa, tenCh){
   _tcState.maCh = maCh||'';
   _tcState.tc = (data&&data.tc)?data.tc:null;
   _tcState.dangCa = (data&&Array.isArray(data.dang_ca))?data.dang_ca:[];
   _tcState.trongCa = !!trongCa;
   _tcState.tenCh = tenCh||'';
-  _tcState.gioVao = gioVao||null;
+  _tcState.gioVao = (data&&data.gio_vao)||null;
+  _tcState.tcGiay = (data&&Number(data.tc_giay))||0;
+  _tcState.nvGiay = (data&&Number(data.nv_giay))||0;
+  _tcState.moLoai = (data&&data.mo_loai)||null;
+  _tcState.moTu = (data&&data.mo_tu)||null;
 }
 
 async function tcRefreshBanner(){
@@ -33,7 +38,7 @@ async function tcRefreshBanner(){
     } else {
       // NV: ưu tiên CA ĐANG MỞ (hiển thị xuyên suốt, không cần chọn cửa hàng)
       const { data:r } = await supa.rpc('fn_truong_ca_cho_nv',{p_ma_nv:SESSION.ma,p_ngay:tcToday()});
-      if(r && r.trong_ca){ _tcSet(r.ma_ch, r, true, r.ten_ch, r.gio_vao); }
+      if(r && r.trong_ca){ _tcSet(r.ma_ch, r, true, r.ten_ch); }
       else {
         // Chưa vào ca → xem trước theo cửa hàng đang chọn (nếu có)
         const el=document.getElementById('sel-cuahang'); const maCh=el?(el.value||''):'';
@@ -45,13 +50,30 @@ async function tcRefreshBanner(){
   tcRenderBanner(); tcRenderToggleState(); tcUpdateHero();
 }
 
-// ── Hero "CA HÔM NAY" — nối với ca thật (thay dữ liệu giả) ──
+// ── Hero "CA HÔM NAY" — đồng hồ Tổng / Trưởng ca / Nhân viên (HH:MM:SS, live) ──
+function _fmtHMS(sec){ sec=Math.max(0,Math.floor(sec)); const p=n=>String(n).padStart(2,'0'); return p(Math.floor(sec/3600))+':'+p(Math.floor((sec%3600)/60))+':'+p(sec%60); }
+
+function tcTickTimes(){
+  const elT=document.getElementById('cc-hero-tong'); if(!elT) return;
+  const open=_tcState.moTu ? Math.max(0,(Date.now()-new Date(_tcState.moTu).getTime())/1000) : 0;
+  let tc=_tcState.tcGiay||0, nv=_tcState.nvGiay||0;
+  if(_tcState.moLoai==='tc') tc+=open; else if(_tcState.moLoai==='nv') nv+=open;
+  elT.textContent=_fmtHMS(tc+nv);
+  const et=document.getElementById('cc-hero-tc-t'); if(et) et.textContent=_fmtHMS(tc);
+  const en=document.getElementById('cc-hero-nv-t'); if(en) en.textContent=_fmtHMS(nv);
+}
+
+function tcStartTick(){
+  if(_tcTickTimer) return;
+  _tcTickTimer=setInterval(()=>{ if(document.visibilityState==='visible') tcTickTimes(); }, 1000);
+}
+
 function tcUpdateHero(){
   const st=document.getElementById('cc-hero-status-txt'); if(!st) return; // không ở trang chấm công
   const loc=document.getElementById('cc-hero-loc-text');
   const ts=document.getElementById('cc-hero-time-start'), te=document.getElementById('cc-hero-time-end');
-  const done=document.getElementById('cc-hero-done'), left=document.getElementById('cc-hero-left');
-  const fill=document.getElementById('cc-hero-progress-fill');
+  const row=document.getElementById('cc-hero-progress-row');
+  const bar=document.getElementById('cc-hero-progress-bar');
   const pad=n=>String(n).padStart(2,'0');
   if(_tcState.trongCa && _tcState.gioVao){
     const v=new Date(_tcState.gioVao);
@@ -59,17 +81,22 @@ function tcUpdateHero(){
     if(loc) loc.textContent=_tcState.tenCh || _tcState.maCh || '--';
     if(ts) ts.textContent=pad(v.getHours())+':'+pad(v.getMinutes());
     if(te) te.textContent='đang làm';
-    const mins=Math.max(0, Math.floor((Date.now()-v.getTime())/60000));
-    if(done) done.textContent=Math.floor(mins/60)+'h'+pad(mins%60);
-    if(left) left.textContent='—';
-    if(fill) fill.style.width=Math.min(100, mins/(8*60)*100).toFixed(0)+'%';
+    if(row && !document.getElementById('cc-hero-tong')){
+      row.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;width:100%;font-size:11px">'
+        +'<span style="opacity:.82">Tổng <b id="cc-hero-tong" style="font-size:13px;font-weight:800;font-variant-numeric:tabular-nums">00:00:00</b></span>'
+        +'<span style="opacity:.82">Trưởng ca <b id="cc-hero-tc-t" style="font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:#FFD9A8">00:00:00</b></span>'
+        +'<span style="opacity:.82">Nhân viên <b id="cc-hero-nv-t" style="font-size:13px;font-weight:800;font-variant-numeric:tabular-nums">00:00:00</b></span>'
+        +'</div>';
+    }
+    if(bar) bar.style.display='none';
+    tcTickTimes(); tcStartTick();
   } else {
     st.textContent='Chưa vào ca';
     const disp=document.getElementById('input-ch-display'); const tenCh=disp?disp.value:'';
     if(loc) loc.textContent=tenCh||'Chưa chọn cửa hàng';
     if(ts) ts.textContent='--:--'; if(te) te.textContent='--:--';
-    if(done) done.textContent='--'; if(left) left.textContent='--';
-    if(fill) fill.style.width='0%';
+    if(row) row.innerHTML='<span>Đã làm <b>--</b></span><span>Còn <b class="cc-hero-progress-hl">--</b></span>';
+    if(bar){ bar.style.display=''; const f=document.getElementById('cc-hero-progress-fill'); if(f) f.style.width='0%'; }
   }
 }
 
