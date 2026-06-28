@@ -57,16 +57,19 @@ function tcRenderToggleState(){
 }
 
 // Gọi từ doSubmit (thay cho _doSubmitContinueWithGPS trực tiếp)
-function tcCheckDialogBeforeSubmit(proceed){
-  const go=()=>{ proceed(); setTimeout(tcRefreshBanner, 3500); };  // refresh sau khi server ghi xong
+// [v17.29] Kiểm tra TC ĐÚNG thời điểm chấm (re-query) → chỉ hỏi khi ca CHƯA có Trưởng ca
+let _tcSubmitGuard=false;
+async function tcCheckDialogBeforeSubmit(proceed){
+  if(_tcSubmitGuard) return;
+  _tcSubmitGuard=true;
+  const go=()=>{ _tcSubmitGuard=false; proceed(); setTimeout(tcRefreshBanner, 3500); };
   const laVaoCa=(typeof state!=='undefined' && state && state.loai==='Vào ca');
-  if(laVaoCa && !_tcState.tc){
-    const cb=document.getElementById('tc-checkbox');
-    if(cb && cb.checked){ go(); return; }     // đã chọn TC qua nút gạt → không hỏi
-    tcAskDialog(()=>{ if(cb) cb.checked=true; go(); }, ()=>{ if(cb) cb.checked=false; go(); });
-    return;
-  }
-  go();
+  if(!laVaoCa){ go(); return; }                          // chỉ áp dụng khi VÀO CA
+  const cb=document.getElementById('tc-checkbox');
+  if(cb && cb.checked){ go(); return; }                  // đã tự nhận TC qua nút gạt → ghi luôn
+  try{ await tcRefreshBanner(); }catch(e){}              // re-query trạng thái TC tại thời điểm chấm
+  if(_tcState.tc){ go(); return; }                       // ca ĐÃ có Trưởng ca → KHÔNG hỏi, vào ca thường
+  tcAskDialog(()=>{ if(cb) cb.checked=true; go(); }, ()=>{ if(cb) cb.checked=false; go(); }); // chưa có → hỏi
 }
 
 function tcCloseModal(){ const m=document.getElementById('tc-modal-root'); if(m) m.remove(); }
