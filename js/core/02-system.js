@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.29',
+  'sys.cache_version': 'v17.30',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -442,7 +442,8 @@ function goToPage(page){
   }
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
-  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.29] Trưởng ca
+  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.30] Trưởng ca
+  if(page==='banhang' && SESSION && SESSION.vaiTro==='CUA_HANG' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.30] thẻ TC cho cửa hàng
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
@@ -556,7 +557,7 @@ const HUB_GROUPS = {
 };
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
-  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.29] tắt theo công tắc tính năng
+  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.30] tắt theo công tắc tính năng
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [A2] chức danh ĐÃ cấu hình rõ ràng có thể MỞ THÊM tile (cộng thêm, không gỡ của ai)
@@ -1119,7 +1120,7 @@ function khoiDongApp(){
     // Ẩn tab Chấm công và Bản đồ (CH không cần)
     document.getElementById('nav-chamcong').style.display='none';
     document.getElementById('nav-bandochidung').style.display='none';
-    // [v17.29] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
+    // [v17.30] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
     if(_getSetting('lichhd.enabled', true) === false){ const _nL=document.getElementById('nav-lichca'); if(_nL) _nL.style.display='none'; }
     // Hiện tab Bán hàng
     document.getElementById('nav-banhang').style.display='';
@@ -1192,7 +1193,7 @@ function selectCH(ma,ten){
   // [v10.85 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
-  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.29] Trưởng ca theo cửa hàng
+  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.30] Trưởng ca theo cửa hàng
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
@@ -1768,7 +1769,7 @@ function doSubmit(){
   }
 
   // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
-  // [v17.29] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
+  // [v17.30] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
   if(typeof tcCheckDialogBeforeSubmit==='function'){ tcCheckDialogBeforeSubmit(_doSubmitContinueWithGPS); }
   else { _doSubmitContinueWithGPS(); }
 }
