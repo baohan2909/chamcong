@@ -1,39 +1,79 @@
 // ════════════════════════════════════════════════════════════════════
-// [v17.30] TRƯỞNG CA — thẻ chức danh (gradient + bong bóng) + bảng hỏi + chuyển
-//  Hiện thẻ "TRƯỞNG CA · tên" cho MỌI máy trong ca:
-//   • NV (trang chấm công): xem tên TC; nếu chính mình là TC → có nút Chuyển + chip BẠN
-//   • Tài khoản cửa hàng (trang bán hàng): xem tên TC (không có nút Chuyển)
-//  Đọc: fn_truong_ca_trang_thai · Chuyển: fn_chuyen_truong_ca (sinh 4 dòng auto)
+// [v17.31] TRƯỞNG CA — thẻ chức danh + hero ca thật + hiển thị XUYÊN SUỐT theo ca
+//  • NV: tự nhận diện CA ĐANG MỞ (fn_truong_ca_cho_nv) → thẻ TC + hero hiện theo ca,
+//        KHÔNG cần chọn cửa hàng. Chưa vào ca thì xem trước theo cửa hàng đang chọn.
+//  • Tài khoản cửa hàng: dùng cửa hàng của mình (SESSION.cuaHangMa) → thẻ TC trên trang bán hàng.
+//  • Chính người là TC → có nút Chuyển + chip BẠN.
 // ════════════════════════════════════════════════════════════════════
-let _tcState = { tc:null, dangCa:[], maCh:null };
+let _tcState = { tc:null, dangCa:[], maCh:'', tenCh:'', trongCa:false, gioVao:null };
 let _tcPollTimer = null;
 const TC_FLAG_SVG='<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>';
 
-function tcStoreMa(){
-  if(SESSION && SESSION.vaiTro==='CUA_HANG') return SESSION.cuaHangMa || '';
-  const el=document.getElementById('sel-cuahang'); return el?(el.value||''):'';
-}
-function tcStoreTen(){
-  if(SESSION && SESSION.vaiTro==='CUA_HANG') return SESSION.cuaHangTen || '';
-  const el=document.getElementById('input-ch-display'); return el?(el.value||''):'';
-}
 function tcToday(){ return new Date().toISOString().substring(0,10); }
 function tcLaToi(){ return !!(_tcState.tc && SESSION && _tcState.tc.ma_nv===SESSION.ma); }
+function tcStoreTen(){ if(_tcState.tenCh) return _tcState.tenCh; const el=document.getElementById('input-ch-display'); return el?(el.value||''):''; }
+
+function _tcSet(maCh, data, trongCa, tenCh, gioVao){
+  _tcState.maCh = maCh||'';
+  _tcState.tc = (data&&data.tc)?data.tc:null;
+  _tcState.dangCa = (data&&Array.isArray(data.dang_ca))?data.dang_ca:[];
+  _tcState.trongCa = !!trongCa;
+  _tcState.tenCh = tenCh||'';
+  _tcState.gioVao = gioVao||null;
+}
 
 async function tcRefreshBanner(){
   tcStartPoll();
-  const maCh=tcStoreMa(); _tcState.maCh=maCh;
-  if(!maCh||!SESSION){ _tcState.tc=null; _tcState.dangCa=[]; tcRenderBanner(); tcRenderToggleState(); return; }
+  if(!SESSION){ _tcSet('', null, false); tcRenderBanner(); tcRenderToggleState(); tcUpdateHero(); return; }
   try{
-    const { data, error } = await supa.rpc('fn_truong_ca_trang_thai', { p_ma_ch:maCh, p_ngay:tcToday() });
-    if(error) throw error;
-    _tcState.tc = (data&&data.tc)?data.tc:null;
-    _tcState.dangCa = (data&&Array.isArray(data.dang_ca))?data.dang_ca:[];
-  }catch(e){ _tcState.tc=null; _tcState.dangCa=[]; }
-  tcRenderBanner(); tcRenderToggleState();
+    if(SESSION.vaiTro==='CUA_HANG'){
+      const maCh=SESSION.cuaHangMa||'';
+      if(maCh){ const {data}=await supa.rpc('fn_truong_ca_trang_thai',{p_ma_ch:maCh,p_ngay:tcToday()}); _tcSet(maCh, data, false, SESSION.cuaHangTen||''); }
+      else { _tcSet('', null, false); }
+    } else {
+      // NV: ưu tiên CA ĐANG MỞ (hiển thị xuyên suốt, không cần chọn cửa hàng)
+      const { data:r } = await supa.rpc('fn_truong_ca_cho_nv',{p_ma_nv:SESSION.ma,p_ngay:tcToday()});
+      if(r && r.trong_ca){ _tcSet(r.ma_ch, r, true, r.ten_ch, r.gio_vao); }
+      else {
+        // Chưa vào ca → xem trước theo cửa hàng đang chọn (nếu có)
+        const el=document.getElementById('sel-cuahang'); const maCh=el?(el.value||''):'';
+        if(maCh){ const {data}=await supa.rpc('fn_truong_ca_trang_thai',{p_ma_ch:maCh,p_ngay:tcToday()}); _tcSet(maCh, data, false); }
+        else { _tcSet('', null, false); }
+      }
+    }
+  }catch(e){ /* giữ trạng thái cũ */ }
+  tcRenderBanner(); tcRenderToggleState(); tcUpdateHero();
 }
 
-// Thẻ chức danh — phong cách header (gradient + 2 bong bóng tròn)
+// ── Hero "CA HÔM NAY" — nối với ca thật (thay dữ liệu giả) ──
+function tcUpdateHero(){
+  const st=document.getElementById('cc-hero-status-txt'); if(!st) return; // không ở trang chấm công
+  const loc=document.getElementById('cc-hero-loc-text');
+  const ts=document.getElementById('cc-hero-time-start'), te=document.getElementById('cc-hero-time-end');
+  const done=document.getElementById('cc-hero-done'), left=document.getElementById('cc-hero-left');
+  const fill=document.getElementById('cc-hero-progress-fill');
+  const pad=n=>String(n).padStart(2,'0');
+  if(_tcState.trongCa && _tcState.gioVao){
+    const v=new Date(_tcState.gioVao);
+    st.textContent='Đang trong ca';
+    if(loc) loc.textContent=_tcState.tenCh || _tcState.maCh || '--';
+    if(ts) ts.textContent=pad(v.getHours())+':'+pad(v.getMinutes());
+    if(te) te.textContent='đang làm';
+    const mins=Math.max(0, Math.floor((Date.now()-v.getTime())/60000));
+    if(done) done.textContent=Math.floor(mins/60)+'h'+pad(mins%60);
+    if(left) left.textContent='—';
+    if(fill) fill.style.width=Math.min(100, mins/(8*60)*100).toFixed(0)+'%';
+  } else {
+    st.textContent='Chưa vào ca';
+    const disp=document.getElementById('input-ch-display'); const tenCh=disp?disp.value:'';
+    if(loc) loc.textContent=tenCh||'Chưa chọn cửa hàng';
+    if(ts) ts.textContent='--:--'; if(te) te.textContent='--:--';
+    if(done) done.textContent='--'; if(left) left.textContent='--';
+    if(fill) fill.style.width='0%';
+  }
+}
+
+// ── Thẻ chức danh Trưởng ca (gradient + 2 bong bóng tròn như header) ──
 function tcCardHtml(coNutChuyen){
   const ten = escHtml((_tcState.tc && _tcState.tc.ten) || '');
   const chipBan = coNutChuyen ? '<span style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.26);padding:2px 7px;border-radius:7px;margin-left:9px;vertical-align:2px">BẠN</span>' : '';
@@ -56,8 +96,8 @@ function tcCardHtml(coNutChuyen){
 
 function tcRenderBanner(){
   const has = !!_tcState.tc;
-  const elNV = document.getElementById('tc-banner');       // trang chấm công (NV + TC)
-  const elCH = document.getElementById('tc-banner-ch');    // trang bán hàng (tài khoản cửa hàng)
+  const elNV = document.getElementById('tc-banner');
+  const elCH = document.getElementById('tc-banner-ch');
   if(elNV){
     if(has){ elNV.style.display='block'; elNV.innerHTML = tcCardHtml(tcLaToi()); }
     else { elNV.style.display='none'; elNV.innerHTML=''; }
@@ -75,7 +115,6 @@ function tcRenderToggleState(){
   else { tg.style.display=''; }
 }
 
-// Poll nhẹ để mọi máy trong ca thấy TC cập nhật (chỉ khi đang ở trang chấm công/bán hàng + tab hiển thị)
 function _tcOnRelevantPage(){
   const cc=document.getElementById('page-chamcong'); const bh=document.getElementById('page-banhang');
   return (cc&&cc.classList.contains('active')) || (bh&&bh.classList.contains('active'));
@@ -109,8 +148,8 @@ function tcAskDialog(onYes, onNo){
   const root=document.createElement('div'); root.id='tc-modal-root';
   root.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center';
   root.innerHTML=`<div style="background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:22px 20px 26px">
-    <div style="position:relative;overflow:hidden;width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#F97316,#C2410C);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:25px;height:25px;position:relative;z-index:1">${TC_FLAG_SVG}</svg>
+    <div style="width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#F97316,#C2410C);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:25px;height:25px">${TC_FLAG_SVG}</svg>
     </div>
     <div style="font-size:18px;font-weight:800;color:#0F2E45">Bạn có phải Trưởng ca hiện tại không?</div>
     <div style="font-size:13px;color:#64748B;margin-top:6px;line-height:1.5">Ca này chưa có Trưởng ca. Chọn "Là Trưởng ca" nếu bạn chịu trách nhiệm chính trong ca.</div>
