@@ -18,7 +18,7 @@ let bgqlSub = 'suvu';
 let bgqlInnerTab = 'suvu';  // [v13.28] 'suvu' | 'tienchi'
 let bgqlSuVuCache = null;
 let bgqlTienChiCache = null;
-let bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
+let bgqlSuVuFilter = { trang_thai:'all', muc_do:'all', khu_vuc:'all', ma_ch:null, nguoi_xu_ly:'all', nhom:[], muc_con:[], range:'7d', customFrom:null, customTo:null };
 let bgqlDanhMucTS = null;          // [v13.71] danh mục tài sản — cho lọc hạng mục 2 cấp
 let bgqlHmExpanded = {};           // [v13.71] {key:true} nhóm đang xổ con
 let bgqlSuVuSort = 'muc_do';       // [v13.72] muc_do | cua_hang | thoi_gian
@@ -115,16 +115,20 @@ function bgqlSapHetHan(s){
 function bgqlRenderSuVuFilters(){
   const cont = document.getElementById('bgql-suvu-filters');
   if (!cont) return;
-  const all = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');  // [v17.21] trừ hủy
+  const allRaw = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');  // [v17.21] trừ hủy — danh sách CH/khu vực đầy đủ cho dropdown
+  const all = bgqlGetFilteredSuVu({ skipStatus:true, skipMucDo:true });       // [v17.39] count đi theo bộ lọc CH/khu vực/thời gian
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   const _cMoi = all.filter(s => s.trang_thai === 'MOI_TAO').length;
-  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)).length;
+  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length;
+  const _cChoXN = all.filter(s => s.trang_thai === 'DA_XU_LY_XONG').length;
   const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
   const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
   const _cTre = all.filter(bgqlLaTre).length;
   const _cSap = all.filter(bgqlSapHetHan).length;
-  const chList = [...new Map(all.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
-  const khuVucs = [...new Set(all.map(s => s.khu_vuc).filter(k=>k))].sort();
+  const chList = [...new Map(allRaw.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
+  const khuVucs = [...new Set(allRaw.map(s => s.khu_vuc).filter(k=>k))].sort();
+  // [v17.40] Danh sách người xử lý (để lọc) — lấy từ toàn bộ, không phụ thuộc bộ lọc hiện tại
+  const xlList = [...new Map(allRaw.filter(s=>s.nguoi_xu_ly_ma).map(s=>[s.nguoi_xu_ly_ma, s.nguoi_xu_ly_ten||s.nguoi_xu_ly_ma])).entries()].sort((a,b)=>(a[1]||'').localeCompare(b[1]||'','vi'));
   // [v13.91] Nút Chọn nhiều — mọi quản lý (ADMIN/QLNS/QLBH), chỉ tab "suvu"
   const isAdmin = (typeof SESSION !== 'undefined' && SESSION && ['ADMIN','QLNS','QLBH'].includes(SESSION.vaiTro));
   const multiBtn = (isAdmin && bgqlInnerTab === 'suvu') ? 
@@ -147,6 +151,7 @@ function bgqlRenderSuVuFilters(){
           <option value="sap_het_han"${bgqlSuVuFilter.trang_thai==='sap_het_han'?' selected':''}>Sắp hết hạn (${_cSap})</option>
           <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
           <option value="dang_xu_ly"${bgqlSuVuFilter.trang_thai==='dang_xu_ly'?' selected':''}>Đang xử lý (${_cXuLy})</option>
+          <option value="cho_ch_xac_nhan"${bgqlSuVuFilter.trang_thai==='cho_ch_xac_nhan'?' selected':''}>Chờ CH xác nhận (${_cChoXN})</option>
           <option value="hoan_tat"${bgqlSuVuFilter.trang_thai==='hoan_tat'?' selected':''}>Hoàn tất (${_cXong})</option>
         </select>
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
@@ -177,8 +182,15 @@ function bgqlRenderSuVuFilters(){
           <option value="muc_do"${bgqlSuVuSort==='muc_do'?' selected':''}>Sắp: Mức độ</option>
           <option value="cua_hang"${bgqlSuVuSort==='cua_hang'?' selected':''}>Sắp: Cửa hàng</option>
           <option value="thoi_gian"${bgqlSuVuSort==='thoi_gian'?' selected':''}>Sắp: Ngày gửi</option>
+          <option value="thoi_han"${bgqlSuVuSort==='thoi_han'?' selected':''}>Sắp: Thời hạn</option>
         </select>
       </div>
+      ${xlList.length ? `<div class="bgql-flt-row">
+        <select class="bg-tl-dropdown" onchange="bgqlSetNguoiXuLy(this.value)">
+          <option value="all"${bgqlSuVuFilter.nguoi_xu_ly==='all'?' selected':''}>Người xử lý: Tất cả</option>
+          ${xlList.map(([ma,ten])=>`<option value="${escHtml(ma)}"${bgqlSuVuFilter.nguoi_xu_ly===ma?' selected':''}>${escHtml(ten)}</option>`).join('')}
+        </select>
+      </div>` : ''}
       ${bgqlSvTimeRange==='custom' ? `<div class="bgql-flt-row">
         <input type="date" class="bg-tl-dropdown" value="${bgqlSvCustomFrom||''}" onchange="bgqlSetSvCustomFrom(this.value)">
         <input type="date" class="bg-tl-dropdown" value="${bgqlSvCustomTo||''}" onchange="bgqlSetSvCustomTo(this.value)">
@@ -308,6 +320,7 @@ window.bgqlSetSvTime = function(v){
 window.bgqlSetSvCustomFrom = function(v){ bgqlSvCustomFrom = v; if (bgqlSvCustomTo) bgqlRenderSuVuList(); };
 window.bgqlSetSvCustomTo = function(v){ bgqlSvCustomTo = v; if (bgqlSvCustomFrom) bgqlRenderSuVuList(); };
 window.bgqlSetSort = function(v){ bgqlSuVuSort = v || 'muc_do'; bgqlRenderSuVuList(); };
+window.bgqlSetNguoiXuLy = function(v){ bgqlSuVuFilter.nguoi_xu_ly = v || 'all'; bgqlRenderSuVuFilters(); bgqlRenderSuVuList(); };
 
 // [v13.31] Datepicker custom cho Tiền chi
 window.bgqlSetTcCustomFrom = function(v){ 
@@ -345,23 +358,27 @@ window.bgqlSetFilter = function(k, v){
 };
 
 
-function bgqlGetFilteredSuVu(){
+function bgqlGetFilteredSuVu(opts){
+  opts = opts || {};
   // [v17.21] Ẩn sự vụ ĐÃ HỦY ở mọi tài khoản — không hiển thị nữa
   let arr = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
   // [v13.78] Lọc theo 5 trạng thái rõ ràng
-  const _tt = bgqlSuVuFilter.trang_thai;
+  const _tt = opts.skipStatus ? 'all' : bgqlSuVuFilter.trang_thai;
   if (_tt === 'moi_tao') arr = arr.filter(s => s.trang_thai === 'MOI_TAO');
   else if (_tt === 'tre') arr = arr.filter(bgqlLaTre);
   else if (_tt === 'sap_het_han') arr = arr.filter(bgqlSapHetHan);
-  else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
+  else if (_tt === 'dang_xu_ly') arr = arr.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai));
+  else if (_tt === 'cho_ch_xac_nhan') arr = arr.filter(s => s.trang_thai === 'DA_XU_LY_XONG');
   else if (_tt === 'hoan_tat') arr = arr.filter(s => s.trang_thai === 'HOAN_TAT');
   else if (_tt === 'huy') arr = arr.filter(s => s.trang_thai === 'HUY');
   else if (_tt === 'open') arr = arr.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
   else if (_tt === 'closed') arr = arr.filter(s => ['HOAN_TAT','HUY'].includes(s.trang_thai));
   // 'all' → không lọc trạng thái
-  if (bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
+  if (!opts.skipMucDo && bgqlSuVuFilter.muc_do !== 'all') arr = arr.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);
   if (bgqlSuVuFilter.khu_vuc !== 'all') arr = arr.filter(s => s.khu_vuc === bgqlSuVuFilter.khu_vuc);
   if (bgqlSuVuFilter.ma_ch) arr = arr.filter(s => s.ma_ch === bgqlSuVuFilter.ma_ch);
+  // [v17.40] Lọc theo người xử lý
+  if (bgqlSuVuFilter.nguoi_xu_ly && bgqlSuVuFilter.nguoi_xu_ly !== 'all') arr = arr.filter(s => (s.nguoi_xu_ly_ma||'') === bgqlSuVuFilter.nguoi_xu_ly);
   // [v13.74] Lọc thời gian theo created_at
   if (bgqlSvTimeRange !== 'all') {
     const now = new Date();
@@ -391,6 +408,12 @@ function bgqlRenderSuVuList(){
       return new Date(b.created_at) - new Date(a.created_at);
     }
     if (bgqlSuVuSort === 'thoi_gian') {
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
+    if (bgqlSuVuSort === 'thoi_han') {
+      const da = a.deadline_xu_ly ? new Date(a.deadline_xu_ly).getTime() : Infinity;
+      const db = b.deadline_xu_ly ? new Date(b.deadline_xu_ly).getTime() : Infinity;
+      if (da !== db) return da - db;
       return new Date(b.created_at) - new Date(a.created_at);
     }
     const mdOrder = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
@@ -1075,6 +1098,7 @@ function bgqlRangeToDates(r){
   const today = new Date();
   const to = today.toISOString().slice(0,10);
   let from;
+  if (r === 'all') return { from: '2000-01-01', to };   // [v17.39] Mọi lúc
   if (r === 'today') from = to;
   else if (r === 'day') {
     // [v13.35] Chọn 1 ngày cố định
@@ -1099,6 +1123,7 @@ function bgqlRenderStatsTopBar(){
   return `
     <div class="bgql-flt-row">
       <select class="bg-tl-dropdown" onchange="bgqlSetStatsRange(this.value)">
+        <option value="all"${bgqlStatsRange==='all'?' selected':''}>Mọi lúc</option>
         <option value="today"${bgqlStatsRange==='today'?' selected':''}>Hôm nay</option>
         <option value="day"${bgqlStatsRange==='day'?' selected':''}>Chọn ngày</option>
         <option value="week"${bgqlStatsRange==='week'?' selected':''}>7 ngày qua</option>

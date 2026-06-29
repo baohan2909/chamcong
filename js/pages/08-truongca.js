@@ -161,9 +161,18 @@ async function tcCheckDialogBeforeSubmit(proceed){
   _tcSubmitGuard=true;
   const cb=document.getElementById('tc-checkbox');
   const go=()=>{ _tcSubmitGuard=false; proceed(); setTimeout(tcRefreshBanner, 3500); };
-  const laVaoCa=(typeof state!=='undefined' && state && state.loai==='Vào ca');
-  if(!laVaoCa){ go(); return; }
-  // [v17.37] Luôn kiểm tra lại Trưởng ca của cửa hàng ĐANG chấm — tránh tạo Trưởng ca thứ 2
+  const loai=(typeof state!=='undefined' && state) ? state.loai : '';
+  // [v17.38] RA CA: nếu mình đang là Trưởng ca → nhắc chuyển cho người khác trước khi ra ca
+  if(loai==='Ra ca'){
+    try{ await tcRefreshBanner(); }catch(e){}
+    if(tcLaToi()){
+      const others=(_tcState.dangCa||[]).filter(p=>p.ma_nv!==SESSION.ma);
+      if(others.length){ tcAskRaCaTransfer(others, go, ()=>{ _tcSubmitGuard=false; }); return; }
+    }
+    go(); return;
+  }
+  if(loai!=='Vào ca'){ go(); return; }
+  // [v17.37] VÀO CA: luôn kiểm tra lại Trưởng ca của cửa hàng ĐANG chấm — tránh tạo Trưởng ca thứ 2
   try{ await tcRefreshBanner(); }catch(e){}
   if(_tcState.tc){
     if(!tcLaToi()){
@@ -234,4 +243,119 @@ async function tcDoTransfer(denMaNv, denTen){
     showToast('✓ Đã chuyển Trưởng ca cho '+denTen,'ok');
     tcRefreshBanner();
   }catch(e){ showToast('Lỗi kết nối','err'); }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// [v17.38] RA CA khi đang là Trưởng ca → nhắc chuyển cho người đang trong ca
+// ════════════════════════════════════════════════════════════════════
+let _tcRaCtx=null;
+function tcAskRaCaTransfer(others, go, cancel){
+  _tcRaCtx={go,cancel};
+  tcCloseModal();
+  const root=document.createElement('div'); root.id='tc-modal-root';
+  root.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center';
+  const list=others.map(p=>`<button onclick="tcRaCaPick('${escHtml(p.ma_nv)}',this.getAttribute('data-ten'))" data-ten="${escHtml(p.ten||p.ma_nv)}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:13px 12px;border:1px solid #E6EBF0;border-radius:13px;background:#fff;cursor:pointer;margin-bottom:8px">
+      <div style="flex:none;width:36px;height:36px;border-radius:10px;background:#FFF7ED;color:#C2410C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">${escHtml((p.ten||'?').trim().charAt(0)||'?')}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:#0F2E45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.ten||p.ma_nv)}</div><div style="font-size:11px;color:#94A3B8">${escHtml(p.ma_nv)} · đang trong ca</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.4" style="width:18px;height:18px;flex:none"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>`).join('');
+  root.innerHTML=`<div style="background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px 18px 24px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:18px;font-weight:800;color:#0F2E45">Bạn đang là Trưởng ca</div>
+      <button onclick="tcRaCaCancel()" style="border:none;background:#F1F5F9;width:32px;height:32px;border-radius:10px;font-size:18px;color:#64748B;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:12.5px;color:#64748B;margin-bottom:16px;line-height:1.5">Chuyển Trưởng ca cho người đang trong ca rồi ra ca, để cửa hàng không bị trống vai trò. Hoặc ra ca luôn.</div>
+    ${list}
+    <button onclick="tcRaCaSkip()" style="width:100%;padding:13px;border:1.5px solid #E2E8F0;border-radius:13px;background:#fff;color:#475569;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px">Ra ca, không chuyển</button>
+  </div>`;
+  document.body.appendChild(root);
+}
+async function tcRaCaPick(denMaNv, denTen){
+  const ctx=_tcRaCtx; tcCloseModal();
+  try{
+    const { data, error } = await supa.rpc('fn_chuyen_truong_ca', {
+      p_tu_ma_nv:SESSION.ma, p_tu_ten:SESSION.ten,
+      p_den_ma_nv:denMaNv, p_den_ten:denTen,
+      p_ma_ch:_tcState.maCh, p_ten_ch:tcStoreTen()
+    });
+    if(error||!data||!data.success){ showToast((data&&data.error)||(error&&error.message)||'Lỗi chuyển Trưởng ca','err'); if(ctx)ctx.cancel(); return; }
+    showToast('✓ Đã chuyển Trưởng ca cho '+denTen+', đang ra ca...','ok');
+  }catch(e){ showToast('Lỗi kết nối','err'); if(ctx)ctx.cancel(); return; }
+  if(ctx) ctx.go();   // tiếp tục ghi Ra ca cho mình
+}
+function tcRaCaSkip(){ const ctx=_tcRaCtx; tcCloseModal(); if(ctx) ctx.go(); }
+function tcRaCaCancel(){ const ctx=_tcRaCtx; tcCloseModal(); if(ctx) ctx.cancel(); }
+
+// ════════════════════════════════════════════════════════════════════
+// [v17.38] GIÁM SÁT TRƯỞNG CA TOÀN CHUỖI (QL/Admin)
+// ════════════════════════════════════════════════════════════════════
+let _tcGsData=null, _tcGsKhu='all';
+function tcOpenGiamSat(){
+  let ov=document.getElementById('tcgs-overlay');
+  if(!ov){ ov=document.createElement('div'); ov.id='tcgs-overlay'; document.body.appendChild(ov); }
+  ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
+  ov.innerHTML=`
+    <div style="background:linear-gradient(135deg,#F97316,#C2410C);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+      <div style="font-weight:800;font-size:16px">Giám sát Trưởng ca</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="tcGsReload()" style="background:rgba(255,255,255,.18);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
+        <button onclick="document.getElementById('tcgs-overlay').remove()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div id="tcgs-body" style="flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch">
+      <div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>
+    </div>`;
+  _tcGsKhu='all'; tcGsReload();
+}
+async function tcGsReload(){
+  const body=document.getElementById('tcgs-body'); if(!body) return;
+  body.innerHTML='<div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>';
+  try{
+    const { data, error } = await supa.rpc('fn_truong_ca_toan_chuoi',{p_ngay:tcToday()});
+    if(error||!data){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi tải dữ liệu.</div>'; return; }
+    _tcGsData=data; tcGsRender();
+  }catch(e){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi kết nối.</div>'; }
+}
+function tcGsSetKhu(v){ _tcGsKhu=v||'all'; tcGsRender(); }
+function tcGsRender(){
+  const body=document.getElementById('tcgs-body'); if(!body||!_tcGsData) return;
+  const all=Array.isArray(_tcGsData.cua_hang)?_tcGsData.cua_hang:[];
+  const khus=[...new Set(all.map(s=>s.khu_vuc).filter(k=>k&&k!=='—'))].sort();
+  const list=(_tcGsKhu==='all')?all:all.filter(s=>s.khu_vuc===_tcGsKhu);
+  const cntCo=list.filter(s=>(s.so_tc||0)>=1).length, cntChua=list.filter(s=>(s.so_tc||0)===0).length, cntLoi=list.filter(s=>(s.so_tc||0)>=2).length;
+  const chip=(label,val,color)=>`<div style="flex:1;background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)"><div style="font-size:19px;font-weight:800;color:${color}">${val}</div><div style="font-size:10px;color:#64748B;margin-top:2px">${label}</div></div>`;
+  let html=`<div style="display:flex;gap:7px;margin-bottom:12px">
+    ${chip('CH đang mở', list.length, '#0F2E45')}
+    ${chip('Có TC', cntCo, '#059669')}
+    ${chip('Chưa có TC', cntChua, '#D97706')}
+    ${chip('Lỗi 2+ TC', cntLoi, '#DC2626')}
+  </div>`;
+  if(khus.length>1){
+    html+=`<select onchange="tcGsSetKhu(this.value)" style="width:100%;padding:11px 12px;border:1px solid #E2E8F0;border-radius:11px;background:#fff;font-size:14px;color:#0F2E45;margin-bottom:12px">
+      <option value="all"${_tcGsKhu==='all'?' selected':''}>Mọi khu vực (${all.length} cửa hàng)</option>
+      ${khus.map(k=>`<option value="${escHtml(k)}"${_tcGsKhu===k?' selected':''}>${escHtml(k)}</option>`).join('')}
+    </select>`;
+  }
+  if(!list.length){ html+='<div style="text-align:center;color:#94A3B8;padding:30px">Không có cửa hàng nào đang mở ca.</div>'; body.innerHTML=html; return; }
+  html+=list.map(s=>{
+    const n=s.so_tc||0;
+    const badge = n>=2 ? `<span style="background:#FEE2E2;color:#DC2626;font-weight:800;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">${n} TC ⚠</span>`
+      : n===1 ? `<span style="background:#D1FAE5;color:#059669;font-weight:800;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">1 TC</span>`
+      : `<span style="background:#F1F5F9;color:#94A3B8;font-weight:700;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">Chưa có TC</span>`;
+    const tcLines=(Array.isArray(s.ds_tc)&&s.ds_tc.length)
+      ? '<div style="margin-top:9px;padding-top:9px;border-top:1px solid #F1F5F9;display:flex;flex-direction:column;gap:5px">'+s.ds_tc.map(t=>`<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#334155"><svg viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.2" style="width:14px;height:14px;flex:none">${TC_FLAG_SVG}</svg><b style="font-weight:700">${escHtml(t.ten||'')}</b><span style="color:#94A3B8">· vào ${escHtml(t.gio_vao||'--')}</span></div>`).join('')+'</div>'
+      : '';
+    const border = n>=2 ? 'border:1.5px solid #FCA5A5' : n===0 ? 'border:1px solid #FDE68A' : 'border:1px solid #E6EBF0';
+    return `<div style="background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:9px;${border}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14.5px;font-weight:700;color:#0F2E45">${escHtml(s.ten_ch||s.ma_ch)}</div>
+          <div style="font-size:11.5px;color:#94A3B8;margin-top:2px">${escHtml(s.ma_ch)}${s.khu_vuc&&s.khu_vuc!=='—'?' · '+escHtml(s.khu_vuc):''} · ${s.so_dang_ca||0} người trong ca</div>
+        </div>
+        ${badge}
+      </div>
+      ${tcLines}
+    </div>`;
+  }).join('');
+  body.innerHTML=html;
 }
