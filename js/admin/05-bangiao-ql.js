@@ -89,20 +89,16 @@ async function bgqlLoadSuVu(){
 }
 
 // [v16.4] Sự vụ "trễ": quá deadline mà chưa hoàn tất, HOẶC tạo >12h mà QL chưa phản hồi
+// [v17.43] Sự vụ "trễ" = CÒN CẦN XỬ LÝ (loại Chờ CH xác nhận/Hoàn tất/Hủy) + có hạn + đã quá hạn
 function bgqlLaTre(s){
-  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
-  const now = Date.now();
-  if (s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < now) return true;
-  if (!s.thoi_gian_phan_hoi && s.created_at){
-    const tuoiGio = (now - new Date(s.created_at).getTime()) / 3600000;
-    if (tuoiGio > 12) return true;
-  }
-  return false;
+  if (!s || ['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s.deadline_xu_ly) return false;
+  return new Date(s.deadline_xu_ly).getTime() < Date.now();
 }
 
 // [v16.78] Sự vụ "sắp hết hạn": còn mở, có deadline, CHƯA quá hạn, còn ≤ ngưỡng theo mức độ
 function bgqlSapHetHan(s){
-  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s || ['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
   if (!s.deadline_xu_ly) return false;
   const now = Date.now();
   const dl = new Date(s.deadline_xu_ly).getTime();
@@ -116,15 +112,16 @@ function bgqlRenderSuVuFilters(){
   const cont = document.getElementById('bgql-suvu-filters');
   if (!cont) return;
   const allRaw = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');  // [v17.21] trừ hủy — danh sách CH/khu vực đầy đủ cho dropdown
-  const all = bgqlGetFilteredSuVu({ skipStatus:true, skipMucDo:true });       // [v17.39] count đi theo bộ lọc CH/khu vực/thời gian
+  const all = bgqlGetFilteredSuVu({ skipStatus:true, skipMucDo:true });       // menu badge — theo CH/khu vực/thời gian
+  const allMd = (bgqlSuVuFilter.muc_do === 'all') ? all : all.filter(s => s.muc_do === bgqlSuVuFilter.muc_do);  // [v17.43] số đếm theo cả mức độ
   const open = all.filter(s => !['HOAN_TAT','HUY'].includes(s.trang_thai));
-  const _cMoi = all.filter(s => s.trang_thai === 'MOI_TAO').length;
-  const _cXuLy = all.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length;
-  const _cChoXN = all.filter(s => s.trang_thai === 'DA_XU_LY_XONG').length;
-  const _cXong = all.filter(s => s.trang_thai === 'HOAN_TAT').length;
-  const _cHuy = all.filter(s => s.trang_thai === 'HUY').length;
-  const _cTre = all.filter(bgqlLaTre).length;
-  const _cSap = all.filter(bgqlSapHetHan).length;
+  const _cMoi = allMd.filter(s => s.trang_thai === 'MOI_TAO').length;
+  const _cXuLy = allMd.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length;
+  const _cChoXN = allMd.filter(s => s.trang_thai === 'DA_XU_LY_XONG').length;
+  const _cXong = allMd.filter(s => s.trang_thai === 'HOAN_TAT').length;
+  const _cHuy = allMd.filter(s => s.trang_thai === 'HUY').length;
+  const _cTre = allMd.filter(bgqlLaTre).length;
+  const _cSap = allMd.filter(bgqlSapHetHan).length;
   const chList = [...new Map(allRaw.map(s => [s.ma_ch, s.ten_ch_snapshot||s.ma_ch])).entries()];
   const khuVucs = [...new Set(allRaw.map(s => s.khu_vuc).filter(k=>k))].sort();
   // [v17.40] Danh sách người xử lý (để lọc) — lấy từ toàn bộ, không phụ thuộc bộ lọc hiện tại
@@ -146,7 +143,7 @@ function bgqlRenderSuVuFilters(){
           <option value="CAN_THIET"${bgqlSuVuFilter.muc_do==='CAN_THIET'?' selected':''}>Cần thiết</option>
         </select>
         <select class="bg-tl-dropdown" onchange="bgqlSetFilterDD('trang_thai', this.value)">
-          <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả (${all.length})</option>
+          <option value="all"${bgqlSuVuFilter.trang_thai==='all'?' selected':''}>Tất cả (${allMd.length})</option>
           <option value="tre"${bgqlSuVuFilter.trang_thai==='tre'?' selected':''}>Cảnh báo trễ (${_cTre})</option>
           <option value="sap_het_han"${bgqlSuVuFilter.trang_thai==='sap_het_han'?' selected':''}>Sắp hết hạn (${_cSap})</option>
           <option value="moi_tao"${bgqlSuVuFilter.trang_thai==='moi_tao'?' selected':''}>Đã tạo (${_cMoi})</option>
@@ -231,10 +228,7 @@ function bgqlRenderSuVuFilters(){
   }
 
   const itabSV = document.getElementById('bgql-itab-suvu-c');
-  if (itabSV) {
-    if (open.length > 0) { itabSV.style.display = ''; itabSV.textContent = open.length; }
-    else itabSV.style.display = 'none';
-  }
+  if (itabSV) itabSV.style.display = 'none';  // [v17.43] bỏ số trên tab — không theo bộ lọc, gây nhầm
   const badge = document.getElementById('bgql-menu-badge');
   if (badge) {
     const urgentOpen = open.filter(s=>s.muc_do==='KHAN_CAP').length;
@@ -242,10 +236,7 @@ function bgqlRenderSuVuFilters(){
     else badge.style.display = 'none';
   }
   const sub = document.getElementById('bgql-suvu-count');
-  if (sub) {
-    if (open.length > 0) { sub.style.display=''; sub.textContent = open.length; }
-    else sub.style.display = 'none';
-  }
+  if (sub) sub.style.display = 'none';  // [v17.43] bỏ số trên tab
 }
 
 window.bgqlSetFilterDD = function(key, value){
@@ -513,7 +504,7 @@ function bgqlSuVuCardHtml(s){
   const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
   // [v13.34] Bỏ icon ⚠️ 🔴 📋 — chỉ dùng màu nền + chữ
   // Tag trạng thái: CHỈ hiển thị các status "kết thúc/cần action", bỏ DA_PHAN_HOI/DA_TIEP_NHAN/DANG_XU_LY
-  const stLbl = { MOI_TAO:'Mới tạo', HOAN_TAT:'Hoàn tất', HUY:'Đã hủy' }[s.trang_thai] || '';
+  const stLbl = { HOAN_TAT:'Hoàn tất', HUY:'Đã hủy' }[s.trang_thai] || '';
   const isOpen = !['HOAN_TAT','HUY'].includes(s.trang_thai);
   const accent = s.muc_do==='KHAN_CAP'?'#DC2626':s.muc_do==='QUAN_TRONG'?'#D97706':'#1B4965';
   
@@ -558,7 +549,6 @@ function bgqlSuVuCardHtml(s){
     ${checkbox}
     <div class="bgql-card-head">
       <span class="bgql-md-tag bgql-md-${s.muc_do||'CAN_THIET'}">${mdLbl}</span>
-      ${bgqlLaTre(s)?`<span class="bgql-tre-tag">Trễ</span>`:''}
       ${stLbl?`<span class="bgql-st-tag ${isOpen?'open':'closed'}">${stLbl}</span>`:''}
       ${bgqlSuVuAge(s)}
     </div>

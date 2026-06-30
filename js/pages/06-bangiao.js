@@ -934,14 +934,12 @@ function bgSuVuRenderFromCache(){
 
 // ── Helper "trễ" / "sắp hết hạn" (port từ bộ lọc admin) ──
 function bgLaTre(s){
-  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
-  const now = Date.now();
-  if (s.deadline_xu_ly && new Date(s.deadline_xu_ly).getTime() < now) return true;
-  if (!s.thoi_gian_phan_hoi && s.created_at && (now - new Date(s.created_at).getTime())/3600000 > 12) return true;
-  return false;
+  if (!s || ['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s.deadline_xu_ly) return false;
+  return new Date(s.deadline_xu_ly).getTime() < Date.now();
 }
 function bgSapHetHan(s){
-  if (!s || ['HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
+  if (!s || ['DA_XU_LY_XONG','HOAN_TAT','HUY'].includes(s.trang_thai)) return false;
   if (!s.deadline_xu_ly) return false;
   const now = Date.now();
   const dl = new Date(s.deadline_xu_ly).getTime();
