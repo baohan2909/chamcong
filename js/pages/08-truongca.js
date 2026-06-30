@@ -264,9 +264,8 @@ function tcAskRaCaTransfer(others, go, cancel){
       <div style="font-size:18px;font-weight:800;color:#0F2E45">Bạn đang là Trưởng ca</div>
       <button onclick="tcRaCaCancel()" style="border:none;background:#F1F5F9;width:32px;height:32px;border-radius:10px;font-size:18px;color:#64748B;cursor:pointer">×</button>
     </div>
-    <div style="font-size:12.5px;color:#64748B;margin-bottom:16px;line-height:1.5">Chuyển Trưởng ca cho người đang trong ca rồi ra ca, để cửa hàng không bị trống vai trò. Hoặc ra ca luôn.</div>
+    <div style="font-size:12.5px;color:#64748B;margin-bottom:16px;line-height:1.5"><b style="color:#C2410C">Bắt buộc chuyển Trưởng ca trước khi ra ca.</b> Chọn người đang trong ca để nhận — cửa hàng không được trống vai trò Trưởng ca.</div>
     ${list}
-    <button onclick="tcRaCaSkip()" style="width:100%;padding:13px;border:1.5px solid #E2E8F0;border-radius:13px;background:#fff;color:#475569;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px">Ra ca, không chuyển</button>
   </div>`;
   document.body.appendChild(root);
 }
