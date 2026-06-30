@@ -624,8 +624,18 @@ async function taiLichSuCC(){
     window._doiSaleMap = doiMap;
 
     const loaiLabel = { VAO_CA:'Vào ca', RA_CA:'Ra ca', VAO_GIUA_CA:'Vào giữa ca', RA_GIUA_CA:'Ra giữa ca' };
-    // [v13.99] Item 1 lần chấm (gọn, dùng bên trong nhóm)
-    const _renderCCItem = (r) => {
+    // [#5] Tên đội SALE / cơ động của CHÍNH log này (per-log, KHÔNG gom theo NV-ngày)
+    const _logSaleTeamName = (r) => {
+      const di = r.device_info || '';
+      let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
+      if (m) return m[1].trim();
+      const ghi = r.ghi_chu || '';
+      m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
+      if (m) return m[1].trim();
+      return null;
+    };
+    // [v13.99] Item 1 lần chấm (gọn). allowLive=true CHỈ cho log mới nhất của HÔM NAY (#1/#2)
+    const _renderCCItem = (r, allowLive) => {
       const gio = r.thoi_gian ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}) : '--:--';
       let xnBadge;
       if (_ccIsHopLe(r.xac_nhan)) {
@@ -636,18 +646,19 @@ async function taiLichSuCC(){
         const extra = isStandard ? '' : ` <span style="background:#FECACA;color:#7F1D1D;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;margin-left:3px" title="Giá trị xac_nhan thật">${escHtml(r.xac_nhan || 'NULL')}</span>`;
         xnBadge = `<span style="background:#FEE2E2;color:#B91C1C;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">KHÔNG HỢP LỆ</span>${extra}`;
       }
-      const ttoBadge = r.trang_thai_o === 'DANG_LAM_VIEC'
-        ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">ĐANG LV</span>'
-        : (r.trang_thai_o === 'RA_GIUA_CA' ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">RA GIỮA</span>' : '');
+      const ttoBadge = !allowLive ? ''
+        : (r.trang_thai_o === 'DANG_LAM_VIEC'
+          ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">ĐANG LV</span>'
+          : (r.trang_thai_o === 'RA_GIUA_CA' ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">RA GIỮA</span>' : ''));
       const autoTag = r.nguon === 'AUTO_CLOSE'
         ? ' <span style="background:#F0FDFA;color:#0F766E;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700">AUTO</span>' : '';
-      const _isDoiRec = /đội\s*sale/i.test(r.ten_ch_snapshot || '');
-      const _doiTen = doiMap[r.ma_nv + ':' + r.ngay];
+      // [#5] Nhãn đội/cơ động theo CHÍNH log này — log thường tại CH chỉ hiện tên CH
+      const _teamName = _logSaleTeamName(r);
       let tenCH;
-      if (_isDoiRec) {
+      if (/đội\s*sale/i.test(r.ten_ch_snapshot || '')) {
         tenCH = `<span style="color:#0F766E;font-weight:600">${escHtml(r.ten_ch_snapshot || '')}</span>`;
-      } else if (_doiTen && r.ten_ch_snapshot) {
-        tenCH = `<span style="color:#0F766E;font-weight:600">${escHtml(_doiTen)}</span> - ${escHtml(r.ten_ch_snapshot)}`;
+      } else if (_teamName && r.ten_ch_snapshot) {
+        tenCH = `<span style="color:#0F766E;font-weight:600">${escHtml(_teamName)}</span> - ${escHtml(r.ten_ch_snapshot)}`;
       } else {
         tenCH = escHtml(r.ten_ch_snapshot || '');
       }
@@ -669,6 +680,7 @@ async function taiLichSuCC(){
       _ccMap[k].push(r);
     });
     const _isAdminCC = SESSION && (SESSION.vaiTro === 'QLNS' || SESSION.vaiTro === 'ADMIN');
+    const _todayStr = _toDateStr(new Date()); // [#1/#2] ngày hôm nay để giới hạn "đang làm việc"
 
     el.innerHTML = warning + _ccOrder.map(k => {
       const items = _ccMap[k];
@@ -712,7 +724,7 @@ async function taiLichSuCC(){
         </div>
         ${gAction}
         <div class="lsd-group-body" id="${gid}_body" style="display:none">
-          ${items.map(_renderCCItem).join('')}
+          ${items.map((r, _i) => _renderCCItem(r, _i === 0 && ngay === _todayStr)).join('')}
         </div>
       </div>`;
     }).join('');

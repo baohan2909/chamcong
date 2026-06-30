@@ -1410,6 +1410,14 @@ async function adm2LoadSuaLogBody() {
         if (g) { (cbByGio[g] = cbByGio[g] || []).push(cb); }
       });
     } catch (e) {}
+    // [#6] Lấy truong_ca hiện tại của từng log → default checkbox TC
+    let _tcMap = {};
+    try {
+      const { data: _tcRows } = await supa.from('cham_cong')
+        .select('id, truong_ca')
+        .eq('ma_nv', _suaLogState.maNV).eq('ngay', _suaLogState.ngay);
+      (_tcRows || []).forEach(r => { _tcMap[r.id] = !!r.truong_ca; });
+    } catch (e) {}
     const LOAI_OPTIONS = ['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'];
     const LOAI_TEXT = {'VAO_CA':'Vào ca','RA_GIUA_CA':'Ra giữa ca','VAO_GIUA_CA':'Vào giữa ca','RA_CA':'Ra ca'};
 
@@ -1468,6 +1476,7 @@ async function adm2LoadSuaLogBody() {
                 <input type="hidden" id="sua-ch-${l.id}" value="${adm2Esc(l.maCH || '')}">
                 <div id="sua-ch-sug-${l.id}" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.15);margin-top:4px;max-height:240px;overflow-y:auto;z-index:100;min-width:280px"></div>
               </div>
+              <label title="Đánh dấu trưởng ca" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0F766E;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-tc-${l.id}" ${_tcMap[l.id]?'checked':''} style="width:15px;height:15px;accent-color:#0F766E;cursor:pointer">TC</label>
               <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
               <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
             </div>
@@ -1547,11 +1556,13 @@ async function adm2SuaLog(id, ngay) {
 
   const thoiGian = ngay + 'T' + gio + ':00+07:00';
   try {
+    const _tcEl = document.getElementById('sua-tc-' + id);
     const d = await adm2Rpc('fn_admin_sua_cham_cong', {
       p_admin: SESSION.ma, p_id: id,
       p_thoi_gian: thoiGian, p_loai: loai,
       p_ma_ch: maChFinal, p_ly_do: lyDoFinal,
-      p_nguon: isCoDong ? 'CO_DONG' : null
+      p_nguon: isCoDong ? 'CO_DONG' : null,
+      p_truong_ca: _tcEl ? _tcEl.checked : null
     });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
     _suaLogState.daSuaGio = true;
