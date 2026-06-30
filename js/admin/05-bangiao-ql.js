@@ -144,7 +144,7 @@ function bgqlRenderSuVuFilters(){
         </select>
         <button class="bgql-nhom-toggle" id="bgql-st-toggle" onclick="bgqlToggleStatusPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <span>${(function(){ var sel=Array.isArray(bgqlSuVuFilter.trang_thai)?bgqlSuVuFilter.trang_thai:[]; if(!sel.length) return 'Tất cả ('+allMd.length+')'; var m={tre:'Cảnh báo trễ',sap_het_han:'Sắp hết hạn',moi_tao:'Đã tạo',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất'}; return sel.length===1?(m[sel[0]]||sel[0]):(sel.length+' trạng thái'); })()}</span>
+          <span>${(function(){ var sel=Array.isArray(bgqlSuVuFilter.trang_thai)?bgqlSuVuFilter.trang_thai:[]; if(!sel.length) return 'Tất cả ('+allMd.length+')'; var m={tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'}; return sel.length===1?(m[sel[0]]||sel[0]):(sel.length+' trạng thái'); })()}</span>
           <span class="bgql-nhom-badge" id="bgql-st-badge"${(Array.isArray(bgqlSuVuFilter.trang_thai)&&bgqlSuVuFilter.trang_thai.length)?'':' style="display:none"'}>${(Array.isArray(bgqlSuVuFilter.trang_thai)?bgqlSuVuFilter.trang_thai.length:0)||''}</span>
           <svg class="bgql-nhom-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -354,9 +354,7 @@ window.bgqlSetFilter = function(k, v){
 function bgqlMatchStatusOpt(s, opt){
   switch(opt){
     case 'tre': return bgqlLaTre(s);
-    case 'sap_het_han': return bgqlSapHetHan(s);
-    case 'moi_tao': return s.trang_thai === 'MOI_TAO';
-    case 'dang_xu_ly': return ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai);
+    case 'dang_xu_ly': return ['MOI_TAO','DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai);
     case 'cho_ch_xac_nhan': return s.trang_thai === 'DA_XU_LY_XONG';
     case 'hoan_tat': return s.trang_thai === 'HOAN_TAT';
     case 'huy': return s.trang_thai === 'HUY';
@@ -365,8 +363,10 @@ function bgqlMatchStatusOpt(s, opt){
 }
 function bgqlGetFilteredSuVu(opts){
   opts = opts || {};
-  // [v17.21] Ẩn sự vụ ĐÃ HỦY ở mọi tài khoản — không hiển thị nữa
-  let arr = (bgqlSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
+  // [v17.49] Ẩn ĐÃ HỦY mặc định; chỉ hiện khi tick lọc "Đã hủy" (hoặc khi đếm số includeHuy)
+  const _selHuy = Array.isArray(bgqlSuVuFilter.trang_thai) ? bgqlSuVuFilter.trang_thai : [];
+  const _showHuy = opts.includeHuy || (!opts.skipStatus && _selHuy.includes('huy'));
+  let arr = (bgqlSuVuCache || []).filter(s => _showHuy ? true : s.trang_thai !== 'HUY');
   // [v13.78] Lọc theo 5 trạng thái rõ ràng
   const _tt = opts.skipStatus ? [] : bgqlSuVuFilter.trang_thai;
   if (Array.isArray(_tt)) {
@@ -2934,15 +2934,14 @@ window.bgqlToggleStatusPanel = function(){
   if (show){ const np=document.getElementById('bgql-nhom-panel'); if(np) np.style.display='none'; const nt=document.getElementById('bgql-nhom-toggle'); if(nt) nt.classList.remove('open'); }
 };
 function bgqlRenderStatusPanel(){
-  const base = bgqlGetFilteredSuVu({ skipStatus:true });
+  const base = bgqlGetFilteredSuVu({ skipStatus:true, includeHuy:true });
   const sel = Array.isArray(bgqlSuVuFilter.trang_thai) ? bgqlSuVuFilter.trang_thai : [];
   const opts = [
-    ['tre','Cảnh báo trễ', base.filter(bgqlLaTre).length],
-    ['sap_het_han','Sắp hết hạn', base.filter(bgqlSapHetHan).length],
-    ['moi_tao','Đã tạo', base.filter(s=>s.trang_thai==='MOI_TAO').length],
-    ['dang_xu_ly','Đang xử lý', base.filter(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length],
+    ['dang_xu_ly','Đang xử lý', base.filter(s=>['MOI_TAO','DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length],
     ['cho_ch_xac_nhan','Chờ CH xác nhận', base.filter(s=>s.trang_thai==='DA_XU_LY_XONG').length],
+    ['tre','Quá hạn', base.filter(bgqlLaTre).length],
     ['hoan_tat','Hoàn tất', base.filter(s=>s.trang_thai==='HOAN_TAT').length],
+    ['huy','Đã hủy', base.filter(s=>s.trang_thai==='HUY').length],
   ];
   return opts.map(([v,lbl,cnt]) =>
     `<label class="bgql-hm-con"><input type="checkbox" ${sel.includes(v)?'checked':''} onchange="bgqlToggleStatusOpt('${v}')"><span>${lbl} (${cnt})</span></label>`
@@ -2962,7 +2961,7 @@ function bgqlRefreshStatusPanel(){
   const b = document.getElementById('bgql-st-badge');
   if (b){ if (sel.length){ b.style.display=''; b.textContent = sel.length; } else b.style.display='none'; }
   const t = document.getElementById('bgql-st-toggle');
-  if (t){ const lbl = t.querySelector('span:not(.bgql-nhom-badge)'); if (lbl){ const m={tre:'Cảnh báo trễ',sap_het_han:'Sắp hết hạn',moi_tao:'Đã tạo',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất'}; lbl.textContent = !sel.length ? ('Tất cả ('+bgqlGetFilteredSuVu({skipStatus:true}).length+')') : (sel.length===1 ? (m[sel[0]]||sel[0]) : sel.length+' trạng thái'); } }
+  if (t){ const lbl = t.querySelector('span:not(.bgql-nhom-badge)'); if (lbl){ const m={tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'}; lbl.textContent = !sel.length ? ('Tất cả ('+bgqlGetFilteredSuVu({skipStatus:true}).length+')') : (sel.length===1 ? (m[sel[0]]||sel[0]) : sel.length+' trạng thái'); } }
 }
 // [v13.71] Cây hạng mục 2 cấp: 5 nhóm lớn → các mục con (món tài sản / loại tiền / nhóm hàng)
 function bgqlBuildHmTree(){
