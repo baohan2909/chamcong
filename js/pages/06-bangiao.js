@@ -992,10 +992,11 @@ function bgSvSortData(data){
     const now = Date.now();
     arr.sort((a,b)=>{ const ga=a.deadline_xu_ly?Math.abs(new Date(a.deadline_xu_ly).getTime()-now):Infinity, gb=b.deadline_xu_ly?Math.abs(new Date(b.deadline_xu_ly).getTime()-now):Infinity; return ga!==gb?ga-gb:(new Date(b.created_at)-new Date(a.created_at)); });
   } else {
-    // [v17.46] "Mức độ" = ưu tiên theo hạn: quá hạn nhiều → ít → ngày còn lại ít → nhiều
+    // [v17.47] "Mức độ" = ưu tiên theo hạn: việc CÒN HẠN lên đầu; ĐÃ XONG / Chờ CH xuống cuối
     const now = Date.now();
     const md = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
-    arr.sort((a,b)=>{ const ra=a.deadline_xu_ly?(new Date(a.deadline_xu_ly).getTime()-now):Infinity, rb=b.deadline_xu_ly?(new Date(b.deadline_xu_ly).getTime()-now):Infinity; if(ra!==rb) return ra-rb; const da=(md[a.muc_do]??9), db=(md[b.muc_do]??9); return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
+    const done = s => ['DA_XU_LY_XONG','HOAN_TAT'].includes(s.trang_thai);
+    arr.sort((a,b)=>{ const ad=done(a), bd=done(b); if(ad!==bd) return ad?1:-1; if(!ad){ const ra=a.deadline_xu_ly?(new Date(a.deadline_xu_ly).getTime()-now):Infinity, rb=b.deadline_xu_ly?(new Date(b.deadline_xu_ly).getTime()-now):Infinity; if(ra!==rb) return ra-rb; } const da=(md[a.muc_do]??9), db=(md[b.muc_do]??9); return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
   }
   return arr;
 }
