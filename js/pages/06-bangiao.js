@@ -858,7 +858,7 @@ async function bgRenderSuVu(){
     // [B1] Cơ động: lấy CẢ KHU VỰC (mọi sự vụ đang mở) — ai trong vùng cũng xử lý được
     let reqs;
     if (_bgLaCoDong()){
-      reqs = [ supa.rpc('fn_su_vu_co_dong_list', { p_ma_nv: ma }) ];
+      reqs = [ supa.rpc('fn_su_vu_co_dong_all', { p_ma_nv: ma }) ];
     } else {
       // Nguồn 1: sự vụ ĐƯỢC GIAO XỬ LÝ cho mình (mọi cửa hàng)
       reqs = [ supa.rpc('fn_su_vu_list', { p_nguoi_xu_ly: ma, p_limit: 100000, p_offset: 0 }) ];
@@ -955,12 +955,16 @@ function bgSapHetHan(s){
 function bgSvApplyFilter(data){
   const f = window._bgSvFilter || {};
   let out = data;
+  const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
+  if (f.scope === 'mine') out = out.filter(s => (s.nguoi_xu_ly_ma||'') === ma);
+  else if (f.scope === 'done') out = out.filter(s => s.trang_thai === 'HOAN_TAT');
   if (f.muc_do && f.muc_do !== 'all') out = out.filter(s => s.muc_do === f.muc_do);
   const tt = f.trang_thai;
   if (tt === 'tre') out = out.filter(bgLaTre);
   else if (tt === 'sap_het_han') out = out.filter(bgSapHetHan);
   else if (tt === 'moi_tao') out = out.filter(s => s.trang_thai === 'MOI_TAO');
-  else if (tt === 'dang_xu_ly') out = out.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai));
+  else if (tt === 'dang_xu_ly') out = out.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai));
+  else if (tt === 'cho_ch_xac_nhan') out = out.filter(s => s.trang_thai === 'DA_XU_LY_XONG');
   else if (tt === 'hoan_tat') out = out.filter(s => s.trang_thai === 'HOAN_TAT');
   if (f.time && f.time !== 'all'){
     const now = new Date();
@@ -986,6 +990,8 @@ function bgSvSortData(data){
     arr.sort((a,b)=>{ const c=(a.ten_ch_snapshot||a.ma_ch||'').localeCompare(b.ten_ch_snapshot||b.ma_ch||'','vi'); return c!==0?c:(new Date(b.created_at)-new Date(a.created_at)); });
   } else if (sort === 'thoi_gian'){
     arr.sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+  } else if (sort === 'thoi_han'){
+    arr.sort((a,b)=>{ const da=a.deadline_xu_ly?new Date(a.deadline_xu_ly).getTime():Infinity, db=b.deadline_xu_ly?new Date(b.deadline_xu_ly).getTime():Infinity; return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
   } else {
     const md = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
     arr.sort((a,b)=>{ const da=(md[a.muc_do]??9), db=(md[b.muc_do]??9); return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
@@ -994,10 +1000,10 @@ function bgSvSortData(data){
 }
 
 function bgSvFilterBarHtml(){
-  const f = window._bgSvFilter = window._bgSvFilter || { muc_do:'all', trang_thai:'all', time:'all', from:'', to:'', store:'', sort:'muc_do' };
+  const f = window._bgSvFilter = window._bgSvFilter || { scope:'all', muc_do:'all', trang_thai:'all', time:'all', from:'', to:'', store:'', sort:'muc_do' };
   const all = (window._bgSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
   const _c = fn => all.filter(fn).length;
-  const cMoi=_c(s=>s.trang_thai==='MOI_TAO'), cXuLy=_c(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai)), cXong=_c(s=>s.trang_thai==='HOAN_TAT'), cTre=_c(bgLaTre), cSap=_c(bgSapHetHan);
+  const cMoi=_c(s=>s.trang_thai==='MOI_TAO'), cXuLy=_c(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)), cChoXN=_c(s=>s.trang_thai==='DA_XU_LY_XONG'), cXong=_c(s=>s.trang_thai==='HOAN_TAT'), cTre=_c(bgLaTre), cSap=_c(bgSapHetHan);
   const stores = Array.from(new Set(all.map(s=>s.ten_ch_snapshot||s.ma_ch).filter(Boolean))).sort();
   const opts = stores.map(n=>`<option value="${escHtml(n)}"></option>`).join('');
   const sel = 'flex:1;min-width:0;border:1px solid #D1D5DB;border-radius:9px;padding:8px 10px;font-size:12.5px;background:#fff;color:#334155;cursor:pointer';
@@ -1009,12 +1015,15 @@ function bgSvFilterBarHtml(){
     </div>` : '';
   return `<div style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px">
     <div style="display:flex;gap:8px">
+      <select onchange="bgSvSetField('scope',this.value)" style="${sel}">${o('all',f.scope,'Tất cả sự vụ')}${o('mine',f.scope,'Sự vụ của tôi')}${o('done',f.scope,'Sự vụ hoàn tất')}</select>
+    </div>
+    <div style="display:flex;gap:8px">
       <select onchange="bgSvSetField('muc_do',this.value)" style="${sel}">${o('all',f.muc_do,'Mức độ: Tất cả')}${o('KHAN_CAP',f.muc_do,'Khẩn cấp')}${o('QUAN_TRONG',f.muc_do,'Quan trọng')}${o('CAN_THIET',f.muc_do,'Cần thiết')}</select>
-      <select onchange="bgSvSetField('trang_thai',this.value)" style="${sel}">${o('all',f.trang_thai,'Tất cả ('+all.length+')')}${o('tre',f.trang_thai,'Cảnh báo trễ ('+cTre+')')}${o('sap_het_han',f.trang_thai,'Sắp hết hạn ('+cSap+')')}${o('moi_tao',f.trang_thai,'Đã tạo ('+cMoi+')')}${o('dang_xu_ly',f.trang_thai,'Đang xử lý ('+cXuLy+')')}${o('hoan_tat',f.trang_thai,'Hoàn tất ('+cXong+')')}</select>
+      <select onchange="bgSvSetField('trang_thai',this.value)" style="${sel}">${o('all',f.trang_thai,'Tất cả ('+all.length+')')}${o('tre',f.trang_thai,'Cảnh báo trễ ('+cTre+')')}${o('sap_het_han',f.trang_thai,'Sắp hết hạn ('+cSap+')')}${o('moi_tao',f.trang_thai,'Đã tạo ('+cMoi+')')}${o('dang_xu_ly',f.trang_thai,'Đang xử lý ('+cXuLy+')')}${o('cho_ch_xac_nhan',f.trang_thai,'Chờ CH xác nhận ('+cChoXN+')')}${o('hoan_tat',f.trang_thai,'Hoàn tất ('+cXong+')')}</select>
     </div>
     <div style="display:flex;gap:8px">
       <select onchange="bgSvSetField('time',this.value)" style="${sel}">${o('all',f.time,'Mọi lúc')}${o('today',f.time,'Hôm nay')}${o('7d',f.time,'7 ngày qua')}${o('30d',f.time,'30 ngày qua')}${o('custom',f.time,'Khoảng ngày')}</select>
-      <select onchange="bgSvSetField('sort',this.value)" style="${sel}">${o('muc_do',f.sort,'Sắp: Mức độ')}${o('cua_hang',f.sort,'Sắp: Cửa hàng')}${o('thoi_gian',f.sort,'Sắp: Ngày gửi')}</select>
+      <select onchange="bgSvSetField('sort',this.value)" style="${sel}">${o('muc_do',f.sort,'Sắp: Mức độ')}${o('cua_hang',f.sort,'Sắp: Cửa hàng')}${o('thoi_gian',f.sort,'Sắp: Ngày gửi')}${o('thoi_han',f.sort,'Sắp: Thời hạn')}</select>
     </div>
     ${rangeRow}
     <div style="display:flex;gap:6px;align-items:center">
