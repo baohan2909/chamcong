@@ -402,9 +402,11 @@ function bgqlRenderSuVuList(){
       return new Date(b.created_at) - new Date(a.created_at);
     }
     if (bgqlSuVuSort === 'thoi_han') {
-      const da = a.deadline_xu_ly ? new Date(a.deadline_xu_ly).getTime() : Infinity;
-      const db = b.deadline_xu_ly ? new Date(b.deadline_xu_ly).getTime() : Infinity;
-      if (da !== db) return da - db;
+      // [v17.44] "Thời hạn còn lại" = độ gấp: sắp/vừa tới hạn lên đầu, quá hạn lâu & còn xa xuống cuối
+      const now = Date.now();
+      const ga = a.deadline_xu_ly ? Math.abs(new Date(a.deadline_xu_ly).getTime() - now) : Infinity;
+      const gb = b.deadline_xu_ly ? Math.abs(new Date(b.deadline_xu_ly).getTime() - now) : Infinity;
+      if (ga !== gb) return ga - gb;
       return new Date(b.created_at) - new Date(a.created_at);
     }
     const mdOrder = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
@@ -518,10 +520,10 @@ function bgqlSuVuCardHtml(s){
     actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Phản hồi & xử lý</button>
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlHuy('${s.id}')">Hủy</button>`;
   } else if (isProcessing) {
-    actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Cập nhật phản hồi</button>
+    actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Phản hồi</button>
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}','xl')">Đổi người</button>
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}','deadline')">Gia hạn</button>
-               <button class="bgql-act bgql-act-success" onclick="event.stopPropagation();bgqlHoanTat('${s.id}')">Đóng (hoàn tất)</button>`;
+               <button class="bgql-act bgql-act-success" onclick="event.stopPropagation();bgqlHoanTat('${s.id}')">Hoàn tất</button>`;
   }
 
   let deadline = '';
