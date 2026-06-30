@@ -950,20 +950,17 @@ function bgSapHetHan(s){
 }
 
 // [v17.21] Bộ lọc đầy đủ giống admin: mức độ · trạng thái · thời gian · cửa hàng/khu vực
-function bgSvApplyFilter(data){
+function bgSvApplyFilter(data, opts){
   const f = window._bgSvFilter || {};
   let out = data;
   const ma = (typeof SESSION!=='undefined' && SESSION) ? SESSION.ma : '';
   if (f.scope === 'mine') out = out.filter(s => (s.nguoi_xu_ly_ma||'') === ma);
   else if (f.scope === 'done') out = out.filter(s => s.trang_thai === 'HOAN_TAT');
   if (f.muc_do && f.muc_do !== 'all') out = out.filter(s => s.muc_do === f.muc_do);
-  const tt = f.trang_thai;
-  if (tt === 'tre') out = out.filter(bgLaTre);
-  else if (tt === 'sap_het_han') out = out.filter(bgSapHetHan);
-  else if (tt === 'moi_tao') out = out.filter(s => s.trang_thai === 'MOI_TAO');
-  else if (tt === 'dang_xu_ly') out = out.filter(s => ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai));
-  else if (tt === 'cho_ch_xac_nhan') out = out.filter(s => s.trang_thai === 'DA_XU_LY_XONG');
-  else if (tt === 'hoan_tat') out = out.filter(s => s.trang_thai === 'HOAN_TAT');
+  if (!(opts && opts.skipStatus)){
+    const tt = Array.isArray(f.trang_thai) ? f.trang_thai : [];
+    if (tt.length) out = out.filter(s => tt.some(o => bgSvMatchStatusOpt(s, o)));
+  }
   if (f.time && f.time !== 'all'){
     const now = new Date();
     let from=null, to=null;
@@ -1001,7 +998,7 @@ function bgSvSortData(data){
 }
 
 function bgSvFilterBarHtml(){
-  const f = window._bgSvFilter = window._bgSvFilter || { scope:'all', muc_do:'all', trang_thai:'all', time:'all', from:'', to:'', store:'', sort:'muc_do' };
+  const f = window._bgSvFilter = window._bgSvFilter || { scope:'all', muc_do:'all', trang_thai:[], time:'all', from:'', to:'', store:'', sort:'muc_do' };
   const all = (window._bgSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
   const _c = fn => all.filter(fn).length;
   const cMoi=_c(s=>s.trang_thai==='MOI_TAO'), cXuLy=_c(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)), cChoXN=_c(s=>s.trang_thai==='DA_XU_LY_XONG'), cXong=_c(s=>s.trang_thai==='HOAN_TAT'), cTre=_c(bgLaTre), cSap=_c(bgSapHetHan);
@@ -1009,6 +1006,9 @@ function bgSvFilterBarHtml(){
   const opts = stores.map(n=>`<option value="${escHtml(n)}"></option>`).join('');
   const sel = 'flex:1;min-width:0;border:1px solid #D1D5DB;border-radius:9px;padding:8px 10px;font-size:12.5px;background:#fff;color:#334155;cursor:pointer';
   const o = (v,cur,lbl)=>`<option value="${v}"${cur===v?' selected':''}>${lbl}</option>`;
+  const _stMap = {tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'};
+  const _stSel = Array.isArray(f.trang_thai) ? f.trang_thai : [];
+  const _stLbl = !_stSel.length ? ('Tất cả ('+all.length+')') : (_stSel.length===1 ? (_stMap[_stSel[0]]||_stSel[0]) : (_stSel.length+' trạng thái'));
   const rangeRow = f.time==='custom' ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <input type="date" value="${escHtml(f.from||'')}" onchange="bgSvSetField('from',this.value)" style="border:1px solid #D1D5DB;border-radius:8px;padding:6px 9px;font-size:12.5px">
       <span style="color:#94A3B8;font-size:12px">đến</span>
@@ -1020,7 +1020,16 @@ function bgSvFilterBarHtml(){
     </div>
     <div style="display:flex;gap:8px">
       <select onchange="bgSvSetField('muc_do',this.value)" style="${sel}">${o('all',f.muc_do,'Mức độ: Tất cả')}${o('KHAN_CAP',f.muc_do,'Khẩn cấp')}${o('QUAN_TRONG',f.muc_do,'Quan trọng')}${o('CAN_THIET',f.muc_do,'Cần thiết')}</select>
-      <select onchange="bgSvSetField('trang_thai',this.value)" style="${sel}">${o('all',f.trang_thai,'Tất cả ('+all.length+')')}${o('tre',f.trang_thai,'Cảnh báo trễ ('+cTre+')')}${o('sap_het_han',f.trang_thai,'Sắp hết hạn ('+cSap+')')}${o('moi_tao',f.trang_thai,'Đã tạo ('+cMoi+')')}${o('dang_xu_ly',f.trang_thai,'Đang xử lý ('+cXuLy+')')}${o('cho_ch_xac_nhan',f.trang_thai,'Chờ CH xác nhận ('+cChoXN+')')}${o('hoan_tat',f.trang_thai,'Hoàn tất ('+cXong+')')}</select>
+      <button class="bgql-nhom-toggle${window._bgSvStPanelOpen?' open':''}" id="bg-sv-st-toggle" onclick="bgSvToggleStatusPanel()" style="flex:1;min-width:0;justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span>${_stLbl}</span>
+        <span class="bgql-nhom-badge" id="bg-sv-st-badge"${_stSel.length?'':' style="display:none"'}>${_stSel.length?bgSvApplyFilter(all).length:''}</span>
+        <svg class="bgql-nhom-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="bgql-nhom-panel" id="bg-sv-st-panel" style="display:${window._bgSvStPanelOpen?'flex':'none'}">
+      ${bgSvRenderStatusPanel()}
+      <button class="bgql-nhom-done" onclick="bgSvToggleStatusPanel()">Xong</button>
     </div>
     <div style="display:flex;gap:8px">
       <select onchange="bgSvSetField('time',this.value)" style="${sel}">${o('all',f.time,'Mọi lúc')}${o('today',f.time,'Hôm nay')}${o('7d',f.time,'7 ngày qua')}${o('30d',f.time,'30 ngày qua')}${o('custom',f.time,'Khoảng ngày')}</select>
@@ -1036,6 +1045,46 @@ function bgSvFilterBarHtml(){
 }
 
 window.bgSvSetField = function(k,v){ (window._bgSvFilter=window._bgSvFilter||{})[k]=v; bgSuVuRenderFromCache(); };
+// [v17.50] Bộ lọc trạng thái chọn nhiều cho cơ động — giống QL bàn giao
+function bgSvMatchStatusOpt(s, opt){
+  switch(opt){
+    case 'tre': return bgLaTre(s);
+    case 'dang_xu_ly': return ['MOI_TAO','DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai);
+    case 'cho_ch_xac_nhan': return s.trang_thai === 'DA_XU_LY_XONG';
+    case 'hoan_tat': return s.trang_thai === 'HOAN_TAT';
+    case 'huy': return s.trang_thai === 'HUY';
+    default: return true;
+  }
+}
+function bgSvRenderStatusPanel(){
+  const cache = window._bgSuVuCache || [];
+  const base = bgSvApplyFilter(cache.filter(s=>s.trang_thai!=='HUY'), { skipStatus:true });
+  const sel = Array.isArray((window._bgSvFilter||{}).trang_thai) ? window._bgSvFilter.trang_thai : [];
+  const opts = [
+    ['dang_xu_ly','Đang xử lý', base.filter(s=>['MOI_TAO','DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)).length],
+    ['cho_ch_xac_nhan','Chờ CH xác nhận', base.filter(s=>s.trang_thai==='DA_XU_LY_XONG').length],
+    ['tre','Quá hạn', base.filter(bgLaTre).length],
+    ['hoan_tat','Hoàn tất', base.filter(s=>s.trang_thai==='HOAN_TAT').length],
+    ['huy','Đã hủy', cache.filter(s=>s.trang_thai==='HUY').length],
+  ];
+  return opts.map(([v,lbl,cnt]) =>
+    `<label class="bgql-hm-con"><input type="checkbox" ${sel.includes(v)?'checked':''} onchange="bgSvToggleStatusOpt('${v}')"><span>${lbl} (${cnt})</span></label>`
+  ).join('');
+}
+window.bgSvToggleStatusPanel = function(){
+  window._bgSvStPanelOpen = !window._bgSvStPanelOpen;
+  const p = document.getElementById('bg-sv-st-panel');
+  const t = document.getElementById('bg-sv-st-toggle');
+  if (p) p.style.display = window._bgSvStPanelOpen ? 'flex' : 'none';
+  if (t) t.classList.toggle('open', window._bgSvStPanelOpen);
+};
+window.bgSvToggleStatusOpt = function(v){
+  const f = window._bgSvFilter = window._bgSvFilter || {};
+  if (!Array.isArray(f.trang_thai)) f.trang_thai = [];
+  const i = f.trang_thai.indexOf(v);
+  if (i >= 0) f.trang_thai.splice(i,1); else f.trang_thai.push(v);
+  bgSuVuRenderFromCache();
+};
 // Tương thích lời gọi cũ (nếu còn nơi khác gọi)
 window.bgSvSetDate  = function(d){ bgSvSetField('time', d); };
 window.bgSvSetRange = function(k,v){ bgSvSetField(k, v); };

@@ -145,7 +145,7 @@ function bgqlRenderSuVuFilters(){
         <button class="bgql-nhom-toggle" id="bgql-st-toggle" onclick="bgqlToggleStatusPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           <span>${(function(){ var sel=Array.isArray(bgqlSuVuFilter.trang_thai)?bgqlSuVuFilter.trang_thai:[]; if(!sel.length) return 'Tất cả ('+allMd.length+')'; var m={tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'}; return sel.length===1?(m[sel[0]]||sel[0]):(sel.length+' trạng thái'); })()}</span>
-          <span class="bgql-nhom-badge" id="bgql-st-badge"${(Array.isArray(bgqlSuVuFilter.trang_thai)&&bgqlSuVuFilter.trang_thai.length)?'':' style="display:none"'}>${(Array.isArray(bgqlSuVuFilter.trang_thai)?bgqlSuVuFilter.trang_thai.length:0)||''}</span>
+          <span class="bgql-nhom-badge" id="bgql-st-badge"${(Array.isArray(bgqlSuVuFilter.trang_thai)&&bgqlSuVuFilter.trang_thai.length)?'':' style="display:none"'}>${(Array.isArray(bgqlSuVuFilter.trang_thai)&&bgqlSuVuFilter.trang_thai.length)?bgqlGetFilteredSuVu().length:''}</span>
           <svg class="bgql-nhom-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <button class="bgql-nhom-toggle" id="bgql-nhom-toggle" onclick="bgqlToggleNhomPanel()">
@@ -2959,7 +2959,7 @@ function bgqlRefreshStatusPanel(){
   if (p) p.innerHTML = bgqlRenderStatusPanel() + '<button class="bgql-nhom-done" onclick="bgqlToggleStatusPanel()">Xong</button>';
   const sel = Array.isArray(bgqlSuVuFilter.trang_thai) ? bgqlSuVuFilter.trang_thai : [];
   const b = document.getElementById('bgql-st-badge');
-  if (b){ if (sel.length){ b.style.display=''; b.textContent = sel.length; } else b.style.display='none'; }
+  if (b){ if (sel.length){ b.style.display=''; b.textContent = bgqlGetFilteredSuVu().length; } else b.style.display='none'; }
   const t = document.getElementById('bgql-st-toggle');
   if (t){ const lbl = t.querySelector('span:not(.bgql-nhom-badge)'); if (lbl){ const m={tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'}; lbl.textContent = !sel.length ? ('Tất cả ('+bgqlGetFilteredSuVu({skipStatus:true}).length+')') : (sel.length===1 ? (m[sel[0]]||sel[0]) : sel.length+' trạng thái'); } }
 }
