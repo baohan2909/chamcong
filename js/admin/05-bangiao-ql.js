@@ -427,11 +427,6 @@ function bgqlRenderSuVuList(){
       if (ga !== gb) return ga - gb;
       return new Date(b.created_at) - new Date(a.created_at);
     }
-    // [v17.46] "Mức độ" = ưu tiên theo hạn: quá hạn nhiều → ít → ngày còn lại ít → nhiều (không hạn xuống cuối)
-    const nowMd = Date.now();
-    const ra = a.deadline_xu_ly ? (new Date(a.deadline_xu_ly).getTime() - nowMd) : Infinity;
-    const rb = b.deadline_xu_ly ? (new Date(b.deadline_xu_ly).getTime() - nowMd) : Infinity;
-    if (ra !== rb) return ra - rb;
     const mdOrder = { KHAN_CAP:0, QUAN_TRONG:1, CAN_THIET:2 };
     const da = mdOrder[a.muc_do] || 9, db = mdOrder[b.muc_do] || 9;
     if (da !== db) return da - db;
