@@ -19,7 +19,7 @@
 
 /* HEADER */
 .header { background:var(--green); padding:0; position:sticky; top:0; z-index:20; box-shadow:0 2px 8px rgba(0,0,0,.15); width:100%; padding-top:env(safe-area-inset-top, 0px); }
-.header-inner { max-width:430px; margin:0 auto; padding:14px 20px 8px; position:relative; }
+.header-inner { max-width:430px; margin:0 auto; padding:14px 14px 8px; position:relative; }
 .header-title { font-size:16px; font-weight:700; color:white; letter-spacing:.3px; }
 .header-time  { font-size:11px; color:rgba(255,255,255,.65); margin-top:1px; }
 .header-nv    { font-size:12px; color:rgba(255,255,255,.9); margin-top:3px; font-weight:500; }
