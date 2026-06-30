@@ -420,11 +420,10 @@ function bgqlRenderSuVuList(){
       return new Date(b.created_at) - new Date(a.created_at);
     }
     if (bgqlSuVuSort === 'thoi_han') {
-      // [v17.44] "Thời hạn còn lại" = độ gấp: sắp/vừa tới hạn lên đầu, quá hạn lâu & còn xa xuống cuối
-      const now = Date.now();
-      const ga = a.deadline_xu_ly ? Math.abs(new Date(a.deadline_xu_ly).getTime() - now) : Infinity;
-      const gb = b.deadline_xu_ly ? Math.abs(new Date(b.deadline_xu_ly).getTime() - now) : Infinity;
-      if (ga !== gb) return ga - gb;
+      // [v17.48] Theo NGÀY GIỜ DEADLINE tăng dần: cũ/quá hạn lâu nhất → xa nhất (quá khứ → hiện tại → tương lai)
+      const da = a.deadline_xu_ly ? new Date(a.deadline_xu_ly).getTime() : Infinity;
+      const db = b.deadline_xu_ly ? new Date(b.deadline_xu_ly).getTime() : Infinity;
+      if (da !== db) return da - db;
       return new Date(b.created_at) - new Date(a.created_at);
     }
     // [v17.47] "Mức độ" = ưu tiên theo hạn: việc CÒN HẠN lên đầu (quá hạn nhiều→ít→còn lại ít→nhiều); ĐÃ XONG / Chờ CH xuống cuối

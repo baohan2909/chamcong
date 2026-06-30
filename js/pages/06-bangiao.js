@@ -989,8 +989,7 @@ function bgSvSortData(data){
   } else if (sort === 'thoi_gian'){
     arr.sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
   } else if (sort === 'thoi_han'){
-    const now = Date.now();
-    arr.sort((a,b)=>{ const ga=a.deadline_xu_ly?Math.abs(new Date(a.deadline_xu_ly).getTime()-now):Infinity, gb=b.deadline_xu_ly?Math.abs(new Date(b.deadline_xu_ly).getTime()-now):Infinity; return ga!==gb?ga-gb:(new Date(b.created_at)-new Date(a.created_at)); });
+    arr.sort((a,b)=>{ const da=a.deadline_xu_ly?new Date(a.deadline_xu_ly).getTime():Infinity, db=b.deadline_xu_ly?new Date(b.deadline_xu_ly).getTime():Infinity; return da!==db?da-db:(new Date(b.created_at)-new Date(a.created_at)); });
   } else {
     // [v17.47] "Mức độ" = ưu tiên theo hạn: việc CÒN HẠN lên đầu; ĐÃ XONG / Chờ CH xuống cuối
     const now = Date.now();
