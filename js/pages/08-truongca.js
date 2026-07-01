@@ -264,8 +264,16 @@ function tcAskRaCaTransfer(others, go, cancel){
       <div style="font-size:18px;font-weight:800;color:#0F2E45">Bạn đang là Trưởng ca</div>
       <button onclick="tcRaCaCancel()" style="border:none;background:#F1F5F9;width:32px;height:32px;border-radius:10px;font-size:18px;color:#64748B;cursor:pointer">×</button>
     </div>
-    <div style="font-size:12.5px;color:#64748B;margin-bottom:16px;line-height:1.5"><b style="color:#C2410C">Bắt buộc chuyển Trưởng ca trước khi ra ca.</b> Chọn người đang trong ca để nhận — cửa hàng không được trống vai trò Trưởng ca.</div>
+    <div style="font-size:12.5px;color:#64748B;margin-bottom:14px;line-height:1.5">Chọn cách ra ca. Nếu cửa hàng còn người làm, hãy <b style="color:#C2410C">chuyển quyền Trưởng ca</b> cho người ở lại.</div>
+    <div style="font-size:10.5px;font-weight:800;color:#94A3B8;letter-spacing:.6px;margin-bottom:8px">CHUYỂN CHO NGƯỜI ĐANG TRONG CA</div>
     ${list}
+    <div style="display:flex;align-items:center;gap:10px;margin:12px 0">
+      <div style="flex:1;height:1px;background:#E6EBF0"></div><div style="font-size:11px;color:#94A3B8;font-weight:700">HOẶC</div><div style="flex:1;height:1px;background:#E6EBF0"></div>
+    </div>
+    <button onclick="tcRaCaSkip()" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:13px 12px;border:1.5px solid #CBD5E1;border-radius:13px;background:#F8FAFC;cursor:pointer">
+      <div style="flex:none;width:36px;height:36px;border-radius:10px;background:#EEF2F7;color:#475569;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/></svg></div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0F2E45">Ra ca cuối ngày — đóng cửa hàng</div><div style="font-size:11px;color:#94A3B8">Không cần chuyển Trưởng ca</div></div>
+    </button>
   </div>`;
   document.body.appendChild(root);
 }
