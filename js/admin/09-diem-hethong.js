@@ -27,7 +27,8 @@ function _diemLoai(loai) {
     QUEN_VAO:      { t: 'Quên vào ca',   c: '#D97706' },
     THIEU_LICH:    { t: 'Thiếu lịch',    c: '#7C3AED' },
     THIEU_ANH:     { t: 'Thiếu ảnh',     c: '#0EA5E9' },
-    THIEU_BANGIAO: { t: 'Thiếu bàn giao',c: '#C2410C' }
+    THIEU_BANGIAO: { t: 'Thiếu bàn giao',c: '#C2410C' },
+    BO_SUNG:       { t: 'Bổ sung ca',    c: '#0D9488' }
   })[loai] || { t: loai, c: '#64748B' };
 }
 
