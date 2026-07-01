@@ -107,8 +107,8 @@
   /* ─── TAB GIỜ CÔNG ─── */
   .gc-table { font-size: 14px; }
 
-  /* ─── TAB CHẤM CÔNG (giữ 1 cột nhưng to hơn) ─── */
-  #page-chamcong { max-width: 600px; margin: 0 auto; }
+  /* ─── PHONE-STYLE PAGES: cùng 1 khổ 600px để head các trang bằng nhau ─── */
+  #page-chamcong, #page-lichca, #page-giocong, #page-muanon, #page-chuongtrinh { max-width: 600px; margin: 0 auto; }
   .submit-btn { font-size: 17px; padding: 16px; }
 
   /* ─── MODALS to hơn trên PC ─── */

@@ -168,7 +168,7 @@
 /* ═══════════ [v10.85] CHƯƠNG TRÌNH KHUYẾN MÃI ═══════════ */
 #page-chuongtrinh { padding-bottom:90px; display:none; }
 #page-chuongtrinh.active { display:block; }
-.ct-wrap { max-width:560px; margin:0 auto; padding:12px 14px; }
+.ct-wrap { padding:12px 14px; }
 
 .ct-banner {
   background:linear-gradient(135deg,#DC2626 0%,#F97316 100%);
