@@ -546,6 +546,14 @@ function _ccIsHopLe(xn) {
 function _ccIsKhongHopLe(xn) {
   return !_ccIsHopLe(xn);
 }
+// [v17.6] Nhận diện dòng do HỆ THỐNG tự sinh: ghi chú "Tự động..." hoặc nguon auto đã biết.
+//         (Trước chỉ tính nguon==='AUTO_CLOSE' → sót ca chuyển TC / tự đóng có nguon khác → đếm ra 0.)
+function _ccIsAuto(r) {
+  if (!r) return false;
+  return /^\s*Tự động/i.test(r.ghi_chu || '')
+      || r.nguon === 'AUTO_CLOSE'
+      || r.nguon === 'AUTO_CHUYEN_TC';
+}
 
 async function taiLichSuCC(){
   const el = document.getElementById('lscc-list');
@@ -598,13 +606,14 @@ async function taiLichSuCC(){
     let list = all;
     if (xn === 'HL') list = all.filter(r => _ccIsHopLe(r.xac_nhan));
     else if (xn === 'KHL') list = all.filter(r => _ccIsKhongHopLe(r.xac_nhan));
-    if (window._lscNguonFilter) list = list.filter(r => r.nguon === window._lscNguonFilter);
+    if (window._lscNguonFilter === 'AUTO') list = list.filter(_ccIsAuto);
+    else if (window._lscNguonFilter) list = list.filter(r => r.nguon === window._lscNguonFilter);
 
     // Stats luôn count trên `all` (full data theo ngày), không count trên list (đã filter xn/nguon)
     document.getElementById('lscc-stat-tong').textContent = all.length + (all.length >= MAX ? '+' : '');
     document.getElementById('lscc-stat-hl').textContent  = all.filter(r => _ccIsHopLe(r.xac_nhan)).length;
     document.getElementById('lscc-stat-khl').textContent = all.filter(r => _ccIsKhongHopLe(r.xac_nhan)).length;
-    document.getElementById('lscc-stat-auto').textContent = all.filter(r => r.nguon === 'AUTO_CLOSE').length;
+    document.getElementById('lscc-stat-auto').textContent = all.filter(_ccIsAuto).length;
 
     if (!list.length) {
       el.innerHTML = '<div class="ns-empty">' + (all.length ? 'Không có dòng nào khớp bộ lọc' : 'Không có log nào trong khoảng thời gian này') + '</div>';
@@ -650,7 +659,7 @@ async function taiLichSuCC(){
         : (r.trang_thai_o === 'DANG_LAM_VIEC'
           ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">ĐANG LV</span>'
           : (r.trang_thai_o === 'RA_GIUA_CA' ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">RA GIỮA</span>' : ''));
-      const autoTag = r.nguon === 'AUTO_CLOSE'
+      const autoTag = _ccIsAuto(r)
         ? ' <span style="background:#F0FDFA;color:#0F766E;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700">AUTO</span>' : '';
       // [#5] Nhãn đội/cơ động theo CHÍNH log này — log thường tại CH chỉ hiện tên CH
       const _teamName = _logSaleTeamName(r);
@@ -768,7 +777,7 @@ function _lscUpdateActiveCard() {
     'tong': (!xn && !nguon),
     'hl': (xn === 'HL'),
     'khl': (xn === 'KHL'),
-    'auto': (nguon === 'AUTO_CLOSE')
+    'auto': (nguon === 'AUTO')
   };
   Object.keys(map).forEach(k => {
     const card = document.getElementById('lscc-card-' + k);
