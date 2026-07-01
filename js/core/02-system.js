@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.57',
+  'sys.cache_version': 'v17.58',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -420,7 +420,7 @@ function goToPage(page){
     const lcNav=document.getElementById('nav-lichca');
     if(lcNav)lcNav.classList.add('active');
   }
-  // [v17.57] Khách Online: nav id 'nav-khachonline' nhưng page 'donhang-nhan'
+  // [v17.58] Khách Online: nav id 'nav-khachonline' nhưng page 'donhang-nhan'
   if(page==='donhang-nhan'){ const koNav=document.getElementById('nav-khachonline'); if(koNav)koNav.classList.add('active'); }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
   // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
@@ -444,8 +444,8 @@ function goToPage(page){
   }
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
-  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.57] Trưởng ca
-  if(page==='banhang' && SESSION && SESSION.vaiTro==='CUA_HANG' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.57] thẻ TC cho cửa hàng
+  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.58] Trưởng ca
+  if(page==='banhang' && SESSION && SESSION.vaiTro==='CUA_HANG' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.58] thẻ TC cho cửa hàng
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
@@ -534,6 +534,7 @@ const HUB_GROUPS = {
       { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
       { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH'], quyen:'nhansu.xem', act:()=>tcOpenGiamSat() },
+      { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS'], quyen:'nhansu.xem', act:()=>diemHubOpen() },
     ]
   },
   banhang: {
@@ -560,7 +561,7 @@ const HUB_GROUPS = {
 };
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
-  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.57] tắt theo công tắc tính năng
+  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.58] tắt theo công tắc tính năng
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [A2] chức danh ĐÃ cấu hình rõ ràng có thể MỞ THÊM tile (cộng thêm, không gỡ của ai)
@@ -574,7 +575,7 @@ function moLichCaQL_safe(){ try{ goToPage('lichca-ql'); }catch(e){ try{ taiLichC
 //  [B1] SỰ VỤ KHU VỰC — màn hình cho CƠ ĐỘNG (pool / nhận việc)
 //  Sự vụ tự hiện theo khu vực; hiển thị "Điều phối: Ban quản lý" (ẩn việc tự động).
 // ═════════════════════════════════════════════════════════════════════════
-// [v17.57] Bộ lọc view "Sự vụ khu vực"
+// [v17.58] Bộ lọc view "Sự vụ khu vực"
 let _svcdScope = 'all';     // 'all' | 'mine' | 'done'
 let _svcdStatus = 'all';    // 'all' | 'dang_xu_ly' | 'cho_ch' | 'hoan_tat'
 let _svcdSort = 'thoi_han'; // 'thoi_han' | 'muc_do'
@@ -991,7 +992,7 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
-  if(typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 350); // [v17.57] khôi phục thẻ Trưởng ca + hero khi tải lại
+  if(typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 350); // [v17.58] khôi phục thẻ Trưởng ca + hero khi tải lại
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
@@ -1179,7 +1180,7 @@ function khoiDongApp(){
     // Ẩn tab Chấm công và Bản đồ (CH không cần)
     document.getElementById('nav-chamcong').style.display='none';
     document.getElementById('nav-bandochidung').style.display='none';
-    // [v17.57] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
+    // [v17.58] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
     if(_getSetting('lichhd.enabled', true) === false){ const _nL=document.getElementById('nav-lichca'); if(_nL) _nL.style.display='none'; }
     // Hiện tab Bán hàng
     document.getElementById('nav-banhang').style.display='';
@@ -1252,7 +1253,7 @@ function selectCH(ma,ten){
   // [v10.85 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
-  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.57] Trưởng ca theo cửa hàng
+  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.58] Trưởng ca theo cửa hàng
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
@@ -1828,7 +1829,7 @@ function doSubmit(){
   }
 
   // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
-  // [v17.57] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
+  // [v17.58] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
   if(typeof tcCheckDialogBeforeSubmit==='function'){ tcCheckDialogBeforeSubmit(_doSubmitContinueWithGPS); }
   else { _doSubmitContinueWithGPS(); }
 }
