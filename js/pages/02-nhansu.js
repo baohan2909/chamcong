@@ -583,7 +583,7 @@ async function taiLichSuCC(){
     // [v10.85] Fetch theo batch để vượt mặc định 1000 của Supabase
     const PAGE = 1000;
     const MAX = 50000;
-    const all = [];
+    let all = [];
     let from = 0;
     while (all.length < MAX) {
       let q = supa.from('cham_cong').select('id, ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, loai, thoi_gian, ngay, xac_nhan, trang_thai_o, ghi_chu, device_info, nguon');
@@ -601,6 +601,9 @@ async function taiLichSuCC(){
       if (data.length < PAGE) break;
       from += PAGE;
     }
+
+    // [v17.66] Ẩn dòng auto CHUYỂN TRƯỞNG CA khỏi lịch sử app (chỉ giữ trên Google Sheet)
+    all = all.filter(r => r.nguon !== 'AUTO_CHUYEN_TC');
 
     // Client-side filter cho xac_nhan / nguon
     let list = all;
