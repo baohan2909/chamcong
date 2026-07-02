@@ -296,23 +296,32 @@ function tcRaCaCancel(){ const ctx=_tcRaCtx; tcCloseModal(); if(ctx) ctx.cancel(
 // ════════════════════════════════════════════════════════════════════
 // [v17.38] GIÁM SÁT TRƯỞNG CA TOÀN CHUỖI (QL/Admin)
 // ════════════════════════════════════════════════════════════════════
-let _tcGsData=null, _tcGsKhu='all';
+let _tcGsData=null, _tcGsKhu='all', _tcGsCh=null, _tcGsQuick='all', _tcGsSearchTimer;
 function tcOpenGiamSat(){
   let ov=document.getElementById('tcgs-overlay');
   if(!ov){ ov=document.createElement('div'); ov.id='tcgs-overlay'; document.body.appendChild(ov); }
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
   ov.innerHTML=`
-    <div style="background:linear-gradient(135deg,#F97316,#C2410C);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.12)">
-      <div style="font-weight:800;font-size:16px">Giám sát Trưởng ca</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="tcGsReload()" style="background:rgba(255,255,255,.18);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
-        <button onclick="document.getElementById('tcgs-overlay').remove()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#34D399,#1D9E75,#0F6E56);color:#fff;padding:15px 16px;box-shadow:0 2px 10px rgba(15,110,86,.22)">
+      <div style="position:absolute;top:-34px;right:-16px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.10)"></div>
+      <div style="position:absolute;bottom:-42px;right:52px;width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+      <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="min-width:0">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.85">GIÁM SÁT</div>
+          <div style="font-size:20px;font-weight:800;margin-top:1px">Trưởng ca toàn chuỗi</div>
+          <div id="tcgs-sub" style="font-size:11.5px;opacity:.8;margin-top:2px">Hôm nay</div>
+        </div>
+        <div style="display:flex;gap:8px;flex:none">
+          <button onclick="tcGsReload()" style="background:rgba(255,255,255,.2);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
+          <button onclick="document.getElementById('tcgs-overlay').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+        </div>
       </div>
     </div>
+    <div id="tcgs-controls" style="background:#fff;border-bottom:1px solid #E6EBF0;padding:10px 12px"></div>
     <div id="tcgs-body" style="flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch">
       <div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>
     </div>`;
-  _tcGsKhu='all'; tcGsReload();
+  _tcGsKhu='all'; _tcGsCh=null; _tcGsQuick='all'; tcGsReload();
 }
 async function tcGsReload(){
   const body=document.getElementById('tcgs-body'); if(!body) return;
@@ -323,34 +332,44 @@ async function tcGsReload(){
     _tcGsData=data; tcGsRender();
   }catch(e){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi kết nối.</div>'; }
 }
-function tcGsSetKhu(v){ _tcGsKhu=v||'all'; tcGsRender(); }
 function tcGsRender(){
-  const body=document.getElementById('tcgs-body'); if(!body||!_tcGsData) return;
+  const ctr=document.getElementById('tcgs-controls');
+  const body=document.getElementById('tcgs-body');
+  if(!body||!_tcGsData) return;
   const all=Array.isArray(_tcGsData.cua_hang)?_tcGsData.cua_hang:[];
-  const khus=[...new Set(all.map(s=>s.khu_vuc).filter(k=>k&&k!=='—'))].sort();
-  const list=(_tcGsKhu==='all')?all:all.filter(s=>s.khu_vuc===_tcGsKhu);
-  const cntCo=list.filter(s=>(s.so_tc||0)>=1).length, cntChua=list.filter(s=>(s.so_tc||0)===0).length, cntLoi=list.filter(s=>(s.so_tc||0)>=2).length;
-  const chip=(label,val,color)=>`<div style="flex:1;background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)"><div style="font-size:19px;font-weight:800;color:${color}">${val}</div><div style="font-size:10px;color:#64748B;margin-top:2px">${label}</div></div>`;
-  let html=`<div style="display:flex;gap:7px;margin-bottom:12px">
-    ${chip('CH đang mở', list.length, '#0F2E45')}
-    ${chip('Có TC', cntCo, '#059669')}
-    ${chip('Chưa có TC', cntChua, '#D97706')}
-    ${chip('Lỗi 2+ TC', cntLoi, '#DC2626')}
-  </div>`;
-  if(khus.length>1){
-    html+=`<select onchange="tcGsSetKhu(this.value)" style="width:100%;padding:11px 12px;border:1px solid #E2E8F0;border-radius:11px;background:#fff;font-size:14px;color:#0F2E45;margin-bottom:12px">
-      <option value="all"${_tcGsKhu==='all'?' selected':''}>Mọi khu vực (${all.length} cửa hàng)</option>
-      ${khus.map(k=>`<option value="${escHtml(k)}"${_tcGsKhu===k?' selected':''}>${escHtml(k)}</option>`).join('')}
-    </select>`;
-  }
-  if(!list.length){ html+='<div style="text-align:center;color:#94A3B8;padding:30px">Không có cửa hàng nào đang mở ca.</div>'; body.innerHTML=html; return; }
-  html+=list.map(s=>{
+  const sub=document.getElementById('tcgs-sub'); if(sub) sub.textContent=all.length+' cửa hàng đang mở';
+  let scope=all;
+  if(_tcGsKhu!=='all') scope=scope.filter(s=>s.khu_vuc===_tcGsKhu);
+  if(_tcGsCh) scope=scope.filter(s=>s.ma_ch===_tcGsCh);
+  const cntCo=scope.filter(s=>(s.so_tc||0)>=1).length;
+  const cntChua=scope.filter(s=>(s.so_tc||0)===0).length;
+  const cntLoi=scope.filter(s=>(s.so_tc||0)>=2).length;
+  const hasSearch=!!_tcGsCh;
+  const card=(q,label,val,color)=>{ const on=_tcGsQuick===q; return `<div onclick="tcGsQuick('${q}')" style="flex:1;background:${on?color+'14':'#fff'};border:1.5px solid ${on?color:'#EDF1F5'};border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer"><div style="font-size:19px;font-weight:800;color:${color}">${val}</div><div style="font-size:10px;color:#64748B;margin-top:2px">${label}</div></div>`; };
+  if(ctr) ctr.innerHTML=`
+    <div style="position:relative;margin-bottom:9px">
+      <input type="text" value="${escHtml(tcGsSearchLabel())}" oninput="tcGsSearchInput(this.value)" onfocus="tcGsSearchInput(this.value)" placeholder="Tìm khu vực / cửa hàng" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 30px 9px 11px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;color:#0F2E45;background:#F8FAFC">
+      <div id="tcgs-search-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:11px;box-shadow:0 8px 22px rgba(15,46,69,.14);max-height:240px;overflow-y:auto;z-index:20;padding:4px"></div>
+      ${hasSearch?`<button onclick="tcGsSearchClear()" style="position:absolute;top:50%;right:6px;transform:translateY(-50%);border:none;background:#E2E8F0;color:#475569;width:20px;height:20px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer">✕</button>`:''}
+    </div>
+    <div style="display:flex;gap:7px">
+      ${card('all','Tất cả',scope.length,'#0F2E45')}
+      ${card('co','Có TC',cntCo,'#059669')}
+      ${card('chua','Chưa có TC',cntChua,'#D97706')}
+      ${card('loi','Lỗi 2+ TC',cntLoi,'#DC2626')}
+    </div>`;
+  let list=scope;
+  if(_tcGsQuick==='co') list=list.filter(s=>(s.so_tc||0)>=1);
+  else if(_tcGsQuick==='chua') list=list.filter(s=>(s.so_tc||0)===0);
+  else if(_tcGsQuick==='loi') list=list.filter(s=>(s.so_tc||0)>=2);
+  if(!list.length){ body.innerHTML='<div style="text-align:center;color:#94A3B8;padding:30px">Không có cửa hàng phù hợp.</div>'; return; }
+  body.innerHTML=list.map(s=>{
     const n=s.so_tc||0;
     const badge = n>=2 ? `<span style="background:#FEE2E2;color:#DC2626;font-weight:800;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">${n} TC ⚠</span>`
       : n===1 ? `<span style="background:#D1FAE5;color:#059669;font-weight:800;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">1 TC</span>`
       : `<span style="background:#F1F5F9;color:#94A3B8;font-weight:700;font-size:12px;padding:4px 10px;border-radius:9px;white-space:nowrap">Chưa có TC</span>`;
     const tcLines=(Array.isArray(s.ds_tc)&&s.ds_tc.length)
-      ? '<div style="margin-top:9px;padding-top:9px;border-top:1px solid #F1F5F9;display:flex;flex-direction:column;gap:5px">'+s.ds_tc.map(t=>`<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#334155"><svg viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.2" style="width:14px;height:14px;flex:none">${TC_FLAG_SVG}</svg><b style="font-weight:700">${escHtml(t.ten||'')}</b><span style="color:#94A3B8">· vào ${escHtml(t.gio_vao||'--')}</span></div>`).join('')+'</div>'
+      ? '<div style="margin-top:9px;padding-top:9px;border-top:1px solid #F1F5F9;display:flex;flex-direction:column;gap:5px">'+s.ds_tc.map(t=>`<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#334155"><svg viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2.2" style="width:14px;height:14px;flex:none">${TC_FLAG_SVG}</svg><b style="font-weight:700">${escHtml(t.ten||'')}</b><span style="color:#94A3B8">· vào ${escHtml(t.gio_vao||'--')}</span></div>`).join('')+'</div>'
       : '';
     const border = n>=2 ? 'border:1.5px solid #FCA5A5' : n===0 ? 'border:1px solid #FDE68A' : 'border:1px solid #E6EBF0';
     return `<div style="background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:9px;${border}">
@@ -364,5 +383,33 @@ function tcGsRender(){
       ${tcLines}
     </div>`;
   }).join('');
-  body.innerHTML=html;
 }
+function tcGsSearchLabel(){
+  if(_tcGsCh){ const s=((_tcGsData&&_tcGsData.cua_hang)||[]).find(x=>x.ma_ch===_tcGsCh); return s?('CH: '+(s.ten_ch||s.ma_ch)):_tcGsCh; }
+  if(_tcGsKhu!=='all') return 'Khu vực: '+_tcGsKhu;
+  return '';
+}
+window.tcGsSearchInput=function(kw){
+  clearTimeout(_tcGsSearchTimer);
+  const dd=document.getElementById('tcgs-search-dd'); if(!dd) return;
+  if(!kw||kw.length<1){ dd.style.display='none'; return; }
+  _tcGsSearchTimer=setTimeout(()=>{
+    const all=(_tcGsData&&_tcGsData.cua_hang)||[];
+    const low=kw.toLowerCase();
+    const kvs=[...new Set(all.map(s=>s.khu_vuc).filter(k=>k&&k!=='—'&&k.toLowerCase().includes(low)))].slice(0,3);
+    const chMap=new Map();
+    all.forEach(s=>{ if(s.ma_ch&&!chMap.has(s.ma_ch)){ const t=s.ten_ch||s.ma_ch; if(t.toLowerCase().includes(low)||String(s.ma_ch).toLowerCase().includes(low)) chMap.set(s.ma_ch,t); }});
+    const chs=[...chMap.entries()].slice(0,6);
+    const lbl=t=>`<div style="font-size:10.5px;font-weight:700;color:#94A3B8;padding:6px 8px 3px">${t}</div>`;
+    const it=(act,html)=>`<div onclick="${act}" style="padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:#0F2E45" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='transparent'">${html}</div>`;
+    let html='';
+    if(kvs.length) html+=lbl('Khu vực')+kvs.map(k=>it(`tcGsPickKhu('${escHtml(k)}')`,escHtml(k))).join('');
+    if(chs.length) html+=lbl('Cửa hàng')+chs.map(([m,t])=>it(`tcGsPickCh('${escHtml(String(m))}')`,`<b>${escHtml(t)}</b> <small style="color:#94A3B8">${escHtml(String(m))}</small>`)).join('');
+    if(!html) html='<div style="padding:10px;color:#94A3B8;font-size:12.5px">Không tìm thấy</div>';
+    dd.innerHTML=html; dd.style.display='';
+  },160);
+};
+window.tcGsPickKhu=function(k){ _tcGsKhu=k; _tcGsCh=null; tcGsRender(); };
+window.tcGsPickCh=function(m){ _tcGsCh=m; _tcGsKhu='all'; tcGsRender(); };
+window.tcGsSearchClear=function(){ _tcGsCh=null; _tcGsKhu='all'; tcGsRender(); };
+window.tcGsQuick=function(q){ _tcGsQuick=(_tcGsQuick===q&&q!=='all')?'all':(q||'all'); tcGsRender(); };

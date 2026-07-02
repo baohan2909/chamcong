@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
-//  HUB "ĐIỂM HỆ THỐNG" (admin) — [v17.58]
-//  Danh sách điểm toàn bộ NV (hàng ngang gọn), lọc khu vực, đổi tháng,
-//  bấm 1 NV → xổ chi tiết các lần trừ + nút Xóa điểm trừ (toggle).
-//  RPC: fn_diem_tat_ca / fn_diem_chi_tiet / fn_toggle_mien_diem.
+//  HUB "ĐIỂM HỆ THỐNG" (admin) — [v17.63] Redesign
+//  Banner cam gradient + hình tròn nền · tìm khu vực/cửa hàng/NV có gợi ý ·
+//  sort thông minh · thẻ "Kiểm soát điểm trừ" (tổng quan + thống kê loại lỗi,
+//  bấm loại để lọc) · danh sách NV bấm để xổ chi tiết + Xóa điểm trừ.
+//  RPC: fn_diem_tat_ca (đã thêm ma_ch/ten_ch/cac_loai/thong_ke_loai) / fn_diem_chi_tiet / fn_toggle_mien_diem.
 // ═══════════════════════════════════════════════════════════════════════════
-let _diemHub = { list: [], khu: 'all', thang: null, open: new Set() };
+let _diemHub = { list: [], tk: {}, khu: 'all', ch: null, nv: null, loai: null, sort: 'diem_asc', thang: null, open: new Set() };
+let _diemSearchTimer;
 
 function _diemThangHT() {
   const d = new Date();
@@ -31,39 +33,74 @@ function _diemLoai(loai) {
     BO_SUNG:       { t: 'Bổ sung ca',    c: '#0D9488' }
   })[loai] || { t: loai, c: '#64748B' };
 }
+function _diemNgay(s) {
+  if (!s) return '';
+  const p = String(s).substring(0, 10).split('-');
+  return p.length === 3 ? (p[2] + '/' + p[1]) : s;
+}
 
 function diemHubOpen() {
   let ov = document.getElementById('diem-hub-ov');
   if (!ov) { ov = document.createElement('div'); ov.id = 'diem-hub-ov'; document.body.appendChild(ov); }
   ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
-  _diemHub = { list: [], khu: 'all', thang: _diemThangHT(), open: new Set() };
+  _diemHub = { list: [], tk: {}, khu: 'all', ch: null, nv: null, loai: null, sort: 'diem_asc', thang: _diemThangHT(), open: new Set() };
   ov.innerHTML = `
-    <div style="background:linear-gradient(135deg,#F97316,#C2410C);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.12)">
-      <div style="font-weight:800;font-size:16px">Điểm hệ thống</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="diemHubLoad()" style="background:rgba(255,255,255,.18);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
-        <button onclick="document.getElementById('diem-hub-ov').remove()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#FDBA74,#F97316,#C2410C);color:#fff;padding:15px 16px;box-shadow:0 2px 10px rgba(194,65,18,.22)">
+      <div style="position:absolute;top:-34px;right:-16px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.10)"></div>
+      <div style="position:absolute;bottom:-42px;right:52px;width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+      <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="min-width:0">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.85">ĐIỂM PHONG ĐỘ</div>
+          <div style="font-size:20px;font-weight:800;margin-top:1px">Điểm hệ thống</div>
+          <div style="font-size:11.5px;opacity:.8;margin-top:2px">Toàn bộ nhân viên · trừ điểm theo lỗi</div>
+        </div>
+        <div style="display:flex;gap:8px;flex:none">
+          <button onclick="diemHubLoad()" style="background:rgba(255,255,255,.2);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
+          <button onclick="document.getElementById('diem-hub-ov').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+        </div>
       </div>
     </div>
-    <div style="background:#fff;border-bottom:1px solid #E6EBF0;padding:10px 12px;display:flex;flex-direction:column;gap:9px">
-      <div style="display:flex;align-items:center;justify-content:center;gap:14px">
-        <button onclick="diemHubThang(-1)" style="border:1px solid #E6EBF0;background:#fff;width:30px;height:30px;border-radius:9px;font-size:16px;color:#475569;cursor:pointer">‹</button>
-        <div id="diem-hub-thang" style="font-size:14px;font-weight:800;color:#0F2E45;min-width:120px;text-align:center">—</div>
-        <button onclick="diemHubThang(1)" style="border:1px solid #E6EBF0;background:#fff;width:30px;height:30px;border-radius:9px;font-size:16px;color:#475569;cursor:pointer">›</button>
-      </div>
-      <div id="diem-hub-khu" style="display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
-    </div>
+    <div id="diem-hub-controls" style="background:#fff;border-bottom:1px solid #E6EBF0;padding:10px 12px;display:flex;flex-direction:column;gap:9px"></div>
     <div id="diem-hub-body" style="flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch">
       <div style="text-align:center;color:#64748B;padding:34px">Đang tải...</div>
     </div>`;
   diemHubLoad();
 }
 
+function _diemHubControlsHtml() {
+  const thLabel = 'Tháng ' + _diemHub.thang.substring(5, 7) + '/' + _diemHub.thang.substring(0, 4);
+  const hasSearch = _diemHub.ch || _diemHub.nv;
+  const btn = (dir, ch) => `<button onclick="diemHubThang(${dir})" style="flex:none;border:1px solid #E6EBF0;background:#fff;width:30px;height:30px;border-radius:9px;font-size:16px;color:#475569;cursor:pointer">${ch}</button>`;
+  const sortOpt = (v, t) => `<option value="${v}"${_diemHub.sort === v ? ' selected' : ''}>${t}</option>`;
+  return `
+    <div style="display:flex;align-items:center;gap:8px">
+      ${btn(-1, '‹')}
+      <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:#0F2E45">${thLabel}</div>
+      ${btn(1, '›')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;position:relative">
+        <input type="text" value="${escHtml(diemSearchLabel())}" oninput="diemSearchInput(this.value)" onfocus="diemSearchInput(this.value)"
+          placeholder="Tìm khu vực / cửa hàng / tên NV" autocomplete="off"
+          style="width:100%;box-sizing:border-box;padding:9px 30px 9px 11px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;color:#0F2E45;background:#F8FAFC">
+        <div id="diem-search-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:11px;box-shadow:0 8px 22px rgba(15,46,69,.14);max-height:260px;overflow-y:auto;z-index:20;padding:4px"></div>
+        ${hasSearch ? `<button onclick="diemSearchClear()" style="position:absolute;top:50%;right:6px;transform:translateY(-50%);border:none;background:#E2E8F0;color:#475569;width:20px;height:20px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer">✕</button>` : ''}
+      </div>
+      <select onchange="diemHubSort(this.value)" style="flex:none;padding:9px 8px;border:1px solid #E2E8F0;border-radius:10px;font-size:12.5px;color:#0F2E45;background:#fff;max-width:130px">
+        ${sortOpt('diem_asc', 'Điểm thấp→cao')}
+        ${sortOpt('diem_desc', 'Điểm cao→thấp')}
+        ${sortOpt('loi_desc', 'Lỗi nhiều→ít')}
+        ${sortOpt('ten', 'Tên A→Z')}
+      </select>
+    </div>
+    <div id="diem-hub-khu" style="display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>`;
+}
+
 async function diemHubLoad() {
   const body = document.getElementById('diem-hub-body');
-  const thEl = document.getElementById('diem-hub-thang');
+  const ctr = document.getElementById('diem-hub-controls');
   if (!body) return;
-  if (thEl) thEl.textContent = 'Tháng ' + _diemHub.thang.substring(5, 7) + '/' + _diemHub.thang.substring(0, 4);
+  if (ctr) ctr.innerHTML = _diemHubControlsHtml();
   body.innerHTML = '<div style="text-align:center;color:#64748B;padding:34px">Đang tải...</div>';
   try {
     const { data, error } = await supa.rpc('fn_diem_tat_ca', { p_thang: _diemHub.thang });
@@ -72,9 +109,9 @@ async function diemHubLoad() {
       return;
     }
     _diemHub.list = data.danh_sach || [];
+    _diemHub.tk = data.thong_ke_loai || {};
     _diemHub.open = new Set();
-    _diemHubRenderKhu();
-    _diemHubRender();
+    _diemHubPaint();
   } catch (e) {
     body.innerHTML = '<div style="text-align:center;color:#DC2626;padding:34px">Lỗi kết nối</div>';
   }
@@ -82,7 +119,18 @@ async function diemHubLoad() {
 
 function diemHubThang(delta) {
   _diemHub.thang = _diemThangShift(_diemHub.thang, delta);
+  _diemHub.khu = 'all'; _diemHub.ch = null; _diemHub.nv = null; _diemHub.loai = null;
   diemHubLoad();
+}
+
+function _diemHubPaint() {
+  const ctr = document.getElementById('diem-hub-controls');
+  if (ctr) ctr.innerHTML = _diemHubControlsHtml();
+  _diemHubRenderKhu();
+  const body = document.getElementById('diem-hub-body');
+  if (!body) return;
+  body.innerHTML = _diemHubAnalyticsHtml() + '<div id="diem-hub-list"></div>';
+  _diemHubRender();
 }
 
 function _diemHubRenderKhu() {
@@ -95,24 +143,76 @@ function _diemHubRenderKhu() {
   el.innerHTML = mk('all', 'Tất cả (' + _diemHub.list.length + ')') + khus.map(k => mk(k, k)).join('');
 }
 
-function diemHubKhu(khu) { _diemHub.khu = khu; _diemHubRenderKhu(); _diemHubRender(); }
+function diemHubKhu(khu) { _diemHub.khu = khu; _diemHub.ch = null; _diemHub.nv = null; _diemHubPaint(); }
+function diemHubSort(v) { _diemHub.sort = v || 'diem_asc'; _diemHubRender(); }
+function diemHubLoai(loai) { _diemHub.loai = (_diemHub.loai === loai) ? null : loai; _diemHubPaint(); }
+
+function _diemHubAnalyticsHtml() {
+  const rows = _diemHub.list;
+  const biTru = rows.filter(r => (r.so_loi || 0) > 0).length;
+  const tongLoi = rows.reduce((s, r) => s + (r.so_loi || 0), 0);
+  const diemTb = rows.length ? (rows.reduce((s, r) => s + (r.diem || 0), 0) / rows.length) : 0;
+  const tk = _diemHub.tk || {};
+  const keys = Object.keys(tk).filter(k => tk[k] > 0).sort((a, b) => tk[b] - tk[a]);
+  const maxCnt = keys.length ? Math.max(...keys.map(k => tk[k])) : 1;
+  const mini = (v, l, c) => `<div style="flex:1;text-align:center"><div style="font-size:19px;font-weight:800;color:${c};line-height:1">${v}</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">${l}</div></div>`;
+  const bars = keys.map(k => {
+    const L = _diemLoai(k);
+    const on = _diemHub.loai === k;
+    const pct = Math.max(6, Math.round(tk[k] / maxCnt * 100));
+    return `<div onclick="diemHubLoai('${k}')" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;cursor:pointer;background:${on ? '#FFF7ED' : 'transparent'};border:1px solid ${on ? '#FED7AA' : 'transparent'}">
+      <div style="flex:none;width:88px;font-size:12px;font-weight:700;color:${L.c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(L.t)}</div>
+      <div style="flex:1;height:8px;background:#F1F5F9;border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${L.c};border-radius:99px"></div></div>
+      <div style="flex:none;font-size:12.5px;font-weight:800;color:#334155;min-width:26px;text-align:right">${tk[k]}</div>
+    </div>`;
+  }).join('');
+  const loaiFilterNote = _diemHub.loai ? `<div style="font-size:11px;color:#C2410C;margin-top:6px">Đang lọc: <b>${escHtml(_diemLoai(_diemHub.loai).t)}</b> · bấm lại để bỏ</div>` : '';
+  return `<div style="background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+    <div style="font-size:13px;font-weight:800;color:#0F2E45;margin-bottom:10px">Kiểm soát điểm trừ · ${escHtml('Tháng ' + _diemHub.thang.substring(5,7))}</div>
+    <div style="display:flex;gap:6px;padding-bottom:11px;border-bottom:1px solid #F1F5F9;margin-bottom:9px">
+      ${mini(biTru, 'NV bị trừ', '#C2410C')}
+      ${mini(tongLoi, 'Tổng lỗi', '#DC2626')}
+      ${mini(diemTb.toFixed(1), 'Điểm TB', '#059669')}
+    </div>
+    ${keys.length ? `<div style="font-size:11px;color:#94A3B8;margin-bottom:4px">Lỗi thường gặp (bấm để lọc)</div>${bars}` : '<div style="font-size:12.5px;color:#16A34A;text-align:center;padding:6px">Chưa có lỗi nào trong tháng</div>'}
+    ${loaiFilterNote}
+  </div>`;
+}
+
+function _diemHubFiltered() {
+  let rows = _diemHub.list.slice();
+  if (_diemHub.khu !== 'all') rows = rows.filter(r => (r.khu_vuc || '—') === _diemHub.khu);
+  if (_diemHub.ch) rows = rows.filter(r => r.ma_ch === _diemHub.ch);
+  if (_diemHub.nv) rows = rows.filter(r => r.ma_nv === _diemHub.nv);
+  if (_diemHub.loai) rows = rows.filter(r => Array.isArray(r.cac_loai) && r.cac_loai.indexOf(_diemHub.loai) >= 0);
+  const s = _diemHub.sort;
+  const byName = (a, b) => (a.ho_ten || '').localeCompare(b.ho_ten || '', 'vi');
+  rows.sort((a, b) => {
+    if (s === 'diem_asc') return ((a.diem || 0) - (b.diem || 0)) || byName(a, b);
+    if (s === 'diem_desc') return ((b.diem || 0) - (a.diem || 0)) || byName(a, b);
+    if (s === 'loi_desc') return ((b.so_loi || 0) - (a.so_loi || 0)) || byName(a, b);
+    if (s === 'ten') return byName(a, b);
+    return 0;
+  });
+  return rows;
+}
 
 function _diemHubRender() {
-  const body = document.getElementById('diem-hub-body'); if (!body) return;
-  const rows = _diemHub.list.filter(r => _diemHub.khu === 'all' || (r.khu_vuc || '—') === _diemHub.khu);
-  if (!rows.length) { body.innerHTML = '<div style="text-align:center;color:#64748B;padding:34px">Không có nhân viên</div>'; return; }
-  body.innerHTML = rows.map(r => {
+  const list = document.getElementById('diem-hub-list'); if (!list) return;
+  const rows = _diemHubFiltered();
+  if (!rows.length) { list.innerHTML = '<div style="text-align:center;color:#64748B;padding:28px">Không có nhân viên phù hợp</div>'; return; }
+  list.innerHTML = rows.map(r => {
     const m = _diemMau(r.diem);
     const kt = (r.ho_ten || '?').trim().charAt(0) || '?';
     const isOpen = _diemHub.open.has(r.ma_nv);
     return `<div style="background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);overflow:hidden">
-      <div onclick="diemHubToggle('${escHtml(r.ma_nv)}','${escHtml((r.ho_ten || '').replace(/'/g, ''))}')" style="display:flex;align-items:center;gap:11px;padding:11px 12px;cursor:pointer">
+      <div onclick="diemHubToggle('${escHtml(r.ma_nv)}')" style="display:flex;align-items:center;gap:11px;padding:11px 12px;cursor:pointer">
         <div style="flex:none;width:40px;height:40px;border-radius:11px;background:${m.bg};color:${m.c};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">${escHtml(kt)}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;color:#0F2E45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(r.ho_ten || r.ma_nv)}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-            <div style="flex:1;height:6px;background:#F1F5F9;border-radius:99px;overflow:hidden;max-width:130px"><div style="height:100%;width:${Math.max(0, (r.diem || 0)) * 10}%;background:${m.c};border-radius:99px"></div></div>
-            <div style="font-size:10.5px;color:#94A3B8;white-space:nowrap">${escHtml(r.khu_vuc || '—')}${r.so_loi ? ' · ' + r.so_loi + ' lỗi' : ''}</div>
+            <div style="flex:1;height:6px;background:#F1F5F9;border-radius:99px;overflow:hidden;max-width:120px"><div style="height:100%;width:${Math.max(0, (r.diem || 0)) * 10}%;background:${m.c};border-radius:99px"></div></div>
+            <div style="font-size:10.5px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">${escHtml(r.ten_ch || r.khu_vuc || '—')}${r.so_loi ? ' · ' + r.so_loi + ' lỗi' : ''}</div>
           </div>
         </div>
         <div style="flex:none;text-align:right">
@@ -123,11 +223,10 @@ function _diemHubRender() {
       <div id="diem-ct-${escHtml(r.ma_nv)}" style="display:${isOpen ? 'block' : 'none'};border-top:1px solid #F1F5F9;padding:${isOpen ? '10px 12px' : '0'}">${isOpen ? '<div style="color:#94A3B8;font-size:12.5px;text-align:center;padding:8px">Đang tải...</div>' : ''}</div>
     </div>`;
   }).join('');
-  // nạp chi tiết cho những dòng đang mở
   _diemHub.open.forEach(ma => _diemHubLoadCt(ma));
 }
 
-function diemHubToggle(maNv, tenNv) {
+function diemHubToggle(maNv) {
   if (_diemHub.open.has(maNv)) _diemHub.open.delete(maNv);
   else _diemHub.open.add(maNv);
   _diemHubRender();
@@ -146,7 +245,7 @@ async function _diemHubLoadCt(maNv) {
       return `<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #F5F7FA">
         <div style="flex:none;width:8px;height:8px;border-radius:50%;background:${off ? '#CBD5E1' : L.c}"></div>
         <div style="flex:1;min-width:0;${off ? 'opacity:.5' : ''}">
-          <div style="font-size:13px;font-weight:700;color:#0F2E45;${off ? 'text-decoration:line-through' : ''}"><span style="color:${L.c}">${escHtml(L.t)}</span></div>
+          <div style="font-size:13px;font-weight:700;${off ? 'text-decoration:line-through' : ''}"><span style="color:${L.c}">${escHtml(L.t)}</span></div>
           <div style="font-size:11px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(_diemNgay(e.ngay))} · ${escHtml(e.mo_ta || '')}</div>
         </div>
         <button onclick="diemHubMien('${escHtml(maNv)}','${escHtml(e.loai)}','${escHtml((e.source_key || '').replace(/'/g, ''))}','${escHtml(e.ngay || '')}')"
@@ -156,11 +255,38 @@ async function _diemHubLoadCt(maNv) {
   } catch (e) { box.innerHTML = '<div style="color:#DC2626;font-size:12.5px;padding:8px">Lỗi kết nối</div>'; }
 }
 
-function _diemNgay(s) {
-  if (!s) return '';
-  const p = String(s).substring(0, 10).split('-');
-  return p.length === 3 ? (p[2] + '/' + p[1]) : s;
+// ── Tìm kiếm gợi ý: khu vực / cửa hàng / nhân viên ──
+function diemSearchLabel() {
+  if (_diemHub.nv) { const r = _diemHub.list.find(x => x.ma_nv === _diemHub.nv); return r ? (r.ho_ten || r.ma_nv) : _diemHub.nv; }
+  if (_diemHub.ch) { const r = _diemHub.list.find(x => x.ma_ch === _diemHub.ch); return r ? ('CH: ' + (r.ten_ch || r.ma_ch)) : _diemHub.ch; }
+  return '';
 }
+window.diemSearchInput = function (kw) {
+  clearTimeout(_diemSearchTimer);
+  const dd = document.getElementById('diem-search-dd'); if (!dd) return;
+  if (!kw || kw.length < 1) { dd.style.display = 'none'; return; }
+  _diemSearchTimer = setTimeout(() => {
+    const low = kw.toLowerCase();
+    const list = _diemHub.list;
+    const kvs = [...new Set(list.map(r => r.khu_vuc).filter(k => k && k.toLowerCase().includes(low)))].slice(0, 3);
+    const chMap = new Map();
+    list.forEach(r => { if (r.ma_ch && !chMap.has(r.ma_ch)) { const t = r.ten_ch || r.ma_ch; if (t.toLowerCase().includes(low) || String(r.ma_ch).toLowerCase().includes(low)) chMap.set(r.ma_ch, t); } });
+    const chs = [...chMap.entries()].slice(0, 5);
+    const nvs = list.filter(r => (r.ho_ten || '').toLowerCase().includes(low) || String(r.ma_nv).toLowerCase().includes(low)).slice(0, 6);
+    const lbl = t => `<div style="font-size:10.5px;font-weight:700;color:#94A3B8;padding:6px 8px 3px">${t}</div>`;
+    const it = (act, html) => `<div onclick="${act}" style="padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:#0F2E45" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='transparent'">${html}</div>`;
+    let html = '';
+    if (kvs.length) html += lbl('Khu vực') + kvs.map(k => it(`diemPickKhu('${escHtml(k)}')`, escHtml(k))).join('');
+    if (chs.length) html += lbl('Cửa hàng') + chs.map(([m, t]) => it(`diemPickCh('${escHtml(String(m))}')`, `<b>${escHtml(t)}</b> <small style="color:#94A3B8">${escHtml(String(m))}</small>`)).join('');
+    if (nvs.length) html += lbl('Nhân viên') + nvs.map(r => it(`diemPickNv('${escHtml(String(r.ma_nv))}')`, `<b>${escHtml(r.ho_ten || r.ma_nv)}</b> <small style="color:#94A3B8">${escHtml(r.khu_vuc || '')}</small>`)).join('');
+    if (!html) html = '<div style="padding:10px;color:#94A3B8;font-size:12.5px">Không tìm thấy</div>';
+    dd.innerHTML = html; dd.style.display = '';
+  }, 160);
+};
+window.diemPickKhu = function (k) { _diemHub.khu = k; _diemHub.ch = null; _diemHub.nv = null; _diemHub.loai = null; _diemHubPaint(); };
+window.diemPickCh = function (m) { _diemHub.ch = m; _diemHub.nv = null; _diemHub.khu = 'all'; _diemHub.loai = null; _diemHubPaint(); };
+window.diemPickNv = function (m) { _diemHub.nv = m; _diemHub.ch = null; _diemHub.loai = null; _diemHubPaint(); };
+window.diemSearchClear = function () { _diemHub.ch = null; _diemHub.nv = null; _diemHubPaint(); };
 
 async function diemHubMien(maNv, loai, sourceKey, ngay) {
   try {
@@ -170,10 +296,10 @@ async function diemHubMien(maNv, loai, sourceKey, ngay) {
     });
     if (error || !data || !data.success) { showToast((data && data.error) || 'Không có quyền', 'err'); return; }
     showToast(data.da_mien ? '✓ Đã xóa điểm trừ' : '✓ Đã khôi phục điểm trừ', 'ok');
-    // cập nhật điểm dòng NV trong list + nạp lại chi tiết
     const nv = _diemHub.list.find(r => r.ma_nv === maNv);
-    if (nv) { nv.so_loi = (nv.so_loi || 0) + (data.da_mien ? -1 : 1); nv.diem = Math.max(0, 10 - nv.so_loi); }
-    _diemHubRender();
+    if (nv) { nv.so_loi = Math.max(0, (nv.so_loi || 0) + (data.da_mien ? -1 : 1)); nv.diem = Math.max(0, 10 - nv.so_loi); }
+    _diemHubLoadCt(maNv);
+    _diemHubRenderKhu();
   } catch (e) { showToast('Lỗi kết nối', 'err'); }
 }
 
@@ -181,5 +307,7 @@ window.diemHubOpen = diemHubOpen;
 window.diemHubLoad = diemHubLoad;
 window.diemHubThang = diemHubThang;
 window.diemHubKhu = diemHubKhu;
+window.diemHubSort = diemHubSort;
+window.diemHubLoai = diemHubLoai;
 window.diemHubToggle = diemHubToggle;
 window.diemHubMien = diemHubMien;
