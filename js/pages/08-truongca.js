@@ -302,23 +302,25 @@ function tcOpenGiamSat(){
   if(!ov){ ov=document.createElement('div'); ov.id='tcgs-overlay'; document.body.appendChild(ov); }
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
   ov.innerHTML=`
-    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#34D399,#1D9E75,#0F6E56);color:#fff;padding:15px 16px;box-shadow:0 2px 10px rgba(15,110,86,.22)">
-      <div style="position:absolute;top:-34px;right:-16px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.10)"></div>
-      <div style="position:absolute;bottom:-42px;right:52px;width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
-      <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-        <div style="min-width:0">
-          <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.85">GIÁM SÁT</div>
-          <div style="font-size:20px;font-weight:800;margin-top:1px">Trưởng ca toàn chuỗi</div>
-          <div id="tcgs-sub" style="font-size:11.5px;opacity:.8;margin-top:2px">Hôm nay</div>
-        </div>
-        <div style="display:flex;gap:8px;flex:none">
-          <button onclick="tcGsReload()" style="background:rgba(255,255,255,.2);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
-          <button onclick="document.getElementById('tcgs-overlay').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    <div style="flex:none;padding:12px 14px 2px">
+      <div style="position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(100deg,#0F6E56 0%,#149C74 55%,#34D399 100%);color:#fff;padding:15px 16px;box-shadow:0 4px 16px rgba(15,110,86,.28)">
+        <div style="position:absolute;top:-32px;right:-8px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.13)"></div>
+        <div style="position:absolute;bottom:-38px;right:64px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.09)"></div>
+        <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div style="min-width:0">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.9">GIÁM SÁT</div>
+            <div style="font-size:20px;font-weight:800;margin-top:1px">Trưởng ca toàn chuỗi</div>
+            <div id="tcgs-sub" style="font-size:11.5px;opacity:.85;margin-top:2px">Hôm nay</div>
+          </div>
+          <div style="display:flex;gap:8px;flex:none">
+            <button onclick="tcGsReload()" style="background:rgba(255,255,255,.22);border:none;color:#fff;height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Tải lại</button>
+            <button onclick="document.getElementById('tcgs-overlay').remove()" style="background:rgba(255,255,255,.22);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+          </div>
         </div>
       </div>
     </div>
-    <div id="tcgs-controls" style="background:#fff;border-bottom:1px solid #E6EBF0;padding:10px 12px"></div>
-    <div id="tcgs-body" style="flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch">
+    <div id="tcgs-controls" style="flex:none;padding:6px 14px 10px"></div>
+    <div id="tcgs-body" style="flex:1;overflow-y:auto;padding:0 14px 14px;-webkit-overflow-scrolling:touch">
       <div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>
     </div>`;
   _tcGsKhu='all'; _tcGsCh=null; _tcGsQuick='all'; tcGsReload();

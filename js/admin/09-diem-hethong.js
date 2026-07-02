@@ -133,7 +133,7 @@ function _diemHubPaint() {
   if (ctr) ctr.innerHTML = _diemHubControlsHtml();
   const body = document.getElementById('diem-hub-body');
   if (!body) return;
-  body.innerHTML = _diemHubAnalyticsHtml() + '<div id="diem-hub-list"></div>';
+  body.innerHTML = '<div id="diem-hub-list"></div>';
   _diemHubRender();
 }
 
