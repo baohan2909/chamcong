@@ -936,25 +936,22 @@ function bgqlRenderTimelineHeader(){
         <option value="co_su_vu"${bgqlTLCond==='co_su_vu'?' selected':''}>Có sự vụ</option>
         <option value="KHAN_CAP"${bgqlTLCond==='KHAN_CAP'?' selected':''}>Khẩn cấp</option>
       </select>
+    </div>
+    <div class="bg-tl-filters-row">
       <select class="bg-tl-dropdown" onchange="bgqlSetTLSort(this.value)">
         <option value="moi"${bgqlTLSort==='moi'?' selected':''}>Mới nhất</option>
         <option value="cu"${bgqlTLSort==='cu'?' selected':''}>Cũ nhất</option>
         <option value="suvu"${bgqlTLSort==='suvu'?' selected':''}>Nhiều sự vụ</option>
       </select>
+      <div class="bgql-stats-search">
+        <input type="text" class="bg-tl-dropdown bgql-stats-search-input" placeholder="Cửa hàng / khu vực" value="${escHtml(bgqlTlSearchLabel())}" oninput="bgqlTlSearchInput(this.value)" onfocus="bgqlTlSearchInput(this.value)">
+        <div class="bgql-stats-search-dd" id="bgql-tl-search-dd" style="display:none"></div>
+        ${(bgqlTimelineFilter.ma_ch || (bgqlTimelineFilter.khu_vuc&&bgqlTimelineFilter.khu_vuc!=='all')) ? `<button class="bgql-stats-search-clear" onclick="bgqlTlSearchClear()">✕</button>` : ''}
+      </div>
     </div>
     ${bgqlTLRange === 'custom' ? `<div class="bg-tl-filters-row">
       <input type="date" class="bg-tl-dropdown" value="${bgqlTLCustomFrom||''}" onchange="bgqlSetTLCustomFrom(this.value)">
       <input type="date" class="bg-tl-dropdown" value="${bgqlTLCustomTo||''}" onchange="bgqlSetTLCustomTo(this.value)">
-    </div>` : ''}
-    ${khuVucs.length>1 || chList.length>5 ? `<div class="bg-tl-filters-row">
-      ${khuVucs.length>1 ? `<select class="bg-tl-dropdown" onchange="bgqlSetTLKV(this.value)">
-        <option value="">Mọi khu vực</option>
-        ${khuVucs.map(k=>`<option value="${escHtml(k)}"${bgqlTimelineFilter.khu_vuc===k?' selected':''}>${escHtml(k)}</option>`).join('')}
-      </select>` : ''}
-      ${chList.length>5 ? `<select class="bg-tl-dropdown" onchange="bgqlSetTLCh(this.value)">
-        <option value="">Mọi cửa hàng</option>
-        ${chList.map(([k,v])=>`<option value="${escHtml(k)}"${bgqlTimelineFilter.ma_ch===k?' selected':''}>${escHtml(v)}</option>`).join('')}
-      </select>` : ''}
     </div>` : ''}
   `;
 }
@@ -971,6 +968,42 @@ window.bgqlSetTLCustomFrom = function(v){ bgqlTLCustomFrom = v; if (bgqlTLCustom
 window.bgqlSetTLCustomTo = function(v){ bgqlTLCustomTo = v; if (bgqlTLCustomFrom) bgqlLoadTimeline(); };
 window.bgqlSetTLKV = function(v){ bgqlTimelineFilter.khu_vuc = v || 'all'; bgqlRenderTimeline(); };
 window.bgqlSetTLCh = function(v){ bgqlTimelineFilter.ma_ch = v || null; bgqlRenderTimeline(); };
+
+// [v17.62] Typeahead CH/khu vực cho Timeline — y chang tab Sự vụ
+let bgqlTlSearchTimer;
+function bgqlTlSearchLabel(){
+  if (bgqlTimelineFilter.ma_ch) {
+    const f = (bgqlTimelineCache||[]).find(b=>b.ma_ch===bgqlTimelineFilter.ma_ch);
+    return f ? (f.ten_ch_snapshot||f.ma_ch) : bgqlTimelineFilter.ma_ch;
+  }
+  if (bgqlTimelineFilter.khu_vuc && bgqlTimelineFilter.khu_vuc!=='all') return 'Khu vực: ' + bgqlTimelineFilter.khu_vuc;
+  return '';
+}
+window.bgqlTlSearchInput = function(kw){
+  clearTimeout(bgqlTlSearchTimer);
+  const dd = document.getElementById('bgql-tl-search-dd');
+  if (!dd) return;
+  if (!kw || kw.length < 1) { dd.style.display='none'; return; }
+  bgqlTlSearchTimer = setTimeout(() => {
+    const all = bgqlTimelineCache || [];
+    const low = kw.toLowerCase();
+    const kvs = [...new Set(all.map(b=>b.khu_vuc).filter(k=>k && k.toLowerCase().includes(low)))].slice(0,3);
+    const chMap = new Map();
+    all.forEach(b => { if (b.ma_ch && !chMap.has(b.ma_ch)) {
+      const ten = b.ten_ch_snapshot||b.ma_ch;
+      if (ten.toLowerCase().includes(low) || b.ma_ch.toLowerCase().includes(low)) chMap.set(b.ma_ch, ten);
+    }});
+    const chs = [...chMap.entries()].slice(0,6);
+    let html = '';
+    if (kvs.length) html += '<div class="bgql-stats-dd-l">Khu vực</div>' + kvs.map(k=>`<div class="bgql-stats-dd-it" onclick="bgqlTlPickKV('${escHtml(k)}')">${escHtml(k)}</div>`).join('');
+    if (chs.length) html += '<div class="bgql-stats-dd-l">Cửa hàng</div>' + chs.map(([m,t])=>`<div class="bgql-stats-dd-it" onclick="bgqlTlPickCH('${escHtml(m)}','${escHtml(t)}')"><b>${escHtml(t)}</b> <small>${escHtml(m)}</small></div>`).join('');
+    if (!html) html = '<div class="bgql-stats-dd-empty">Không tìm thấy</div>';
+    dd.innerHTML = html; dd.style.display = '';
+  }, 180);
+};
+window.bgqlTlPickKV = function(kv){ bgqlTimelineFilter.khu_vuc = kv; bgqlTimelineFilter.ma_ch = null; bgqlRenderTimeline(); };
+window.bgqlTlPickCH = function(ma, ten){ bgqlTimelineFilter.ma_ch = ma; bgqlTimelineFilter.khu_vuc = 'all'; bgqlRenderTimeline(); };
+window.bgqlTlSearchClear = function(){ bgqlTimelineFilter.ma_ch = null; bgqlTimelineFilter.khu_vuc = 'all'; bgqlRenderTimeline(); };
 
 function bgqlRenderTimeline(){
   const list = document.getElementById('bgql-timeline-list');
