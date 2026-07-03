@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.66',
+  'sys.cache_version': 'v17.67',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -420,7 +420,7 @@ function goToPage(page){
     const lcNav=document.getElementById('nav-lichca');
     if(lcNav)lcNav.classList.add('active');
   }
-  // [v17.66] Khách Online: nav id 'nav-khachonline' nhưng page 'donhang-nhan'
+  // [v17.67] Khách Online: nav id 'nav-khachonline' nhưng page 'donhang-nhan'
   if(page==='donhang-nhan'){ const koNav=document.getElementById('nav-khachonline'); if(koNav)koNav.classList.add('active'); }
   document.getElementById('header-page-title').textContent=PAGE_TITLES[page]||'';
   // [v11.8+] Force scroll về 0 mỗi lần đổi trang để header xanh không bị che
@@ -444,8 +444,8 @@ function goToPage(page){
   }
   if(page==='lichca')   taiLichCa();
   if(page==='lichca-ql') taiLichCaQL();
-  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.66] Trưởng ca
-  if(page==='banhang' && SESSION && SESSION.vaiTro==='CUA_HANG' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.66] thẻ TC cho cửa hàng
+  if(page==='chamcong' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.67] Trưởng ca
+  if(page==='banhang' && SESSION && SESSION.vaiTro==='CUA_HANG' && typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 300); // [v17.67] thẻ TC cho cửa hàng
   if(page==='dashboard') taiDashboard(); // [FIX v9 #12]
   if(page==='donnghi-acc') taiDonNghiACC(); // [v10 Yc #4]
   if(page==='duyetyc')     taiDuyetYC();    // [v10 Yc #5]
@@ -561,7 +561,7 @@ const HUB_GROUPS = {
 };
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
-  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.66] tắt theo công tắc tính năng
+  if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.67] tắt theo công tắc tính năng
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [A2] chức danh ĐÃ cấu hình rõ ràng có thể MỞ THÊM tile (cộng thêm, không gỡ của ai)
@@ -575,7 +575,7 @@ function moLichCaQL_safe(){ try{ goToPage('lichca-ql'); }catch(e){ try{ taiLichC
 //  [B1] SỰ VỤ KHU VỰC — màn hình cho CƠ ĐỘNG (pool / nhận việc)
 //  Sự vụ tự hiện theo khu vực; hiển thị "Điều phối: Ban quản lý" (ẩn việc tự động).
 // ═════════════════════════════════════════════════════════════════════════
-// [v17.66] Bộ lọc view "Sự vụ khu vực"
+// [v17.67] Bộ lọc view "Sự vụ khu vực"
 let _svcdScope = 'all';     // 'all' | 'mine' | 'done'
 let _svcdStatus = 'all';    // 'all' | 'dang_xu_ly' | 'cho_ch' | 'hoan_tat'
 let _svcdSort = 'thoi_han'; // 'thoi_han' | 'muc_do'
@@ -940,7 +940,7 @@ async function taiDiemPhongDo(){
 }
 window.taiDiemPhongDo = taiDiemPhongDo;
 
-// [v17.66] Thẻ điểm + lịch sử trừ ở tab Tài khoản (nhân viên). Cơ động → ẩn.
+// [v17.67] Thẻ điểm + lịch sử trừ ở tab Tài khoản (nhân viên). Cơ động → ẩn.
 async function taiDiemTaiKhoan(){
   const wrap = document.getElementById('tk-diem-wrap');
   if(!wrap || !SESSION || !SESSION.ma) return;
@@ -1040,7 +1040,7 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
-  if(typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 350); // [v17.66] khôi phục thẻ Trưởng ca + hero khi tải lại
+  if(typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 350); // [v17.67] khôi phục thẻ Trưởng ca + hero khi tải lại
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
   window.scrollTo(0, 0);
@@ -1107,14 +1107,6 @@ function khoiDongApp(){
     const mb = document.getElementById('menu-bosung-ca');
     if (mb) {
       mb.style.display = '';
-      // Load quota hiển thị (QLBH cũng dùng chung quota theo ma)
-      try {
-        supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma }).then(({ data }) => {
-          if (!data) return;
-          const lbl = document.getElementById('menu-bosung-quota');
-          if (lbl) lbl.textContent = 'Còn ' + (data.quota_bo_sung_con || 0) + '/' + (data.quota_max || 3);
-        });
-      } catch (e) {}
     }
   }
   // [v11.8] Bật tab "Mẫu nón" ở bottom nav cho mọi role (NV/CTV/CH/QLBH/ADMIN/QLNS)
@@ -1228,7 +1220,7 @@ function khoiDongApp(){
     // Ẩn tab Chấm công và Bản đồ (CH không cần)
     document.getElementById('nav-chamcong').style.display='none';
     document.getElementById('nav-bandochidung').style.display='none';
-    // [v17.66] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
+    // [v17.67] Tắt tính năng Lịch hoạt động → ẩn tab Lịch của cửa hàng
     if(_getSetting('lichhd.enabled', true) === false){ const _nL=document.getElementById('nav-lichca'); if(_nL) _nL.style.display='none'; }
     // Hiện tab Bán hàng
     document.getElementById('nav-banhang').style.display='';
@@ -1301,7 +1293,7 @@ function selectCH(ma,ten){
   // [v10.85 YC#8] Nếu là Đội SALE → hiện card chọn CH thực tế
   _capNhatUISaleTarget(ten || ma);
   updateSubmitBtn();
-  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.66] Trưởng ca theo cửa hàng
+  if(typeof tcRefreshBanner==='function') tcRefreshBanner(); // [v17.67] Trưởng ca theo cửa hàng
 }
 function hideCHSuggest(){setTimeout(()=>{document.getElementById('ch-suggest-list').style.display='none';},150);}
 
@@ -1877,7 +1869,7 @@ function doSubmit(){
   }
 
   // [v12.4] Face verify đã chạy ở moCamera() khi face BẬT → không cần check ở đây nữa
-  // [v17.66] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
+  // [v17.67] Bảng hỏi Trưởng ca khi vào ca + ca chưa có TC + chưa tick nút gạt
   if(typeof tcCheckDialogBeforeSubmit==='function'){ tcCheckDialogBeforeSubmit(_doSubmitContinueWithGPS); }
   else { _doSubmitContinueWithGPS(); }
 }
@@ -2160,7 +2152,7 @@ function startCountdown(giay){
   },1000);
 }
 
-// [v17.66] Ẩn dòng chấm công TỰ ĐỘNG do CHUYỂN TRƯỞNG CA khỏi HIỂN THỊ (giờ công/lịch sử NV+QL).
+// [v17.67] Ẩn dòng chấm công TỰ ĐỘNG do CHUYỂN TRƯỞNG CA khỏi HIỂN THỊ (giờ công/lịch sử NV+QL).
 //          Chỉ giữ trên Google Sheet để kiểm soát. KHÔNG ẩn auto-close (quên ra).
 function _ccHideAutoTc(ghiChu){
   const g = ghiChu || '';
@@ -2218,7 +2210,7 @@ function taiLichSu(){
     } catch(e) { window._doiSaleMap = {}; }
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
-      if (_ccHideAutoTc(l.ghiChu)) return;   // [v17.66] ẩn dòng auto chuyển TC khỏi nhật ký
+      if (_ccHideAutoTc(l.ghiChu)) return;   // [v17.67] ẩn dòng auto chuyển TC khỏi nhật ký
       const isLoi=l.xacNhan==='KHÔNG HỢP LỆ';
       const cbList = l.canhBaoList || [];
       logs.push({
@@ -2985,7 +2977,7 @@ function renderTaiKhoan(){
 
   // [v16.95] Thẻ tải ứng dụng
   if (typeof tkRefreshInstallCard === 'function') tkRefreshInstallCard();
-  // [v17.66] Thẻ điểm phong độ + lịch sử trừ
+  // [v17.67] Thẻ điểm phong độ + lịch sử trừ
   if (typeof taiDiemTaiKhoan === 'function') taiDiemTaiKhoan();
 }
 

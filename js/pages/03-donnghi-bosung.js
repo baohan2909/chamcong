@@ -563,23 +563,8 @@ async function moModalBoSungCa(){
   const chThucH = document.getElementById('bsc-chthuc');
   if (chThucH) chThucH.value = '';
 
-  // [v10.85 YC#2] Mặc định chọn hôm nay
-  bscChonNgay(0);
-
-  // Load quota
-  try {
-    const { data } = await supa.rpc('fn_nv_quota_status', { p_ma_nv: SESSION.ma });
-    const el = document.getElementById('bsc-quota');
-    if (data && el) {
-      if (data.quota_bo_sung_con <= 0) {
-        el.innerHTML = '⛔ <strong>Đã hết quota bổ sung ca tháng này (3/3 lần)</strong>. Vui lòng liên hệ QLNS để được sửa thủ công.';
-        el.style.background = '#FEF2F2';
-        el.style.color = '#991B1B';
-      } else {
-        el.innerHTML = `Quota tháng ${data.thang}: <strong>còn ${data.quota_bo_sung_con}/3 lần</strong>`;
-      }
-    }
-  } catch (e) {}
+  // [v17.67] Mặc định hôm nay; cho chọn bất kỳ ngày trong tháng (min đầu tháng, max hôm nay)
+  bscSetupNgay();
 
   // [v10.85] Load CH list vào window cache để dùng cho custom dropdown
   const inpCH = document.getElementById('bsc-ch-inp');
@@ -714,26 +699,16 @@ function dongModalBoSungCa(){
   document.getElementById('bsc-modal').style.display = 'none';
 }
 
-// [v10.85 YC#2] Chọn ngày bổ sung ca: 0 = hôm nay, -1 = hôm qua
-function bscChonNgay(offset){
+// [v17.67] Thiết lập ô chọn ngày bổ sung: mặc định hôm nay, min = đầu tháng, max = hôm nay
+function bscSetupNgay(){
+  const el = document.getElementById('bsc-ngay');
+  if (!el) return;
   const d = new Date();
-  d.setDate(d.getDate() + offset);
-  const ngayStr = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-  document.getElementById('bsc-ngay').value = ngayStr;
-  const btnHN = document.getElementById('bsc-ngay-homnay');
-  const btnHQ = document.getElementById('bsc-ngay-homqua');
-  // [v10.85] Render label kèm ngày dd/MM
-  const today = new Date();
-  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-  if (btnHN) btnHN.innerHTML = '<div style="font-size:13px;font-weight:600">Hôm nay</div><div style="font-size:10.5px;opacity:.85;margin-top:2px">'+pad(today.getDate())+'/'+pad(today.getMonth()+1)+'</div>';
-  if (btnHQ) btnHQ.innerHTML = '<div style="font-size:13px;font-weight:600">Hôm qua</div><div style="font-size:10.5px;opacity:.85;margin-top:2px">'+pad(yesterday.getDate())+'/'+pad(yesterday.getMonth()+1)+'</div>';
-  if (offset === 0){
-    btnHN.style.borderColor = '#0F6E56'; btnHN.style.background = '#0F6E56'; btnHN.style.color = '#fff';
-    btnHQ.style.borderColor = '#D1D5DB'; btnHQ.style.background = '#fff'; btnHQ.style.color = '#374151';
-  } else {
-    btnHQ.style.borderColor = '#0F6E56'; btnHQ.style.background = '#0F6E56'; btnHQ.style.color = '#fff';
-    btnHN.style.borderColor = '#D1D5DB'; btnHN.style.background = '#fff'; btnHN.style.color = '#374151';
-  }
+  const y = d.getFullYear(), mo = pad(d.getMonth()+1), da = pad(d.getDate());
+  const today = y + '-' + mo + '-' + da;
+  el.value = today;
+  el.min = y + '-' + mo + '-01';
+  el.max = today;
 }
 
 async function guiBoSungCa(){
@@ -772,6 +747,11 @@ async function guiBoSungCa(){
   try {
     const ngayBSC = document.getElementById('bsc-ngay').value;
     if (!ngayBSC){ errEl.textContent = 'Chọn ngày cần bổ sung.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
+    // [v17.67] Chỉ cho phép ngày TRONG THÁNG này, không quá hôm nay
+    const _n = new Date();
+    const _minM = _n.getFullYear() + '-' + pad(_n.getMonth()+1) + '-01';
+    const _maxM = _n.getFullYear() + '-' + pad(_n.getMonth()+1) + '-' + pad(_n.getDate());
+    if (ngayBSC < _minM || ngayBSC > _maxM){ errEl.textContent = 'Chỉ được bổ sung ngày trong tháng này (không quá hôm nay).'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
       p_ma_nv: SESSION.ma,
       p_ngay: ngayBSC,
@@ -787,10 +767,7 @@ async function guiBoSungCa(){
       errEl.style.display = 'block';
     } else {
       dongModalBoSungCa();
-      showToast(`✓ Đã gửi yêu cầu bổ sung. QLNS sẽ xem xét. Quota còn ${data.quota_con_lai}/3.`, 'ok');
-      // Update menu quota label
-      const lbl = document.getElementById('menu-bosung-quota');
-      if (lbl && data.quota_con_lai != null) lbl.textContent = 'Còn ' + data.quota_con_lai + '/3';
+      showToast('✓ Đã gửi yêu cầu bổ sung. QLNS sẽ xem xét.', 'ok');
       taiLichSu();
     }
   } catch (e) {
