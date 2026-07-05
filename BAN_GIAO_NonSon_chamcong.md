@@ -523,3 +523,56 @@ Backend-only, KHÔNG đổi frontend/version. Chạy `diem_may_do_v7.sql` → hu
 Backend-only, KHÔNG đổi frontend/version. Chạy `fn_nv_bo_sung_ca_v2.sql`.
 
 **Cũng đã xong (data):** `fix_admin_trangthai.sql` — chuẩn hoá `quan_ly.trang_thai` về 'ACTIVE' → tài khoản ADMIN 1670 (Trần Thị Thu Hương) hết mất quyền duyệt/sửa. (Gốc: `_check_role_admin_qlns` chỉ nhận 'ACTIVE'; tài khoản tạo với 'ĐANG LÀM VIỆC' bị chặn. Nếu muốn bền hơn có thể sửa hàm đó nhận nhiều biến thể trạng thái — chưa cần vì đã chuẩn hoá data.)
+
+---
+
+## ⏩ NỐI TIẾP (v17.68 · 05/07/2026 — ĐẠI TU giao diện + phân quyền + RÀ LỖI CHỨC NĂNG 6 module)
+
+> Phiên này Claude làm RẤT LỚN, TOÀN BỘ trên **nhánh git `fix-test`** (KHÔNG commit thẳng main). **15 commit, đều nằm trong release v17.68.** Aroma ĐÃ chạy 2 SQL (mục dưới) + ĐÃ test một vòng OK, **CHƯA merge `fix-test`→`main`**.
+>
+> **Quy tắc phiên (Aroma chốt):** sửa trên nhánh `fix-test`; KHÔNG tự chạy DDL (repo chỉ có **anon key** `sb_publishable_...` ở js/core/01-config.js:9 → không chạy được `CREATE FUNCTION`/SQL tùy ý; Aroma chạy tay — nếu sau cấp service_role key/connection string thì Claude tự chạy được); hỏi/verify trước, dần nới thành chủ động.
+
+### 2 SQL Aroma ĐÃ CHẠY (production)
+1. `INSERT INTO app_settings (key,value,updated_at) VALUES ('sys.cache_version','"v17.68"'::jsonb,now()) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();`
+2. `CREATE OR REPLACE FUNCTION fn_get_quyen_user(p_ma text)` — **đọc thêm `quyen_ca_nhan`** (override chuc_danh_quyen nếu có + mảng không rỗng) + `da_cau_hinh = (chức danh OR cá nhân)`. Lý do: hàm cũ chỉ đọc `chuc_danh_quyen` → set quyền cho **CÁ NHÂN** không load = 1 phần gốc lỗi (a). Nay quyền chức danh + cá nhân đều vào SESSION.
+
+### Bump version
+v17.67 → **v17.68**, 5 chỗ: index.html `?v=` (37), login sub, tab Tài khoản, sw.js CACHE_VERSION, 02-system `sys.cache_version`.
+
+### ĐÃ LÀM (15 commit fix-test)
+**A. GIAO DIỆN.** Bỏ hết tím/indigo (Thiếu lịch #7C3AED→cyan #0284C7; BXH bán chạy is-me→xanh chủ đạo, rank-10→xanh dương đậm; icon Lịch sử duyệt→xanh). Chuẩn hóa 4 ô search (Điểm HT/Giám sát TC/Bàn giao QL/Sự vụ) về kiểu `.suggest-list` màn Chấm công (bo 14px, shadow mềm, hover xanh, dòng chính xanh #0F6E56 / dòng phụ xám); Sự vụ đổi `<datalist>`→typeahead tự chế (`bgSvSearchInput`/`bgSvPickStore` ở 06-bangiao.js). Banner overlay Điểm HT (cam)/Giám sát TC (xanh)/Chương trình KM/Sự vụ KV → recipe `.cc-hero`, thêm token `--cc-hero-gradient-cam`/`--cc-hero-shadow-cam` (00-tokens.css). **Kích thước header đồng bộ theo CHUẨN LỊCH `.cc-hero-page` (padding 14/18, bubble 150/80, title 20/700, label 10):** kéo `.cc-hero` (Chấm công), 2 overlay, ct-banner, Sự vụ KV về đúng — dh-hero (Đơn hàng, back nav) + nvai (AI chat) GIỮ vì UX riêng. Overlay nền #F1F5F9→#f4f3ef; bỏ font Plus Jakarta Sans thừa. Dọn tên class: `--purple*`→`--teal-dark*` (tránh trùng `--teal` #14B8A6 ở 12-bangiao), `.bh-ql-stat.purple`→`.teal`, `.mna-tq-card.a-violet`→`.a-teal`; thẻ "Quản lý" rename `violet`→`teal` (giữ màu teal, Aroma dặn KHÔNG xanh dương); bỏ emoji chip mức độ + ★ badge phân quyền. **GIỮ CÓ CHỦ ĐÍCH** (Aroma giao Claude quyết): theme navy/teal/gold Bàn giao (12-bangiao.css ghi "per design rules") + dark+gold Đơn hàng Điều phối — cohesive; heading navy #0F2E45 (68 chỗ) giữ.
+
+**B. PHÂN QUYỀN.** Thêm danh mục `PQ_GROUPS` (07-phanquyen.js) cho tính năng mới: `nhansu.giamsat`, `diem.xem`, `diem.quanly`, `lichca.hoatdong`; gán mã đúng cho `HUB_GROUPS` (bỏ mượn `nhansu.xem`); `PQ_DEFAULT` QLNS/QLBH cộng thêm. **Probe xác nhận cả 8 RPC nghi thiếu ĐỀU CÓ THẬT** (fn_nhom_luu, fn_list_nv_theo_chuc_danh, fn_save_quyen_ca_nhan, 4× fn_su_vu_co_dong_*, dh_fn_dieu_phoi — tài liệu cũ liệt kê thiếu). Enforcement: hub visibility đã cộng-thêm qua `_hubItemVisible`/`_quyenCauHinh`. **Backend action-RPC (fn_toggle_mien_diem, fn_duyet_canh_bao...) VẪN check ROLE ADMIN/QLNS** → non-QLNS có quyền vẫn bị backend chặn HÀNH ĐỘNG. Quyết định (Aroma OK): KHÔNG refactor loạt RPC (rủi ro bảo mật production); cần trao quyền quản lý → gán vai trò, hoặc yêu cầu cụ thể thì sửa từng RPC.
+
+**C. ĐẤU NỐI UI-RPC.** 27 chỗ `throw new Error((data&&data.error)||error.message)` → `(error||{}).message` (hết crash TypeError che lỗi khi error=null). Biên bản bàn giao `_demSv` đếm nhầm sự vụ tạo-lỗi thành "mới" → thêm `svFail` + cảnh báo.
+
+**D. RÀ LỖI CHỨC NĂNG (6 agent quét, Claude verify code thật):**
+- **BÀN GIAO:** `bgSwitchSub('today')` subtab không tồn tại → **trang trắng sau MỖI lần gửi biên bản** (đổi `'timeline'`); màn "Xác nhận trước khi gửi" phân loại sai mã (`'D'/'K'/'KC'` thay vì thực tế `'BT'/'KO'/'VD'`) → "Bình thường"/"Không có" **luôn = 0** (sửa mã + nhãn "Đạt"→"Bình thường"); guard `window._bgSubmitting` chống gửi biên bản đúp.
+- **SỰ VỤ:** rò rỉ timer countdown → thêm `bgqlStopSvTimer`/`bgSuVuStopTimer` ở `goToPage` + `bgqlSwitchSub`; **9 handler guard `window._svActing`** chống double-click (bgqlTiepNhan/BatDau/HoanTat/Huy, bgSuVuXacNhanXong/Dong/CoDongXong, svcdNhanViec/Xong); biên ngày 7d/30d → mốc đầu-ngày; số lượng hàng clamp ≥0; ô từ>đến custom hoán đổi; đồng hồ QL đồng bộ NV.
+- **ĐIỂM:** `diemHubMien` chỉ vẽ hộp chi tiết, thẻ điểm đứng im sau xóa điểm trừ → thêm cập nhật `tk` + `_diemHubPaint()`; nút ✕ thiếu khi lọc khu vực; `taiDiemPhongDo` null → "—" thay "10 Tuyệt vời".
+- **CHẤM CÔNG (cốt lõi):** `_doSubmitFinal` thêm **guard re-entry** (chống double-submit khi dialog TC/GPS chưa khóa nút) + **re-check `_ccDataExpired`** — gốc: interval `_ccInvalidateStale` (1s) null-hóa `state.lat/lng` khi dialog "Bạn có phải Trưởng ca?" mở > giới hạn tươi (~60s) → bản ghi chấm công **lưu tọa độ NULL**, server không kiểm được vị trí; `ngayCham` UTC→VN local.
+- **LỊCH CA:** `moLichCa` Chủ Nhật mở tuần kế (trước đây CN mở tuần đã kết thúc → mọi ngày bị khóa, NV bí); `applyMultiDays` báo trung thực (cảnh báo "còn N ngày ở tuần khác" thay vì âm thầm bỏ).
+- **ĐƠN NGHỈ:** modal bổ sung ca reset CH đã chọn (hết gửi nhầm CH lần mở trước); dashboard adapter đổi tên field (`canhBaoMoi`→`canhBao`, `topKV`→`theoKhuVuc`, `topCH`→`theoCuaHang`, `duLieuNgay`→`trend7`) → danh sách cảnh báo + biểu đồ hiện đúng (trước luôn rỗng).
+- **GIỜ CÔNG:** `adm2RevertCanhBao` + `adm2TuChoiCanhBao` gọi `_rebuildCong` (trước không → giờ công tính sẵn giữ số sai khi đổi trạng thái CB).
+
+### NOTED — CHƯA SỬA (phiên sau làm, verify kỹ từng cái — Claude cố ý không sửa vì cần quyết định/rủi ro)
+- **Chấm công #5:** `idemKey` (02-system:2018) sinh mới mỗi lần bấm; sau khi `_ccChamThatBai` (3 retry rớt) user bấm lại → key mới → nếu server ĐÃ ghi (response rớt) thì tạo **bản ghi thứ 2**. Fix: lưu idemKey vào state, reuse khi retry, clear khi SUCCESS + khi đổi loại/CH. RỦI RO: clear sai → chặn nhầm chấm lại hợp lệ.
+- **Giờ công #1:** giải trình NHIỀU cảnh báo (nhánh CÓ sửa CH/ca) chỉ ghi cho 1 CB (`_gtCbId`), biến `cbIdsStr` truyền vào nhưng **không dùng** → CB thứ 2 treo "chờ duyệt". (02-system ~2294/2332/3748)
+- **Giờ công #3:** ~16 chỗ `new Date().toISOString().substring(0,10)` lấy "hôm nay" theo **UTC** → sai ngày **00:00–07:00 sáng VN**. Có helper `_ymd(new Date())` (02-system:4036, local) để thay. Chỗ đáng sửa: 02-nhansu:1149-1150 (taiLichSuDuyet ẩn CB sáng nay), 02-system:4382/4403/4432 (`p_ngay` duyệt sai), :2222 (taiLichSu chấm công). CẦN trace từng phép so sánh (vế kia có thể cũng UTC) → rủi ro tạo lệch mới.
+- **Giờ công #7:** từ chối cảnh báo xong `nsData[nvIdx].xacNhan` không cập nhật (02-system:4346-4350 chỉ set trong nhánh 'Duyệt') → NV vẫn hiện "cần duyệt". Cần biết giá trị `xacNhan` đúng cho từ-chối.
+- **Giờ công #2:** thẻ/lọc "AUTO" (02-nhansu:606/612/619) — `all` đã filter bỏ `AUTO_CHUYEN_TC` TRƯỚC khi `_ccIsAuto` chạy → nhánh `AUTO_CHUYEN_TC` trong `_ccIsAuto` chết (có thể chủ đích v17.66).
+- **Đơn nghỉ #7:** `duyetDoiLichById` (03-donnghi ~1064, `.update lich_ca`) không guard trạng thái → duyệt đè đơn đã hủy/2 QLNS. Fix: `.eq('trang_thai', <pending>)` hoặc guard theo-ID.
+- **Đơn nghỉ #8:** `duyetTatCa` (03-donnghi:1464) lấy toàn bộ `_ycData.donNghi` không lọc trạng thái → có thể duyệt lại đơn đã xử lý (tùy RPC null trả gì). Cần biết field trạng thái của item.
+- **Duyệt double-click:** `duyetDonNghiById`/`duyetDoiLichById`/`duyetTatCa` chưa guard (riêng `duyetCB` ĐÃ disable nút). Fix: khóa **theo-ID** (Set in-flight), KHÔNG global (chặn nhầm duyệt đơn khác).
+- **KPI dashboard #5:** `khongHoatDong = tongNV − chấmcông − đơnnghỉ` có thể trừ đúp (NV vừa chấm vừa nghỉ). Cần biết server đếm thế nào.
+- **Thấp:** state global rò rỉ khi đổi tài khoản không reload (bg*Cache, `_bscChList`, DOM sale-target); nhận diện Đội SALE theo tên (ILIKE/startsWith) dễ trượt; `state.lat/lng` gửi RPC dạng string.
+- **CHƯA RÀ module:** bán hàng (js/admin/01-banhang 148KB), đơn hàng (js/donhang/*), mẫu nón (04-muanon, pages/05-muanon), face-recognition.
+
+### VIỆC AROMA CẦN LÀM
+1. Merge `fix-test` → `main` (đã test OK) → GitHub Pages deploy.
+2. Muốn làm tiếp NOTED: phiên sau đọc mục này; nếu Claude làm việc trên máy khác thì clone lại repo, tạo/checkout `fix-test`, làm tiếp.
+
+### 15 commit fix-test (mới→cũ)
+`8fc8cac` áp-nhiều-ngày báo trung thực · `0f8124b` giờ công rebuild khi từ chối/đặt lại · `66b0068` lỗi module lõi (chấm công/lịch ca/đơn nghỉ) · `5982c8b` double-click sự vụ · `2207872` lỗi bàn giao/sự vụ/điểm · `ada947b` lỗi nhẹ (biên ngày/số lượng/đồng hồ) · `14e9838` bổ sung phân quyền tính năng mới · `924e028` đấu nối UI-RPC · `f06562d` overlay nền ngà ấm + font · `c2c53ab` đồng bộ kích thước header · `4973e60` dọn tên purple→teal · `95aa34d` bump v17.68 · `2a34528` banner + emoji/badge · `1d9b11f` chuẩn hóa ô search · `fc920f6` bỏ tím/indigo.
+
+**Bản version: v17.68.**
