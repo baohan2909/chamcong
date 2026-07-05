@@ -394,11 +394,12 @@ function bgqlGetFilteredSuVu(opts){
     const now = new Date();
     let from = null, to = null;
     if (bgqlSvTimeRange === 'today') from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    else if (bgqlSvTimeRange === '7d') from = new Date(now.getTime() - 7*86400000);
-    else if (bgqlSvTimeRange === '30d') from = new Date(now.getTime() - 30*86400000);
+    else if (bgqlSvTimeRange === '7d') from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    else if (bgqlSvTimeRange === '30d') from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
     else if (bgqlSvTimeRange === 'custom') {
       if (bgqlSvCustomFrom) from = new Date(bgqlSvCustomFrom + 'T00:00:00');
       if (bgqlSvCustomTo) to = new Date(bgqlSvCustomTo + 'T23:59:59');
+      if (from && to && from > to){ const _t=from; from=to; to=_t; }   // hoán nếu chọn ngược
     }
     if (from) arr = arr.filter(s => new Date(s.created_at) >= from);
     if (to) arr = arr.filter(s => new Date(s.created_at) <= to);
@@ -454,12 +455,12 @@ function bgqlRenderSuVuList(){
 // [v16.74] Đồng hồ đếm ngược deadline — chạy realtime cho mọi sự vụ đang mở
 function _bgqlFmtConLai(ms){
   const tot = Math.floor(Math.abs(ms)/1000);
-  const d = Math.floor(tot/86400);
-  const h = Math.floor((tot%86400)/3600);
+  const p2 = n => String(n).padStart(2,'0');
+  if (tot > 48*3600) return Math.round(tot/86400) + ' ngày';   // >48h theo ngày — đồng bộ với view NV
+  const h = Math.floor(tot/3600);
   const m = Math.floor((tot%3600)/60);
   const sec = tot%60;
-  const p2 = n => String(n).padStart(2,'0');
-  return (d>0 ? d+' ngày ' : '') + p2(h)+'g '+p2(m)+'p '+p2(sec)+'s';
+  return p2(h)+':'+p2(m)+':'+p2(sec);
 }
 function bgqlTickSvCountdowns(){
   const now = Date.now();

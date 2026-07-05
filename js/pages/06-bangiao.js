@@ -499,7 +499,7 @@ function bgRenderGroupHang(g){
 window.bgUpdateHang = function(id, raw){
   const v = parseInt(raw, 10);
   if (!bgState[id]) bgState[id] = {};
-  bgState[id].so_luong = isNaN(v) ? null : v;
+  bgState[id].so_luong = isNaN(v) ? null : Math.max(0, v);   // không cho số lượng âm
   bgUpdateProgress();
 };
 window.bgToggleHangNote = function(id){
@@ -971,9 +971,9 @@ function bgSvApplyFilter(data, opts){
     const now = new Date();
     let from=null, to=null;
     if (f.time==='today') from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    else if (f.time==='7d') from = new Date(now.getTime() - 7*86400000);
-    else if (f.time==='30d') from = new Date(now.getTime() - 30*86400000);
-    else if (f.time==='custom'){ if (f.from) from = new Date(f.from+'T00:00:00'); if (f.to) to = new Date(f.to+'T23:59:59'); }
+    else if (f.time==='7d') from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    else if (f.time==='30d') from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+    else if (f.time==='custom'){ if (f.from) from = new Date(f.from+'T00:00:00'); if (f.to) to = new Date(f.to+'T23:59:59'); if (from && to && from > to){ const _t=from; from=to; to=_t; } }
     if (from) out = out.filter(s => new Date(s.created_at) >= from);
     if (to) out = out.filter(s => new Date(s.created_at) <= to);
   }

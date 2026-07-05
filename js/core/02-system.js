@@ -944,12 +944,12 @@ async function taiDiemPhongDo(){
     const _dcard = document.getElementById('diem-card');
     if(data.co_dong){ if(_dcard) _dcard.style.display='none'; return; }
     if(_dcard) _dcard.style.display='';
-    const diem = (data.diem != null) ? Number(data.diem) : 10;
-    el.textContent = diem;
+    const diem = (data.diem != null) ? Number(data.diem) : null;
+    el.textContent = (diem != null) ? diem : '—';
     const mota = document.getElementById('diem-mota');
     if(mota){
-      const tru = 10 - diem;
-      mota.textContent = tru > 0 ? ('Đã bị trừ ' + tru + ' điểm trong tháng này.') : 'Tuyệt vời — chưa bị trừ điểm nào!';
+      if(diem == null){ mota.textContent = 'Chưa có dữ liệu điểm tháng này.'; }
+      else { const tru = 10 - diem; mota.textContent = tru > 0 ? ('Đã bị trừ ' + tru + ' điểm trong tháng này.') : 'Tuyệt vời — chưa bị trừ điểm nào!'; }
     }
   }catch(e){}
 }
