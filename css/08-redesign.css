@@ -472,7 +472,8 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
   color: #6b7280 !important;
   margin-top: 1px !important;
 }
-.cc-redesign-active #page-chamcong .card .gps-badge {
+.cc-redesign-active #page-chamcong .card .gps-badge,
+.cc-redesign-active #page-chamcong .selfie-badge {
   font-size: 10px !important;
   background: #E1F5EE !important;
   color: #0F6E56 !important;
@@ -481,6 +482,8 @@ body { background: linear-gradient(180deg, #FAFAF8 0%, #F4F3EF 100%); }
   font-weight: 700 !important;
   letter-spacing: 0.5px !important;
   flex-shrink: 0 !important;
+  min-width: 112px !important;   /* [badge] 2 pill "Lấy vị trí" + "Quét khuôn mặt" bằng bề ngang */
+  text-align: center !important;
 }
 
 /* Selfie button — đồng bộ style */
