@@ -1490,6 +1490,7 @@ async function bgUndoFire(){ const fn=_bgUndoCommit; _bgUndoCommit=null; bgUndoC
 // [B1] Cơ động xác nhận đã xử lý xong (bất kỳ ai trong vùng, không cần nhận việc)
 window.bgSuVuCoDongXong = async function(id){
   if (!confirm('Xác nhận bạn đã xử lý xong sự vụ này?\nCửa hàng sẽ kiểm tra rồi xác nhận hoàn tất.')) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
@@ -1498,11 +1499,13 @@ window.bgSuVuCoDongXong = async function(id){
     showToast('✓ Đã xử lý xong · chờ cửa hàng xác nhận', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 
 // Cơ động / người xử lý xác nhận đã xử lý xong
 window.bgSuVuXacNhanXong = async function(id){
   if (!confirm('Xác nhận bạn đã xử lý xong sự vụ này?\nCửa hàng sẽ kiểm tra rồi xác nhận hoàn tất.')) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_xac_nhan_xong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
@@ -1511,12 +1514,14 @@ window.bgSuVuXacNhanXong = async function(id){
     showToast('✓ Đã báo xử lý xong · chờ cửa hàng xác nhận', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 
 // Nhân viên / cửa hàng xác nhận hoàn tất & đóng
 window.bgSuVuDong = async function(id){
   const note = prompt('Ghi chú khi đóng (tùy chọn):', '');
   if (note === null) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     // [v16.74] Vai trò đóng đúng theo loại tài khoản (khớp constraint su_vu)
     const _V = SESSION.vaiTro || '';

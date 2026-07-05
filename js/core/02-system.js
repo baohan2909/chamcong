@@ -690,6 +690,7 @@ function svcdCard(s){
 
 window.svcdNhanViec = async function(id){
   if(!confirm('Nhận xử lý sự vụ này?')) return;
+  if (window._svActing) return; window._svActing = true;
   try{
     const { data, error } = await supa.rpc('fn_su_vu_co_dong_nhan_viec', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: (SESSION.ten||SESSION.hoTen||SESSION.ma)
@@ -698,10 +699,12 @@ window.svcdNhanViec = async function(id){
     if(typeof showToast==='function') showToast('✓ Đã nhận việc','ok');
     svcdReload();
   }catch(e){ if(typeof showToast==='function') showToast('⚠ '+e.message,'warn'); }
+  finally { window._svActing = false; }
 };
 
 window.svcdXong = async function(id){
   if(!confirm('Xác nhận đã xử lý xong sự vụ này?')) return;
+  if (window._svActing) return; window._svActing = true;
   try{
     const { data, error } = await supa.rpc('fn_su_vu_xac_nhan_xong', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: (SESSION.ten||SESSION.hoTen||SESSION.ma)
@@ -710,6 +713,7 @@ window.svcdXong = async function(id){
     if(typeof showToast==='function') showToast('✓ Đã xác nhận xong','ok');
     svcdReload();
   }catch(e){ if(typeof showToast==='function') showToast('⚠ '+e.message,'warn'); }
+  finally { window._svActing = false; }
 };
 window.svcdSetScope  = function(v){ _svcdScope = v || 'all'; svcdRender(); };
 window.svcdSetStatus = function(v){ _svcdStatus = v || 'all'; svcdRender(); };

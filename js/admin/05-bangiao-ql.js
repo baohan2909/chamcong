@@ -630,6 +630,7 @@ function bgqlFmtTimeShort(s){
 // ═════════════════════════════════════════════════════════════════════════
 window.bgqlTiepNhan = async function(id){
   if (!confirm('Tiếp nhận sự vụ này?')) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_tiep_nhan', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen, p_vai_tro: SESSION.vaiTro
@@ -638,8 +639,10 @@ window.bgqlTiepNhan = async function(id){
     showToast('✓ Đã tiếp nhận', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 window.bgqlBatDau = async function(id){
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_bat_dau_xu_ly', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen, p_vai_tro: SESSION.vaiTro
@@ -648,10 +651,12 @@ window.bgqlBatDau = async function(id){
     showToast('✓ Bắt đầu xử lý', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 window.bgqlHoanTat = async function(id){
   const note = prompt('Ghi chú đóng sự vụ (tùy chọn):', '');
   if (note === null) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_dong', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
@@ -661,10 +666,12 @@ window.bgqlHoanTat = async function(id){
     showToast('✓ Đã đóng sự vụ', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 window.bgqlHuy = async function(id){
   const reason = prompt('Lý do hủy:', '');
   if (!reason || !reason.trim()) return;
+  if (window._svActing) return; window._svActing = true;
   try {
     const { data, error } = await supa.rpc('fn_su_vu_huy', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
@@ -674,6 +681,7 @@ window.bgqlHuy = async function(id){
     showToast('✓ Đã hủy', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }
 };
 
 // ═════════════════════════════════════════════════════════════════════════
