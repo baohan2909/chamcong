@@ -42,7 +42,7 @@ function _diemNgay(s) {
 function diemHubOpen() {
   let ov = document.getElementById('diem-hub-ov');
   if (!ov) { ov = document.createElement('div'); ov.id = 'diem-hub-ov'; document.body.appendChild(ov); }
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#f4f3ef;display:flex;flex-direction:column';
   _diemHub = { list: [], tk: {}, khu: 'all', ch: null, nv: null, loai: null, sort: 'diem_asc', thang: _diemThangHT(), open: new Set() };
   ov.innerHTML = `
     <div style="flex:none;padding:12px 14px 2px">

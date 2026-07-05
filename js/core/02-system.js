@@ -583,7 +583,7 @@ let _svcdData = [];
 function moSuVuCoDong(){
   let ov = document.getElementById('svcd-overlay');
   if(!ov){ ov = document.createElement('div'); ov.id='svcd-overlay'; document.body.appendChild(ov); }
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column;';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#f4f3ef;display:flex;flex-direction:column;';
   ov.innerHTML = `
     <div style="flex:none;padding:12px 14px 2px">
       <div style="position:relative;overflow:hidden;border-radius:22px;background:var(--cc-hero-gradient);color:#fff;padding:14px 18px;box-shadow:var(--cc-hero-shadow)">
