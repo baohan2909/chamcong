@@ -1261,6 +1261,8 @@ async function adm2RevertCanhBao(id){
       ghi_chu_duyet: '[Đã đặt lại bởi Admin lúc ' + new Date().toLocaleString('vi-VN') + ']'
     }).eq('id', id);
     if(error) throw error;
+    const _recR = (window._lsdCachedList || []).find(r => r.id === id);
+    if (_recR) await _rebuildCong(_recR.maNV || _recR.ma_nv, _recR.ngay);   // [fix] dựng lại giờ công (đổi trạng thái CB ảnh hưởng cộng giờ)
     adm2Toast('Đã đặt lại', 'success');
     adm2LoadCBList();
   } catch(e) { adm2Toast(e.message, 'error'); }
@@ -1317,6 +1319,8 @@ async function adm2TuChoiCanhBao(id) {
       ghi_chu_duyet: lyDo.trim()
     }).eq('id', id);
     if (error) throw error;
+    const _recT = (window._lsdCachedList || []).find(r => r.id === id);
+    if (_recT) await _rebuildCong(_recT.maNV || _recT.ma_nv, _recT.ngay);   // [fix] dựng lại giờ công
     adm2Toast('Đã từ chối', 'success');
     // [v9.45] Reload
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
