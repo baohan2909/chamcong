@@ -689,10 +689,18 @@ function applyMultiDays(ngay){
     _rerenderLCDay(d);
     applied++;
   });
-  if(applied === 0){
+  // [fix] đếm ngày trong dải nằm NGOÀI tuần đang xem (bị bỏ — không áp được ở tuần này)
+  let ngoaiTuan = 0;
+  for (let x = new Date(tuNgay+'T00:00:00'), _end = new Date(denNgay+'T00:00:00'); x <= _end; x.setDate(x.getDate()+1)){
+    const ds = x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+    if (ds !== ngay && ngayTrongTuan.indexOf(ds) < 0) ngoaiTuan++;
+  }
+  if(applied === 0 && ngoaiTuan === 0){
     showToast('⚠ Không có ngày nào trong dải hợp lệ trong tuần này', 'warn');
   } else {
-    showToast(`✓ Đã áp dụng đơn cho ${applied} ngày`, 'ok');
+    let _msg = `✓ Đã áp dụng đơn cho ${applied} ngày (trong tuần này)`;
+    if (ngoaiTuan > 0) _msg += ` · ⚠ còn ${ngoaiTuan} ngày Ở TUẦN KHÁC — mở đúng tuần để xin nốt`;
+    showToast(_msg, ngoaiTuan > 0 ? 'warn' : 'ok');
     // Đóng range picker
     const cb = document.getElementById('lc-multi-' + ngay);
     if(cb) cb.checked = false;
