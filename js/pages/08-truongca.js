@@ -303,13 +303,13 @@ function tcOpenGiamSat(){
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column';
   ov.innerHTML=`
     <div style="flex:none;padding:12px 14px 2px">
-      <div style="position:relative;overflow:hidden;border-radius:22px;background:var(--cc-hero-gradient);color:#fff;padding:18px 20px;box-shadow:var(--cc-hero-shadow)">
-        <div style="position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:var(--cc-bubble-color)"></div>
-        <div style="position:absolute;right:60px;top:60px;width:90px;height:90px;border-radius:50%;background:var(--cc-bubble-color-sm)"></div>
+      <div style="position:relative;overflow:hidden;border-radius:22px;background:var(--cc-hero-gradient);color:#fff;padding:14px 18px;box-shadow:var(--cc-hero-shadow)">
+        <div style="position:absolute;right:-20px;top:-20px;width:150px;height:150px;border-radius:50%;background:var(--cc-bubble-color)"></div>
+        <div style="position:absolute;right:55px;top:55px;width:80px;height:80px;border-radius:50%;background:var(--cc-bubble-color-sm)"></div>
         <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
           <div style="min-width:0">
-            <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.9">GIÁM SÁT</div>
-            <div style="font-size:20px;font-weight:800;margin-top:1px">Trưởng ca toàn chuỗi</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.6px;opacity:.9">GIÁM SÁT</div>
+            <div style="font-size:20px;font-weight:700;margin-top:1px">Trưởng ca toàn chuỗi</div>
             <div id="tcgs-sub" style="font-size:11.5px;opacity:.85;margin-top:2px">Hôm nay</div>
           </div>
           <div style="display:flex;gap:8px;flex:none">

@@ -585,9 +585,18 @@ function moSuVuCoDong(){
   if(!ov){ ov = document.createElement('div'); ov.id='svcd-overlay'; document.body.appendChild(ov); }
   ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#F1F5F9;display:flex;flex-direction:column;';
   ov.innerHTML = `
-    <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.12)">
-      <div style="font-weight:800;font-size:16px">Sự vụ khu vực</div>
-      <button onclick="document.getElementById('svcd-overlay').remove()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+    <div style="flex:none;padding:12px 14px 2px">
+      <div style="position:relative;overflow:hidden;border-radius:22px;background:var(--cc-hero-gradient);color:#fff;padding:14px 18px;box-shadow:var(--cc-hero-shadow)">
+        <div style="position:absolute;right:-20px;top:-20px;width:150px;height:150px;border-radius:50%;background:var(--cc-bubble-color)"></div>
+        <div style="position:absolute;right:55px;top:55px;width:80px;height:80px;border-radius:50%;background:var(--cc-bubble-color-sm)"></div>
+        <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div style="min-width:0">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.6px;opacity:.9">CƠ ĐỘNG</div>
+            <div style="font-size:20px;font-weight:700;margin-top:1px">Sự vụ khu vực</div>
+          </div>
+          <button onclick="document.getElementById('svcd-overlay').remove()" style="background:rgba(255,255,255,.22);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;flex:none">✕</button>
+        </div>
+      </div>
     </div>
     <div id="svcd-body" style="flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch">
       <div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>
