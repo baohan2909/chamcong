@@ -27,7 +27,7 @@ function _diemLoai(loai) {
   return ({
     QUEN_RA:       { t: 'Quên ra ca',    c: '#DC2626' },
     QUEN_VAO:      { t: 'Quên vào ca',   c: '#D97706' },
-    THIEU_LICH:    { t: 'Thiếu lịch',    c: '#7C3AED' },
+    THIEU_LICH:    { t: 'Thiếu lịch',    c: '#0284C7' },
     THIEU_ANH:     { t: 'Thiếu ảnh',     c: '#0EA5E9' },
     THIEU_BANGIAO: { t: 'Thiếu bàn giao',c: '#C2410C' },
     BO_SUNG:       { t: 'Bổ sung ca',    c: '#0D9488' }
