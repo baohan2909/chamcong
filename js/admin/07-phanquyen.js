@@ -338,7 +338,7 @@ function pqRenderCD(cd, nhom){
 function pqRenderCaNhanTV(c, nhom){
   const ma = c.ma;
   const checked = pqInGio('ca_nhan', ma);
-  const rieng = c.co_rieng ? '<span class="pq-nv-tag pq-nv-tag-rieng">★ Riêng</span>' : '';
+  const rieng = c.co_rieng ? '<span class="pq-nv-tag pq-nv-tag-rieng">Riêng</span>' : '';
   return `<div class="pq-row pq-cn-row${checked?' checked':''}">
       <span class="pq-cb${checked?' on':''}" onclick="pqToggleGio('ca_nhan','${pqEsc(ma)}','${pqEsc((c.ten_hien_thi||ma).replace(/'/g,'’'))}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
       <span class="pq-nv-ava">${pqEsc((c.ten_hien_thi||'?').trim().charAt(0).toUpperCase())}</span>
@@ -353,7 +353,7 @@ function pqRenderCaNhanTV(c, nhom){
 // Một NHÂN VIÊN (con của chức danh khi xổ ra)
 function pqRenderNV(nv){
   const checked = pqInGio('ca_nhan', nv.ma_nv);
-  const rieng = nv.co_rieng ? '<span class="pq-nv-tag pq-nv-tag-rieng">★ Riêng</span>' : '<span class="pq-nv-tag pq-nv-tag-cd">Theo chức danh</span>';
+  const rieng = nv.co_rieng ? '<span class="pq-nv-tag pq-nv-tag-rieng">Riêng</span>' : '<span class="pq-nv-tag pq-nv-tag-cd">Theo chức danh</span>';
   return `<div class="pq-row pq-nv-row${checked?' checked':''}">
       <span class="pq-cb${checked?' on':''}" onclick="pqToggleGio('ca_nhan','${pqEsc(nv.ma_nv)}','${pqEsc((nv.ho_ten||'').replace(/'/g,'’'))}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
       <span class="pq-nv-ava">${pqEsc((nv.ho_ten||'?').trim().charAt(0).toUpperCase())}</span>

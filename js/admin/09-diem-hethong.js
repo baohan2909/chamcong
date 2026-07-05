@@ -46,9 +46,9 @@ function diemHubOpen() {
   _diemHub = { list: [], tk: {}, khu: 'all', ch: null, nv: null, loai: null, sort: 'diem_asc', thang: _diemThangHT(), open: new Set() };
   ov.innerHTML = `
     <div style="flex:none;padding:12px 14px 2px">
-      <div style="position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(100deg,#C2410C 0%,#EA580C 52%,#FB923C 100%);color:#fff;padding:15px 16px;box-shadow:0 4px 16px rgba(194,65,18,.28)">
-        <div style="position:absolute;top:-32px;right:-8px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.13)"></div>
-        <div style="position:absolute;bottom:-38px;right:64px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.09)"></div>
+      <div style="position:relative;overflow:hidden;border-radius:22px;background:var(--cc-hero-gradient-cam);color:#fff;padding:18px 20px;box-shadow:var(--cc-hero-shadow-cam)">
+        <div style="position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:var(--cc-bubble-color)"></div>
+        <div style="position:absolute;right:60px;top:60px;width:90px;height:90px;border-radius:50%;background:var(--cc-bubble-color-sm)"></div>
         <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
           <div style="min-width:0">
             <div style="font-size:10.5px;font-weight:700;letter-spacing:.6px;opacity:.9">ĐIỂM PHONG ĐỘ</div>

@@ -14,6 +14,8 @@
   /* [v10.93] Redesign tokens — gradient + glass */
   --cc-hero-gradient: linear-gradient(140deg, #06382f 0%, #0F6E56 25%, #1D9E75 65%, #5DCAA5 100%);
   --cc-hero-shadow: 0 16px 32px -10px rgba(15,110,86,0.42);
+  --cc-hero-gradient-cam: linear-gradient(140deg, #7C2D0A 0%, #C2410C 28%, #EA580C 66%, #FB923C 100%);
+  --cc-hero-shadow-cam: 0 16px 32px -10px rgba(194,65,18,0.42);
   --cc-card-shadow: 0 3px 12px rgba(0,0,0,0.03);
   --cc-card-border: 1px solid rgba(0,0,0,0.05);
   --cc-bubble-color: rgba(255,255,255,0.11);
