@@ -351,10 +351,10 @@ function taiDashboard(){
         tongPhutTT: tq.tongPhutTT || 0,
         chenhPct: tq.chenhPct || '—'
       },
-      duLieuNgay: [],
-      topKV: [],
-      topCH: [],
-      canhBaoMoi: (res.topNVCB || []).slice(0, 10).map(x => ({
+      trend7: [],
+      theoKhuVuc: [],
+      theoCuaHang: [],
+      canhBao: (res.topNVCB || []).slice(0, 10).map(x => ({
         maNV: x.maNV, tenNV: x.tenNV, soCB: x.soCB,
         ngay: '', loaiCB: '', noiDung: 'Tổng ' + x.soCB + ' cảnh báo'
       }))
@@ -562,6 +562,10 @@ async function moModalBoSungCa(){
   if (chThucInp) chThucInp.value = '';
   const chThucH = document.getElementById('bsc-chthuc');
   if (chThucH) chThucH.value = '';
+  // [fix] reset CH đã chọn (tránh dính cửa hàng của lần mở trước → gửi nhầm CH)
+  const _bscChH = document.getElementById('bsc-ch'); if (_bscChH) _bscChH.value = '';
+  const _bscChI = document.getElementById('bsc-ch-inp'); if (_bscChI) _bscChI.value = '';
+  const _bscChHint0 = document.getElementById('bsc-ch-hint'); if (_bscChHint0) _bscChHint0.textContent = '';
 
   // [v17.67] Mặc định hôm nay; cho chọn bất kỳ ngày trong tháng (min đầu tháng, max hôm nay)
   bscSetupNgay();

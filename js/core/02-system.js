@@ -1967,6 +1967,10 @@ function gpsGiuChDaChon(){
 }
 
 function _doSubmitFinal(){
+  // [fix] chống double-submit (dialog TC/GPS không khóa nút) + chặn gửi khi GPS/ảnh đã hết hạn
+  //       (interval _ccInvalidateStale có thể null-hóa tọa độ khi dialog idle > giới hạn)
+  if (state.submitting || state.submitted) return;
+  if (_ccDataExpired()){ _ccInvalidateStale(); return; }
   // [v11.6 Item 1] Fire-and-forget — phản hồi xanh NGAY, server xử lý ngầm
   state.submitting=true;
   state.submitted=true;
@@ -1989,7 +1993,7 @@ function _doSubmitFinal(){
   }
   const truongCa = document.getElementById('tc-checkbox') ? document.getElementById('tc-checkbox').checked : false;
   const nowStr = new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
-  const ngayCham = new Date().toISOString().substring(0, 10);
+  const _dNC = new Date(); const ngayCham = _dNC.getFullYear() + '-' + String(_dNC.getMonth()+1).padStart(2,'0') + '-' + String(_dNC.getDate()).padStart(2,'0');   // [fix] ngày giờ VN (local), không dùng UTC
 
   // Pre-check ở client: tính xem có sai vị trí không (để hiển thị UI sớm)
   let preCheckGPS = null;

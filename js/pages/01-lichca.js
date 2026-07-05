@@ -64,7 +64,7 @@ function moLichCa(){
   const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
   if(isQL){ goToPage('lichca-ql'); return; }
   const dow=now.getDay();
-  lcTuan=dow===6?_tuanISO(new Date(now.getTime()+7*86400000)):_tuanISO(now);
+  lcTuan=(dow===6||dow===0)?_tuanISO(new Date(now.getTime()+7*86400000)):_tuanISO(now);   // [fix] CN cũng mở tuần kế (tuần này đã kết thúc, mọi ngày bị khóa)
   goToPage('lichca');
 }
 
