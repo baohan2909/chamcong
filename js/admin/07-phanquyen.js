@@ -19,12 +19,16 @@ const PQ_GROUPS = [
   { id:'lichca', ten:'Lịch ca', quyen:[
     { id:'lichca.xem_minh', ten:'Xem lịch của mình', gd:true },
     { id:'lichca.quanly',   ten:'Quản lý lịch ca hệ thống' },
+    { id:'lichca.hoatdong', ten:'Quản lý lịch hoạt động cửa hàng' },
   ]},
   { id:'nhansu', ten:'Nhân sự', quyen:[
     { id:'nhansu.xem',       ten:'Xem nhân sự hôm nay' },
     { id:'nhansu.quanly',    ten:'Quản lý nhân viên (thêm / sửa / xóa)', can:['nhansu.xem'] },
     { id:'nhansu.phanquyen', ten:'Phân quyền (tab này)', can:['nhansu.xem'] },
     { id:'nhansu.chuyenma',  ten:'Chuyển đổi mã nhân viên', can:['nhansu.xem'] },
+    { id:'nhansu.giamsat',   ten:'Giám sát Trưởng ca toàn chuỗi' },
+    { id:'diem.xem',         ten:'Xem điểm hệ thống (điểm phong độ NV)' },
+    { id:'diem.quanly',      ten:'Quản lý điểm — xóa điểm trừ / miễn', can:['diem.xem'] },
   ]},
   { id:'duyetyc', ten:'Nghỉ phép & Duyệt yêu cầu', quyen:[
     { id:'donnghi.tao',   ten:'Xin nghỉ / bổ sung ca', gd:true },
@@ -68,9 +72,11 @@ const PQ_DEF_NV = ['chamcong.tu_cham','giocong.xem_minh','bando.xem','lichca.xem
                    'donnghi.tao','bangiao.ca','muanon.xem','chuongtrinh.xem','giaodien.dung'];
 const PQ_DEFAULT = {
   ADMIN: PQ_ALL_IDS.slice(),
-  QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','duyetyc.duyet','giocong.xem_all',
+  QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','lichca.hoatdong','duyetyc.duyet','giocong.xem_all',
+          'nhansu.giamsat','diem.xem','diem.quanly',
           'banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly'],
-  QLBH:  ['banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly','donnghi.tao'],
+  QLBH:  ['banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly','donnghi.tao',
+          'nhansu.giamsat','lichca.hoatdong'],
   CUA_HANG: ['banhang.phien','banhang.dashboard','donhang.nhan','bangiao.ca','muanon.xem','muanon.quanly'],
   NV:  PQ_DEF_NV.slice(), CTV: PQ_DEF_NV.slice(),
 };
