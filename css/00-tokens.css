@@ -4,7 +4,7 @@
   --green-shadow: var(--green-shadow);
   --blue:#185FA5; --blue-m:#378ADD; --blue-lt:#E6F1FB; --blue-bd:#B5D4F4;
   --amber:#BA7517; --amber-m:#EF9F27; --amber-lt:#FAEEDA; --amber-bd:#FAC775;
-  --purple:#0F766E; --purple-lt:#F0FDFA; --purple-bd:#99F6E4;
+  --teal-dark:#0F766E; --teal-dark-lt:#F0FDFA; --teal-dark-bd:#99F6E4;
   --red:#A32D2D; --red-m:#E24B4A; --red-lt:#FCEBEB; --red-bd:#F09595;
   --gray-lt:#F1EFE8; --gray:#888780;
   --border:rgba(0,0,0,0.10);

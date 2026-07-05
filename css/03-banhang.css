@@ -886,7 +886,7 @@
 .bh-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
 .bh-chip { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:999px; background:var(--blue-lt); color:var(--blue); font-weight:500; }
 .bh-chip .rm { cursor:pointer; opacity:0.7; font-weight:700; padding:0 2px; }
-.bh-chip.cust { background:var(--purple-lt); color:var(--purple); }
+.bh-chip.cust { background:var(--teal-dark-lt); color:var(--teal-dark); }
 .bh-chip.add { background:var(--gray-lt); color:var(--text-m); cursor:pointer; border:1px dashed rgba(0,0,0,0.15); }
 .bh-chip.add:active { background:#E5E7EB; }
 
@@ -939,7 +939,7 @@
 .bh-ql-stat.green { background:var(--green-lt); } .bh-ql-stat.green .n { color:var(--green); }
 .bh-ql-stat.blue { background:#FEF3C7; } .bh-ql-stat.blue .n { color:#92400E; }
 .bh-ql-stat.gray { background:var(--gray-lt); } .bh-ql-stat.gray .n { color:var(--text); }
-.bh-ql-stat.purple { background:#F0FDFA; } .bh-ql-stat.purple .n { color:#0F766E; }
+.bh-ql-stat.teal { background:#F0FDFA; } .bh-ql-stat.teal .n { color:#0F766E; }
 /* [v11.8+] Thẻ stat 6 - YC xóa (cam) */
 .bh-ql-stat.orange { background:#FFEDD5; } .bh-ql-stat.orange .n { color:#9A3412; }
 .bh-ql-stat.orange.has-yc { animation:bhPulseOrange 1.5s ease-in-out infinite; }
@@ -1059,7 +1059,7 @@
 /* Customer count */
 .bh-cust-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
 .bh-cust-btn { padding:14px; border-radius:10px; background:var(--gray-lt); border:2px solid transparent; font-size:16px; font-weight:600; color:var(--text); cursor:pointer; }
-.bh-cust-btn.active { background:var(--purple-lt); border-color:var(--purple); color:var(--purple); }
+.bh-cust-btn.active { background:var(--teal-dark-lt); border-color:var(--teal-dark); color:var(--teal-dark); }
 .bh-cust-btn:active { transform:scale(0.96); }
 
 /* Reason */
