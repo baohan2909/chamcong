@@ -1002,8 +1002,6 @@ function bgSvFilterBarHtml(){
   const all = (window._bgSuVuCache || []).filter(s => s.trang_thai !== 'HUY');
   const _c = fn => all.filter(fn).length;
   const cMoi=_c(s=>s.trang_thai==='MOI_TAO'), cXuLy=_c(s=>['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI'].includes(s.trang_thai)), cChoXN=_c(s=>s.trang_thai==='DA_XU_LY_XONG'), cXong=_c(s=>s.trang_thai==='HOAN_TAT'), cTre=_c(bgLaTre), cSap=_c(bgSapHetHan);
-  const stores = Array.from(new Set(all.map(s=>s.ten_ch_snapshot||s.ma_ch).filter(Boolean))).sort();
-  const opts = stores.map(n=>`<option value="${escHtml(n)}"></option>`).join('');
   const sel = 'flex:1;min-width:0;border:1px solid #D1D5DB;border-radius:9px;padding:8px 10px;font-size:12.5px;background:#fff;color:#334155;cursor:pointer';
   const o = (v,cur,lbl)=>`<option value="${v}"${cur===v?' selected':''}>${lbl}</option>`;
   const _stMap = {tre:'Quá hạn',dang_xu_ly:'Đang xử lý',cho_ch_xac_nhan:'Chờ CH xác nhận',hoan_tat:'Hoàn tất',huy:'Đã hủy'};
@@ -1037,14 +1035,42 @@ function bgSvFilterBarHtml(){
     </div>
     ${rangeRow}
     <div style="display:flex;gap:6px;align-items:center">
-      <input list="bg-sv-store-dl" value="${escHtml(f.store||'')}" oninput="(window._bgSvFilter=window._bgSvFilter||{}).store=this.value" onchange="bgSvSetField('store',this.value)" placeholder="Cửa hàng / khu vực (gõ để gợi ý)…" style="flex:1;border:1px solid #D1D5DB;border-radius:9px;padding:8px 11px;font-size:13px">
+      <div style="flex:1;position:relative">
+        <input id="bg-sv-store-inp" value="${escHtml(f.store||'')}" oninput="bgSvSearchInput(this.value)" onchange="bgSvSetField('store',this.value)" onfocus="bgSvSearchInput(this.value)" placeholder="Cửa hàng / khu vực (gõ để gợi ý)…" autocomplete="off" style="width:100%;box-sizing:border-box;border:1px solid #D1D5DB;border-radius:9px;padding:8px 11px;font-size:13px">
+        <div id="bg-sv-search-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:240px;overflow-y:auto;z-index:30;padding:4px"></div>
+      </div>
       ${f.store?`<button onclick="bgSvSetField('store','')" style="border:1px solid #D1D5DB;background:#fff;color:#64748B;padding:8px 12px;border-radius:9px;font-size:12.5px;cursor:pointer">Xóa</button>`:''}
     </div>
-    <datalist id="bg-sv-store-dl">${opts}</datalist>
   </div>`;
 }
 
 window.bgSvSetField = function(k,v){ (window._bgSvFilter=window._bgSvFilter||{})[k]=v; bgSuVuRenderFromCache(); };
+// [nhóm C] Typeahead cửa hàng/khu vực cho Sự vụ (thay datalist native — đồng bộ kiểu Chấm công)
+let _bgSvSearchTimer = null;
+window.bgSvSearchInput = function(kw){
+  clearTimeout(_bgSvSearchTimer);
+  const dd = document.getElementById('bg-sv-search-dd'); if(!dd) return;
+  if(!kw || !kw.trim()){ dd.style.display='none'; return; }
+  _bgSvSearchTimer = setTimeout(()=>{
+    const all = (window._bgSuVuCache||[]).filter(s=>s.trang_thai!=='HUY');
+    const low = kw.toLowerCase();
+    const kvs = [...new Set(all.map(s=>s.khu_vuc).filter(k=>k && k.toLowerCase().includes(low)))].slice(0,3);
+    const chMap = new Map();
+    all.forEach(s=>{ if(s.ma_ch && !chMap.has(s.ma_ch)){ const t=s.ten_ch_snapshot||s.ma_ch; if(t.toLowerCase().includes(low)||String(s.ma_ch).toLowerCase().includes(low)) chMap.set(s.ma_ch,t); }});
+    const chs = [...chMap.entries()].slice(0,6);
+    const lbl = t=>`<div style="font-size:10.5px;font-weight:700;color:#94A3B8;padding:6px 8px 3px">${t}</div>`;
+    const it = (val,main,sub)=>`<div onmousedown="event.preventDefault(); bgSvPickStore('${escHtml(val)}')" style="padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:#0F6E56" onmouseover="this.style.background='#E1F5EE'" onmouseout="this.style.background='transparent'"><b>${escHtml(main)}</b>${sub?` <small style="color:#94A3B8">${escHtml(sub)}</small>`:''}</div>`;
+    let html='';
+    if(kvs.length) html += lbl('Khu vực') + kvs.map(k=>it(k,k,'')).join('');
+    if(chs.length) html += lbl('Cửa hàng') + chs.map(([m,t])=>it(t,t,m)).join('');
+    if(!html) html = '<div style="padding:10px;color:#94A3B8;font-size:12.5px">Không tìm thấy</div>';
+    dd.innerHTML=html; dd.style.display='';
+  }, 180);
+};
+window.bgSvPickStore = function(val){
+  const dd = document.getElementById('bg-sv-search-dd'); if(dd) dd.style.display='none';
+  bgSvSetField('store', val);
+};
 // [v17.50] Bộ lọc trạng thái chọn nhiều cho cơ động — giống QL bàn giao
 function bgSvMatchStatusOpt(s, opt){
   switch(opt){

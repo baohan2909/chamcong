@@ -351,7 +351,7 @@ function tcGsRender(){
   if(ctr) ctr.innerHTML=`
     <div style="position:relative;margin-bottom:9px">
       <input type="text" value="${escHtml(tcGsSearchLabel())}" oninput="tcGsSearchInput(this.value)" onfocus="tcGsSearchInput(this.value)" placeholder="Tìm khu vực / cửa hàng" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 30px 9px 11px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;color:#0F2E45;background:#F8FAFC">
-      <div id="tcgs-search-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:11px;box-shadow:0 8px 22px rgba(15,46,69,.14);max-height:240px;overflow-y:auto;z-index:20;padding:4px"></div>
+      <div id="tcgs-search-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:240px;overflow-y:auto;z-index:20;padding:4px"></div>
       ${hasSearch?`<button onclick="tcGsSearchClear()" style="position:absolute;top:50%;right:6px;transform:translateY(-50%);border:none;background:#E2E8F0;color:#475569;width:20px;height:20px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer">✕</button>`:''}
     </div>
     <div style="display:flex;gap:7px">
@@ -403,7 +403,7 @@ window.tcGsSearchInput=function(kw){
     all.forEach(s=>{ if(s.ma_ch&&!chMap.has(s.ma_ch)){ const t=s.ten_ch||s.ma_ch; if(t.toLowerCase().includes(low)||String(s.ma_ch).toLowerCase().includes(low)) chMap.set(s.ma_ch,t); }});
     const chs=[...chMap.entries()].slice(0,6);
     const lbl=t=>`<div style="font-size:10.5px;font-weight:700;color:#94A3B8;padding:6px 8px 3px">${t}</div>`;
-    const it=(act,html)=>`<div onclick="${act}" style="padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:#0F2E45" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='transparent'">${html}</div>`;
+    const it=(act,html)=>`<div onclick="${act}" style="padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:#0F6E56" onmouseover="this.style.background='#E1F5EE'" onmouseout="this.style.background='transparent'">${html}</div>`;
     let html='';
     if(kvs.length) html+=lbl('Khu vực')+kvs.map(k=>it(`tcGsPickKhu('${escHtml(k)}')`,escHtml(k))).join('');
     if(chs.length) html+=lbl('Cửa hàng')+chs.map(([m,t])=>it(`tcGsPickCh('${escHtml(String(m))}')`,`<b>${escHtml(t)}</b> <small style="color:#94A3B8">${escHtml(String(m))}</small>`)).join('');

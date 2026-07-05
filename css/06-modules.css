@@ -2322,8 +2322,8 @@
   top: 100%; left: 0; right: 0;
   background: #fff;
   border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(15,46,69,.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
   margin-top: 4px;
   max-height: 260px;
   overflow-y: auto;
@@ -2407,8 +2407,8 @@
   top: 100%; left: 0; right: 0;
   background: #fff;
   border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(15,46,69,.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
   margin-top: 4px;
   max-height: 280px;
   overflow-y: auto;
@@ -2429,11 +2429,11 @@
   cursor: pointer;
   border-bottom: 1px solid #F1F5F9;
   font-size: 12.5px;
-  color: #1E293B;
+  color: #0F6E56;
 }
 .bgql-stats-dd-it:last-child { border-bottom: 0; }
-.bgql-stats-dd-it:hover, .bgql-stats-dd-it:active { background: #F1F5F9; }
-.bgql-stats-dd-it b { color: #0F172A; font-weight: 700; }
+.bgql-stats-dd-it:hover, .bgql-stats-dd-it:active { background: #E1F5EE; }
+.bgql-stats-dd-it b { color: #0F6E56; font-weight: 700; }
 .bgql-stats-dd-it small { color: #94A3B8; font-size: 10.5px; margin-left: 4px; }
 .bgql-stats-dd-empty {
   padding: 14px;
