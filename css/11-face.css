@@ -152,7 +152,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(-1.25, 1.25);
+  transform: scale(-1, 1); /* [fix-cam] chỉ lật gương, BỎ zoom số 1.25 → khung camera đúng 1x như app ngân hàng */
   display: block;
 }
 

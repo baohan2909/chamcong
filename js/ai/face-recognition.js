@@ -15,11 +15,34 @@ const NS_FACE = {
   MIN_FACE_SIZE: 80,
   STABLE_FRAMES_NEEDED: 3,
   STABLE_PX: 30,
-  SCAN_DURATION_MS: 2500  // smooth fill 2.5s
+  SCAN_DURATION_MS: 2500,   // smooth fill 2.5s
+  DETECT_INTERVAL_MS: 160,  // [fix-cam] giãn nhịp nhận diện (100→160ms) → CPU đỡ tải → iOS bớt tự đổi phân giải/zoom
+  LOAD_TIMEOUT_MS: 22000    // [fix-cam] chặn treo vô hạn khi tải script/model lần đầu (mạng chậm/chờn)
 };
 
 let _faceLoaded = false;
 let _faceLoading = false;
+
+// [fix-cam] Bọc timeout để tải model/script KHÔNG treo vô hạn khi mạng chậm/chờn (lần đầu)
+function _withTimeout(promise, ms, tag) {
+  let tid;
+  const guard = new Promise((_, reject) => {
+    tid = setTimeout(() => reject(new Error('timeout:' + (tag || ''))), ms);
+  });
+  return Promise.race([promise, guard]).finally(() => clearTimeout(tid));
+}
+// [fix-cam] Nạp <script> có timeout (script tag mặc định không tự huỷ khi treo)
+function _loadScript(src, ms) {
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const s = document.createElement('script');
+    const tid = setTimeout(() => { if (!done) { done = true; reject(new Error('script-timeout')); } }, ms);
+    s.src = src;
+    s.onload  = () => { if (!done) { done = true; clearTimeout(tid); resolve(); } };
+    s.onerror = () => { if (!done) { done = true; clearTimeout(tid); reject(new Error('script-error')); } };
+    document.head.appendChild(s);
+  });
+}
 
 async function nsFaceEnsureLoaded() {
   if (_faceLoaded) return true;
@@ -27,18 +50,13 @@ async function nsFaceEnsureLoaded() {
   _faceLoading = true;
   try {
     if (typeof faceapi === 'undefined') {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = NS_FACE.FACEAPI_SCRIPT;
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
+      await _loadScript(NS_FACE.FACEAPI_SCRIPT, NS_FACE.LOAD_TIMEOUT_MS);
     }
-    await Promise.all([
+    await _withTimeout(Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(NS_FACE.MODELS_URL),
       faceapi.nets.faceLandmark68Net.loadFromUri(NS_FACE.MODELS_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(NS_FACE.MODELS_URL)
-    ]);
+    ]), NS_FACE.LOAD_TIMEOUT_MS, 'models');
     _faceLoaded = true;
     return true;
   } catch (e) {
@@ -67,14 +85,39 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // Cấu hình tối giản, ổn định: chỉ camera trước, KHÔNG ép độ phân giải (tránh camera nhảy/refocus liên tục)
+  // [fix-cam] KHÓA độ phân giải ổn định (ideal, không exact) → iOS không tự đổi phân giải → hết "zoom lớn nhỏ".
+  // Camera trước iPhone là 1 ống kính cố định ~1x; giữ khung gốc, KHÔNG zoom số (crop bỏ ở CSS).
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user',
+        width:  { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 30, max: 30 }
+      },
+      audio: false
+    });
   } catch (e1) {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    // Máy không nhận constraint chi tiết → hạ về tối giản
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    } catch (e2) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
   }
   videoEl.srcObject = stream;
+
+  // [fix-cam] Ghì zoom về mức nhỏ nhất (1x) nếu thiết bị cho chỉnh — chống camera tự phóng to
+  try {
+    const track = stream.getVideoTracks && stream.getVideoTracks()[0];
+    if (track && track.getCapabilities) {
+      const caps = track.getCapabilities();
+      if (caps && caps.zoom && typeof caps.zoom.min === 'number') {
+        await track.applyConstraints({ advanced: [{ zoom: caps.zoom.min }] });
+      }
+    }
+  } catch (_) {}
 
   // Đợi metadata (timeout 5s phòng treo)
   if (videoEl.readyState < 1) {
@@ -103,6 +146,14 @@ async function _openCam(videoEl) {
   return stream;
 }
 function _stopCam(stream) { if (stream) stream.getTracks().forEach(t => t.stop()); }
+
+// [fix-cam] Dừng mọi camera stream còn sót → chống rò khiến camera "bận" ở lần mở sau (phải kill app)
+function _faceStopStreams() {
+  if (typeof _verifyStream !== 'undefined' && _verifyStream) { _stopCam(_verifyStream); _verifyStream = null; }
+  if (typeof _enrollStream !== 'undefined' && _enrollStream) { _stopCam(_enrollStream); _enrollStream = null; }
+}
+// App đóng / điều hướng đi → nhả camera (pagehide chỉ fire khi thoát thật, không phá scan lúc chuyển nền chớp nhoáng)
+window.addEventListener('pagehide', _faceStopStreams);
 
 // [v13.14] Capture frame face thực từ video element (mirror để khớp với góc nhìn user)
 function _captureFaceFrame(videoEl) {
@@ -221,7 +272,7 @@ async function _waitStable(video, prefix, abortRef) {
       }
       _setSubstatus(prefix, 'Đã định vị, sẵn sàng quét');
     }
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, NS_FACE.DETECT_INTERVAL_MS));
   }
   return null;
 }
@@ -286,6 +337,7 @@ let _enrollStream = null;
 
 async function nsFaceOpenEnrollment() {
   _enrollAbort = { aborted: false };
+  _faceStopStreams();  // [fix-cam] nhả camera còn sót trước khi mở lại
   const old = document.getElementById('ns-face-modal');
   if (old) old.remove();
 
@@ -326,16 +378,18 @@ function nsFaceCloseEnrollment() {
   if (m) { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
 }
 
+// [fix-cam] Thử lại đăng ký: đóng sạch (dừng camera + xoá modal) rồi mở lại từ đầu
+function _feRetry() { nsFaceCloseEnrollment(); setTimeout(() => nsFaceOpenEnrollment(), 300); }
+
 async function _startEnrollmentFlow() {
   const body = document.getElementById('ns-face-modal-body');
   body.innerHTML = '<div class="ns-face-step active" id="fe-step"></div>';
   const step = document.getElementById('fe-step');
   _buildStage(step, 'fe');
 
-  const ok = await nsFaceEnsureLoaded();
-  if (!ok) { _setInstruction('fe', 'Lỗi tải máy quét'); return; }
-
+  // [fix-cam] Mở CAMERA trước để user thấy mặt ngay (hết cảm giác "treo" khi model còn đang tải)
   const video = document.getElementById('fe-video');
+  _setInstruction('fe', 'Đang mở camera…');
   try {
     _enrollStream = await _openCam(video);
     if (video.paused) _setInstruction('fe', 'Chạm vào vòng tròn để bật camera');
@@ -346,9 +400,23 @@ async function _startEnrollmentFlow() {
     } else {
       _setInstruction('fe', 'Không mở được camera — bấm "Thử lại"');
     }
-    _addRetryBtn('fe', () => { _enrollAbort.aborted = true; setTimeout(() => nsFaceEnroll(), 100); });
+    _addRetryBtn('fe', _feRetry);
     return;
   }
+  if (_enrollAbort.aborted) return;
+
+  // [fix-cam] Tải model SAU khi camera đã hiện; có timeout + nút Thử lại thật (trước đây gọi hàm không tồn tại)
+  _setInstruction('fe', 'Chuẩn bị máy quét…');
+  _setSubstatus('fe', 'Đang tải bộ nhận diện…', 'ok');
+  const ok = await nsFaceEnsureLoaded();
+  if (_enrollAbort.aborted) return;
+  if (!ok) {
+    _setInstruction('fe', 'Không tải được máy quét');
+    _setSubstatus('fe', 'Kiểm tra mạng rồi bấm "Thử lại"', 'err');
+    _addRetryBtn('fe', _feRetry);
+    return;
+  }
+  _setSubstatus('fe', '', '');
 
   const steps = [
     { goc: 'thang', label: 'Nhìn thẳng vào ống kính', delay: 300 },
@@ -429,6 +497,7 @@ let _verifyCallback = { onSuccess: null, onFail: null };
 
 async function nsFaceStartChamCong(onSuccess, onFail) {
   _verifyCallback = { onSuccess, onFail };
+  _faceStopStreams();  // [fix-cam] nhả camera còn sót trước khi mở lại (chống camera "bận")
 
   let enrolled = false;
   try {
@@ -468,12 +537,10 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
 
   const step = document.getElementById('fv-step');
   _buildStage(step, 'fv');
-  _setInstruction('fv', 'Đặt khuôn mặt vào khung');
 
-  const ok = await nsFaceEnsureLoaded();
-  if (!ok) { _setSubstatus('fv', 'Lỗi tải máy quét', 'err'); return; }
-
+  // [fix-cam] Mở CAMERA trước (thấy mặt ngay) rồi mới tải model → hết cảm giác treo lần đầu
   const video = document.getElementById('fv-video');
+  _setInstruction('fv', 'Đang mở camera…');
   try {
     _verifyStream = await _openCam(video);
     if (video.paused) _setInstruction('fv', 'Chạm vào vòng tròn để bật camera');
@@ -486,10 +553,26 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
       _setInstruction('fv', 'Không mở được camera');
       _setSubstatus('fv', 'Bấm "Thử lại" hoặc chấm công bằng ảnh tay', 'err');
     }
-    _addRetryBtn('fv', () => { _verifyAbort.aborted = true; setTimeout(() => nsFaceVerify(), 100); });
+    _addRetryBtn('fv', _fvRetry);
     _addFallbackBtn();
     return;
   }
+  if (_verifyAbort.aborted) return;
+
+  // [fix-cam] Tải model có timeout; lỗi → Thử lại chạy thật (trước gọi nsFaceVerify không tồn tại) + fallback ảnh tay
+  _setInstruction('fv', 'Chuẩn bị máy quét…');
+  _setSubstatus('fv', 'Đang tải bộ nhận diện…', 'ok');
+  const ok = await nsFaceEnsureLoaded();
+  if (_verifyAbort.aborted) return;
+  if (!ok) {
+    _setInstruction('fv', 'Không tải được máy quét');
+    _setSubstatus('fv', 'Kiểm tra mạng rồi bấm "Thử lại"', 'err');
+    _addRetryBtn('fv', _fvRetry);
+    _addFallbackBtn();
+    return;
+  }
+  _setSubstatus('fv', '', '');
+  _setInstruction('fv', 'Đặt khuôn mặt vào khung');
 
   _runVerifyAttempt(video, 0);
 }
@@ -594,6 +677,13 @@ function nsFaceCloseVerify() {
   if (_verifyStream) { _stopCam(_verifyStream); _verifyStream = null; }
   const m = document.getElementById('ns-face-verify-modal');
   if (m) { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
+}
+
+// [fix-cam] Thử lại xác minh: đóng sạch camera + modal rồi chạy lại đúng callback đã lưu
+function _fvRetry() {
+  const cb = _verifyCallback;
+  nsFaceCloseVerify();
+  setTimeout(() => nsFaceStartChamCong(cb.onSuccess, cb.onFail), 300);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
