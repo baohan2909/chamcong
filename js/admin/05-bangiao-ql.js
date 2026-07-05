@@ -50,6 +50,7 @@ window.bgqlInitPage = bgqlInitPage;
 
 function bgqlSwitchSub(sub){
   bgqlSub = sub;
+  if (sub !== 'suvu') bgqlStopSvTimer();   // dừng đồng hồ sự vụ khi rời tab (chống rò rỉ interval)
   ['suvu','timeline','stats','aibc','print'].forEach(s => {
     const tab = document.getElementById('bgql-subtab-'+s);
     const body = document.getElementById('bgql-sub-'+s);

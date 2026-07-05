@@ -71,7 +71,7 @@ function diemHubOpen() {
 
 function _diemHubControlsHtml() {
   const thLabel = 'Tháng ' + _diemHub.thang.substring(5, 7) + '/' + _diemHub.thang.substring(0, 4);
-  const hasSearch = _diemHub.ch || _diemHub.nv;
+  const hasSearch = _diemHub.ch || _diemHub.nv || (_diemHub.khu && _diemHub.khu !== 'all');
   const btn = (dir, ch) => `<button onclick="diemHubThang(${dir})" style="flex:none;border:1px solid #E6EBF0;background:#fff;width:30px;height:30px;border-radius:9px;font-size:16px;color:#475569;cursor:pointer">${ch}</button>`;
   const sortOpt = (v, t) => `<option value="${v}"${_diemHub.sort === v ? ' selected' : ''}>${t}</option>`;
   const tkKeys = Object.keys(_diemHub.tk || {}).filter(k => (_diemHub.tk[k] || 0) > 0).sort((a, b) => _diemHub.tk[b] - _diemHub.tk[a]);
@@ -315,7 +315,9 @@ async function diemHubMien(maNv, loai, sourceKey, ngay) {
     showToast(data.da_mien ? '✓ Đã xóa điểm trừ' : '✓ Đã khôi phục điểm trừ', 'ok');
     const nv = _diemHub.list.find(r => r.ma_nv === maNv);
     if (nv) { nv.so_loi = Math.max(0, (nv.so_loi || 0) + (data.da_mien ? -1 : 1)); nv.diem = Math.max(0, 10 - nv.so_loi); }
-    _diemHubLoadCt(maNv);
+    if (loai && _diemHub.tk) _diemHub.tk[loai] = Math.max(0, (_diemHub.tk[loai] || 0) + (data.da_mien ? -1 : 1));
+    _diemHubPaint();       // repaint thẻ (điểm + số lỗi) + đếm loại ở dropdown/filter
+    _diemHubLoadCt(maNv);  // repaint hộp chi tiết (trạng thái đã xóa / khôi phục)
   } catch (e) { showToast('Lỗi kết nối', 'err'); }
 }
 

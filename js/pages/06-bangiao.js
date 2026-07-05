@@ -652,6 +652,8 @@ async function bgSubmit(){
     return;
   }
 
+  if (window._bgSubmitting) return;   // chống gửi biên bản đúp (double-submit)
+  window._bgSubmitting = true;
   btn.disabled = true;
   btn.innerHTML = 'Đang gửi...';
 
@@ -829,9 +831,11 @@ async function bgSubmit(){
     bgState = {}; bgPhotos = [];
     document.getElementById('bg-ghichu').value = '';
     bgRenderForm();
-    bgSwitchSub('today');
+    bgSwitchSub('timeline');
+    window._bgSubmitting = false;
   } catch(e){
     console.error(e);
+    window._bgSubmitting = false;
     showToast('⚠ ' + (e.message||'Lỗi gửi'), 'warn');
     btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Hoàn tất & gửi';
   }
@@ -1945,9 +1949,9 @@ window.bgOpenConfirmSubmit = function(){
   allItems.forEach(({g, it}) => {
     const st = bgState[it.id];
     if (!st || !st.status) { itemsChua.push({ g, it }); return; }
-    if (st.status === 'D') itemsDat.push({ g, it });
-    else if (st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO') itemsKhongCo.push({ g, it });
-    else if (st.status === 'VD' || st.status === 'KD' || st.status === 'KHONG_DAT') itemsVD.push({ g, it, mota: st.mo_ta });
+    if (st.status === 'BT') itemsDat.push({ g, it });
+    else if (st.status === 'KO') itemsKhongCo.push({ g, it });
+    else if (st.status === 'VD') itemsVD.push({ g, it, mota: st.mo_ta });
   });
   
   const groupItems = items => {
@@ -1995,7 +1999,7 @@ window.bgOpenConfirmSubmit = function(){
         <div class="bg-cf-summary">
           <div class="bg-cf-stat dat">
             <div class="bg-cf-stat-v">${itemsDat.length}</div>
-            <div class="bg-cf-stat-l">Đạt</div>
+            <div class="bg-cf-stat-l">Bình thường</div>
           </div>
           <div class="bg-cf-stat khong">
             <div class="bg-cf-stat-v">${itemsKhongCo.length}</div>

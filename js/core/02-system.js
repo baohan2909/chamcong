@@ -395,6 +395,8 @@ function goToPage(page){
   // [v15.2] Rời trang → dọn thanh "chọn nhiều" của Bàn giao (thanh fixed, nếu không dọn sẽ
   // lơ lửng đè lên trang khác khiến nút bấm không ăn).
   if (typeof bgqlForceExitMultiSelect === 'function') bgqlForceExitMultiSelect();
+  if (typeof bgqlStopSvTimer === 'function') bgqlStopSvTimer();   // dừng đồng hồ sự vụ khi rời trang (chống rò rỉ interval)
+  if (typeof bgSuVuStopTimer === 'function') bgSuVuStopTimer();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
