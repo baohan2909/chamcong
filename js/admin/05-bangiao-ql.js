@@ -633,7 +633,7 @@ window.bgqlTiepNhan = async function(id){
     const { data, error } = await supa.rpc('fn_su_vu_tiep_nhan', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen, p_vai_tro: SESSION.vaiTro
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã tiếp nhận', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -643,7 +643,7 @@ window.bgqlBatDau = async function(id){
     const { data, error } = await supa.rpc('fn_su_vu_bat_dau_xu_ly', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen, p_vai_tro: SESSION.vaiTro
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Bắt đầu xử lý', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -656,7 +656,7 @@ window.bgqlHoanTat = async function(id){
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
       p_vai_tro_dong: 'QUAN_LY', p_ghi_chu: note || null   // [v16.6] khớp constraint su_vu
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã đóng sự vụ', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -669,7 +669,7 @@ window.bgqlHuy = async function(id){
       p_id: id, p_ma_nv: SESSION.ma, p_ten_nv: SESSION.ten||SESSION.hoTen,
       p_vai_tro: SESSION.vaiTro, p_ly_do: reason.trim()
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã hủy', 'ok');
     bgqlLoadSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -838,7 +838,7 @@ window.bgqlSubmitPhanHoi = async function(id){
       p_nguoi_xu_ly_loai: xl ? xl.loai : null,
       p_nguoi_xu_ly_ch: xl ? (xl.ch_or_role || '') : null
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã gửi phản hồi · CH+NV sẽ nhận thông báo', 'ok');
     document.querySelector('.bgql-modal-bg').remove();
     bgqlLoadSuVu();
@@ -2181,7 +2181,7 @@ window.bgqlDeleteSuVu = async function(sv_id){
     const { data, error } = await supa.rpc('fn_su_vu_delete', {
       p_id: sv_id, p_ma_nv: SESSION.ma
     });
-    if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
+    if (error || (data && data.ok === false)) throw new Error((data && data.error) || (error||{}).message);
     showToast('Đã xóa sự vụ', 'ok');
     bgqlCloseSuVuDetail();
     bgqlSuVuCache = null;
@@ -2592,7 +2592,7 @@ window.bgqlEnablePush = async function(btn){
       p_auth: raw.keys.auth,
       p_ua: navigator.userAgent.slice(0, 200)
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     
     showToast('✓ Đã bật thông báo đẩy trên thiết bị này', 'ok');
     if (btn) { btn.textContent = '✓ Đã bật thông báo'; }
@@ -2726,7 +2726,7 @@ async function bgqlDigestDoAdd(loai, giaTri, ten){
     const { data, error } = await supa.rpc('fn_digest_recipient_add', {
       p_ma_nv: SESSION.ma, p_loai: loai, p_gia_tri: giaTri, p_ten: ten
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã thêm người nhận', 'ok');
     bgqlRenderDigestConfig();
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
@@ -2736,7 +2736,7 @@ window.bgqlDigestRemove = async function(id){
   if (!confirm('Xóa người nhận này khỏi danh sách digest?')) return;
   try {
     const { data, error } = await supa.rpc('fn_digest_recipient_remove', { p_ma_nv: SESSION.ma, p_id: id });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã xóa', 'ok');
     bgqlRenderDigestConfig();
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
@@ -2899,7 +2899,7 @@ window.bgqlAibcGenerate = async function(){
 window.bgqlAibcOpenReport = async function(id){
   try {
     const { data, error } = await supa.rpc('fn_report_get', { p_id: id, p_ma_nv: SESSION.ma });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     bgqlAibcShowReport(data.report);
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }
 };
@@ -2934,7 +2934,7 @@ window.bgqlAibcDeleteReport = async function(id){
   if (!confirm('Xóa báo cáo này? Không thể hoàn tác.')) return;
   try {
     const { data, error } = await supa.rpc('fn_report_delete', { p_id: id, p_ma_nv: SESSION.ma });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã xóa', 'ok');
     const m = document.getElementById('aibc-report-modal');
     if (m) m.remove();

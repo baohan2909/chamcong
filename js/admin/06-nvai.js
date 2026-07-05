@@ -154,7 +154,7 @@ window.nvaiNewChat = function(){
 window.nvaiOpenSession = async function(sid){
   try {
     const { data, error } = await supa.rpc('fn_chat_message_list', { p_session_id: sid, p_ma_nv: SESSION.ma });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     nvaiCurrentSession = nvaiSessionList.find(s => s.id === sid);
     nvaiMessages = data.messages || [];
     nvaiRenderSessionList();
@@ -166,7 +166,7 @@ window.nvaiDeleteSession = async function(sid){
   if (!confirm('Xóa cuộc hội thoại này? Không thể hoàn tác.')) return;
   try {
     const { data, error } = await supa.rpc('fn_chat_session_delete', { p_id: sid, p_ma_nv: SESSION.ma });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     if (nvaiCurrentSession && nvaiCurrentSession.id === sid) nvaiNewChat();
     await nvaiLoadSessions();
   } catch(e){ showToast('⚠ ' + e.message, 'warn'); }

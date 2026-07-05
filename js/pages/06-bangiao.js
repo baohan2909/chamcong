@@ -756,7 +756,8 @@ async function bgSubmit(){
     btn.innerHTML = 'Tạo sự vụ...';
     let svCount = 0;
     let svTrung = 0;
-    const _demSv = (r)=>{ if (r && r.data && r.data.trung) svTrung++; else svCount++; };
+    let svFail = 0;
+    const _demSv = (r)=>{ if (!r || r.error || !r.data) { svFail++; return; } if (r.data.trung) svTrung++; else svCount++; };
     for (const g of bgGroups.filter(g=>g.type==='taisan')){
       for (const it of g.items){
         const st = bgState[it.id];
@@ -822,7 +823,8 @@ async function bgSubmit(){
     let _svMsg = '✓ Đã gửi biên bản';
     if (svCount) _svMsg += ' · ' + svCount + ' sự vụ mới';
     if (svTrung) _svMsg += ' · ' + svTrung + ' cập nhật vào sự vụ đang mở';
-    showToast(_svMsg, 'ok');
+    if (svFail)  _svMsg += ' · ⚠ ' + svFail + ' sự vụ TẠO LỖI';
+    showToast(_svMsg, svFail ? 'warn' : 'ok');
     // Reset
     bgState = {}; bgPhotos = [];
     document.getElementById('bg-ghichu').value = '';
@@ -1441,7 +1443,7 @@ window.bgSuVuDetailPhanHoi = async function(id){
     const { data, error } = await supa.rpc('fn_su_vu_co_dong_phan_hoi', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'', p_noi_dung:noidung, p_deadline:deadline
     });
-    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã gửi phản hồi', 'ok');
     bgSuVuCloseDetail(); bgRenderSuVu();
   } catch(e){ if (btn){ btn.disabled=false; btn.textContent='Gửi phản hồi'; } showToast('⚠ '+e.message, 'warn'); }
@@ -1453,7 +1455,7 @@ window.bgSuVuDetailHoanTat = function(id){
   bgUndoBar('Đã đánh dấu xử lý xong · chờ cửa hàng đóng sự vụ', async ()=>{
     try {
       const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', { p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'' });
-      if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+      if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||(error||{}).message);
       showToast('✓ Đã đánh dấu xử lý xong', 'ok');
     } catch(e){ showToast('⚠ '+e.message, 'warn'); }
     bgRenderSuVu();
@@ -1488,7 +1490,7 @@ window.bgSuVuCoDongXong = async function(id){
     const { data, error } = await supa.rpc('fn_su_vu_co_dong_xong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
     });
-    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã xử lý xong · chờ cửa hàng xác nhận', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -1501,7 +1503,7 @@ window.bgSuVuXacNhanXong = async function(id){
     const { data, error } = await supa.rpc('fn_su_vu_xac_nhan_xong', {
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||''
     });
-    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã báo xử lý xong · chờ cửa hàng xác nhận', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -1521,7 +1523,7 @@ window.bgSuVuDong = async function(id){
       p_id:id, p_ma_nv:SESSION.ma, p_ten_nv:SESSION.ten||SESSION.hoTen||'',
       p_vai_tro_dong:vaiTroDong, p_ghi_chu:note||null
     });
-    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data&&data.ok===false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã xác nhận hoàn tất & đóng sự vụ', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
@@ -1791,7 +1793,7 @@ window.bgXacNhanBienBan = async function(id, btn){
     const { data, error } = await supa.rpc('fn_bg_xac_nhan', {
       p_id: id, p_ma_nv: SESSION.ma, p_ten: SESSION.ten || SESSION.hoTen || ''
     });
-    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.ok === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('✓ Đã xác nhận biên bản · NV sẽ nhận thông báo', 'ok');
     // Update section tại chỗ
     const sec = document.querySelector('.bgd-xn');

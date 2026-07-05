@@ -117,7 +117,7 @@ async function xkcExecute(){
     const { data, error } = await supa.rpc('fn_admin_emergency_delete', {
       p_ma: SESSION.ma, p_password: secret, p_tables: tables, p_confirm: confirm1
     });
-    if (error || (data && data.ok === false)) throw new Error((data && data.error) || error.message);
+    if (error || (data && data.ok === false)) throw new Error((data && data.error) || (error||{}).message);
     res.innerHTML = '<div class="xkc-ok">Đã xóa xong: ' + (data.tables||0) + ' bảng · ' + (data.rows||0) + ' dòng. Nên đăng xuất và kiểm tra lại.</div>';
     xkcChon = new Set();
     btn.textContent = 'Xóa dữ liệu đã chọn';

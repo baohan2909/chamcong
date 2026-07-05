@@ -549,7 +549,7 @@ async function pqLuuNhomMoi(ten){
   ten = (ten||'').trim(); if (!ten){ pqHuyTaoNhom(); return; }
   try {
     const { data, error } = await supa.rpc('fn_nhom_luu', { p_admin: pqAdminMa(), p_ten: ten, p_thu_tu: pqTree.nhom.length });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã tạo nhóm "'+ten+'"','ok');
     pqAddingNhom = false; await pqInit();
   } catch(e){ showToast('⚠ '+e.message,'warn'); }
@@ -561,7 +561,7 @@ async function pqLuuDoiTen(tenCu, tenMoi){
   tenMoi = (tenMoi||'').trim(); if (!tenMoi || tenMoi===tenCu){ pqHuyDoiTen(); return; }
   try {
     const { data, error } = await supa.rpc('fn_nhom_doi_ten', { p_admin: pqAdminMa(), p_ten_cu: tenCu, p_ten_moi: tenMoi });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã đổi tên nhóm','ok'); pqRenameNhom = null; await pqInit();
   } catch(e){ showToast('⚠ '+e.message,'warn'); }
 }
@@ -570,7 +570,7 @@ async function pqXoaNhom(ten){
   if (!confirm('Xóa nhóm "'+ten+'"? Các chức danh/nhân sự trong nhóm chỉ bị gỡ khỏi nhóm, KHÔNG mất quyền.')) return;
   try {
     const { data, error } = await supa.rpc('fn_nhom_xoa', { p_admin: pqAdminMa(), p_ten: ten });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã xóa nhóm','ok'); await pqInit();
   } catch(e){ showToast('⚠ '+e.message,'warn'); }
 }
@@ -611,7 +611,7 @@ function pqCapNhatAcList(){
 async function pqThemTV(nhom, loai, ma, ten){
   try {
     const { data, error } = await supa.rpc('fn_pq_them_thanh_vien', { p_admin: pqAdminMa(), p_nhom: nhom, p_loai: loai, p_ma: ma, p_ten: ten||null });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã thêm vào nhóm '+nhom,'ok');
     pqAddTvNhom = nhom; pqTimKq = {chuc_danh:[],nhan_su:[]};
     await pqInit(); pqExpNhom[nhom] = true; pqAddTvNhom = nhom; pqRender();
@@ -621,7 +621,7 @@ async function pqThemTV(nhom, loai, ma, ten){
 async function pqGoTV(nhom, loai, ma){
   try {
     const { data, error } = await supa.rpc('fn_pq_xoa_thanh_vien', { p_admin: pqAdminMa(), p_nhom: nhom, p_loai: loai, p_ma: ma });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     await pqInit(); pqExpNhom[nhom] = true; pqRender();
   } catch(e){ showToast('⚠ '+e.message,'warn'); }
 }
@@ -697,7 +697,7 @@ async function pqSave(){
     const { data, error } = await supa.rpc('fn_pq_ap_nhieu', {
       p_admin: pqAdminMa(), p_targets: targets, p_quyen: quyenArr, p_pham_vi: pqScope, p_khu_vuc: khuVucArr,
     });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã áp quyền: '+(data.so_chuc_danh||0)+' chức danh, '+(data.so_ca_nhan||0)+' cá nhân','ok');
     await pqInit();
   } catch(e){
@@ -713,7 +713,7 @@ async function pqResetCaNhan(){
   if (!confirm('Gỡ quyền riêng của '+(g.ten||g.ma)+'? Người này về theo quyền chức danh.')) return;
   try {
     const { data, error } = await supa.rpc('fn_save_quyen_ca_nhan', { p_admin: pqAdminMa(), p_ma_nv: g.ma, p_ten_nv: g.ten||'', p_quyen: [], p_reset: true });
-    if (error || (data && data.success === false)) throw new Error((data&&data.error)||error.message);
+    if (error || (data && data.success === false)) throw new Error((data&&data.error)||(error||{}).message);
     showToast('Đã gỡ quyền riêng','ok'); await pqInit();
   } catch(e){ showToast('⚠ '+e.message,'warn'); }
 }
