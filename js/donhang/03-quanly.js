@@ -251,6 +251,11 @@ async function dhQLLoadSettings(){
     <div class="dh-cd-fld"><label>Tên chủ tài khoản</label><input class="dh-cd-inp" id="cd-tt_ten_tk" value="${escHtml(g('donhang.tt_ten_tk',''))}"></div>
     <div class="dh-cd-fld"><label>Tiền tố nội dung CK</label><input class="dh-cd-inp" id="cd-tt_tien_to" value="${escHtml(g('donhang.tt_tien_to','NS'))}"></div>
 
+    <div class="dh-cd-sec">Tài khoản SePay (tự xác nhận tiền vào)</div>
+    <div class="dh-cd-fld"><label>Ngân hàng kết nối SePay (vd TPBank)</label><input class="dh-cd-inp" id="cd-sepay_ngan_hang" value="${escHtml(g('donhang.sepay_ngan_hang',''))}"></div>
+    <div class="dh-cd-fld"><label>Số tài khoản kết nối SePay</label><input class="dh-cd-inp" id="cd-sepay_so_tk" value="${escHtml(g('donhang.sepay_so_tk',''))}"></div>
+    <div class="dh-cd-fld"><label>Tên chủ tài khoản</label><input class="dh-cd-inp" id="cd-sepay_ten_tk" value="${escHtml(g('donhang.sepay_ten_tk',''))}"></div>
+
     <button class="dh-cd-save" onclick="dhQLSaveSettings()">Lưu cấu hình</button>`;
 }
 
@@ -279,7 +284,10 @@ window.dhQLSaveSettings = async function(){
     ['donhang.tt_ngan_hang', str('tt_ngan_hang')],
     ['donhang.tt_so_tk',     str('tt_so_tk')],
     ['donhang.tt_ten_tk',    str('tt_ten_tk')],
-    ['donhang.tt_tien_to',   str('tt_tien_to')]
+    ['donhang.tt_tien_to',   str('tt_tien_to')],
+    ['donhang.sepay_ngan_hang', str('sepay_ngan_hang')],
+    ['donhang.sepay_so_tk',     str('sepay_so_tk')],
+    ['donhang.sepay_ten_tk',    str('sepay_ten_tk')]
   ];
   const btn = event && event.target;
   if (btn) { btn.disabled = true; btn.textContent = 'Đang lưu...'; }

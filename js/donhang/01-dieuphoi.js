@@ -267,7 +267,13 @@ window.dhGuiYeuCau = async function(){
     if (dhPaidConfirmed) { try { await supa.rpc('dh_fn_danh_dau_tt', { p_don_id: res.id }); } catch(e){} }
 
     showToast && showToast('Đã gửi đến ' + dot1.length + ' cửa hàng · Đơn ' + res.ma_don, 'success');
+    // [fix-tt] NỐI LẠI màn chờ thanh toán (dhShowSepayWait định nghĩa sẵn nhưng bị đứt khỏi luồng —
+    // không nơi nào gọi): đơn SEPAY chưa nhận tiền lúc tạo → mở màn theo dõi, tiền vào là tự xác nhận.
+    // Chốt cờ TRƯỚC dhResetForm() vì reset xóa dhPaidConfirmed.
+    const _ttWait = (pttt === 'SEPAY' && !dhPaidConfirmed)
+      ? { id: res.id, amt: giaTri, sdt: khachSdt, ma: res.ma_don } : null;
     dhResetForm();
+    if (_ttWait) dhShowSepayWait(_ttWait.id, _ttWait.amt, _ttWait.sdt, _ttWait.ma);
   } catch(e) {
     showToast && showToast('Lỗi: ' + (e.message || e), 'error');
     if (btn) btn.disabled = false;
@@ -484,6 +490,18 @@ async function dhGeocodeSmart(){
 const DH_QR = { bank: 'ACB', stk: '868636868', owner: 'NGUYEN PHAN BAO HAN' };
 // [v13.80] SePay — tài khoản đã kết nối SePay
 const DH_SEPAY = { bank: 'TPBank', stk: '77999999999', owner: 'Nguyễn Phan Bảo Hân' };
+// [fix-tt] MỘT nguồn cấu hình: đọc STK từ app_settings (tab Cài đặt của Quản lý đơn) — đổi STK không cần deploy.
+// Hardcode phía trên chỉ còn là fallback khi chưa cấu hình.
+function dhAccVietQR(){
+  return { bank:  _getSetting('donhang.tt_ngan_hang','') || DH_QR.bank,
+           stk:   _getSetting('donhang.tt_so_tk','')     || DH_QR.stk,
+           owner: _getSetting('donhang.tt_ten_tk','')    || DH_QR.owner };
+}
+function dhAccSepay(){
+  return { bank:  _getSetting('donhang.sepay_ngan_hang','') || DH_SEPAY.bank,
+           stk:   _getSetting('donhang.sepay_so_tk','')     || DH_SEPAY.stk,
+           owner: _getSetting('donhang.sepay_ten_tk','')    || DH_SEPAY.owner };
+}
 
 function dhDonAmount(){
   if (!dhSelectedSp) return 0;
@@ -525,13 +543,13 @@ function dhUpdateQR(){
   const sdt = ((document.getElementById('dh-khach-sdt')||{}).value || '').trim();
   let url, note, acc;
   if (pttt === 'SEPAY') {
-    acc = DH_SEPAY;
+    acc = dhAccSepay();
     if (!dhPayCode) dhPayCode = 'NS' + Math.random().toString(36).slice(2,10).toUpperCase();
     const des = 'NONSON ' + dhPayCode + (sdt ? ' ' + sdt : '');
     url = `https://qr.sepay.vn/img?acc=${acc.stk}&bank=${acc.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
     note = 'Nội dung CK: ' + des + ' — hệ thống tự xác nhận khi nhận đúng tiền.';
   } else {
-    acc = DH_QR;
+    acc = dhAccVietQR();
     const info = encodeURIComponent(('NonSon ' + sdt).trim());
     url = `https://img.vietqr.io/image/${acc.bank}-${acc.stk}-compact2.png?amount=${amt}&addInfo=${info}&accountName=${encodeURIComponent(acc.owner)}`;
     note = 'Mã QR gắn sẵn số tiền + nội dung. Khách quét app ngân hàng để chuyển; anh tự kiểm tra biến động số dư.';
@@ -603,8 +621,11 @@ let dhTTPollTimer = null;
 window.dhShowSepayWait = async function(donId, amt, sdt, maDon){
   let ov = document.getElementById('dh-sepay-wait');
   if (!ov) { ov = document.createElement('div'); ov.id = 'dh-sepay-wait'; ov.className = 'dh-sepay-ov'; document.body.appendChild(ov); }
-  const des = ('NONSON ' + (sdt||'')).trim();
-  const qr = `https://qr.sepay.vn/img?acc=${DH_SEPAY.stk}&bank=${DH_SEPAY.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
+  // [fix-tt] Neo nội dung CK theo MÃ ĐƠN (luôn có, khớp cách quản lý tạo phiếu thu); SĐT chỉ thêm để đối chiếu
+  const code = String(maDon||'').replace(/-/g,'') || String(sdt||'');
+  const des = ('NONSON ' + code + (sdt && sdt !== code ? ' ' + sdt : '')).trim();
+  const SP = dhAccSepay();
+  const qr = `https://qr.sepay.vn/img?acc=${SP.stk}&bank=${SP.bank}&amount=${amt}&des=${encodeURIComponent(des)}`;
   // Mốc ID hiện tại (server) — chỉ nhận giao dịch MỚI sau đây, không lệ thuộc đồng hồ
   let baseId = 0;
   try { const r = await supa.rpc('dh_fn_tt_maxid'); baseId = (r && r.data != null) ? r.data : 0; } catch(e){}
@@ -629,12 +650,16 @@ window.dhShowSepayWait = async function(donId, amt, sdt, maDon){
     tries++;
     if (tries > 450) { clearInterval(dhTTPollTimer); return; }
     try {
-      const { data, error } = await supa.rpc('dh_fn_check_tt_sepay', { p_sdt: sdt||'', p_so_tien: amt, p_after_id: baseId });
+      // [fix-tt] 2 bug cũ: (1) gọi p_sdt — tham số KHÔNG tồn tại (DB chỉ có p_ma) → lỗi âm thầm mỗi 4s;
+      // (2) check `data === true` trong khi hàm trả OBJECT giao dịch hoặc NULL → không bao giờ khớp
+      const { data, error } = await supa.rpc('dh_fn_check_tt_sepay', { p_ma: code, p_so_tien: amt, p_after_id: baseId });
       const dbg = document.getElementById('dh-sepay-dbg');
-      if (dbg) dbg.textContent = `kiểm tra lần ${tries} · sdt=${sdt||'(trống)'} · tiền=${amt} · từ id>${baseId} · kết quả=${JSON.stringify(data)}${error?(' · lỗi='+error.message):''}`;
-      if (data === true) {
+      if (dbg) dbg.textContent = `kiểm tra lần ${tries} · mã=${code} · tiền=${amt} · từ id>${baseId} · kết quả=${JSON.stringify(data)}${error?(' · lỗi='+error.message):''}`;
+      if (data) {
         clearInterval(dhTTPollTimer);
         clearInterval(dhQRCountTimer);
+        // [fix-tt] Đánh dấu đơn ĐÃ THANH TOÁN (trước đây màn chờ chỉ đổi giao diện, đơn vẫn "Chờ TT")
+        try { await supa.rpc('dh_fn_danh_dau_tt', { p_don_id: donId }); } catch(e){}
         const st = document.getElementById('dh-sepay-status');
         if (st) st.innerHTML = '<span class="dh-sepay-ok">✓</span> Đã chuyển khoản thành công';
         const card = document.getElementById('dh-sepay-card'); if (card) card.classList.add('paid');
