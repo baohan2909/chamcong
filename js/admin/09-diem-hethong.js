@@ -77,6 +77,13 @@ function _diemHubControlsHtml() {
   const tkKeys = Object.keys(_diemHub.tk || {}).filter(k => (_diemHub.tk[k] || 0) > 0).sort((a, b) => _diemHub.tk[b] - _diemHub.tk[a]);
   const loaiOpts = '<option value="">Mọi loại lỗi</option>' + tkKeys.map(k => `<option value="${k}"${_diemHub.loai === k ? ' selected' : ''}>${escHtml(_diemLoai(k).t)} (${_diemHub.tk[k]})</option>`).join('');
   const selCss = 'flex:none;padding:9px 8px;border:1px solid #E2E8F0;border-radius:10px;font-size:12.5px;color:#0F2E45;background:#fff';
+  // [xoahangloat] Nút chỉ chủ hệ thống NS00490 thấy — thao tác risky, ràng bằng mật khẩu bí mật
+  const laChuHT = (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490');
+  const nutHangLoat = laChuHT ? `<button onclick="diemBulkOpen()" title="Xóa điểm trừ hàng loạt (cần dãy số bí mật)"
+    style="flex:none;padding:0 12px;height:36px;border:1px solid #FCA5A5;background:#FEF2F2;color:#B91C1C;font-size:12px;font-weight:800;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Xóa hàng loạt
+  </button>` : '';
   return `
     <div style="display:flex;align-items:center;gap:8px">
       ${btn(-1, '‹')}
@@ -98,6 +105,7 @@ function _diemHubControlsHtml() {
         ${sortOpt('loi_desc', 'Lỗi nhiều→ít')}
         ${sortOpt('ten', 'Tên A→Z')}
       </select>
+      ${nutHangLoat}
     </div>`;
 }
 
@@ -323,6 +331,167 @@ async function diemHubMien(maNv, loai, sourceKey, ngay) {
     _diemHubLoadCt(maNv);  // repaint hộp chi tiết (trạng thái đã xóa / khôi phục)
   } catch (e) { showToast('Lỗi kết nối', 'err'); }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MIỄN ĐIỂM TRỪ HÀNG LOẠT — chỉ NS00490 · RPC fn_diem_mien_hang_loat
+//  Filter: tháng + (cửa hàng / khu vực / loại lỗi / ngày cụ thể) — optional
+//  Preview trước (dry-run) → hiện số điểm sẽ xóa → xác thực dãy số bí mật → chạy thật
+// ═══════════════════════════════════════════════════════════════════════════
+let _diemBulk = { loading: false, previewed: null };
+
+function diemBulkOpen() {
+  if (!SESSION || SESSION.ma !== 'NS00490') { showToast('Chỉ chủ hệ thống (NS00490) được thao tác này', 'err'); return; }
+  _diemBulk = { loading: false, previewed: null };
+  let ov = document.getElementById('diem-bulk-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'diem-bulk-ov'; document.body.appendChild(ov); }
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9600;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center';
+  ov.onclick = function (e) { if (e.target === ov) diemBulkClose(); };
+
+  // Danh sách cửa hàng / khu vực suy ra từ dữ liệu đang xem (tháng hiện tại)
+  const rows = _diemHub.list || [];
+  const kvSet = new Set(), chMap = new Map();
+  rows.forEach(r => {
+    if (r.khu_vuc) kvSet.add(r.khu_vuc);
+    if (r.ma_ch && !chMap.has(r.ma_ch)) chMap.set(r.ma_ch, r.ten_ch || r.ma_ch);
+  });
+  const kvOpts = '<option value="">Mọi khu vực</option>' + [...kvSet].sort().map(k => `<option value="${escHtml(k)}">${escHtml(k)}</option>`).join('');
+  const chOpts = '<option value="">Mọi cửa hàng</option>' + [...chMap.entries()].sort((a,b)=>String(a[1]).localeCompare(String(b[1]),'vi')).map(([m,t]) => `<option value="${escHtml(String(m))}">${escHtml(t)}</option>`).join('');
+  const tkKeys = Object.keys(_diemHub.tk || {}).filter(k => (_diemHub.tk[k] || 0) > 0).sort((a,b)=>_diemHub.tk[b]-_diemHub.tk[a]);
+  const loaiOpts = '<option value="">Mọi loại lỗi</option>' + tkKeys.map(k => `<option value="${k}">${escHtml(_diemLoai(k).t)} (${_diemHub.tk[k]})</option>`).join('');
+  const thang = _diemHub.thang;
+
+  const fldCss = 'width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;color:#0F2E45;background:#fff;font-family:inherit';
+  const lblCss = 'display:block;font-size:11px;font-weight:700;color:#64748B;letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px';
+
+  ov.innerHTML = `
+    <div style="background:#fff;width:100%;max-width:560px;max-height:92vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:none;padding:16px 20px;background:linear-gradient(135deg,#DC2626,#B91C1C);color:#fff">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-size:10px;font-weight:800;letter-spacing:1px;opacity:.85">CHỦ HỆ THỐNG · NS00490</div>
+            <div style="font-size:18px;font-weight:800;margin-top:2px">Xóa điểm trừ hàng loạt</div>
+            <div style="font-size:11.5px;opacity:.9;margin-top:2px;line-height:1.4">Chọn phạm vi bên dưới. Điểm bị xóa vẫn được ghi lại (audit + khôi phục cá nhân được).</div>
+          </div>
+          <button onclick="diemBulkClose()" style="flex:none;border:none;background:rgba(255,255,255,.22);color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer">✕</button>
+        </div>
+      </div>
+      <div id="diem-bulk-body" style="flex:1;overflow-y:auto;padding:16px 20px 20px;-webkit-overflow-scrolling:touch">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="${lblCss}">Tháng</label><input id="bulk-thang" type="month" value="${thang}" style="${fldCss}"></div>
+          <div><label style="${lblCss}">Ngày cụ thể (tuỳ chọn)</label><input id="bulk-ngay" type="date" style="${fldCss}"></div>
+        </div>
+        <div style="margin-top:12px"><label style="${lblCss}">Cửa hàng (theo NV đang xem tháng này)</label><select id="bulk-ch" style="${fldCss}">${chOpts}</select></div>
+        <div style="margin-top:12px"><label style="${lblCss}">Khu vực</label><select id="bulk-kv" style="${fldCss}">${kvOpts}</select></div>
+        <div style="margin-top:12px"><label style="${lblCss}">Loại lỗi</label><select id="bulk-loai" style="${fldCss}">${loaiOpts}</select></div>
+        <div style="margin-top:12px"><label style="${lblCss}">Lý do (tuỳ chọn — ghi vào audit)</label>
+          <input id="bulk-lydo" type="text" placeholder="VD: Tháng lễ, đối chiếu công theo yêu cầu BGĐ" style="${fldCss}"></div>
+
+        <div id="bulk-preview" style="margin-top:14px;padding:12px 14px;border-radius:12px;background:#F1F5F9;border:1px solid #E2E8F0;font-size:12.5px;color:#64748B;text-align:center">Bấm "Xem trước" để đếm số điểm trừ sẽ bị xóa</div>
+
+        <button onclick="diemBulkPreview()" id="bulk-btn-preview" style="width:100%;margin-top:10px;padding:12px;border:1px solid #E2E8F0;background:#F8FAFC;color:#0F2E45;font-size:13px;font-weight:800;border-radius:12px;cursor:pointer">Xem trước</button>
+
+        <div style="margin-top:16px;padding-top:14px;border-top:2px dashed #FCA5A5">
+          <label style="${lblCss};color:#B91C1C">Dãy số bí mật (mật khẩu NS00490)</label>
+          <input id="bulk-pw" type="password" autocomplete="new-password" placeholder="Nhập dãy số bí mật của anh"
+            style="${fldCss};border-color:#FCA5A5;background:#FEF2F2" oninput="diemBulkCheck()">
+          <button id="bulk-btn-run" onclick="diemBulkExecute()" disabled
+            style="width:100%;margin-top:10px;padding:14px;border:none;background:#CBD5E1;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:not-allowed;transition:background .15s">
+            Miễn điểm hàng loạt
+          </button>
+          <div id="bulk-result" style="margin-top:10px;font-size:12.5px"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function diemBulkClose() { const o = document.getElementById('diem-bulk-ov'); if (o) o.remove(); }
+
+function _diemBulkArgs() {
+  const val = id => (document.getElementById(id) || {}).value || '';
+  return {
+    p_ma_ql: SESSION.ma, p_password: val('bulk-pw'),
+    p_thang: val('bulk-thang'),
+    p_ma_ch: val('bulk-ch') || null, p_khu_vuc: val('bulk-kv') || null,
+    p_loai: val('bulk-loai') || null, p_ngay: val('bulk-ngay') || null,
+    p_ly_do: val('bulk-lydo') || null
+  };
+}
+
+async function diemBulkPreview() {
+  const btn = document.getElementById('bulk-btn-preview');
+  const box = document.getElementById('bulk-preview');
+  if (!btn || !box) return;
+  btn.disabled = true; btn.textContent = 'Đang đếm...';
+  try {
+    const args = _diemBulkArgs();
+    // Preview không cần mật khẩu → gửi chuỗi rỗng đủ để RPC báo "sai mật khẩu"?
+    // Không: RPC yêu cầu password TRƯỚC khi làm gì. Nên preview cần password đúng.
+    // → Cho preview bằng cách gọi cùng RPC nhưng p_preview=true; nếu chưa có password, báo NV nhập trước.
+    if (!args.p_password) { box.innerHTML = '<span style="color:#B91C1C">Nhập dãy số bí mật ở dưới rồi bấm "Xem trước"</span>'; return; }
+    const { data, error } = await supa.rpc('fn_diem_mien_hang_loat', { ...args, p_preview: true });
+    if (error || !data || !data.success) {
+      box.innerHTML = '<span style="color:#B91C1C">' + escHtml((data && data.error) || (error && error.message) || 'Lỗi kiểm tra') + '</span>';
+      _diemBulk.previewed = null; diemBulkCheck(); return;
+    }
+    const n = data.so_diem_tru || 0, nnv = data.so_nhan_vien || 0;
+    if (n === 0) {
+      box.innerHTML = '<span style="color:#0F6E56;font-weight:700">Không có điểm trừ nào khớp bộ lọc</span>';
+      _diemBulk.previewed = null;
+    } else {
+      box.innerHTML = 'Sẽ xóa <b style="color:#B91C1C;font-size:16px">' + n + '</b> điểm trừ của <b>' + nnv + '</b> nhân viên · tháng ' + escHtml(args.p_thang);
+      _diemBulk.previewed = { n, nnv, args };
+    }
+    diemBulkCheck();
+  } catch (e) {
+    box.innerHTML = '<span style="color:#B91C1C">Lỗi kết nối</span>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Xem trước';
+  }
+}
+
+function diemBulkCheck() {
+  const btn = document.getElementById('bulk-btn-run');
+  const pw = ((document.getElementById('bulk-pw') || {}).value || '').trim();
+  if (!btn) return;
+  const ready = !!_diemBulk.previewed && pw.length > 0 && !_diemBulk.loading;
+  btn.disabled = !ready;
+  btn.style.cssText = 'width:100%;margin-top:10px;padding:14px;border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;transition:background .15s;' +
+    (ready ? 'background:#DC2626;cursor:pointer' : 'background:#CBD5E1;cursor:not-allowed');
+}
+
+async function diemBulkExecute() {
+  if (!_diemBulk.previewed) { showToast('Bấm "Xem trước" đã', 'warn'); return; }
+  const p = _diemBulk.previewed;
+  if (!window.confirm('XÁC NHẬN: xóa ' + p.n + ' điểm trừ của ' + p.nnv + ' nhân viên?\n\nĐiểm bị xóa vẫn ghi audit + khôi phục cá nhân được.')) return;
+  _diemBulk.loading = true; diemBulkCheck();
+  const result = document.getElementById('bulk-result');
+  const btn = document.getElementById('bulk-btn-run');
+  if (btn) btn.textContent = 'Đang xóa...';
+  try {
+    const args = _diemBulkArgs();
+    const { data, error } = await supa.rpc('fn_diem_mien_hang_loat', { ...args, p_preview: false });
+    if (error || !data || !data.success) {
+      if (result) result.innerHTML = '<div style="color:#B91C1C;background:#FEF2F2;border:1px solid #FCA5A5;padding:10px 12px;border-radius:10px">Lỗi: ' + escHtml((data && data.error) || (error && error.message) || 'không rõ') + '</div>';
+      return;
+    }
+    if (result) result.innerHTML = '<div style="color:#065F46;background:#D1FAE5;border:1px solid #6EE7B7;padding:10px 12px;border-radius:10px;font-weight:700">✓ Đã xóa ' + (data.so_diem_tru || 0) + ' điểm trừ (' + (data.so_nhan_vien || 0) + ' nhân viên)</div>';
+    showToast('✓ Đã xóa ' + (data.so_diem_tru || 0) + ' điểm trừ', 'ok');
+    _diemBulk.previewed = null;
+    // Reload hub để cập nhật số liệu
+    setTimeout(() => { diemBulkClose(); diemHubLoad(); }, 1400);
+  } catch (e) {
+    if (result) result.innerHTML = '<div style="color:#B91C1C;background:#FEF2F2;border:1px solid #FCA5A5;padding:10px 12px;border-radius:10px">Lỗi kết nối</div>';
+  } finally {
+    _diemBulk.loading = false; diemBulkCheck();
+    if (btn) btn.textContent = 'Miễn điểm hàng loạt';
+  }
+}
+
+window.diemBulkOpen = diemBulkOpen;
+window.diemBulkClose = diemBulkClose;
+window.diemBulkPreview = diemBulkPreview;
+window.diemBulkCheck = diemBulkCheck;
+window.diemBulkExecute = diemBulkExecute;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  LỊCH SỬ ĐIỂM TRỪ (mỗi NV) — gom nhiều tháng, tái dùng fn_diem_chi_tiet
