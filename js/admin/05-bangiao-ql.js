@@ -73,7 +73,7 @@ async function bgqlLoadSuVu(){
   list.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
   try {
     const { data, error } = await supa.rpc('fn_su_vu_list', {
-      p_ma_ch: null, p_limit: 100000, p_offset: 0
+      p_ma_ch: null, p_limit: 1000000, p_offset: 0
     });
     if (error) throw error;
     bgqlSuVuCache = data || [];
@@ -870,7 +870,7 @@ async function bgqlLoadTimeline(){
       p_tu_ngay: from, p_den_ngay: to,
       p_ma_ch: null,
       p_khu_vuc: null,
-      p_limit: 100000
+      p_limit: 1000000
     });
     if (error) throw error;
     bgqlTimelineCache = Array.isArray(data) ? data : [];
@@ -1464,7 +1464,7 @@ async function bgqlLoadPrint(){
     // Fetch tất cả biên bản trong range (cross-CH, dùng RPC timeline_ql)
     const { data, error } = await supa.rpc('fn_ban_giao_timeline_ql', {
       p_tu_ngay: from, p_den_ngay: to,
-      p_ma_ch: null, p_khu_vuc: null, p_limit: 100000
+      p_ma_ch: null, p_khu_vuc: null, p_limit: 1000000
     });
     if (error) throw error;
     
@@ -1492,7 +1492,7 @@ async function bgqlLoadPrint(){
     bgqlPrintCache = byCH;
     // [v13.70] Lấy trạng thái sự vụ per CH (phục vụ bộ lọc "Trạng thái xử lý")
     try {
-      const { data: svs } = await supa.rpc('fn_su_vu_list', { p_tu_ngay: from, p_den_ngay: to, p_limit: 100000 });
+      const { data: svs } = await supa.rpc('fn_su_vu_list', { p_tu_ngay: from, p_den_ngay: to, p_limit: 1000000 });
       (svs||[]).forEach(sv => {
         const c = byCH[sv.ma_ch];
         if (c && sv.trang_thai) c._sv_tt.add(sv.trang_thai);
@@ -1940,7 +1940,7 @@ async function bgqlLoadTienChi(){
       p_den_ngay: denStr,
       p_ma_ch: bgqlSuVuFilter.ma_ch || null,
       p_khu_vuc: (bgqlSuVuFilter.khu_vuc && bgqlSuVuFilter.khu_vuc !== 'all') ? bgqlSuVuFilter.khu_vuc : null,
-      p_limit: 100000
+      p_limit: 1000000
     });
     if (error) throw error;
     bgqlTienChiCache = Array.isArray(data) ? data : [];
@@ -2819,7 +2819,7 @@ window.bgqlAibcSetRange = function(r){
 
 async function bgqlAibcLoadHistory(){
   try {
-    const { data, error } = await supa.rpc('fn_report_list', { p_ma_nv: SESSION.ma, p_limit: 100000 });
+    const { data, error } = await supa.rpc('fn_report_list', { p_ma_nv: SESSION.ma, p_limit: 1000000 });
     if (error) throw error;
     bgqlAibcCache = Array.isArray(data) ? data : [];
     bgqlAibcRenderHistory();
