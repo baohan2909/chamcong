@@ -216,6 +216,9 @@ function _diemHubRender() {
             <div style="font-size:10.5px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">${escHtml(r.ten_ch || r.khu_vuc || '—')}${r.so_loi ? ' · ' + r.so_loi + ' lỗi' : ''}</div>
           </div>
         </div>
+        <button onclick="event.stopPropagation();diemHistoryOpen('${escHtml(r.ma_nv)}','${escHtml((r.ho_ten || r.ma_nv || '').replace(/'/g, ''))}')" title="Lịch sử điểm trừ" style="flex:none;width:30px;height:30px;border-radius:9px;border:1px solid #E6EBF0;background:#fff;color:#64748B;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l2.5 2.5"/></svg>
+        </button>
         <div style="flex:none;text-align:right">
           <div style="font-size:22px;font-weight:900;color:${m.c};line-height:1">${r.diem == null ? '—' : r.diem}<span style="font-size:12px;color:#CBD5E1;font-weight:700">/10</span></div>
         </div>
@@ -320,6 +323,85 @@ async function diemHubMien(maNv, loai, sourceKey, ngay) {
     _diemHubLoadCt(maNv);  // repaint hộp chi tiết (trạng thái đã xóa / khôi phục)
   } catch (e) { showToast('Lỗi kết nối', 'err'); }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  LỊCH SỬ ĐIỂM TRỪ (mỗi NV) — gom nhiều tháng, tái dùng fn_diem_chi_tiet
+//  Frontend-only: gọi song song 12 tháng gần nhất, gộp sự kiện theo tháng.
+// ═══════════════════════════════════════════════════════════════════════════
+const _DIEM_HISTORY_SO_THANG = 12;
+
+async function diemHistoryOpen(maNv, hoTen) {
+  let ov = document.getElementById('diem-history-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'diem-history-ov'; document.body.appendChild(ov); }
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center';
+  ov.onclick = function (e) { if (e.target === ov) diemHistoryClose(); };
+  ov.innerHTML = `
+    <div style="background:#fff;width:100%;max-width:520px;max-height:86vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:none;padding:15px 18px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="min-width:0">
+          <div style="font-size:16px;font-weight:800;color:#0F2E45">Lịch sử điểm trừ</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(hoTen || maNv)} · ${_DIEM_HISTORY_SO_THANG} tháng gần nhất</div>
+        </div>
+        <button onclick="diemHistoryClose()" style="flex:none;border:none;background:#F1F5F9;width:32px;height:32px;border-radius:8px;font-size:16px;color:#475569;cursor:pointer">✕</button>
+      </div>
+      <div id="diem-history-body" style="flex:1;overflow-y:auto;padding:12px 16px 22px;-webkit-overflow-scrolling:touch">
+        <div style="text-align:center;color:#94A3B8;padding:34px">Đang tải lịch sử...</div>
+      </div>
+    </div>`;
+
+  const months = [];
+  let t = _diemThangHT();
+  for (let i = 0; i < _DIEM_HISTORY_SO_THANG; i++) { months.push(t); t = _diemThangShift(t, -1); }
+  try {
+    const results = await Promise.all(months.map(m =>
+      supa.rpc('fn_diem_chi_tiet', { p_ma_nv: maNv, p_thang: m })
+        .then(r => ({ m, d: r && r.data })).catch(() => ({ m, d: null }))
+    ));
+    const body = document.getElementById('diem-history-body');
+    if (!body) return;
+    let html = '', tongLoi = 0, tongMien = 0;
+    results.forEach(({ m, d }) => {
+      if (!d || !d.success) return;
+      const sk = d.su_kien || [];
+      if (!sk.length) return;
+      const active = sk.filter(e => !e.da_mien).length;
+      const mien = sk.filter(e => e.da_mien).length;
+      tongLoi += active; tongMien += mien;
+      const mm = _diemMau(d.diem);
+      html += `<div style="margin-bottom:13px;background:#fff;border:1px solid #EEF2F6;border-radius:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#F8FAFC;border-bottom:1px solid #EEF2F6">
+          <div style="font-size:12.5px;font-weight:800;color:#0F2E45">Tháng ${m.substring(5, 7)}/${m.substring(0, 4)}</div>
+          <div style="font-size:11.5px;font-weight:800;color:${mm.c}">${d.diem == null ? '—' : d.diem}/10 · ${active} lỗi${mien ? ' · ' + mien + ' đã xóa' : ''}</div>
+        </div>
+        <div style="padding:2px 12px">` +
+        sk.map(e => {
+          const L = _diemLoai(e.loai);
+          const off = e.da_mien;
+          return `<div style="display:flex;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid #F5F7FA">
+            <div style="flex:none;width:8px;height:8px;border-radius:50%;background:${off ? '#CBD5E1' : L.c}"></div>
+            <div style="flex:1;min-width:0;${off ? 'opacity:.5' : ''}">
+              <div style="font-size:12.5px;font-weight:700;color:${L.c};${off ? 'text-decoration:line-through' : ''}">${escHtml(L.t)}</div>
+              <div style="font-size:11px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(_diemNgay(e.ngay))} · ${escHtml(e.mo_ta || '')}</div>
+            </div>
+            ${off ? '<div style="flex:none;font-size:10px;font-weight:700;color:#64748B;background:#F1F5F9;padding:3px 8px;border-radius:99px">đã xóa</div>'
+                  : '<div style="flex:none;font-size:13px;font-weight:800;color:#DC2626">−1</div>'}
+          </div>`;
+        }).join('') +
+        `</div></div>`;
+    });
+    if (!html) {
+      body.innerHTML = '<div style="text-align:center;color:#16A34A;padding:34px;font-size:13px">Không có điểm trừ nào trong ' + _DIEM_HISTORY_SO_THANG + ' tháng qua</div>';
+      return;
+    }
+    body.innerHTML = `<div style="font-size:11.5px;color:#94A3B8;margin-bottom:10px">Tổng <b style="color:#DC2626">${tongLoi}</b> lỗi còn tính${tongMien ? ' · <b>' + tongMien + '</b> đã xóa' : ''}</div>` + html;
+  } catch (e) {
+    const body = document.getElementById('diem-history-body');
+    if (body) body.innerHTML = '<div style="text-align:center;color:#DC2626;padding:34px">Lỗi tải lịch sử</div>';
+  }
+}
+function diemHistoryClose() { const o = document.getElementById('diem-history-ov'); if (o) o.remove(); }
+window.diemHistoryOpen = diemHistoryOpen;
+window.diemHistoryClose = diemHistoryClose;
 
 window.diemHubOpen = diemHubOpen;
 window.diemHubLoad = diemHubLoad;
