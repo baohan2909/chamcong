@@ -573,7 +573,7 @@ async function chkAddPhoto(mucId, input){
     const dataUrl = await _chkCompressImage(file);
     if (!chkState[mucId]) chkState[mucId] = { status:'VD' };
     if (!chkState[mucId].anh_urls) chkState[mucId].anh_urls = [];
-    if (chkState[mucId].anh_urls.length >= 4) { showToast('Tối đa 4 ảnh / mục', 'warn'); return; }
+    if (chkState[mucId].anh_urls.length >= 20) { showToast('Tối đa 20 ảnh / mục', 'warn'); return; }
     chkState[mucId].anh_urls.push(dataUrl);
     const m = chkDanhMuc.find(x=>x.id===mucId);
     document.getElementById('chk-detail-'+mucId).innerHTML = chkDetailHtml(m);

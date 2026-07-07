@@ -369,7 +369,7 @@ window.bgAddTaiSanPhoto = function(id, input){
         r.onload = e => {
           if (!bgState[id]) bgState[id] = { status:'VD' };
           if (!bgState[id].anh_urls) bgState[id].anh_urls = [];
-          if (bgState[id].anh_urls.length >= 4) { showToast('Tối đa 4 ảnh / mục', 'warn'); return; }
+          if (bgState[id].anh_urls.length >= 20) { showToast('Tối đa 20 ảnh / mục', 'warn'); return; }
           bgState[id].anh_urls.push({ blob, dataUrl: e.target.result });
           const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
           const it = g.items.find(x=>x.id===id);
@@ -531,7 +531,7 @@ function bgRenderGroupAnh(g){
 window.bgAddBienBanPhoto = function(input){
   const f = input.files && input.files[0];
   if (!f) return;
-  if (bgPhotos.length >= 6) { showToast('Tối đa 6 ảnh biên bản', 'warn'); input.value=''; return; }
+  if (bgPhotos.length >= 50) { showToast('Tối đa 50 ảnh biên bản', 'warn'); input.value=''; return; }
   if (typeof csOpenFromFile !== 'function') { showToast('Module xử lý ảnh chưa tải xong', 'warn'); return; }
   csOpenFromFile(f, {
     onComplete: blob => {

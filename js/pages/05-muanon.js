@@ -554,8 +554,8 @@ function muanonClickSlot(idx) {
     showToast('Đang xử lý ' + files.length + ' ảnh...', 'ok');
     let added = 0;
     for (const file of files) {
-      if (_muanonAnhList.length >= 20) {
-        showToast('Tối đa 20 ảnh, bỏ qua phần còn lại', 'err');
+      if (_muanonAnhList.length >= 200) {
+        showToast('Tối đa 200 ảnh, bỏ qua phần còn lại', 'err');
         break;
       }
       try {
