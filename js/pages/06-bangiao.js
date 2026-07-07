@@ -194,7 +194,7 @@ function bgRenderForm(){
     } else if (g.type === 'anh') {
       bodyHtml = bgRenderGroupAnh(g);
     }
-    const stat = g.items.length>0 ? (g.type==='anh' ? bgPhotos.length+' ảnh' : g.items.length+' mục') : '';
+    const stat = g.items.length>0 ? (g.type==='anh' ? _bgAnhStatusText() : g.items.length+' mục') : '';
     html += `<div class="chk-group" id="bg-g-${g.key}" data-key="${g.key}">
       <div class="chk-group-head" onclick="bgToggleGroup('${g.key}')">
         <div class="chk-group-num" id="bg-gnum-${g.key}">${gi+1}</div>
@@ -373,6 +373,7 @@ window.bgAddTaiSanPhoto = function(id, input){
           bgState[id].anh_urls.push({ blob, dataUrl: e.target.result });
           const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
           const it = g.items.find(x=>x.id===id);
+          bgWarnAnhLe(bgState[id].anh_urls.length, 'Ảnh mục "' + it.ten + '"');
           document.getElementById('bg-detail-'+id).innerHTML = bgItemTaiSanDetailHtml({
             ...it,
             // attach dataUrl-only display for rendering
@@ -420,6 +421,7 @@ window.bgDelTaiSanPhoto = function(id, idx){
     bgState[id].anh_urls.splice(idx, 1);
     const g = bgGroups.find(g=>g.items.some(x=>x.id===id));
     const it = g.items.find(x=>x.id===id);
+    bgWarnAnhLe(bgState[id].anh_urls.length, 'Ảnh mục "' + it.ten + '"');
     const det = bgState[id].anh_urls.map(p=>p.dataUrl);
     const stCopy = bgState[id];
     const photos = det.map((url,i)=>`<div class="chk-photo-wrap"><img class="chk-photo-thumb" src="${url}"><div class="chk-photo-del" onclick="bgDelTaiSanPhoto('${id}',${i})">×</div></div>`).join('');
@@ -528,6 +530,18 @@ function bgRenderGroupAnh(g){
   </div>`;
 }
 
+// [chan-le] Số ảnh biên bản phải CHẴN (2,4,6...) để in 2 mặt đúng. Helper cảnh báo dùng chung.
+function bgWarnAnhLe(count, label){
+  if (count > 0 && count % 2 !== 0){
+    showToast(label + ': đang ' + count + ' ảnh (số lẻ) — thêm/bớt 1 ảnh để in 2 mặt đúng.', 'warn');
+  }
+}
+// [chan-le] Text hiển thị số ảnh biên bản kèm indicator chẵn/lẻ
+function _bgAnhStatusText(){
+  if (!bgPhotos.length) return '0 ảnh';
+  return bgPhotos.length + ' ảnh' + (bgPhotos.length % 2 !== 0 ? ' · lẻ' : '');
+}
+
 window.bgAddBienBanPhoto = function(input){
   const f = input.files && input.files[0];
   if (!f) return;
@@ -539,8 +553,9 @@ window.bgAddBienBanPhoto = function(input){
       r.onload = e => {
         bgPhotos.push({ blob, dataUrl: e.target.result });
         document.getElementById('bg-g-anh').querySelector('.chk-group-body').innerHTML = bgRenderGroupAnh({type:'anh',items:[]});
-        document.getElementById('bg-gstatus-anh').textContent = bgPhotos.length + ' ảnh';
+        document.getElementById('bg-gstatus-anh').textContent = _bgAnhStatusText();
         bgUpdateProgress();
+        bgWarnAnhLe(bgPhotos.length, 'Ảnh biên bản');
       };
       r.readAsDataURL(blob);
     },
@@ -551,8 +566,9 @@ window.bgAddBienBanPhoto = function(input){
 window.bgDelBienBanPhoto = function(i){
   bgPhotos.splice(i,1);
   document.getElementById('bg-g-anh').querySelector('.chk-group-body').innerHTML = bgRenderGroupAnh({type:'anh',items:[]});
-  document.getElementById('bg-gstatus-anh').textContent = bgPhotos.length + ' ảnh';
+  document.getElementById('bg-gstatus-anh').textContent = _bgAnhStatusText();
   bgUpdateProgress();
+  bgWarnAnhLe(bgPhotos.length, 'Ảnh biên bản');
 };
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -649,6 +665,22 @@ async function bgSubmit(){
   // [v16.3] Biên bản giấy phải up SỐ CHẴN (2,4,6...) — mỗi tờ gồm 2 mặt
   if (bgPhotos.length === 0 || bgPhotos.length % 2 !== 0){
     showToast('Số ảnh biên bản phải chẵn (2, 4, 6...). Hiện có ' + bgPhotos.length + ' ảnh — vui lòng up đủ cả 2 mặt mỗi tờ.', 'warn');
+    return;
+  }
+  // [chan-le] Mỗi mục "Có vấn đề" nếu có ảnh thì SỐ ẢNH cũng phải chẵn (in 2 mặt hàng loạt)
+  const itemsAnhLe = [];
+  bgGroups.filter(g=>g.type==='taisan').forEach(g => {
+    g.items.forEach(it => {
+      const st = bgState[it.id];
+      if (st && st.status === 'VD' && st.anh_urls && st.anh_urls.length > 0 && st.anh_urls.length % 2 !== 0){
+        itemsAnhLe.push({ ten: it.ten, n: st.anh_urls.length });
+      }
+    });
+  });
+  if (itemsAnhLe.length > 0){
+    const first = itemsAnhLe[0];
+    const them = itemsAnhLe.length > 1 ? ' (và ' + (itemsAnhLe.length - 1) + ' mục khác)' : '';
+    showToast('Ảnh mục "' + first.ten + '" đang ' + first.n + ' (lẻ)' + them + '. Cần chẵn để in 2 mặt.', 'warn');
     return;
   }
 
