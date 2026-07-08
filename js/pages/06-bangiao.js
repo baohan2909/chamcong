@@ -1568,6 +1568,7 @@ window.bgSuVuDong = async function(id){
     showToast('✓ Đã xác nhận hoàn tất & đóng sự vụ', 'ok');
     bgRenderSuVu();
   } catch(e){ showToast('⚠ '+e.message, 'warn'); }
+  finally { window._svActing = false; }   // [fix-svdong] handler DUY NHẤT thiếu reset cờ → kẹt global, chặn im lặng mọi lần đóng sau
 };
 
 function bgFmtDateTimeShort(s){
