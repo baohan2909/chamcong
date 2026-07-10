@@ -272,7 +272,7 @@ function tcAskRaCaTransfer(others, go, cancel){
     </div>
     <button onclick="tcRaCaSkip()" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:13px 12px;border:1.5px solid #CBD5E1;border-radius:13px;background:#F8FAFC;cursor:pointer">
       <div style="flex:none;width:36px;height:36px;border-radius:10px;background:#EEF2F7;color:#475569;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/></svg></div>
-      <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0F2E45">Ra ca cuối ngày — đóng cửa hàng</div><div style="font-size:11px;color:#94A3B8">Không cần chuyển Trưởng ca</div></div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0F2E45">Ra ca — không chuyển Trưởng ca</div><div style="font-size:11px;color:#94A3B8">Chỉ kết thúc ca của bạn, không bàn giao cho ai</div></div>
     </button>
   </div>`;
   document.body.appendChild(root);
