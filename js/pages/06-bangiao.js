@@ -693,7 +693,9 @@ async function bgSubmit(){
     // 1) Upload ảnh biên bản giấy
     const anhUrls = [], anhPaths = [];
     const bucket = 'bien-ban-ban-giao';
-    const ngay = new Date().toISOString().slice(0,10);
+    // [fix-ngay] Ngày LOCAL VN — trước dùng toISOString() (UTC) → up sáng sớm (00:00-06:59) bị lùi 1 ngày → biên bản "mất" khi lọc đúng ngày
+    const _dNow = new Date();
+    const ngay = _dNow.getFullYear() + '-' + String(_dNow.getMonth()+1).padStart(2,'0') + '-' + String(_dNow.getDate()).padStart(2,'0');
     for (let i = 0; i < bgPhotos.length; i++){
       btn.innerHTML = 'Tải ảnh '+(i+1)+'/'+bgPhotos.length+'...';
       const p = bgPhotos[i];
@@ -785,6 +787,11 @@ async function bgSubmit(){
       p_chi_tiet_hang: chi_tiet_hang
     });
     if (ce) throw ce;
+    // [fix-mat] KHÔNG nhận được mã biên bản = server CHƯA lưu (RPC trả null không kèm error).
+    // Ném lỗi để rơi vào catch → toast cảnh báo, GIỮ nút + GIỮ dữ liệu, KHÔNG reset form → chống "báo thành công giả rồi mất".
+    if (!banGiaoId || typeof banGiaoId !== 'string') {
+      throw new Error('Server chưa lưu được biên bản (không nhận mã) — vui lòng bấm GỬI LẠI, dữ liệu chưa mất.');
+    }
 
     // 6) Auto tạo sự vụ cho từng item VD + chênh tiền + chênh hàng
     btn.innerHTML = 'Tạo sự vụ...';
@@ -863,6 +870,7 @@ async function bgSubmit(){
     bgState = {}; bgPhotos = [];
     document.getElementById('bg-ghichu').value = '';
     bgRenderForm();
+    bgTimelineCache = null;   // [fix-cache] buộc timeline nạp lại từ server → thấy ngay biên bản vừa gửi (trước dùng cache cũ, tưởng "mất")
     bgSwitchSub('timeline');
     window._bgSubmitting = false;
   } catch(e){
