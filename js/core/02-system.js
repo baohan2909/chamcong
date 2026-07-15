@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.78',
+  'sys.cache_version': 'v17.79',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -837,6 +837,24 @@ async function doLogout(){
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
 }
+
+// [v2-role] CTV ⇄ NV đổi vị trí → buộc đăng nhập lại (nạp đúng quyền/giao diện). Chỉ kick đúng cặp NV/CTV.
+async function _kiemTraDoiViTri(){
+  try {
+    if (!SESSION || !SESSION.ma) return;
+    const roleCu = String(SESSION.vaiTro||'').toUpperCase();
+    if (roleCu !== 'NV' && roleCu !== 'CTV') return;   // chỉ áp cho nhân viên/cộng tác viên
+    const { data, error } = await supa.rpc('fn_vai_tro_hien_tai', { p_ma: SESSION.ma });
+    if (error || !data || !data.role) return;          // lỗi/không rõ → KHÔNG kick (an toàn)
+    const roleMoi = String(data.role).toUpperCase();
+    if ((roleMoi === 'NV' || roleMoi === 'CTV') && roleMoi !== roleCu) {
+      try { localStorage.removeItem('session_cc'); localStorage.removeItem('session_login_ts'); sessionStorage.removeItem('session_cc'); } catch(e){}
+      if (typeof showToast === 'function') showToast('Vị trí của bạn đã đổi ('+roleCu+' → '+roleMoi+'). Vui lòng đăng nhập lại.', 'warn');
+      setTimeout(function(){ location.reload(); }, 2000);
+    }
+  } catch(e){}
+}
+window._kiemTraDoiViTri = _kiemTraDoiViTri;
 window.addEventListener('load',()=>{
   // [v10.85] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
@@ -1011,6 +1029,8 @@ function khoiDongApp(){
   if (String(SESSION.vaiTro||'').toUpperCase() === 'NV' && typeof nsFaceCheckEnabled === 'function' && typeof nsFacePreload === 'function') {
     setTimeout(function(){ nsFaceCheckEnabled().then(function(on){ if (on) nsFacePreload(); }).catch(function(){}); }, 2500);
   }
+  // [v2-role] Kiểm tra đổi vị trí CTV⇄NV → buộc đăng nhập lại (delay để không chặn khởi động)
+  if (typeof _kiemTraDoiViTri === 'function') setTimeout(_kiemTraDoiViTri, 1500);
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
   // [v10.94] Header modern compact + Hero card data
