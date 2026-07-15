@@ -10,16 +10,17 @@
  *  ──────────────────────────────────────────────────────────────────────── */
 
 const NS_FACE = {
-  // GIỮ pipeline nhận diện y cũ để KHÔNG lệch vector người đã đăng ký (đổi model = phải enroll lại — chờ Aroma chốt phần B)
-  FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
-  MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/',
+  // [Phần B] Thống nhất script+model vladmandic 1.7.15 (bản duy trì tốt, hết lệch phiên bản, cache CDN 1 lần).
+  // ĐỔI pipeline (224 + landmark Tiny) → Aroma ĐÃ reset enroll toàn bộ → mọi NV đăng ký lại khuôn mặt.
+  FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.min.js',
+  MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/',
   MIN_FACE_SIZE: 80,
   STABLE_FRAMES_NEEDED: 3,
   STABLE_PX: 30,
   SCAN_DURATION_MS: 2500,   // smooth fill 2.5s
-  INPUT_SIZE: 320,          // GIỮ 320 (khớp pipeline enroll cũ) — 224 thuộc phần B
-  DETECT_INTERVAL_MS: 110,  // [v2-cam] 160→110ms (~9 khung/giây) — nhạy hơn, không đụng vector (chỉ nhịp quét)
-  LOAD_TIMEOUT_MS: 22000    // chặn treo vô hạn khi tải script/model lần đầu (mạng chậm/chờn)
+  INPUT_SIZE: 224,          // [Phần B] TinyFaceDetector 320→224: nhẹ, đủ cho 1 mặt/lần, CPU đỡ tải
+  DETECT_INTERVAL_MS: 110,  // ~9 khung/giây — nhạy mà không nghẽn (Tiny + WebGL GPU)
+  LOAD_TIMEOUT_MS: 22000
 };
 
 let _faceLoaded = false;
@@ -56,7 +57,7 @@ async function nsFaceEnsureLoaded() {
     }
     await _withTimeout(Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(NS_FACE.MODELS_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(NS_FACE.MODELS_URL),
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri(NS_FACE.MODELS_URL),  // [Phần B] landmark Tiny (nhẹ hơn)
       faceapi.nets.faceRecognitionNet.loadFromUri(NS_FACE.MODELS_URL)
     ]), NS_FACE.LOAD_TIMEOUT_MS, 'models');
     _faceLoaded = true;
@@ -185,7 +186,8 @@ function _captureFaceFrame(videoEl) {
 async function _detectFace(videoEl) {
   if (!_faceLoaded) return null;
   const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: NS_FACE.INPUT_SIZE, scoreThreshold: 0.45 });
-  const result = await faceapi.detectSingleFace(videoEl, opts).withFaceLandmarks().withFaceDescriptor();
+  // [Phần B] withFaceLandmarks(true) = dùng landmark TINY (khớp model đã nạp)
+  const result = await faceapi.detectSingleFace(videoEl, opts).withFaceLandmarks(true).withFaceDescriptor();
   if (!result) return null;
   const box = result.detection.box;
   if (box.width < NS_FACE.MIN_FACE_SIZE) return { tooSmall: true };
