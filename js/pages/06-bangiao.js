@@ -19,6 +19,7 @@ let bgState = {};           // {itemKey: {...}}  - varies theo type
 let bgCurrentCH = null;     // {ma, ten, khuVuc}
 let bgSub = 'new';
 let bgDanhMucCache = null;
+let bgNhomCache = null;      // [v3-bg] danh sách nhóm tài sản động (fn_bg_nhom_list); null → dùng 3 nhóm gốc mặc định
 let bgPhotos = [];          // [{ blob, dataUrl }]
 
 // [B1] Cơ động = NV có phạm vi khu vực (chức danh CDxx) → xem sự vụ cả VÙNG
@@ -65,12 +66,16 @@ async function bgInitPage(){
   document.getElementById('bg-ch-name').textContent = bgCurrentCH.ten;
   document.getElementById('bg-ch-sub').textContent = bgCurrentCH.ma + (bgCurrentCH.khuVuc ? ' · ' + bgCurrentCH.khuVuc : '');
 
-  // Load danh mục 45 items master (cache)
+  // Load danh mục items master + danh sách nhóm động (cache)
   if (!bgDanhMucCache) {
     try {
-      const { data, error } = await supa.rpc('fn_get_danh_muc_tai_san');
-      if (error) throw error;
-      bgDanhMucCache = data || [];
+      const [dmRes, nhomRes] = await Promise.all([
+        supa.rpc('fn_get_danh_muc_tai_san'),
+        supa.rpc('fn_bg_nhom_list').then(r => r).catch(() => ({ data: null }))  // [v3-bg] nhóm động; lỗi/chưa có → fallback
+      ]);
+      if (dmRes.error) throw dmRes.error;
+      bgDanhMucCache = dmRes.data || [];
+      bgNhomCache = (nhomRes && Array.isArray(nhomRes.data) && nhomRes.data.length) ? nhomRes.data : null;
     } catch(e){
       document.getElementById('bg-groups').innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải danh mục: '+e.message+'</div>';
       return;
@@ -110,13 +115,8 @@ async function bgXacDinhCH(){
   }
 }
 
-// Build 6 nhóm: Tiền · KV1 · KV2 · KV4 · Hàng hóa · Ảnh
+// Build nhóm: Tiền · (các nhóm tài sản ĐỘNG) · Hàng hóa · Ảnh
 function bgBuildGroups(){
-  const KV_TITLE = {
-    1: 'Mặt tiền, hạ tầng',
-    2: 'Quầy thu ngân & IT',
-    4: 'Kho, sinh hoạt, công cụ'
-  };
   bgGroups = [];
 
   // Group 1: Tiền mặt
@@ -129,12 +129,19 @@ function bgBuildGroups(){
     ]
   });
 
-  // Groups 2-4: Tài sản 45 items chia theo khu vực
+  // Groups tài sản: ĐỘNG theo bgNhomCache (fallback 3 nhóm gốc nếu chưa có RPC nhóm)
+  const nhomList = (Array.isArray(bgNhomCache) && bgNhomCache.length) ? bgNhomCache : [
+    { khu_vuc:1, ten:'Mặt tiền, hạ tầng', thu_tu:1 },
+    { khu_vuc:2, ten:'Quầy thu ngân & IT', thu_tu:2 },
+    { khu_vuc:4, ten:'Kho, sinh hoạt, công cụ', thu_tu:3 }
+  ];
   const taiSan = bgDanhMucCache || [];
-  for (const kv of [1, 2, 4]) {
+  for (const nh of nhomList) {
+    const kv = nh.khu_vuc;
     const items = taiSan.filter(x => x.khu_vuc === kv);
+    if (!items.length) continue;   // nhóm rỗng (mới tạo, chưa có mục) → không hiện cho cửa hàng
     bgGroups.push({
-      key:'ts_kv'+kv, ten:KV_TITLE[kv], type:'taisan',
+      key:'ts_kv'+kv, ten:nh.ten, type:'taisan',
       items: items.map(it => ({ id:'ts_'+it.stt, stt:it.stt, ten:it.ten, don_vi:it.don_vi||'', khu_vuc:kv }))
     });
   }
