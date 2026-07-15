@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.77',
+  'sys.cache_version': 'v17.78',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1007,6 +1007,10 @@ function khoiDongApp(){
   document.getElementById('disp-ten-nv').textContent=SESSION.ten;
   document.getElementById('disp-ma-nv').textContent=SESSION.ma;
   if(typeof taiDiemPhongDo==='function') taiDiemPhongDo(); // [v17.5x] điểm phong độ
+  // [v2-cam] Preload model nhận diện khuôn mặt cho NV có bật face → lúc chấm công mở camera là quét ngay (không chờ tải model)
+  if (String(SESSION.vaiTro||'').toUpperCase() === 'NV' && typeof nsFaceCheckEnabled === 'function' && typeof nsFacePreload === 'function') {
+    setTimeout(function(){ nsFaceCheckEnabled().then(function(on){ if (on) nsFacePreload(); }).catch(function(){}); }, 2500);
+  }
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
   // [v10.94] Header modern compact + Hero card data

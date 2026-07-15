@@ -10,14 +10,16 @@
  *  ──────────────────────────────────────────────────────────────────────── */
 
 const NS_FACE = {
+  // GIỮ pipeline nhận diện y cũ để KHÔNG lệch vector người đã đăng ký (đổi model = phải enroll lại — chờ Aroma chốt phần B)
   FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
   MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/',
   MIN_FACE_SIZE: 80,
   STABLE_FRAMES_NEEDED: 3,
   STABLE_PX: 30,
   SCAN_DURATION_MS: 2500,   // smooth fill 2.5s
-  DETECT_INTERVAL_MS: 160,  // [fix-cam] giãn nhịp nhận diện (100→160ms) → CPU đỡ tải → iOS bớt tự đổi phân giải/zoom
-  LOAD_TIMEOUT_MS: 22000    // [fix-cam] chặn treo vô hạn khi tải script/model lần đầu (mạng chậm/chờn)
+  INPUT_SIZE: 320,          // GIỮ 320 (khớp pipeline enroll cũ) — 224 thuộc phần B
+  DETECT_INTERVAL_MS: 110,  // [v2-cam] 160→110ms (~9 khung/giây) — nhạy hơn, không đụng vector (chỉ nhịp quét)
+  LOAD_TIMEOUT_MS: 22000    // chặn treo vô hạn khi tải script/model lần đầu (mạng chậm/chờn)
 };
 
 let _faceLoaded = false;
@@ -67,6 +69,13 @@ async function nsFaceEnsureLoaded() {
   }
 }
 
+// [v2-cam] Preload model NỀN (fire-and-forget) — gọi sớm sau đăng nhập để lúc mở camera model đã sẵn, bật tức thì
+function nsFacePreload() {
+  if (_faceLoaded || _faceLoading) return;
+  try { nsFaceEnsureLoaded().catch(function(){}); } catch (_) {}
+}
+window.nsFacePreload = nsFacePreload;
+
 async function _openCam(videoEl) {
   // Stop stream cũ nếu còn
   if (videoEl.srcObject) {
@@ -92,9 +101,10 @@ async function _openCam(videoEl) {
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'user',
-        width:  { ideal: 1280 },
+        aspectRatio: { ideal: 1 },   // [v2-cam] khung VUÔNG 1:1 → khớp vòng tròn UI, ít re-crop → hết zoom ra/vào
+        width:  { ideal: 720 },
         height: { ideal: 720 },
-        frameRate: { ideal: 30, max: 30 }
+        frameRate: { ideal: 24, max: 30 }
       },
       audio: false
     });
@@ -174,7 +184,7 @@ function _captureFaceFrame(videoEl) {
 
 async function _detectFace(videoEl) {
   if (!_faceLoaded) return null;
-  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.45 });
+  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: NS_FACE.INPUT_SIZE, scoreThreshold: 0.45 });
   const result = await faceapi.detectSingleFace(videoEl, opts).withFaceLandmarks().withFaceDescriptor();
   if (!result) return null;
   const box = result.detection.box;
