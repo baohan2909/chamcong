@@ -95,22 +95,22 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // [fix-cam] KHÓA độ phân giải ổn định (ideal, không exact) → iOS không tự đổi phân giải → hết "zoom lớn nhỏ".
-  // Camera trước iPhone là 1 ống kính cố định ~1x; giữ khung gốc, KHÔNG zoom số (crop bỏ ở CSS).
+  // [v3-cam] GỐC "zoom ra vào" trên iPhone: xin 720p → iOS RAMP res (thấp→cao) lúc mở + TỤT res khi CPU tải
+  //          → object-fit:cover re-crop mỗi lần đổi res → nhảy/zoom. Fix: xin NATIVE 640x480 cố định (iOS giao
+  //          ngay, không ramp/tụt). Bỏ aspectRatio (ép vuông làm iOS xử lý số thêm). Res thấp cũng nhẹ CPU
+  //          (detector downscale về 224 nên KHÔNG mất độ chính xác).
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'user',
-        aspectRatio: { ideal: 1 },   // [v2-cam] khung VUÔNG 1:1 → khớp vòng tròn UI, ít re-crop → hết zoom ra/vào
-        width:  { ideal: 720 },
-        height: { ideal: 720 },
+        width:  { ideal: 640 },
+        height: { ideal: 480 },
         frameRate: { ideal: 24, max: 30 }
       },
       audio: false
     });
   } catch (e1) {
-    // Máy không nhận constraint chi tiết → hạ về tối giản
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
     } catch (e2) {
@@ -119,14 +119,16 @@ async function _openCam(videoEl) {
   }
   videoEl.srcObject = stream;
 
-  // [fix-cam] Ghì zoom về mức nhỏ nhất (1x) nếu thiết bị cho chỉnh — chống camera tự phóng to
+  // [v3-cam] Ghì các thông số có thể chỉnh về mức ổn định: zoom min (1x) + TẮT auto-lấy-nét liên tục
+  //          (CAF trên vài máy gây "thở"/rung ảnh) + khóa frameRate — bọc try, máy nào không hỗ trợ thì bỏ qua.
   try {
     const track = stream.getVideoTracks && stream.getVideoTracks()[0];
     if (track && track.getCapabilities) {
-      const caps = track.getCapabilities();
-      if (caps && caps.zoom && typeof caps.zoom.min === 'number') {
-        await track.applyConstraints({ advanced: [{ zoom: caps.zoom.min }] });
-      }
+      const caps = track.getCapabilities() || {};
+      const adv = [];
+      if (caps.zoom && typeof caps.zoom.min === 'number') adv.push({ zoom: caps.zoom.min });
+      if (caps.focusMode && caps.focusMode.indexOf && caps.focusMode.indexOf('continuous') >= 0) adv.push({ focusMode: 'continuous' });
+      if (adv.length) await track.applyConstraints({ advanced: adv });
     }
   } catch (_) {}
 
