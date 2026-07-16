@@ -119,18 +119,9 @@ async function _openCam(videoEl) {
   }
   videoEl.srcObject = stream;
 
-  // [v3-cam] Ghì các thông số có thể chỉnh về mức ổn định: zoom min (1x) + TẮT auto-lấy-nét liên tục
-  //          (CAF trên vài máy gây "thở"/rung ảnh) + khóa frameRate — bọc try, máy nào không hỗ trợ thì bỏ qua.
-  try {
-    const track = stream.getVideoTracks && stream.getVideoTracks()[0];
-    if (track && track.getCapabilities) {
-      const caps = track.getCapabilities() || {};
-      const adv = [];
-      if (caps.zoom && typeof caps.zoom.min === 'number') adv.push({ zoom: caps.zoom.min });
-      if (caps.focusMode && caps.focusMode.indexOf && caps.focusMode.indexOf('continuous') >= 0) adv.push({ focusMode: 'continuous' });
-      if (adv.length) await track.applyConstraints({ advanced: adv });
-    }
-  } catch (_) {}
+  // [v4-cam] KHÔNG applyConstraints sau khi mở nữa: gọi giữa lúc stream chạy có thể khiến camera CẤU HÌNH LẠI
+  //          → giật/đổi khung (một nguồn "thỉnh thoảng bị"). Chỉ dựa vào độ phân giải cố định 640x480 ở trên
+  //          là đủ ổn định + đúng 1x. (Bản v17.84 lỡ thêm focusMode:'continuous' = chế độ tự lấy nét = "thở" → đã bỏ.)
 
   // Đợi metadata (timeout 5s phòng treo)
   if (videoEl.readyState < 1) {
