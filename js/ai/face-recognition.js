@@ -77,6 +77,37 @@ function nsFacePreload() {
 }
 window.nsFacePreload = nsFacePreload;
 
+// [v5-cam][debug] Dòng số liệu camera — CHỈ NS00490 thấy (giống nếp nút "Xóa hàng loạt").
+// Mục đích DUY NHẤT: biết iOS có ĐỔI độ phân giải giữa chừng không — nghi phạm chính của zoom/nhảy.
+// Số cần đọc là "ĐỔI: n" — n > 0 nghĩa là iOS vẫn đổi khung dù đã xin exact. Gỡ khi chốt xong gốc.
+let _camMode = -1;
+const _CAM_MODE_TEN = ['exact 640x480', 'exact 480x640', 'ideal 640x480', 'facingMode', 'video:true'];
+let _camDbgIv = null;
+
+function _faceDebugAttach(videoEl, stream, prefix) {
+  try {
+    if (_camDbgIv) { clearInterval(_camDbgIv); _camDbgIv = null; }
+    if (!window.SESSION || SESSION.ma !== 'NS00490') return;
+    const el = document.getElementById(prefix + '-debug');
+    if (!el) return;
+    el.style.display = 'block';
+    const track = (stream.getVideoTracks && stream.getVideoTracks()[0]) || null;
+    let last = '', doi = 0;
+    const tick = () => {
+      if (!document.body.contains(el)) { clearInterval(_camDbgIv); _camDbgIv = null; return; }
+      const s = (track && track.getSettings) ? (track.getSettings() || {}) : {};
+      const cur = (videoEl.videoWidth || 0) + 'x' + (videoEl.videoHeight || 0);
+      if (last && cur !== last) doi++;
+      last = cur;
+      el.textContent = 'xin ' + (_CAM_MODE_TEN[_camMode] || '?')
+        + ' · track ' + (s.width || '?') + 'x' + (s.height || '?') + '@' + Math.round(s.frameRate || 0)
+        + ' · video ' + cur + ' · ĐỔI ' + doi;
+    };
+    tick();
+    _camDbgIv = setInterval(tick, 250);
+  } catch (_) {}
+}
+
 async function _openCam(videoEl) {
   // Stop stream cũ nếu còn
   if (videoEl.srcObject) {
@@ -95,26 +126,29 @@ async function _openCam(videoEl) {
     videoEl.setAttribute('webkit-playsinline', '');
   } catch (_) {}
 
-  // [v3-cam] GỐC "zoom ra vào" trên iPhone: xin 720p → iOS RAMP res (thấp→cao) lúc mở + TỤT res khi CPU tải
-  //          → object-fit:cover re-crop mỗi lần đổi res → nhảy/zoom. Fix: xin NATIVE 640x480 cố định (iOS giao
-  //          ngay, không ramp/tụt). Bỏ aspectRatio (ép vuông làm iOS xử lý số thêm). Res thấp cũng nhẹ CPU
-  //          (detector downscale về 224 nên KHÔNG mất độ chính xác).
+  // [v5-cam] GỐC "zoom/nhảy + khung tròn hở nền đen": `ideal` là ràng buộc MỀM → iOS được phép ĐỔI độ phân
+  //          giải GIỮA CHỪNG stream. Mỗi lần đổi, lớp video bị dựng lại → iOS Safari vẽ lại KHÔNG TRỌN
+  //          (nửa khung lộ nền #050d0b của .ns-face-cam — đúng triệu chứng Aroma chụp được).
+  //          Fix: xin `exact` để iOS chốt cứng một độ phân giải, không đổi nữa.
+  //          Thử ngang trước, rồi dọc (iOS có thể giao 480x640 khi cầm dọc), rớt hết mới lui về chuỗi cũ
+  //          để không máy nào mất camera.
+  //   LƯU Ý HÌNH HỌC (ghi chú v3-cam cũ SAI): với object-fit:cover, góc nhìn chỉ phụ thuộc TỶ LỆ khung,
+  //   KHÔNG phụ thuộc độ phân giải → hạ 720p→VGA tự nó KHÔNG chữa được zoom. Cái cần là tỷ lệ ĐỨNG YÊN.
+  const _CAM_TRIES = [
+    { facingMode: 'user', width: { exact: 640 }, height: { exact: 480 }, frameRate: { ideal: 24, max: 30 } },
+    { facingMode: 'user', width: { exact: 480 }, height: { exact: 640 }, frameRate: { ideal: 24, max: 30 } },
+    { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } },
+    { facingMode: 'user' },
+    true
+  ];
   let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'user',
-        width:  { ideal: 640 },
-        height: { ideal: 480 },
-        frameRate: { ideal: 24, max: 30 }
-      },
-      audio: false
-    });
-  } catch (e1) {
+  for (let i = 0; i < _CAM_TRIES.length; i++) {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-    } catch (e2) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: _CAM_TRIES[i], audio: false });
+      _camMode = i;
+      break;
+    } catch (e) {
+      if (i === _CAM_TRIES.length - 1) throw e;
     }
   }
   videoEl.srcObject = stream;
@@ -147,12 +181,16 @@ async function _openCam(videoEl) {
     tapTarget.addEventListener('touchstart', _tapPlay, { passive: true });
   }
 
+  // [v5-cam][debug] prefix suy từ id video ('fv-video' → 'fv', 'fe-video' → 'fe')
+  _faceDebugAttach(videoEl, stream, String(videoEl.id || '').replace(/-video$/, ''));
+
   return stream;
 }
 function _stopCam(stream) { if (stream) stream.getTracks().forEach(t => t.stop()); }
 
 // [fix-cam] Dừng mọi camera stream còn sót → chống rò khiến camera "bận" ở lần mở sau (phải kill app)
 function _faceStopStreams() {
+  if (_camDbgIv) { clearInterval(_camDbgIv); _camDbgIv = null; }
   if (typeof _verifyStream !== 'undefined' && _verifyStream) { _stopCam(_verifyStream); _verifyStream = null; }
   if (typeof _enrollStream !== 'undefined' && _enrollStream) { _stopCam(_enrollStream); _enrollStream = null; }
 }
@@ -234,6 +272,7 @@ function _buildStage(containerEl, prefix) {
     </div>
     <div class="ns-face-instruction" id="${prefix}-instruction"></div>
     <div class="ns-face-substatus" id="${prefix}-substatus"></div>
+    <div class="ns-face-debug" id="${prefix}-debug"></div>
   `;
 }
 
