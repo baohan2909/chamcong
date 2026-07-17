@@ -147,17 +147,21 @@
   box-shadow:
     0 0 60px rgba(43,192,132,0.15) inset,
     0 10px 40px rgba(0,0,0,0.5);
-  /* [v5-cam] Lật gương chuyển LÊN ĐÂY (trước nằm trên <video>). transform trên chính thẻ <video> đẩy nó
-     thành lớp composited riêng nằm trong khung bo tròn + overflow:hidden — tổ hợp iOS Safari hay vẽ lại
-     KHÔNG TRỌN (lộ nền đen nửa khung). Khung tròn đối xứng nên lật ở đây nhìn y hệt; ring/overlay là
-     phần tử ANH EM (con của .ns-face-stage) nên không bị lật theo. */
-  transform: scaleX(-1);
 }
+/* [v6-cam] Preview giờ vẽ bằng CANVAS (JS _startPreview) — thẻ <video> chỉ còn là NGUỒN dữ liệu cho
+   face-api + chụp ảnh, thu 2px + trong suốt (KHÔNG display:none — iOS có thể ngừng decode video ẩn hẳn).
+   Lật gương nằm trong phép vẽ canvas, KHÔNG còn transform CSS nào ở đây → hết đường iOS vẽ hụt lớp video. */
 .ns-face-cam video {
+  position: absolute;
+  left: 0; top: 0;
+  width: 2px; height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.ns-face-preview {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* giữ: cover là phép đúng để phủ kín — góc nhìn phụ thuộc TỶ LỆ, không phụ thuộc độ phân giải */
-  display: block;
+  display: block; /* canvas 480x480 vuông trong khung vuông (aspect-ratio 1/1) → không cần object-fit */
 }
 
 .ns-face-ring {

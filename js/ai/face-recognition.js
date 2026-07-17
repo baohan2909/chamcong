@@ -108,6 +108,40 @@ function _faceDebugAttach(videoEl, stream, prefix) {
   } catch (_) {}
 }
 
+// [v6-cam] PREVIEW BẰNG CANVAS — xử triệt để tầng render. Thẻ <video> trên iOS Safari là lớp
+// composited hệ thống tự quản: đổi kích thước giữa chừng → iOS tự re-layout/vẽ lại, có khi vẽ HỤT
+// (nửa khung lộ nền đen — hình Aroma chụp). Canvas thì NGƯỢC LẠI: kích thước 480x480 do MÌNH chốt
+// cứng, mỗi khung hình do MÌNH vẽ (center-crop vuông + lật gương ngay trong drawImage) → dù iOS có
+// đổi độ phân giải video đi nữa, hình học preview đứng yên tuyệt đối, không bao giờ lộ nền.
+// <video> vẫn sống (thu 2px, opacity 0) vì face-api đọc khung + _captureFaceFrame chụp từ đó.
+// GIỚI HẠN THẬT (nói rõ, không hứa lố): nếu máy đời mới (iPhone 17 Center Stage) tự zoom NỘI DUNG
+// khung hình ở tầng OS thì mọi cách hiển thị đều chiếu lại nội dung đó — chỉ tắt được trên máy
+// (Control Center → Video Effects), web không can thiệp được.
+function _startPreview(videoEl, canvasEl) {
+  const ctx = canvasEl.getContext('2d');
+  const cw = canvasEl.width, ch = canvasEl.height;
+  // "Thử lại" mở cam lần nữa trên cùng stage → hủy vòng vẽ cũ, không chạy chồng 2 vòng
+  if (canvasEl._nsRaf) { try { cancelAnimationFrame(canvasEl._nsRaf); } catch(_) {} }
+  let raf = 0, last = 0;
+  const draw = (ts) => {
+    if (!document.body.contains(canvasEl) || !videoEl.srcObject) { cancelAnimationFrame(raf); return; }
+    raf = requestAnimationFrame(draw);
+    canvasEl._nsRaf = raf;
+    if (ts - last < 33) return; // ~30fps là đủ mượt, đỡ tốn pin
+    last = ts;
+    const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+    if (!vw || !vh || videoEl.readyState < 2) return;
+    const s = Math.min(vw, vh);               // center-crop VUÔNG — bất biến với mọi tỷ lệ nguồn
+    const sx = (vw - s) / 2, sy = (vh - s) / 2;
+    ctx.save();
+    ctx.translate(cw, 0); ctx.scale(-1, 1);   // lật gương trong phép vẽ (bỏ hẳn transform CSS)
+    ctx.drawImage(videoEl, sx, sy, s, s, 0, 0, cw, ch);
+    ctx.restore();
+  };
+  raf = requestAnimationFrame(draw);
+  canvasEl._nsRaf = raf;
+}
+
 async function _openCam(videoEl) {
   // Stop stream cũ nếu còn
   if (videoEl.srcObject) {
@@ -181,8 +215,14 @@ async function _openCam(videoEl) {
     tapTarget.addEventListener('touchstart', _tapPlay, { passive: true });
   }
 
-  // [v5-cam][debug] prefix suy từ id video ('fv-video' → 'fv', 'fe-video' → 'fe')
-  _faceDebugAttach(videoEl, stream, String(videoEl.id || '').replace(/-video$/, ''));
+  const _prefix = String(videoEl.id || '').replace(/-video$/, '');
+
+  // [v6-cam] Bật preview canvas (nếu stage có — desktop _moCameraDialog không đi qua đây)
+  const previewEl = document.getElementById(_prefix + '-preview');
+  if (previewEl) _startPreview(videoEl, previewEl);
+
+  // [v5-cam][debug] dòng số liệu — chỉ NS00490 thấy
+  _faceDebugAttach(videoEl, stream, _prefix);
 
   return stream;
 }
@@ -253,6 +293,7 @@ function _buildStage(containerEl, prefix) {
     <div class="ns-face-stage" id="${prefix}-stage">
       <div class="ns-face-cam">
         <video id="${prefix}-video" autoplay muted playsinline webkit-playsinline></video>
+        <canvas id="${prefix}-preview" class="ns-face-preview" width="480" height="480"></canvas>
       </div>
       <div class="ns-face-cam-overlay">
         <div class="ns-face-cam-check" id="${prefix}-check">
