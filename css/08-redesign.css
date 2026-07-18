@@ -2956,3 +2956,10 @@ body.cc-redesign-active .bh-btn.bh-btn-secondary::before { content: none !import
 /* [v16.74] Countdown deadline phía QL */
 .bgql-dl-count { font-weight:700; white-space:nowrap; }
 .bgql-deadline.soon { color:#C2410C; }
+
+/* [v17.87] Sự vụ QL — 3 mốc ngày (Gửi · Cơ động xử lý · CH xác nhận HT) cho admin theo dõi */
+.bgql-sv-moc { display:flex; flex-wrap:wrap; gap:6px 14px; margin:8px 0 2px; padding:8px 10px; background:#F4FBF8; border:1px solid #DCF3E8; border-radius:10px; }
+.bgql-sv-moc-i { display:flex; flex-direction:column; gap:1px; min-width:88px; }
+.bgql-sv-moc-l { font-size:10px; font-weight:700; letter-spacing:.2px; color:#0F6E56; text-transform:uppercase; }
+.bgql-sv-moc-v { font-size:12px; font-weight:600; color:#1E293B; font-family:'JetBrains Mono',ui-monospace,monospace; }
+.bgql-sv-moc-v.none { color:#B4C0CC; font-weight:500; }

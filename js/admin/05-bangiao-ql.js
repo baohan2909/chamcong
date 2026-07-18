@@ -551,6 +551,21 @@ function bgqlSuVuProgress(s){
     }).join('')}
   </div>`;
 }
+// [v17.87] 3 mốc thời gian cho admin/QL theo dõi vòng đời sự vụ:
+//   Gửi (created_at) · Cơ động xử lý xong (thoi_gian_xu_ly_xong) · CH xác nhận hoàn tất (thoi_gian_dong).
+//   Mốc chưa tới hiện "—". Dữ liệu có sẵn trong fn_su_vu_list, không đụng DB.
+function bgqlSuVuMocNgay(s){
+  const f = (t) => { if(!t) return '—'; const d=new Date(t); return pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes()); };
+  const items = [
+    ['Gửi', s.created_at],
+    ['Cơ động xử lý', s.thoi_gian_xu_ly_xong],
+    ['CH xác nhận HT', s.thoi_gian_dong]
+  ];
+  return `<div class="bgql-sv-moc">` + items.map(([lbl,t]) =>
+    `<span class="bgql-sv-moc-i"><span class="bgql-sv-moc-l">${lbl}</span><span class="bgql-sv-moc-v${t?'':' none'}">${f(t)}</span></span>`
+  ).join('') + `</div>`;
+}
+
 function bgqlSuVuCardHtml(s){
   const mdLbl = { KHAN_CAP:'Khẩn cấp', QUAN_TRONG:'Quan trọng', CAN_THIET:'Cần thiết' }[s.muc_do]||s.muc_do;
   // [v13.34] Bỏ icon ⚠️ 🔴 📋 — chỉ dùng màu nền + chữ
@@ -608,6 +623,7 @@ function bgqlSuVuCardHtml(s){
     <div class="bgql-card-meta"><b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · ${bgqlFmtTimeShort(s.created_at)}${s.ma_sv?` · <span style="color:#94A3B8">#${escHtml(s.ma_sv)}</span>`:''}</div>
     ${s.mo_ta?`<div class="bgql-card-desc"><span>Chi tiết:</span> ${escHtml((s.mo_ta||'').replace(/\s+/g,' ').trim().slice(0,160))}${(s.mo_ta||'').trim().length>160?'…':''}</div>`:''}
     ${bgqlSuVuProgress(s)}
+    ${bgqlSuVuMocNgay(s)}
     ${s.phan_hoi_xu_ly?`<div class="bgql-reply">
       <div class="bgql-reply-l">Phản hồi · ${escHtml(s.nguoi_phu_trach_ten||'QL')}</div>
       <div class="bgql-reply-txt">${escHtml(s.phan_hoi_xu_ly).slice(0,300)}</div>

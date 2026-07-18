@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.86',
+  'sys.cache_version': 'v17.87',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -220,17 +220,22 @@ function tick(){
             return;
           }
         }
-        // Hết hạn theo ngày
+        // [v17.87] KHÔI PHỤC auto-logout 00:00 THỨ HAI mỗi tuần (Aroma yêu cầu — trước đây có,
+        //   bị thay bằng "hết hạn N ngày rolling" nên mất). Duy trì đăng nhập suốt tuần, tự đăng xuất
+        //   khi sang tuần mới: nếu login TRƯỚC mốc 00:00 thứ Hai gần nhất → hết phiên.
+        //   Giữ luôn lưới an toàn expireDays: login quá N ngày (kẹt đồng hồ / mốc bất thường) cũng logout.
+        const mondayMidnight = _getMondayMidnight(new Date());
         const expireMs = expireDays * 24 * 60 * 60 * 1000;
-        if (loginTime > 0 && (Date.now() - loginTime) > expireMs) {
+        const quaTuan = loginTime < mondayMidnight;
+        const quaHanNgay = (Date.now() - loginTime) > expireMs;
+        if (loginTime > 0 && (quaTuan || quaHanNgay)) {
           localStorage.removeItem('session_cc');
           localStorage.removeItem('session_login_ts');
           SESSION = null;
-          alert('Phiên đăng nhập đã quá ' + expireDays + ' ngày. Vui lòng đăng nhập lại.');
+          alert('Phiên đăng nhập đã hết hạn (tự đăng xuất đầu tuần). Vui lòng đăng nhập lại.');
           location.reload();
           return;
         }
-        // Giữ logic cũ: logout sang tuần mới (bỏ — thay bằng expireDays)
       }
       // Đánh dấu tab đã có session
       try { sessionStorage.setItem('_tab_seen', '1'); } catch(e){}
