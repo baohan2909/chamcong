@@ -1134,6 +1134,52 @@ async function adm2DuyetNhom(maNV, ngay){
   }).catch(() => showToast('Lỗi kết nối khi duyệt nhóm.', 'err'));
 }
 
+// [#5 · 18/07] "Thiếu ca" = QUÊN RA CA (NV chưa bấm ra, hệ thống chưa ghi nhận ra ca).
+//   Nguồn: gio_cong_ngay_ch có ly_do_khong_hop_le='THIEU_RA' — KHÁC canh_bao (không có gì để duyệt),
+//   nên render danh sách riêng, chỉ đọc. RPC fn_get_thieu_ra_ca (SECURITY DEFINER + grant anon).
+async function _lsdRenderThieuRaCa(tu, den, maNV, maCH, listEl){
+  listEl.style.opacity = '1';  // nhánh return sớm → tự khôi phục opacity (taiLichSuDuyet đã hạ 0.45 khi reload)
+  try {
+    const { data, error } = await supa.rpc('fn_get_thieu_ra_ca', {
+      p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV || null, p_ma_ch: maCH || null, p_limit: 5000
+    });
+    if (error) throw error;
+    const list = Array.isArray(data) ? data : [];
+    window._lsdCachedList = list;
+    // Stats: chỉ tổng có nghĩa; các ô duyệt/từ chối/chờ = 0 (không áp dụng cho quên ra ca)
+    const setTxt = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    setTxt('lsd-stat-tong', list.length);
+    setTxt('lsd-stat-duyet', 0); setTxt('lsd-stat-tuchoi', 0); setTxt('lsd-stat-chodet', 0);
+    const badge = document.getElementById('lsd-badge'); if (badge) badge.style.display='none';
+
+    if (!list.length) {
+      listEl.innerHTML = '<div class="ns-empty" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px;color:#94A3B8;font-size:13px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Không có ca nào quên ra trong khoảng này</span></div>';
+      return;
+    }
+    const isAdmin = SESSION && (SESSION.vaiTro==='QLNS' || SESSION.vaiTro==='ADMIN');
+    listEl.innerHTML = list.map(r => {
+      const p = (r.ngay||'').split('-');
+      const ngayFmt = p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : (r.ngay||'');
+      const suaBtn = isAdmin
+        ? `<div class="lsd-card-actions"><button class="lsd-btn-mini lsd-btn-sua" onclick="adm2OpenSuaLog('${escHtml(r.ma_nv||'')}','${escHtml(r.ngay||'')}','')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1.5px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa lịch (thêm giờ ra)</button></div>`
+        : '';
+      return `<div class="lsd-card">
+        <div class="lsd-card-head">
+          <div style="flex:1;min-width:0">
+            <div class="lsd-card-name">${escHtml(r.ten_nv||r.ma_nv||'')}</div>
+            <div class="lsd-card-meta"><strong style="color:#C2410C">Quên ra ca</strong> · ${ngayFmt}${r.gio_vao?` · vào ${escHtml(r.gio_vao)}`:''} · ${escHtml(r.ten_ch||r.ma_ch||'')}</div>
+            <div class="lsd-card-noidung">Nhân viên chưa bấm ra ca — hệ thống chưa ghi nhận giờ ra.</div>
+          </div>
+          <span class="lsd-badge lsd-badge-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>THIẾU RA</span>
+        </div>
+        ${suaBtn}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div class="ns-empty" style="color:#DC2626;padding:30px;text-align:center">Lỗi tải "Thiếu ca": ' + escHtml((e&&e.message)||'') + '<br><span style="color:#94A3B8;font-size:12px">Nếu báo thiếu hàm fn_get_thieu_ra_ca → cần chạy SQL tạo RPC.</span></div>';
+  }
+}
+
 async function taiLichSuDuyet(){
   const listEl = document.getElementById('lsd-list');
   if (!listEl) return;
@@ -1182,6 +1228,8 @@ async function taiLichSuDuyet(){
   if (!document.getElementById('lsd-den').value) document.getElementById('lsd-den').value = den;
 
   try {
+    // [#5 · 18/07] "Thiếu ca" = quên ra ca — nguồn gio_cong_ngay_ch (THIEU_RA), render riêng, không qua canh_bao.
+    if (loai === 'THIẾU CA') { await _lsdRenderThieuRaCa(tu, den, maNV, maCH, listEl); return; }
     // [v10.85] Đảm bảo NV list đã load để biết đội sale
     if (!_lsdNVList) { await _lsdLoadNVList().catch(()=>{}); }
     // [v13.05] Truyền p_ma_ch để RPC filter server-side — robust hơn client-side
