@@ -53,7 +53,8 @@ function mucBGRender() {
     const laGoc = !nh.la_tuy_chinh;
     const rows = items.length ? items.map(m => {
       const custom = m.la_tuy_chinh;
-      return `<div style="display:flex;align-items:center;gap:9px;padding:8px 2px;border-top:1px solid #F1F5F9">
+      return `<div class="mucbg-item" data-stt="${m.stt}" data-kv="${nh.khu_vuc}" style="display:flex;align-items:center;gap:8px;padding:8px 2px;border-top:1px solid #F1F5F9">
+        <span class="mucbg-handle" title="Kéo để di chuyển" style="flex:none;cursor:grab;touch-action:none;color:#94A3B8;font-size:15px;line-height:1;padding:3px;user-select:none;-webkit-user-select:none">⠿</span>
         <div style="flex:none;width:6px;height:6px;border-radius:50%;background:${custom ? '#0F6E56' : '#CBD5E1'}"></div>
         <div style="flex:1;min-width:0;font-size:13px;color:#0F2E45">${escHtml(m.ten)}${m.don_vi ? ' <span style="color:#94A3B8;font-size:11px">('+escHtml(m.don_vi)+')</span>' : ''}</div>
         ${custom
@@ -68,7 +69,8 @@ function mucBGRender() {
           ${laGoc ? '<span style="font-size:9px;color:#94A3B8;font-weight:700;margin-left:6px;vertical-align:middle">NHÓM GỐC</span>' : ''}</div>
         ${!laGoc ? `<button onclick="mucBGXoaNhom(${nh.khu_vuc})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer">Xóa nhóm</button>` : ''}
       </div>
-      <div style="padding:4px 14px 10px">${rows}
+      <div style="padding:4px 14px 10px">
+        <div class="mucbg-list" data-kv="${nh.khu_vuc}" style="min-height:10px">${rows}</div>
         <div style="display:flex;gap:6px;margin-top:10px">
           <input id="mucbg-add-${nh.khu_vuc}" type="text" placeholder="Thêm mục vào nhóm này..." autocomplete="off"
             onkeydown="if(event.key==='Enter')mucBGThemMuc(${nh.khu_vuc})"
@@ -90,7 +92,91 @@ function mucBGRender() {
   </div>`;
 
   body.innerHTML = groupHtml + taoNhom
-    + '<div style="font-size:11px;color:#94A3B8;text-align:center;margin-top:14px">Mục "Có vấn đề" khi bàn giao sẽ tự tạo sự vụ. Chỉ nhóm/mục tự thêm mới xóa được.</div>';
+    + '<div style="font-size:11px;color:#94A3B8;text-align:center;margin-top:14px">Kéo tay cầm ⠿ để đổi thứ tự hoặc chuyển mục sang nhóm khác. Mục "Có vấn đề" khi bàn giao sẽ tự tạo sự vụ. Chỉ nhóm/mục tự thêm mới xóa được.</div>';
+  body.onpointerdown = _mucbgPointerDown;   // [18/07] kéo-thả di chuyển mục (pointer-events → chạy iPhone)
+}
+
+// ═══════════════ KÉO-THẢ DI CHUYỂN MỤC (pointer-events, hợp iPhone) ═══════════════
+let _mucBGDrag = null;
+
+function _mucbgPointerDown(e) {
+  const handle = e.target.closest && e.target.closest('.mucbg-handle');
+  if (!handle) return;
+  const row = handle.closest('[data-stt]');
+  if (!row) return;
+  e.preventDefault();
+  const rect = row.getBoundingClientRect();
+  const clone = row.cloneNode(true);
+  clone.style.cssText = 'position:fixed;left:' + rect.left + 'px;top:' + rect.top + 'px;width:' + rect.width + 'px;z-index:9300;opacity:.92;pointer-events:none;background:#fff;box-shadow:0 10px 28px rgba(0,0,0,.22);border-radius:10px;padding-left:4px';
+  document.body.appendChild(clone);
+  row.style.opacity = '0.3';
+  _mucBGDrag = {
+    stt: Number(row.getAttribute('data-stt')),
+    row: row, clone: clone, target: null,
+    offX: e.clientX - rect.left, offY: e.clientY - rect.top
+  };
+  window.addEventListener('pointermove', _mucbgPointerMove, { passive: false });
+  window.addEventListener('pointerup', _mucbgPointerUp);
+  window.addEventListener('pointercancel', _mucbgPointerUp);
+}
+
+function _mucbgPointerMove(e) {
+  const d = _mucBGDrag; if (!d) return;
+  e.preventDefault();
+  d.clone.style.left = (e.clientX - d.offX) + 'px';
+  d.clone.style.top = (e.clientY - d.offY) + 'px';
+  d.clone.style.display = 'none';
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  d.clone.style.display = '';
+  _mucbgClearIndicator();
+  const overItem = el && el.closest && el.closest('.mucbg-item[data-stt]');
+  const overList = el && el.closest && el.closest('.mucbg-list');
+  if (overItem && overItem !== d.row) {
+    const r = overItem.getBoundingClientRect();
+    const before = e.clientY < r.top + r.height / 2;
+    const line = document.createElement('div');
+    line.className = 'mucbg-drop-line';
+    line.style.cssText = 'height:3px;background:#0F6E56;border-radius:2px;margin:1px 2px;box-shadow:0 0 6px rgba(15,110,86,.5)';
+    overItem.parentNode.insertBefore(line, before ? overItem : overItem.nextSibling);
+    d.target = { kv: Number(overItem.getAttribute('data-kv')), refStt: Number(overItem.getAttribute('data-stt')), before: before };
+  } else if (overList) {
+    overList.style.background = '#ECFDF5';
+    overList.setAttribute('data-hl', '1');
+    d.target = { kv: Number(overList.getAttribute('data-kv')), refStt: null, before: false };
+  } else {
+    d.target = null;
+  }
+}
+
+function _mucbgClearIndicator() {
+  document.querySelectorAll('.mucbg-drop-line').forEach(x => x.remove());
+  document.querySelectorAll('.mucbg-list[data-hl="1"]').forEach(x => { x.style.background = ''; x.removeAttribute('data-hl'); });
+}
+
+async function _mucbgPointerUp() {
+  window.removeEventListener('pointermove', _mucbgPointerMove);
+  window.removeEventListener('pointerup', _mucbgPointerUp);
+  window.removeEventListener('pointercancel', _mucbgPointerUp);
+  const d = _mucBGDrag; _mucBGDrag = null;
+  if (!d) return;
+  if (d.clone) d.clone.remove();
+  if (d.row) d.row.style.opacity = '';
+  _mucbgClearIndicator();
+  if (!d.target) return;
+  const kv = d.target.kv;
+  const cur = (_mucBGCfg.muc || []).filter(m => m.khu_vuc === kv && m.stt !== d.stt).map(m => m.stt);
+  let idx = cur.length;
+  if (d.target.refStt != null) {
+    const p = cur.indexOf(d.target.refStt);
+    if (p >= 0) idx = d.target.before ? p : p + 1;
+  }
+  cur.splice(idx, 0, d.stt);
+  try {
+    const { data, error } = await supa.rpc('fn_bg_muc_sapxep', { p_admin: SESSION.ma, p_khu_vuc: kv, p_stts: cur });
+    if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
+    showToast('✓ Đã di chuyển', 'ok');
+  } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
+  mucBGLoad();
 }
 
 async function mucBGThemMuc(khuVuc) {

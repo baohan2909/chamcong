@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.88',
+  'sys.cache_version': 'v17.89',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -220,7 +220,7 @@ function tick(){
             return;
           }
         }
-        // [v17.88] KHÔI PHỤC auto-logout 00:00 THỨ HAI mỗi tuần (Aroma yêu cầu — trước đây có,
+        // [v17.89] KHÔI PHỤC auto-logout 00:00 THỨ HAI mỗi tuần (Aroma yêu cầu — trước đây có,
         //   bị thay bằng "hết hạn N ngày rolling" nên mất). Duy trì đăng nhập suốt tuần, tự đăng xuất
         //   khi sang tuần mới: nếu login TRƯỚC mốc 00:00 thứ Hai gần nhất → hết phiên.
         //   Giữ luôn lưới an toàn expireDays: login quá N ngày (kẹt đồng hồ / mốc bất thường) cũng logout.
