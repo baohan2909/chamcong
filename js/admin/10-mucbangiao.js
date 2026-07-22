@@ -56,10 +56,9 @@ function mucBGRender() {
       return `<div class="mucbg-item" data-stt="${m.stt}" data-kv="${nh.khu_vuc}" style="display:flex;align-items:center;gap:8px;padding:8px 2px;border-top:1px solid #F1F5F9">
         <span class="mucbg-handle" title="Kéo để di chuyển" style="flex:none;cursor:grab;touch-action:none;color:#94A3B8;font-size:15px;line-height:1;padding:3px;user-select:none;-webkit-user-select:none">⠿</span>
         <div style="flex:none;width:6px;height:6px;border-radius:50%;background:${custom ? '#0F6E56' : '#CBD5E1'}"></div>
-        <div style="flex:1;min-width:0;font-size:13px;color:#0F2E45">${escHtml(m.ten)}${m.don_vi ? ' <span style="color:#94A3B8;font-size:11px">('+escHtml(m.don_vi)+')</span>' : ''}</div>
-        ${custom
-          ? `<button onclick="mucBGXoaMuc(${m.stt})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer">Xóa</button>`
-          : `<span style="flex:none;font-size:10px;color:#CBD5E1;font-weight:700">gốc</span>`}
+        <div style="flex:1;min-width:0;font-size:13px;color:#0F2E45">${escHtml(m.ten)}${m.don_vi ? ' <span style="color:#94A3B8;font-size:11px">('+escHtml(m.don_vi)+')</span>' : ''}${!custom ? ' <span style="font-size:9px;color:#CBD5E1;font-weight:700">gốc</span>' : ''}</div>
+        <button onclick="mucBGSuaMuc(${m.stt})" style="flex:none;border:1px solid #CBD5E1;background:#F8FAFC;color:#475569;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer">Sửa</button>
+        <button onclick="mucBGXoaMuc(${m.stt})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer">Xóa</button>
       </div>`;
     }).join('') : '<div style="font-size:12px;color:#94A3B8;padding:8px 2px;border-top:1px solid #F1F5F9">Chưa có mục nào trong nhóm này</div>';
 
@@ -192,11 +191,26 @@ async function mucBGThemMuc(khuVuc) {
 }
 
 async function mucBGXoaMuc(stt) {
-  if (!window.confirm('Xóa mục này? Biên bản cũ không ảnh hưởng.')) return;
+  if (!window.confirm('Xóa mục này? Nếu mục đã dùng trong biên bản cũ, hệ thống sẽ ẨN mục (giữ nguyên lịch sử). Biên bản cũ không ảnh hưởng.')) return;
   try {
     const { data, error } = await supa.rpc('fn_bg_muc_xoa', { p_admin: SESSION.ma, p_stt: stt });
     if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
-    showToast('✓ Đã xóa mục', 'ok');
+    showToast(data.mode === 'hidden' ? '✓ Đã ẩn mục (đã dùng trong biên bản)' : '✓ Đã xóa mục', 'ok');
+    mucBGLoad();
+  } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
+}
+
+// [18/07] Sửa (đổi tên) mục — cả mục gốc lẫn tự thêm (admin toàn quyền)
+async function mucBGSuaMuc(stt) {
+  const m = (_mucBGCfg.muc || []).find(x => x.stt === stt);
+  const ten = window.prompt('Sửa tên mục:', (m && m.ten) || '');
+  if (ten === null) return;
+  const t = ten.trim();
+  if (!t) { showToast('Tên trống', 'warn'); return; }
+  try {
+    const { data, error } = await supa.rpc('fn_bg_muc_sua', { p_admin: SESSION.ma, p_stt: stt, p_ten: t });
+    if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
+    showToast('✓ Đã sửa tên', 'ok');
     mucBGLoad();
   } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
 }
