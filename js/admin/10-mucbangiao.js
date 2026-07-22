@@ -48,7 +48,7 @@ function mucBGRender() {
   const nhom = _mucBGCfg.nhom.slice();
   const muc = _mucBGCfg.muc || [];
 
-  const groupHtml = nhom.map(nh => {
+  const groupHtml = nhom.map((nh, gi) => {
     const items = muc.filter(m => m.khu_vuc === nh.khu_vuc);
     const laGoc = !nh.la_tuy_chinh;
     const rows = items.length ? items.map(m => {
@@ -63,10 +63,17 @@ function mucBGRender() {
     }).join('') : '<div style="font-size:12px;color:#94A3B8;padding:8px 2px;border-top:1px solid #F1F5F9">Chưa có mục nào trong nhóm này</div>';
 
     return `<div style="background:#fff;border-radius:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);overflow:hidden">
-      <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;background:#F8FAFC;border-bottom:1px solid #EEF2F6">
-        <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#0F2E45">${escHtml(nh.ten)}
-          ${laGoc ? '<span style="font-size:9px;color:#94A3B8;font-weight:700;margin-left:6px;vertical-align:middle">NHÓM GỐC</span>' : ''}</div>
-        ${!laGoc ? `<button onclick="mucBGXoaNhom(${nh.khu_vuc})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer">Xóa nhóm</button>` : ''}
+      <div style="display:flex;align-items:center;gap:7px;padding:10px 12px;background:#F8FAFC;border-bottom:1px solid #EEF2F6">
+        <div style="flex:none;display:flex;flex-direction:column;gap:2px">
+          <button onclick="mucBGNhomMove(${nh.khu_vuc},-1)" ${gi === 0 ? 'disabled' : ''} title="Đưa nhóm lên"
+            style="width:26px;height:18px;border:1px solid #CBD5E1;background:${gi === 0 ? '#F1F5F9' : '#fff'};color:${gi === 0 ? '#CBD5E1' : '#475569'};border-radius:6px;font-size:10px;line-height:1;padding:0;cursor:${gi === 0 ? 'default' : 'pointer'}">▲</button>
+          <button onclick="mucBGNhomMove(${nh.khu_vuc},1)" ${gi === nhom.length - 1 ? 'disabled' : ''} title="Đưa nhóm xuống"
+            style="width:26px;height:18px;border:1px solid #CBD5E1;background:${gi === nhom.length - 1 ? '#F1F5F9' : '#fff'};color:${gi === nhom.length - 1 ? '#CBD5E1' : '#475569'};border-radius:6px;font-size:10px;line-height:1;padding:0;cursor:${gi === nhom.length - 1 ? 'default' : 'pointer'}">▼</button>
+        </div>
+        <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#0F2E45;line-height:1.25">${escHtml(nh.ten)}
+          ${laGoc ? '<span style="font-size:9px;color:#94A3B8;font-weight:700;margin-left:5px;vertical-align:middle">NHÓM GỐC</span>' : ''}</div>
+        <button onclick="mucBGSuaNhom(${nh.khu_vuc})" style="flex:none;border:1px solid #CBD5E1;background:#fff;color:#475569;font-size:11px;font-weight:700;padding:5px 9px;border-radius:8px;cursor:pointer">Đổi tên</button>
+        ${!laGoc ? `<button onclick="mucBGXoaNhom(${nh.khu_vuc})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:5px 9px;border-radius:8px;cursor:pointer">Xóa</button>` : ''}
       </div>
       <div style="padding:4px 14px 10px">
         <div class="mucbg-list" data-kv="${nh.khu_vuc}" style="min-height:10px">${rows}</div>
@@ -267,9 +274,41 @@ function _mucBGPrompt(title, value) {
   });
 }
 
+// [18/07] Đổi tên nhóm (mọi nhóm, kể cả gốc)
+async function mucBGSuaNhom(khuVuc) {
+  const nh = (_mucBGCfg.nhom || []).find(x => x.khu_vuc === khuVuc);
+  const ten = await _mucBGPrompt('Đổi tên nhóm', (nh && nh.ten) || '');
+  if (ten === null) return;
+  const t = ten.trim();
+  if (!t) { showToast('Tên trống', 'warn'); return; }
+  try {
+    const { data, error } = await supa.rpc('fn_bg_nhom_sua', { p_admin: SESSION.ma, p_khu_vuc: khuVuc, p_ten: t });
+    if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
+    showToast('✓ Đã đổi tên nhóm', 'ok');
+    mucBGLoad();
+  } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
+}
+
+// [18/07] Đổi thứ tự nhóm — số đầu nhóm trong biên bản tự chạy theo (biên bản render nhóm theo thu_tu)
+async function mucBGNhomMove(khuVuc, dir) {
+  const order = (_mucBGCfg.nhom || []).map(x => x.khu_vuc);
+  const i = order.indexOf(khuVuc), j = i + dir;
+  if (i < 0 || j < 0 || j >= order.length) return;
+  order.splice(i, 1);
+  order.splice(j, 0, khuVuc);
+  try {
+    const { data, error } = await supa.rpc('fn_bg_nhom_sapxep', { p_admin: SESSION.ma, p_khu_vucs: order });
+    if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
+    showToast('✓ Đã đổi thứ tự nhóm', 'ok');
+    mucBGLoad();
+  } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
+}
+
 window.mucBGOpen = mucBGOpen;
 window.mucBGThemMuc = mucBGThemMuc;
 window.mucBGXoaMuc = mucBGXoaMuc;
 window.mucBGSuaMuc = mucBGSuaMuc;
 window.mucBGThemNhom = mucBGThemNhom;
 window.mucBGXoaNhom = mucBGXoaNhom;
+window.mucBGSuaNhom = mucBGSuaNhom;
+window.mucBGNhomMove = mucBGNhomMove;
