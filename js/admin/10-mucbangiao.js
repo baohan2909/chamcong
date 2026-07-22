@@ -10,7 +10,7 @@ let _mucBGCfg = { nhom: [], muc: [] };
 async function mucBGOpen() {
   let ov = document.getElementById('mucbg-ov');
   if (!ov) { ov = document.createElement('div'); ov.id = 'mucbg-ov'; document.body.appendChild(ov); }
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9200;background:#f4f3ef;display:flex;flex-direction:column';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9200;background:#f4f3ef;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';
   ov.innerHTML = `
     <div style="flex:none;padding:12px 14px 2px">
       <div style="position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(100deg,#0F6E56,#149C74,#34D399);color:#fff;padding:14px 18px;box-shadow:0 12px 30px -12px rgba(15,110,86,.5)">
@@ -191,7 +191,8 @@ async function mucBGThemMuc(khuVuc) {
 }
 
 async function mucBGXoaMuc(stt) {
-  if (!window.confirm('Xóa mục này? Nếu mục đã dùng trong biên bản cũ, hệ thống sẽ ẨN mục (giữ nguyên lịch sử). Biên bản cũ không ảnh hưởng.')) return;
+  const ok = await appConfirm('Nếu mục đã dùng trong biên bản cũ, hệ thống sẽ ẨN mục (giữ nguyên lịch sử). Biên bản cũ không ảnh hưởng.', { title: 'Xóa mục', okLabel: 'Xóa', danger: true });
+  if (!ok) return;
   try {
     const { data, error } = await supa.rpc('fn_bg_muc_xoa', { p_admin: SESSION.ma, p_stt: stt });
     if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
@@ -203,7 +204,7 @@ async function mucBGXoaMuc(stt) {
 // [18/07] Sửa (đổi tên) mục — cả mục gốc lẫn tự thêm (admin toàn quyền)
 async function mucBGSuaMuc(stt) {
   const m = (_mucBGCfg.muc || []).find(x => x.stt === stt);
-  const ten = window.prompt('Sửa tên mục:', (m && m.ten) || '');
+  const ten = await _mucBGPrompt('Sửa tên mục', (m && m.ten) || '');
   if (ten === null) return;
   const t = ten.trim();
   if (!t) { showToast('Tên trống', 'warn'); return; }
@@ -228,7 +229,8 @@ async function mucBGThemNhom() {
 }
 
 async function mucBGXoaNhom(khuVuc) {
-  if (!window.confirm('Xóa nhóm này và MỌI mục tự thêm trong nhóm?\nBiên bản cũ không ảnh hưởng.')) return;
+  const ok = await appConfirm('Xóa nhóm này và MỌI mục tự thêm trong nhóm? Biên bản cũ không ảnh hưởng.', { title: 'Xóa nhóm', okLabel: 'Xóa nhóm', danger: true });
+  if (!ok) return;
   try {
     const { data, error } = await supa.rpc('fn_bg_nhom_xoa', { p_admin: SESSION.ma, p_khu_vuc: khuVuc });
     if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
@@ -237,8 +239,37 @@ async function mucBGXoaNhom(khuVuc) {
   } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
 }
 
+// [18/07] Dialog nhập styled — thay prompt() native (bảng đen iOS). Trả tên mới hoặc null nếu hủy.
+function _mucBGPrompt(title, value) {
+  return new Promise(resolve => {
+    const bd = document.createElement('div');
+    bd.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(15,30,45,.45);display:flex;align-items:center;justify-content:center;padding:24px;padding-top:max(24px,env(safe-area-inset-top,0px))';
+    bd.innerHTML = `
+      <div style="width:100%;max-width:360px;background:#fff;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden">
+        <div style="padding:16px 18px 10px;font-size:15px;font-weight:800;color:#0F2E45">${escHtml(title)}</div>
+        <div style="padding:0 18px 16px">
+          <input id="_mucbg-prompt-inp" type="text" value="${escHtml(value || '')}" autocomplete="off"
+            style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid #CBD5E1;border-radius:11px;font-size:14px;outline:none;color:#0F2E45">
+        </div>
+        <div style="display:flex;gap:8px;padding:0 18px 18px">
+          <button id="_mucbg-prompt-cancel" style="flex:1;padding:11px;border:1px solid #E2E8F0;background:#F8FAFC;color:#475569;font-weight:700;border-radius:11px;font-size:14px;cursor:pointer">Hủy</button>
+          <button id="_mucbg-prompt-ok" style="flex:1;padding:11px;border:none;background:#0F6E56;color:#fff;font-weight:800;border-radius:11px;font-size:14px;cursor:pointer">Lưu</button>
+        </div>
+      </div>`;
+    document.body.appendChild(bd);
+    const inp = bd.querySelector('#_mucbg-prompt-inp');
+    const done = (val) => { bd.remove(); resolve(val); };
+    bd.querySelector('#_mucbg-prompt-cancel').onclick = () => done(null);
+    bd.querySelector('#_mucbg-prompt-ok').onclick = () => done(inp.value);
+    bd.onclick = (e) => { if (e.target === bd) done(null); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') done(inp.value); });
+    setTimeout(() => { try { inp.focus(); inp.select(); } catch (_) {} }, 60);
+  });
+}
+
 window.mucBGOpen = mucBGOpen;
 window.mucBGThemMuc = mucBGThemMuc;
 window.mucBGXoaMuc = mucBGXoaMuc;
+window.mucBGSuaMuc = mucBGSuaMuc;
 window.mucBGThemNhom = mucBGThemNhom;
 window.mucBGXoaNhom = mucBGXoaNhom;
