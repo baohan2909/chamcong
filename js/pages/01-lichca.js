@@ -347,7 +347,7 @@ function _renderLCDayCard({ngay,dow,ngayNum}){
         Ảnh đơn đính kèm ${isLocked?'<span style="color:var(--green);font-weight:400">· đã có</span>':'<span style="color:var(--red)">*</span>'}
       </label>
       <label class="lc-nghi-anh-btn ${anhMoi?'done':''}" for="lcnghi-anh-${ngay}">
-        <input type="file" id="lcnghi-anh-${ngay}" accept="image/*" capture="environment"
+        <input type="file" id="lcnghi-anh-${ngay}" accept="image/*"
                style="display:none" onchange="xuLyAnhNghiLich('${ngay}',this)">
         <span class="lc-nghi-anh-ico">${anhMoi?'✅':'📎'}</span>
         <span class="lc-nghi-anh-txt">${anhMoi?'Đã đính kèm ảnh mới':(linkAnhCu?'Đổi ảnh đơn':'Chụp / chọn ảnh đơn')}</span>
