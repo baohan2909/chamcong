@@ -57,6 +57,7 @@ function mucBGRender() {
         <span class="mucbg-handle" title="Kéo để di chuyển" style="flex:none;cursor:grab;touch-action:none;color:#94A3B8;font-size:15px;line-height:1;padding:3px;user-select:none;-webkit-user-select:none">⠿</span>
         <div style="flex:none;width:6px;height:6px;border-radius:50%;background:${custom ? '#0F6E56' : '#CBD5E1'}"></div>
         <div style="flex:1;min-width:0;font-size:13px;color:#0F2E45">${escHtml(m.ten)}${m.don_vi ? ' <span style="color:#94A3B8;font-size:11px">('+escHtml(m.don_vi)+')</span>' : ''}${!custom ? ' <span style="font-size:9px;color:#CBD5E1;font-weight:700">gốc</span>' : ''}</div>
+        <button onclick="mucBGToggleSL(${m.stt}, ${m.can_so_luong ? 'false' : 'true'})" title="Bật/tắt ô nhập số lượng ở biên bản" style="flex:none;border:1px solid ${m.can_so_luong ? '#0F6E56' : '#CBD5E1'};background:${m.can_so_luong ? '#0F6E56' : '#F8FAFC'};color:${m.can_so_luong ? '#fff' : '#94A3B8'};font-size:10.5px;font-weight:800;padding:4px 7px;border-radius:8px;cursor:pointer">SL</button>
         <button onclick="mucBGSuaMuc(${m.stt})" style="flex:none;border:1px solid #CBD5E1;background:#F8FAFC;color:#475569;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer">Sửa</button>
         <button onclick="mucBGXoaMuc(${m.stt})" style="flex:none;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer">Xóa</button>
       </div>`;
@@ -304,6 +305,16 @@ async function mucBGNhomMove(khuVuc, dir) {
   } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
 }
 
+// [18/07] Bật/tắt cờ "cần số lượng" cho mục → biên bản hiện ô nhập số
+async function mucBGToggleSL(stt, can) {
+  try {
+    const { data, error } = await supa.rpc('fn_bg_muc_soluong', { p_admin: SESSION.ma, p_stt: stt, p_can: can });
+    if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || 'Lỗi');
+    showToast(can ? '✓ Bật ô số lượng' : '✓ Tắt ô số lượng', 'ok');
+    mucBGLoad();
+  } catch (e) { showToast('Lỗi: ' + (e.message || e), 'err'); }
+}
+
 window.mucBGOpen = mucBGOpen;
 window.mucBGThemMuc = mucBGThemMuc;
 window.mucBGXoaMuc = mucBGXoaMuc;
@@ -312,3 +323,4 @@ window.mucBGThemNhom = mucBGThemNhom;
 window.mucBGXoaNhom = mucBGXoaNhom;
 window.mucBGSuaNhom = mucBGSuaNhom;
 window.mucBGNhomMove = mucBGNhomMove;
+window.mucBGToggleSL = mucBGToggleSL;

@@ -20,6 +20,7 @@ let bgCurrentCH = null;     // {ma, ten, khuVuc}
 let bgSub = 'new';
 let bgDanhMucCache = null;
 let bgNhomCache = null;      // [v3-bg] danh sách nhóm tài sản động (fn_bg_nhom_list); null → dùng 3 nhóm gốc mặc định
+let bgSoLuongSet = new Set(); // [18/07] stt các mục admin bật "cần số lượng" → biên bản hiện ô nhập số
 let bgPhotos = [];          // [{ blob, dataUrl }]
 
 // [B1] Cơ động = NV có phạm vi khu vực (chức danh CDxx) → xem sự vụ cả VÙNG
@@ -69,13 +70,15 @@ async function bgInitPage(){
   // Load danh mục items master + danh sách nhóm động (cache)
   if (!bgDanhMucCache) {
     try {
-      const [dmRes, nhomRes] = await Promise.all([
+      const [dmRes, nhomRes, slRes] = await Promise.all([
         supa.rpc('fn_get_danh_muc_tai_san'),
-        supa.rpc('fn_bg_nhom_list').then(r => r).catch(() => ({ data: null }))  // [v3-bg] nhóm động; lỗi/chưa có → fallback
+        supa.rpc('fn_bg_nhom_list').then(r => r).catch(() => ({ data: null })),  // [v3-bg] nhóm động; lỗi/chưa có → fallback
+        supa.rpc('fn_bg_soluong_stts').then(r => r).catch(() => ({ data: null })) // [18/07] mục cần nhập số lượng
       ]);
       if (dmRes.error) throw dmRes.error;
       bgDanhMucCache = dmRes.data || [];
       bgNhomCache = (nhomRes && Array.isArray(nhomRes.data) && nhomRes.data.length) ? nhomRes.data : null;
+      bgSoLuongSet = new Set(Array.isArray(slRes && slRes.data) ? slRes.data : []);
     } catch(e){
       document.getElementById('bg-groups').innerHTML = '<div class="ns-empty" style="color:#DC2626">Lỗi tải danh mục: '+e.message+'</div>';
       return;
@@ -142,7 +145,7 @@ function bgBuildGroups(){
     if (!items.length) continue;   // nhóm rỗng (mới tạo, chưa có mục) → không hiện cho cửa hàng
     bgGroups.push({
       key:'ts_kv'+kv, ten:nh.ten, type:'taisan',
-      items: items.map(it => ({ id:'ts_'+it.stt, stt:it.stt, ten:it.ten, don_vi:it.don_vi||'', khu_vuc:kv }))
+      items: items.map(it => ({ id:'ts_'+it.stt, stt:it.stt, ten:it.ten, don_vi:it.don_vi||'', khu_vuc:kv, can_so_luong: bgSoLuongSet.has(it.stt) }))
     });
   }
 
@@ -305,6 +308,13 @@ function bgItemTaiSanHtml(it){
         <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có sự cố</button>
       </div>
     </div>
+    ${it.can_so_luong ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 2px 2px">
+      <span style="font-size:12.5px;color:#475569;font-weight:600">Số lượng:</span>
+      <input type="number" inputmode="numeric" min="0" step="1" value="${(st.so_luong!=null?st.so_luong:'')}" placeholder="Nhập số"
+        oninput="bgSetTaiSanSL('${it.id}', this.value)"
+        style="width:100px;padding:7px 10px;border:1px solid #CBD5E1;border-radius:9px;font-size:13.5px">
+      ${it.don_vi?`<span style="font-size:12px;color:#94A3B8">${escHtml(it.don_vi)}</span>`:''}
+    </div>` : ''}
     <div id="bg-detail-${it.id}">${showDetail?bgItemTaiSanDetailHtml(it):''}</div>
   </div>`;
 }
@@ -330,6 +340,13 @@ function bgItemTaiSanDetailHtml(it){
     </div>
   </div>`;
 }
+
+// [18/07] Ô số lượng cho mục tài sản admin bật "cần số lượng" — không âm; rỗng = null (không lưu)
+window.bgSetTaiSanSL = function(id, v){
+  if (!bgState[id]) bgState[id] = {};
+  const n = parseFloat(v);
+  bgState[id].so_luong = (v === '' || isNaN(n)) ? null : Math.max(0, n);
+};
 
 window.bgSetTaiSan = function(id, status){
   if (!bgState[id]) bgState[id] = {};
@@ -748,7 +765,8 @@ async function bgSubmit(){
         chi_tiet_tai_san.push({
           stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
           dat: st.status !== 'VD',
-          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : (isKhongCo ? 'KHÔNG CÓ' : null)
+          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : (isKhongCo ? 'KHÔNG CÓ' : null),
+          so_luong: (it.can_so_luong && st.so_luong != null) ? st.so_luong : null   // [18/07] số lượng mục bật cần SL
         });
       });
     });
