@@ -298,6 +298,19 @@ function bgRenderGroupTaiSan(g){
 
 function bgItemTaiSanHtml(it){
   const st = bgState[it.id] || {};
+  // [18/07] Mục "cần số lượng": BỎ 3 nút trạng thái, chỉ ô nhập số ở BÊN PHẢI cùng dòng (chỗ 3 nút cũ)
+  if (it.can_so_luong) {
+    return `<div class="chk-item" id="bg-item-${it.id}">
+      <div class="chk-item-row">
+        <div class="chk-item-name">${escHtml(it.ten)}${it.don_vi?` <small style="color:#94A3B8">(${escHtml(it.don_vi)})</small>`:''}</div>
+        <div class="chk-item-toggle" style="justify-content:flex-end">
+          <input type="number" inputmode="numeric" min="0" step="1" value="${(st.so_luong!=null?st.so_luong:'')}" placeholder="Nhập số"
+            oninput="bgSetTaiSanSL('${it.id}', this.value)"
+            style="width:112px;padding:7px 10px;border:1px solid #CBD5E1;border-radius:9px;font-size:13.5px;text-align:right">
+        </div>
+      </div>
+    </div>`;
+  }
   const showDetail = st.status === 'VD';
   return `<div class="chk-item" id="bg-item-${it.id}">
     <div class="chk-item-row">
@@ -308,13 +321,6 @@ function bgItemTaiSanHtml(it){
         <button class="chk-tg vd ${st.status==='VD'?'active':''}" onclick="bgSetTaiSan('${it.id}','VD')">Có sự cố</button>
       </div>
     </div>
-    ${it.can_so_luong ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 2px 2px">
-      <span style="font-size:12.5px;color:#475569;font-weight:600">Số lượng:</span>
-      <input type="number" inputmode="numeric" min="0" step="1" value="${(st.so_luong!=null?st.so_luong:'')}" placeholder="Nhập số"
-        oninput="bgSetTaiSanSL('${it.id}', this.value)"
-        style="width:100px;padding:7px 10px;border:1px solid #CBD5E1;border-radius:9px;font-size:13.5px">
-      ${it.don_vi?`<span style="font-size:12px;color:#94A3B8">${escHtml(it.don_vi)}</span>`:''}
-    </div>` : ''}
     <div id="bg-detail-${it.id}">${showDetail?bgItemTaiSanDetailHtml(it):''}</div>
   </div>`;
 }
@@ -764,9 +770,10 @@ async function bgSubmit(){
         const isKhongCo = st.status === 'KO' || st.status === 'K' || st.status === 'KC' || st.status === 'KHONG_CO';
         chi_tiet_tai_san.push({
           stt: it.stt, ten: it.ten, don_vi: it.don_vi, khu_vuc: it.khu_vuc,
-          dat: st.status !== 'VD',
-          ghi_chu: st.status==='VD' ? (st.mo_ta||null) : (isKhongCo ? 'KHÔNG CÓ' : null),
-          so_luong: (it.can_so_luong && st.so_luong != null) ? st.so_luong : null   // [18/07] số lượng mục bật cần SL
+          // [18/07] Mục số lượng: không có trạng thái → luôn dat=true, ghi_chu=null, chỉ lưu số
+          dat: it.can_so_luong ? true : (st.status !== 'VD'),
+          ghi_chu: it.can_so_luong ? null : (st.status==='VD' ? (st.mo_ta||null) : (isKhongCo ? 'KHÔNG CÓ' : null)),
+          so_luong: (it.can_so_luong && st.so_luong != null) ? st.so_luong : null
         });
       });
     });
