@@ -1,0 +1,190 @@
+/* ============================================================
+   13-v18.css — NỀN TẢNG GIAO DIỆN v18 (ĐẠI TU)
+   Chuẩn: GIAO_DIEN_NS_FLOW.md (trích src/styles.css app Điều phối hàng hóa).
+   Scope toàn bộ trong .ns18 để cuốn chiếu an toàn:
+   - Màn đã đại tu → đặt trong shell .ns18 (ăn theme mới).
+   - Màn cũ chưa đụng → nằm ngoài .ns18, giữ nguyên style cũ (không loang lổ).
+   Token/component định nghĩa ĐÚNG MỘT LẦN ở đây.
+   ============================================================ */
+
+.ns18{
+  /* ===== TOKENS ===== */
+  --bg:#F7F5F1; --surface:#FFFFFF;
+  --ink:#14213A; --ink-2:#4A5670; --ink-3:#8A93A5;
+  --line:#E6E2D8;
+  --teal:#3FB6A8; --teal-deep:#1E5F63; --gold:#CBA45A;
+  --magenta:#D6006C; --red:#C6373C; --green:#2E8B57;
+  --teal-tint:#EEF6F5; --track:#EAEEF0;
+  --pink-card:#FCEFF5; --pink-line:#F3D4E2;
+  --grad:linear-gradient(135deg,#14213A 0%,#1E5F63 62%,#3FB6A8 100%);
+  --grad-mag:linear-gradient(135deg,#A80556 0%,#D6006C 100%);
+  --shadow:0 1px 2px rgba(20,33,58,.06),0 8px 24px rgba(20,33,58,.08);
+  --shadow-lg:0 2px 6px rgba(20,33,58,.08),0 16px 48px rgba(20,33,58,.14);
+  --glow:0 0 16px rgba(63,182,168,.45);
+  --r:14px;
+
+  font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+.ns18 *{box-sizing:border-box}
+.ns18 .mono{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* ===== NÚT (7 loại — mục 5) ===== */
+.ns18 .btn{font-family:inherit;appearance:none;border:none;background:none;cursor:pointer;font-weight:700;font-size:14px;border-radius:10px;padding:11px 17px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s,box-shadow .2s;line-height:1}
+.ns18 .btn:active{transform:translateY(1px)}
+.ns18 .btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ns18 .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.ns18 .btn-ai{background:var(--grad);color:#fff;box-shadow:var(--glow)}
+.ns18 .btn-ai:hover{box-shadow:0 0 20px rgba(63,182,168,.6)}
+.ns18 .btn-teal{background:var(--teal);color:#fff}
+.ns18 .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.ns18 .btn-ghost:hover{border-color:var(--teal);color:var(--teal-deep)}
+.ns18 .btn-primary{background:var(--ink);color:#fff}
+.ns18 .btn-mini{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal);border-radius:7px;padding:6px 11px;font-size:12.5px}
+.ns18 .btn-danger{background:transparent;color:var(--magenta);border:1.5px solid rgba(214,0,108,.35)}
+/* nút trong header (nền tối) */
+.ns18 .btn-hd{height:36px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.34);backdrop-filter:blur(6px);padding:0 16px;font-size:13px;border-radius:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit}
+.ns18 .btn-hd svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+/* btn-ai trong header giảm glow chói */
+.ns18 .cmdbar .btn-ai{box-shadow:0 4px 14px rgba(20,33,58,.25)}
+
+/* ===== THẺ CHỌN LỚN (.the-g) — active grad + glow ===== */
+.ns18 .the-g{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:13px 10px;text-align:center;cursor:pointer;transition:.15s}
+.ns18 .the-g-n{font-size:28px;font-weight:800;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.ns18 .the-g-t{font-size:11.5px;color:var(--ink-2);margin-top:5px;font-weight:600}
+.ns18 .the-g-t small{display:block;font-weight:400;color:var(--ink-3);font-size:10.5px}
+.ns18 .the-g.on{background:var(--grad);border-color:transparent;box-shadow:var(--glow)}
+.ns18 .the-g.on .the-g-n,.ns18 .the-g.on .the-g-t{color:#fff}
+.ns18 .the-g.on .the-g-t small{color:rgba(255,255,255,.8)}
+
+/* ===== SEGMENTED NHỎ — active teal-deep ĐẶC (không grad/glow) ===== */
+.ns18 .segbar{display:inline-flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.ns18 .segbar button{font-family:inherit;appearance:none;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink-2);padding:7px 15px;border-radius:7px}
+.ns18 .segbar button.on{background:var(--teal-deep);color:#fff}
+
+/* ===== CHIP (mục 12) ===== */
+.ns18 .chip{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:20px;background:var(--teal-tint);color:var(--teal-deep);cursor:pointer;border:none}
+.ns18 .chip.on{background:var(--teal-deep);color:#fff}
+.ns18 .chip.mag{background:var(--pink-card);color:var(--magenta)}
+.ns18 .chip.mag.on{background:var(--magenta);color:#fff}
+
+/* ===== SEL / DATEBOX (mục 11) ===== */
+.ns18 .field{display:flex;flex-direction:column;gap:6px;min-width:150px}
+.ns18 .field>label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.ns18 .sel-btn{appearance:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;height:40px;padding:0 34px 0 13px;cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%234A5670' stroke-width='2'><path d='M4 6l4 4 4-4'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+.ns18 .sel-btn:hover{border-color:var(--teal)}
+.ns18 .sel-btn:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+.ns18 .datebox{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--teal-tint);height:40px;border:none;box-shadow:inset 0 0 0 1.5px rgba(63,182,168,.35);border-radius:10px;padding:0 13px;display:inline-flex;align-items:center;gap:8px}
+.ns18 .datebox svg{width:16px;height:16px;stroke:var(--teal-deep);fill:none;stroke-width:2}
+
+/* ===== TOOLBAR (lọc/tìm — hàng riêng) ===== */
+.ns18 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;box-shadow:var(--shadow)}
+.ns18 .search{flex:1;min-width:160px;position:relative}
+.ns18 .search input{width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;height:40px;padding:0 12px 0 36px}
+.ns18 .search input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+.ns18 .search>svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--ink-3);fill:none;stroke-width:2}
+
+/* ===== THANH TIẾN ĐỘ (.kt-* — mục 10) ===== */
+.ns18 .kt-nhan{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ns18 .kt-so{font-weight:800;color:var(--teal-deep);font-variant-numeric:tabular-nums}
+.ns18 .kt-bar{height:20px;border-radius:11px;background:var(--track);box-shadow:inset 0 1px 3px rgba(20,33,58,.08);overflow:hidden;position:relative;margin-top:7px}
+.ns18 .kt-fill{height:100%;border-radius:11px;background:var(--grad);box-shadow:var(--glow);position:relative;transition:width .6s cubic-bezier(.22,.61,.36,1)}
+.ns18 .kt-song{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);width:40%;transform:translateX(30%)}
+.ns18 .kt-pct{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:#fff;font-size:11px;font-weight:800}
+
+/* ===== THẺ SỐ LỚN (.tq-lon-so — mục 9) + KPI card ===== */
+.ns18 .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.ns18 .kpi::after{content:"";position:absolute;right:-34px;top:-34px;width:128px;height:128px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.16),rgba(63,182,168,.04) 70%)}
+.ns18 .kpi.alert{background:var(--pink-card);border-color:var(--pink-line)}
+.ns18 .kpi.alert::after{background:radial-gradient(circle at 40% 40%,rgba(214,0,108,.14),rgba(214,0,108,.03) 70%)}
+.ns18 .k-lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);position:relative}
+.ns18 .tq-lon-so{font-size:42px;font-weight:800;line-height:1;margin-top:10px;color:var(--magenta);position:relative;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.ns18 .tq-lon-so small{font-size:15px;font-weight:700;color:var(--ink-3);letter-spacing:0;margin-left:4px}
+.ns18 .kpi.teal .tq-lon-so{color:var(--teal-deep)}
+.ns18 .k-sub{font-size:12px;margin-top:9px;position:relative;color:var(--ink-2)}
+.ns18 .k-up{color:var(--green);font-weight:700}
+.ns18 .k-dn{color:var(--red);font-weight:700}
+
+/* ===== BẢNG SỐ LIỆU (mục 13) ===== */
+.ns18 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.ns18 table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.ns18 .tbl th{text-align:center;vertical-align:middle;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);padding:12px 13px;background:#FBFAF7;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+.ns18 .tbl th:first-child{text-align:left}
+.ns18 .tbl th .ar{color:var(--teal);margin-left:3px}
+.ns18 .tbl td{padding:11px 13px;text-align:center;vertical-align:middle;white-space:nowrap;border-bottom:1px solid var(--line)}
+.ns18 .tbl td:first-child{text-align:left;font-weight:600}
+.ns18 .tbl td.price{text-align:right;font-weight:700}
+.ns18 .tbl tr:last-child td{border-bottom:none}
+.ns18 .tbl tr.total td{background:#FBFAF7;font-weight:800;border-top:2px solid var(--line)}
+.ns18 .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.ns18 .pill-ok{background:rgba(46,139,87,.14);color:var(--green)}
+.ns18 .pill-warn{background:rgba(203,164,90,.2);color:#8a6a1f}
+.ns18 .pill-dn{background:rgba(198,55,60,.13);color:var(--red)}
+
+/* ===== CARD / PANEL ===== */
+.ns18 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.ns18 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:17px;box-shadow:var(--shadow)}
+.ns18 .panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ns18 .panel-h>b{font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+
+/* ===== CMDBAR (header — mục 4) — bong bóng CHÌM trong nền ===== */
+.ns18 .cmdbar{position:relative;color:#fff;border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow-lg);
+  background:
+    radial-gradient(circle at calc(100% - 119px) 60px, rgba(255,255,255,.09) 0 78px, transparent 79px),
+    radial-gradient(circle at calc(100% - 205px) calc(100% - 40px), rgba(203,164,90,.22) 0 48px, transparent 49px),
+    var(--grad)}
+.ns18 .cmdbar h1,.ns18 .cmdbar h2,.ns18 .cmdbar h3,.ns18 .cmdbar .cmdbar-title{color:#fff;font-size:20px;font-weight:800}
+.ns18 .cmdbar p,.ns18 .cmdbar .cmdbar-sub{color:rgba(255,255,255,.82);font-size:13px;margin:5px 0 0}
+.ns18 .cmdbar-row{display:flex;align-items:center;gap:12px;margin-top:15px;flex-wrap:wrap}
+
+/* ===== SHELL LAYOUT (sidebar desktop / mobile 1 cột) ===== */
+.ns18-shell{display:grid;grid-template-columns:var(--side-w,246px) 1fr;min-height:100vh;background:var(--bg)}
+.ns18 .side{background:var(--surface);border-right:1px solid var(--line);padding:16px 13px;display:flex;flex-direction:column;gap:2px}
+.ns18 .side .brand{display:flex;align-items:flex-start;gap:10px;padding:4px 6px 14px}
+.ns18 .side .brand .lg{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;box-shadow:var(--glow);flex-shrink:0}
+.ns18 .side .brand b{color:var(--ink);font-size:14.5px;font-weight:800;display:block;line-height:1.15}
+.ns18 .side .brand small{color:var(--ink-3);font-size:10.5px;display:block;margin-top:2px}
+.ns18 .nav-sec{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);padding:15px 10px 6px}
+.ns18 .side-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;color:var(--ink-2);font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;border:none;background:none;font-family:inherit}
+.ns18 .side-item svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.ns18 .side-item:hover{background:var(--teal-tint);color:var(--teal-deep)}
+.ns18 .side-item.on{background:var(--grad);color:#fff;box-shadow:0 0 14px rgba(63,182,168,.4)}
+.ns18 .side .spacer{flex:1}
+.ns18 .side .who{border-top:1px solid var(--line);margin-top:10px;padding:12px 8px 4px}
+.ns18 .side .who b{font-size:13px;font-weight:800;display:block}
+.ns18 .side .who small{font-size:11px;color:var(--ink-3)}
+.ns18 .side-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:9px;padding:11px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.ns18 .side-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.ns18 .sb-dl{background:var(--grad);color:#fff;box-shadow:var(--glow)}
+.ns18 .sb-out{background:transparent;color:var(--ink-2);border:1.5px solid var(--line);margin-top:8px}
+.ns18 .ns18-main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.ns18 .ns18-main-body{padding:18px;display:flex;flex-direction:column;gap:16px}
+
+/* mini KPI trong dashboard */
+.ns18 .mk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;box-shadow:var(--shadow)}
+.ns18 .mk::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.16),rgba(63,182,168,.04) 70%)}
+.ns18 .mk.alert{background:var(--pink-card);border-color:var(--pink-line)}
+.ns18 .mk.alert::after{background:radial-gradient(circle at 40% 40%,rgba(214,0,108,.14),rgba(214,0,108,.03) 70%)}
+.ns18 .mk .l{font-size:10.5px;color:var(--ink-2);font-weight:700;letter-spacing:.05em;text-transform:uppercase;position:relative}
+.ns18 .mk .v{font-size:34px;font-weight:800;margin-top:7px;color:var(--magenta);letter-spacing:-1px;position:relative;font-variant-numeric:tabular-nums}
+.ns18 .mk .v small{font-size:13px;font-weight:700;color:var(--ink-3)}
+.ns18 .mk.teal .v{color:var(--teal-deep)}
+.ns18 .mk .s{font-size:11px;color:var(--ink-2);margin-top:6px;position:relative}
+
+/* ===== BOTTOM-NAV (mobile) ===== */
+.ns18 .bnav{display:none}
+
+/* ============================================================
+   RESPONSIVE — laptop sidebar / điện thoại 1 cột + bottom-nav
+   ============================================================ */
+@media (max-width:900px){
+  .ns18-shell{grid-template-columns:1fr}
+  .ns18 .side{display:none}
+  .ns18 .ns18-main-body{padding:14px;padding-bottom:88px}
+  .ns18 .bnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+  .ns18 .bnav .bi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--ink-3);background:none;border:none;font-family:inherit;cursor:pointer}
+  .ns18 .bnav .bi svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+  .ns18 .bnav .bi.on{color:var(--teal-deep)}
+}
