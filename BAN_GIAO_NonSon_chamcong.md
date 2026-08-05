@@ -689,3 +689,41 @@ v17.67 → **v17.68**, 5 chỗ: index.html `?v=` (37), login sub, tab Tài kho�
 **VIỆC TIẾP:** (1) Aroma quét trên 17 Pro Max, đọc số ĐỔI lúc zoom → phân xử tầng 1 vs tầng OS; nếu tầng OS: tắt Center Stage qua Control Center xác nhận, rồi chọn: hướng dẫn tắt cho máy bị / chụp native cho máy đó / chấp nhận (zoom chỉ preview, ảnh+nhận diện+bản ghi đúng — đã xác minh v17.85). (2) Các NOTED cũ giữ nguyên.
 
 **Bản version: v17.86.**
+
+---
+
+## ⏩ NỐI TIẾP (v17.87 → v17.96 · 03/08/2026) — ĐẠI TU EDITOR BÀN GIAO + AUTO-DEPLOY + GAS
+
+> **QUAN TRỌNG NHẤT — AUTO-DEPLOY ĐÃ BẬT:** repo `baohan2909/chamcong` giờ deploy qua **GitHub Actions** (file `.github/workflows/deploy-pages.yml`). Aroma đã đổi Settings → Pages → Source = "GitHub Actions". **Từ nay push lên main là TỰ ĐỘNG build + deploy** (workflow "Deploy to GitHub Pages"), KHÔNG cần vào Settings toggle tay nữa. Trước đó Pages kẹt ở v17.86 (pipeline branch-based ngừng) → đây là lý do phải chuyển sang Actions. Kiểm live: `curl -s https://baohan2909.github.io/chamcong/sw.js | grep CACHE_VERSION`.
+
+> **Bản đang chạy: v17.96.** `main == fix-test == origin/main`.
+
+### CÁC BẢN ĐÃ DEPLOY (v17.87 → v17.96)
+- **v17.87** — (1) Đăng nhập: KHÔI PHỤC auto-logout **00:00 thứ Hai** mỗi tuần (bị thay bằng "hết hạn 7 ngày rolling"; `_getMondayMidnight` 02-system:188 còn sẵn). Giữ lưới an toàn expireDays. (2) Sự vụ QL: thẻ hiện 3 mốc — Gửi (created_at) · Cơ động xử lý (thoi_gian_xu_ly_xong) · CH xác nhận HT (thoi_gian_dong). `bgqlSuVuMocNgay` + CSS `.bgql-sv-moc`.
+- **v17.88** — Filter "Thiếu ca" (Nhân sự→Lịch sử duyệt) = **QUÊN RA CA**. Gốc: option value="THIẾU CA" trỏ loại canh_bao không tồn tại. Thực chất = `gio_cong_ngay_ch.ly_do_khong_hop_le='THIEU_RA'` (KHÔNG phải AUTO_CLOSE — nguồn đó đếm 0). Frontend `_lsdRenderThieuRaCa` gọi RPC mới `fn_get_thieu_ra_ca`. **CẦN SQL** (xem dưới).
+- **v17.89** — Editor mục bàn giao (`10-mucbangiao.js`): **kéo-thả tay cầm ⠿** (pointer-events, chạy iPhone) di chuyển mục giữa nhóm / đổi thứ tự. **CẦN SQL**: nới constraint `khu_vuc>=1` + RPC `fn_bg_muc_sapxep`.
+- **v17.90** — Editor: **Sửa/Xóa mọi mục kể cả GỐC**. `fn_bg_muc_xoa` thay: mục đã dùng trong biên bản (402k dòng `ban_giao_chi_tiet_tai_san`) → ẨN (hien_thi=false) thay xóa cứng (hết lỗi FK); chưa dùng → DELETE. `fn_bg_cauhinh` order theo `thu_tu_hien_thi` (kéo đổi thứ tự mới lưu được). RPC mới `fn_bg_muc_sua`. **CẦN SQL**.
+- **v17.91** — Editor: fix header đè status bar iPhone (`env(safe-area-inset)`); dialog Sửa (thay `prompt()` native) = `_mucBGPrompt` styled; Xóa mục/nhóm dùng `appConfirm` styled.
+- **v17.92** — Editor: **đổi tên nhóm** (`fn_bg_nhom_sua`) + **đổi thứ tự nhóm** ▲▼ (`fn_bg_nhom_sapxep`) → số đầu nhóm trong biên bản tự chạy theo (biên bản render nhóm theo thu_tu). **CẦN SQL**. Audit 100%: editor (`fn_bg_cauhinh`) == biên bản (`fn_get_danh_muc_tai_san`), cả 2 lọc hien_thi=true + order thu_tu_hien_thi.
+- **v17.93/94** — Editor: nút **"SL"** bật/tắt "cần số lượng" cho mục (`fn_bg_muc_soluong`). Biên bản: mục bật SL hiện **ô nhập số** (v94: bỏ 3 nút trạng thái, ô số về bên phải cùng dòng). Lưu vào `ban_giao_chi_tiet_tai_san.so_luong`. **CẦN SQL** (2 cột + 3 RPC + sửa `fn_ban_giao_create`). TỒN: hiện số lượng ở màn xem lại biên bản (Timeline) — cần sửa RPC detail, CHƯA làm.
+- **v17.95** — Đơn nghỉ phép/đổi ca: **bỏ `capture="environment"`** ở 3 ô upload ảnh đơn (lcnghi-anh 01-lichca.js:350, dn-anh-file, dx-anh index.html) → iOS cho chọn Thư viện ảnh, không ép camera. Camera chấm công (camera-file-input capture=user) GIỮ.
+- **v17.96** — **Cửa hàng xem giờ công NV chấm công tại CH mình.** `navGioCong`: CUA_HANG → giocong-ql. `taiGioCongQL`: lọc gcDataQL theo `maCH===SESSION.cuaHangMa` (maCH = nơi chấm thật, từ `fn_get_tong_hop_thang_all` trả theo NV×ngày×CH). Frontend-only (RPC vốn anon gọi được). TỒN (Aroma cân nhắc): màn này ẩn NV đang lỗi chấm; chi tiết 1 NV hiện cả ca nơi khác.
+
+### ⚠️ SQL AROMA CẦN XÁC NHẬN ĐÃ CHẠY (nếu chưa → tính năng chưa hoạt động)
+> Đã probe (03/08): các RPC editor nhóm/mục + fn_tong_hop_ngay_theo_ca + fn_get_thieu_ra_ca ĐỀU CÓ trong DB (Aroma đã chạy dần). Kiểm nhanh 1 lượt:
+> `SELECT proname FROM pg_proc WHERE proname IN ('fn_get_thieu_ra_ca','fn_bg_muc_sapxep','fn_bg_muc_xoa','fn_bg_cauhinh','fn_bg_muc_sua','fn_bg_nhom_sua','fn_bg_nhom_sapxep','fn_bg_muc_soluong','fn_bg_soluong_stts','fn_tong_hop_ngay_theo_ca','fn_ban_giao_create');`
+1. **Ô số lượng (v93/94)** — cột `danh_muc_tai_san_chuan.can_so_luong bool` + `ban_giao_chi_tiet_tai_san.so_luong numeric` + `fn_bg_cauhinh` (thêm can_so_luong) + `fn_bg_muc_soluong` + `fn_bg_soluong_stts` + **`fn_ban_giao_create` sửa để lưu so_luong**. (Nếu chưa chạy → nút SL/ô số không hoạt động.)
+2. **Index chống timeout xóa mục:** `CREATE INDEX IF NOT EXISTS idx_bgct_stt_chuan ON public.ban_giao_chi_tiet_tai_san(stt_chuan);` (bảng 402k, thiếu index FK → xóa mục timeout). ĐÃ hướng dẫn `SET statement_timeout='120s';` trước khi tạo.
+3. `app_settings` sys.cache_version = **"v17.96"** (chỉ tra cứu, không ép reload).
+
+### GAS ChamCongSync — bản v9.50 (Aroma dán tay, KHÔNG ở repo)
+- Thêm hàm RIÊNG **`syncTongHopNgayChiTiet()`** → sheet **"TỔNG HỢP NGÀY CHI TIẾT"** (mỗi NV×ngày×CỬA HÀNG = 1 dòng; NV 2 CH = 2 dòng). Tách khỏi `syncTongHopGioCong` vì gộp chung → **timeout "hết thời gian chờ truy cập tài liệu"** (mở tài liệu 5 lần). Hàm riêng mở 1 lần, dùng RPC `fn_tong_hop_ngay_theo_ca`. Có menu + trigger 3h15.
+- **Mọi ô nhập ngày trong menu GAS đổi sang dd-mm-yyyy** (`_gcInputToIso`/`_gcIsoToInput`; nội bộ + RPC vẫn yyyy-MM-dd). Menu "Tổng hợp NGÀY CHI TIẾT" hỏi khoảng ngày.
+- File cuối gửi Aroma qua chat (scratchpad `ChamCongSync_final.gs`). Nếu cần lại: dựng từ mô tả trên + bản Aroma gửi 18/07.
+- **#1 (18/07):** cột E DATA CHẤM CÔNG hiện "Cơ động - <CH>" theo `r.nguon==='CO_DONG'`. **#3/#4:** trạng thái — mỗi NV/ngày chỉ log mới nhất "Đang làm việc", ngày cũ → "Kết thúc".
+
+### QUY CHẾ ĐIỂM CHÍNH THỨC 03/08/2026 (Aroma thông báo)
+- Từ 03/08 áp dụng chính thức: bổ sung ca 2 lần/tháng (lần 3 biên bản, lần 4 kỷ luật); điểm tuân thủ 6đ→biên bản, ≤5đ→kỷ luật. Reset lỗi giai đoạn chạy thử.
+- **KHÔNG cần sửa code** — điểm tính theo THÁNG (tháng 7 tự tách khỏi tháng 8), có sẵn công cụ "Xóa hàng loạt" (`fn_diem_mien_hang_loat` — CÓ trong DB). Reset = miễn lỗi **ngày 01-02/08** (2 ngày chạy thử còn trong tháng 8; probe 03/08: 66 NV bị trừ, toàn lỗi 1-2/8 — 41 thiếu lịch/20 bổ sung/9 thiếu bàn giao). Dùng nút Xóa hàng loạt (NS00490): tháng 8, ngày 01/08 → miễn; ngày 02/08 → miễn.
+
+**Bản version: v17.96** · auto-deploy qua GitHub Actions.
