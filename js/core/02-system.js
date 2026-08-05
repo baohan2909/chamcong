@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v17.95',
+  'sys.cache_version': 'v17.96',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -220,7 +220,7 @@ function tick(){
             return;
           }
         }
-        // [v17.95] KHÔI PHỤC auto-logout 00:00 THỨ HAI mỗi tuần (Aroma yêu cầu — trước đây có,
+        // [v17.96] KHÔI PHỤC auto-logout 00:00 THỨ HAI mỗi tuần (Aroma yêu cầu — trước đây có,
         //   bị thay bằng "hết hạn N ngày rolling" nên mất). Duy trì đăng nhập suốt tuần, tự đăng xuất
         //   khi sang tuần mới: nếu login TRƯỚC mốc 00:00 thứ Hai gần nhất → hết phiên.
         //   Giữ luôn lưới an toàn expireDays: login quá N ngày (kẹt đồng hồ / mốc bất thường) cũng logout.
@@ -473,10 +473,11 @@ function goToPage(page){
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
 }
-// Tab Giờ công: NV → giocong, QLNS → giocong-ql
+// Tab Giờ công: NV → giocong (cá nhân); QLNS/ADMIN → giocong-ql (toàn hệ thống);
+//   CUA_HANG → giocong-ql (lọc riêng NV chấm công tại CH mình — xem taiGioCongQL)
 function navGioCong(){
-  const isQL=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN');
-  goToPage(isQL?'giocong-ql':'giocong');
+  const isQLorCH=SESSION&&(SESSION.vaiTro==='QLNS'||SESSION.vaiTro==='ADMIN'||SESSION.vaiTro==='CUA_HANG');
+  goToPage(isQLorCH?'giocong-ql':'giocong');
 }
 
 // ─── [v13.43] HOME HUB ──────────────────────────────────────
@@ -2676,6 +2677,16 @@ function doiThangQL(delta){
 }
 function taiGioCongQL(){
   gcDataQL=[]; // [v10.85 Yc #3] reset state
+  // [v17.xx] CUA_HANG: đổi nhãn header cho rõ đây là giờ công NV tại CH mình
+  if (SESSION && SESSION.vaiTro === 'CUA_HANG') {
+    try {
+      const _pg = document.getElementById('page-giocong-ql');
+      const _sub = _pg && _pg.querySelector('.cc-hero-page-sub');
+      if (_sub) _sub.textContent = 'Giờ công NV chấm công tại cửa hàng của bạn';
+      const _lbl = _pg && _pg.querySelector('.cc-hero-page-label');
+      if (_lbl) _lbl.textContent = 'GIỜ CÔNG CỬA HÀNG';
+    } catch(e){}
+  }
   const [y,m]=gcThangQL.split('-').map(Number);
   document.getElementById('thang-label-ql').textContent=THANG_VI[m]+' '+y;
   document.getElementById('gcql-content').innerHTML='<div class="gc-empty">⏳ Đang tải...</div>';
@@ -2730,6 +2741,11 @@ function taiGioCongQL(){
       if (!r.cuaHang && cuaHang) r.cuaHang = cuaHang;
       return r;
     });
+    // [v17.xx] CUA_HANG: CHỈ xem giờ công của NV CHẤM CÔNG TẠI cửa hàng mình (theo maCH nơi chấm, không phải CH mặc định)
+    if (SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
+      const _maCH = SESSION.cuaHangMa;
+      gcDataQL = gcDataQL.filter(r => (r.maCH || r.ma_ch || '') === _maCH);
+    }
     renderGioCongQL();
   })
   .catch(()=>{document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';});
