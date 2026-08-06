@@ -1,0 +1,207 @@
+/* ============================================================================
+   24-overlays-v18.css — v18 cho POPUP NỔI body-level (GATED: chỉ NS00490)
+   ----------------------------------------------------------------------------
+   Vì sao có file này:
+   Nhiều overlay (Điểm hệ thống, Giám sát TC, chi tiết sự vụ, Face, appConfirm…)
+   bị JS re-parent ra thẳng <body> → NẰM NGOÀI scope .ns18 → mất toàn bộ token v18
+   (--teal/--grad/--magenta chỉ định nghĩa trên .ns18). Trước đây các rule
+   "body.ns18-shell .bh-modal { … var(--grad) }" ở file 18/19 IM LẶNG hỏng vì
+   var không với tới được.
+
+   Cách sửa GỐC (an toàn, gated tuyệt đối):
+   - body.ns18-shell CHỈ bật cho NS00490 (js/core/12-shell-v18.js) → 539 người KHÔNG dính.
+   - (1) Cấp lại token v18 ở tầng body.ns18-shell (chỉ TÊN RIÊNG v18 — KHÔNG đụng
+         --green/--red/--bg/--shadow của 00-tokens để không xê dịch UI cũ của NS00490).
+         Việc này cũng SỬA LUÔN các rule overlay cũ đang hỏng ở 18/19-css.
+   - (2) Retint các nút gradient thương hiệu CŨ (xanh lá / cam) → teal, áp mọi overlay.
+   - (3) Retint hero cc-hero (Điểm HT / Giám sát TC / Sự vụ khu vực) → teal deep.
+   - (4) Reskin các thành phần dùng CLASS (appConfirm, Face, busy…) theo v18.
+   GIỮ NGUYÊN: màu semantic (đỏ khẩn/hổ phách cảnh báo/xanh hợp lệ), điểm số
+   red/amber/green (đúng ngữ nghĩa), nút xóa nền đỏ (hành động phá hủy),
+   toàn bộ hình học camera Face (KHÔNG đụng .ns-face-cam/video/canvas).
+   LOAD CUỐI để thắng chắc.
+   ============================================================================ */
+
+/* ===== 1. TOKEN LAYER — cấp token v18 cho tầng body (chỉ NS00490) ===== */
+body.ns18-shell{
+  --surface:#FFFFFF;
+  --ink:#14213A; --ink-2:#4A5670; --ink-3:#8A93A5; --line:#E6E2D8;
+  --teal:#3FB6A8; --teal-deep:#1E5F63; --gold:#CBA45A; --magenta:#D6006C;
+  --teal-tint:#EEF6F5; --track:#EAEEF0; --pink-card:#FCEFF5; --pink-line:#F3D4E2;
+  --grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%);
+  --grad-mag:linear-gradient(135deg,#A80556 0%,#D6006C 100%);
+  --shadow-lg:0 2px 6px rgba(20,33,58,.08),0 16px 48px rgba(20,33,58,.14);
+  --glow:0 0 16px rgba(63,182,168,.45);
+  --r:14px;
+}
+
+/* Font v18 cho các overlay root (chúng ở ngoài .ns18 nên không tự có) */
+body.ns18-shell #diem-hub-ov,
+body.ns18-shell #diem-bulk-ov,
+body.ns18-shell #diem-history-ov,
+body.ns18-shell #tcgs-overlay,
+body.ns18-shell #tc-modal-root,
+body.ns18-shell #svcd-overlay,
+body.ns18-shell #bgsv-detail,
+body.ns18-shell #hub-submenu-overlay,
+body.ns18-shell .app-confirm{
+  font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+/* ===== 2. RETINT NÚT GRADIENT THƯƠNG HIỆU CŨ (inline) → teal ==============
+   Chỉ khớp INLINE style (JS render). Bộ gradient xanh lá/cam = "primary" cũ.
+   KHÔNG đụng gradient đỏ (#DC2626,#B91C1C = xóa) và các gradient vàng (premium). */
+body.ns18-shell [style*="linear-gradient(135deg,#1D9E75,#0F6E56)"],
+body.ns18-shell [style*="linear-gradient(135deg,#0F6E56,#1D9E75)"],
+body.ns18-shell [style*="linear-gradient(135deg,#10B981,#047857)"],
+body.ns18-shell [style*="linear-gradient(135deg,#F97316,#C2410C)"]{
+  background:var(--grad)!important;
+  box-shadow:0 8px 20px -8px rgba(20,33,58,.42)!important;
+}
+
+/* ===== 3. HERO cc-hero (3 overlay full-màn) → teal deep ==================== */
+body.ns18-shell #diem-hub-ov,
+body.ns18-shell #tcgs-overlay,
+body.ns18-shell #svcd-overlay{
+  --cc-hero-gradient:var(--grad);
+  --cc-hero-gradient-cam:var(--grad);
+  --cc-hero-shadow:0 16px 32px -12px rgba(24,45,61,.5);
+  --cc-hero-shadow-cam:0 16px 32px -12px rgba(24,45,61,.5);
+  background:#F7F5F1!important;   /* nền kem chuẩn v18 (đè inline #f4f3ef) */
+}
+
+/* Ô tìm kiếm trong overlay: focus viền teal (đè outline mặc định) */
+body.ns18-shell #diem-hub-ov input[type="text"]:focus,
+body.ns18-shell #tcgs-overlay input[type="text"]:focus,
+body.ns18-shell #diem-bulk-ov input:focus,
+body.ns18-shell #diem-bulk-ov select:focus,
+body.ns18-shell #svcd-overlay select:focus{
+  outline:2px solid var(--teal);
+  outline-offset:1px;
+  border-color:var(--teal)!important;
+}
+
+/* ===== 4. appConfirm — hộp thoại xác nhận DÙNG TOÀN APP =================== */
+body.ns18-shell .app-confirm{
+  border-radius:16px;
+  box-shadow:var(--shadow-lg);
+}
+body.ns18-shell .app-confirm-title{ color:var(--ink); font-weight:800; }
+body.ns18-shell .app-confirm-body{ color:var(--ink-2); }
+body.ns18-shell .app-confirm-btn{ border-radius:11px; font-weight:700; }
+body.ns18-shell .app-confirm-btn.cancel{
+  background:#fff; color:var(--ink); border:1.5px solid var(--line);
+}
+body.ns18-shell .app-confirm-btn.confirm{
+  background:var(--grad); color:#fff; box-shadow:var(--glow);
+}
+body.ns18-shell .app-confirm-btn.confirm.danger{
+  background:var(--grad-mag); color:#fff;
+  box-shadow:0 8px 20px -8px rgba(214,0,108,.42);
+}
+/* icon cảnh báo: giữ nền hổ phách (ngữ nghĩa "chú ý"), chỉ mềm góc */
+
+/* Busy spinner → teal */
+body.ns18-shell .busy-box .spinner{
+  border-color:rgba(63,182,168,.25)!important;
+  border-top-color:var(--teal)!important;
+}
+
+/* ===== 5. FACE modal — retint MÀU (giữ nền đen camera + hình học) ========= */
+/* KHÔNG đụng .ns-face-cam / <video> / canvas / transform — chỉ đổi màu nhấn. */
+body.ns18-shell .ns-face-btn-primary{
+  background:linear-gradient(135deg,#3FB6A8,#1E5F63)!important;
+  box-shadow:0 10px 24px rgba(63,182,168,.42)!important;
+}
+body.ns18-shell .ns-face-privacy b{ color:#3FB6A8; }
+/* icon giới thiệu (không phải .success) → vầng teal */
+body.ns18-shell .ns-face-icon-big:not(.success){
+  background:linear-gradient(135deg,rgba(63,182,168,.16),rgba(30,95,99,.05))!important;
+  box-shadow:0 0 60px rgba(63,182,168,.26)!important;
+}
+body.ns18-shell .ns-face-icon-big:not(.success) svg{ stroke:#3FB6A8; }
+/* .ns-face-icon-big.success GIỮ xanh lá = xác minh THÀNH CÔNG (semantic) */
+
+/* ===== 6. hub-submenu (drawer "Thêm" legacy) — phòng khi còn hiện ========= */
+body.ns18-shell #hub-submenu-overlay .hubsub-title{ color:var(--ink); }
+body.ns18-shell #hub-submenu-overlay .hubsub-lb{ color:var(--ink); }
+
+/* ===== 7. PAGE-NVAI (chat AI) — retint xanh lá/xanh dương cũ → teal ======= */
+/* Nút nổi FAB (nằm NGOÀI #page-nvai) — bỏ pulse xanh lá, nền teal */
+body.ns18-shell .nvai-fab{background:var(--grad);box-shadow:0 6px 20px rgba(24,45,61,.35),0 2px 6px rgba(0,0,0,.15);animation:none}
+body.ns18-shell .nvai-fab:hover{box-shadow:0 8px 24px rgba(24,45,61,.45)}
+/* Trong trang chat */
+#page-nvai.ns18 .nvai-new-btn{background:var(--teal-deep)}
+#page-nvai.ns18 .nvai-new-btn:active{background:var(--ink)}
+#page-nvai.ns18 .nvai-sess-row.active{background:var(--teal-tint)}
+#page-nvai.ns18 .nvai-sess-row.active .nvai-sess-ttl{color:var(--teal-deep)}
+#page-nvai.ns18 .nvai-welcome-ttl{color:var(--ink)}
+#page-nvai.ns18 .nvai-suggest{color:var(--ink);border-color:var(--line)}
+#page-nvai.ns18 .nvai-suggest:hover{background:var(--teal-tint);border-color:var(--teal);transform:translateY(-1px)}
+#page-nvai.ns18 .nvai-avatar{background:var(--grad)}
+#page-nvai.ns18 .nvai-bubble.user{background:var(--grad);box-shadow:0 3px 10px rgba(24,45,61,.2)}
+#page-nvai.ns18 .nvai-tool-hint{color:var(--teal-deep)}
+#page-nvai.ns18 .nvai-input:focus{background:#fff;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+#page-nvai.ns18 .nvai-send-btn{background:var(--grad);box-shadow:var(--glow)}
+#page-nvai.ns18 .nvai-send-btn:disabled{background:var(--ink-3);box-shadow:none}
+
+/* ===== 8. LONG-TAIL: modal admin body-appended (audit 06/08) ============== */
+/* Bàn giao QL — .bgql-modal/.bgql-multiselect-bar re-parent ra body, rơi về
+   legacy 06-modules.css → gated retint tại đây. Giữ nút .bgql-act-success
+   (xanh lá = Hoàn tất, semantic) + .bgql-svd-reply (sky chủ ý) + amber/đỏ. */
+body.ns18-shell .bgql-act-primary{background:var(--grad)!important;box-shadow:var(--glow)!important}
+body.ns18-shell .bgql-modal-input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+body.ns18-shell .bgql-xl-it-tag{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+body.ns18-shell .bgql-xl-selected{background:var(--teal-tint)!important;border-color:rgba(63,182,168,.35)!important;color:var(--teal-deep)!important}
+body.ns18-shell .bgql-xl-selected b,
+body.ns18-shell .bgql-xl-selected small{color:var(--teal-deep)!important}
+
+/* Bán hàng — 2 nút primary trong modal dùng inline var(--green) (resolve về
+   #0F6E56 vì body.ns18-shell KHÔNG remap --green). Retint có chủ đích, chừa
+   nút var(--red) "chưa mua". */
+body.ns18-shell #bh-can-dien-modal button[style*="var(--green)"],
+body.ns18-shell #bh-dien-kq-modal button[style*="var(--green)"]{
+  background:var(--grad)!important;box-shadow:var(--glow)!important;
+}
+
+/* Cài đặt/Cảnh báo — accent thẻ/nav dùng màu THƯƠNG HIỆU CŨ (xanh lá #0F6E56,
+   xanh dương admin #1D4ED8) đặt inline qua biến --accent/--tint → retint teal.
+   Các category khác (hồng nghỉ phép, sky, amber) GIỮ. */
+body.ns18-shell [style*="--accent:#0F6E56"],
+body.ns18-shell [style*="--accent:#1D4ED8"]{--accent:#1E5F63!important}
+body.ns18-shell [style*="--tint:#ECFDF5"],
+body.ns18-shell [style*="--tint:#EFF6FF"]{--tint:#EEF6F5!important}
+/* Audit log — tên hành động in đậm màu xanh dương admin → teal-deep */
+body.ns18-shell strong[style*="color:#1D4ED8"]{color:var(--teal-deep)!important}
+
+/* ===== 10. QUÉT XANH-LÁ INLINE (audit 06/08) — chỉ BRAND-PRIMARY → teal ====
+   GIỮ mọi chấm/badge/chữ SEMANTIC (success/đúng hạn/đã đạt/đã gửi/đã duyệt) —
+   tách biệt nhờ khác hex+thuộc-tính (background:#1D9E75 stepper) hoặc scope. */
+/* Nút nền xanh-lá cũ đặc → gradient teal (svcd 'Xác nhận', editor mục '+Thêm'/'Lưu') */
+body.ns18-shell button[style*="background:#0F6E56"]{background:var(--grad)!important}
+body.ns18-shell #mucbg-ov button[onclick^="mucBGToggleSL"][style*="background:#0F6E56"]{background:var(--teal-deep)!important;border-color:var(--teal-deep)!important}
+/* Lịch hoạt động (07-lichhd): input giờ, gạch tab active, chevron/nút, caption tuần */
+body.ns18-shell #lhd-content input[type=time]{accent-color:var(--teal-deep)!important}
+body.ns18-shell #lhd-subtabs button[style*="#0F6E56"]{border-bottom-color:var(--teal-deep)!important}
+body.ns18-shell #lhd-content button[onclick^="lhdDoiTuan"],
+body.ns18-shell #lhd-content button[onclick^="lhdApplyAll"],
+body.ns18-shell #lhdql-content button[onclick^="lhdqlDoiTuan"]{color:var(--teal-deep)!important}
+body.ns18-shell #lhd-content div[style*="letter-spacing:.05em"][style*="#0F6E56"]{color:var(--teal-deep)!important}
+/* Avatar chữ cái (02-system _renderAvatar) */
+body.ns18-shell .ns-avatar[style*="color:#0F6E56"],
+body.ns18-shell .ns-avatar span[style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+/* Chữ dropdown gợi ý (sự vụ cơ động / bàn giao / điểm / giám sát TC) — scope theo container */
+body.ns18-shell #svcd-body [style*="color:#1D9E75"]{color:var(--teal-deep)!important}
+body.ns18-shell #bg-sv-search-dd div[style*="color:#0F6E56"],
+body.ns18-shell #diem-search-dd div[style*="color:#0F6E56"],
+body.ns18-shell #tcgs-search-dd [style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+/* Chữ ngày-giờ header thẻ sự vụ (.chk-rec) */
+body.ns18-shell .chk-rec span[style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+/* Editor mục bàn giao (#mucbg-ov): dot custom + đường kéo-thả */
+body.ns18-shell #mucbg-ov [style*="width:6px"][style*="background:#0F6E56"]{background:var(--teal)!important}
+body.ns18-shell .mucbg-drop-line{background:var(--teal)!important;box-shadow:0 0 6px rgba(63,182,168,.5)!important}
+/* Mua nón admin — nút gallery (toggle active + Tải) */
+body.ns18-shell .mna-gallery-info button[style*="background:#1D9E75"]{background:var(--teal)!important;border-color:var(--teal)!important}
+body.ns18-shell .mna-gallery-info button[style*="color:#0F6E56"]{color:var(--teal-deep)!important;border-color:var(--teal)!important}
+/* Bán hàng — ngày highlight lịch sử phiên */
+body.ns18-shell .bh-hist-meta span[style*="color:#0F6E56"]{color:var(--teal-deep)!important}

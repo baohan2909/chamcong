@@ -18,10 +18,10 @@
     'page-lichca', 'page-lichca-ql', 'page-lichhd-ch', 'page-lichhd-ql',
     'page-nhansu', 'page-donnghi-acc', 'page-duyetyc',
     'page-bangiao', 'page-bangiao-ql',
-    'page-banhang', 'page-dashboard', 'page-chuongtrinh', 'page-checklist-ql',
+    'page-banhang', 'page-dashboard', 'page-chuongtrinh', 'page-checklist', 'page-checklist-ql',
     'page-donhang', 'page-donhang-nhan', 'page-donhang-ql',
     'page-muanon', 'page-muanon-admin',
-    'page-home', 'page-admin', 'page-giaodien'];
+    'page-home', 'page-admin', 'page-giaodien', 'page-nvai'];
   function ns18Enabled() {
     return typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490';
   }

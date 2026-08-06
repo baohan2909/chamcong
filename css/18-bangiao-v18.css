@@ -340,3 +340,83 @@
 #page-bangiao-ql.ns18 .aibc-gen-btn:disabled{background:var(--track);color:var(--ink-3);box-shadow:none}
 #page-bangiao-ql.ns18 .aibc-his-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 #page-bangiao-ql.ns18 .aibc-his-ttl{color:var(--ink)}
+
+/* ══════════════════════════════════════════════════════════
+   [v18] CHECKLIST NV (page-checklist) — DÙNG CHUNG class .chk-*
+   với Bàn giao → áp NGUYÊN bộ token/kiểu v18 để đồng nhất.
+   ══════════════════════════════════════════════════════════ */
+#page-checklist.ns18{background:var(--bg)}
+#page-checklist.ns18 .chk-wrap{max-width:560px;margin:0 auto;padding:14px 14px 96px}
+#page-checklist.ns18 .chk-topbar{background:var(--bg)}
+#page-checklist.ns18 .ns-empty{color:var(--ink-3);font-size:13px;text-align:center;padding:22px 12px;font-weight:500}
+@media (min-width:900px){
+  #page-checklist.ns18.active{max-width:none!important;min-width:0!important;margin:0!important;width:auto!important;padding:20px 28px 60px!important;display:block}
+  #page-checklist.ns18 .chk-wrap{max-width:none;margin:0;padding:0}
+  #page-checklist.ns18 .chk-topbar{position:static;margin:0 0 14px}
+}
+/* Thẻ thông tin cửa hàng */
+#page-checklist.ns18 .chk-ch-info{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px;position:relative;overflow:hidden}
+#page-checklist.ns18 .chk-ch-info::after{content:"";position:absolute;right:-30px;top:-30px;width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.16),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-checklist.ns18 .chk-ch-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;position:relative}
+#page-checklist.ns18 .chk-ch-sub{font-size:12.5px;font-weight:500;color:var(--ink-2);margin-top:3px;position:relative}
+/* Subtabs */
+#page-checklist.ns18 .chk-subtabs{background:var(--track);padding:4px;border-radius:12px;gap:4px}
+#page-checklist.ns18 .chk-subtab{color:var(--ink-2);font-weight:700;font-size:13px;border-radius:8px}
+#page-checklist.ns18 .chk-subtab.active{background:var(--teal-deep);color:#fff;box-shadow:0 2px 8px rgba(30,95,99,.28)}
+#page-checklist.ns18 .chk-subtab-count{background:var(--magenta);color:#fff;font-weight:800;border-radius:9px}
+#page-checklist.ns18 .chk-subtab.active .chk-subtab-count{background:rgba(255,255,255,.25);color:#fff}
+/* Progress */
+#page-checklist.ns18 .chk-progress-wrap{background:var(--bg)}
+#page-checklist.ns18 .chk-progress-info{color:var(--ink-2)}
+#page-checklist.ns18 .chk-progress-issues{color:var(--red)}
+#page-checklist.ns18 .chk-progress-bar{background:var(--track)}
+#page-checklist.ns18 .chk-progress-fill{background:var(--grad);box-shadow:var(--glow)}
+/* Handover banner */
+#page-checklist.ns18 .chk-handover{border-radius:var(--r)}
+#page-checklist.ns18 .chk-handover.clean{background:var(--teal-tint);border-color:rgba(63,182,168,.3);border-left-color:var(--teal)}
+#page-checklist.ns18 .chk-handover.clean .chk-handover-title{color:var(--teal-deep)}
+/* Accordion 45 mục */
+#page-checklist.ns18 .chk-group{background:var(--surface);border:1.5px solid transparent;border-radius:var(--r);box-shadow:var(--shadow)}
+#page-checklist.ns18 .chk-group.done-ok{border-color:rgba(46,139,87,.4);background:linear-gradient(180deg,#fff 0%,#F0F8F3 100%);box-shadow:var(--shadow)}
+#page-checklist.ns18 .chk-group.done-issue{border-color:rgba(198,55,60,.4);background:linear-gradient(180deg,#fff 0%,#FCF1F1 100%)}
+#page-checklist.ns18 .chk-group-num{background:var(--track);color:var(--ink-2);font-weight:800}
+#page-checklist.ns18 .chk-group.done-ok .chk-group-num{background:var(--green);color:#fff;box-shadow:0 3px 10px rgba(46,139,87,.4)}
+#page-checklist.ns18 .chk-group.done-issue .chk-group-num{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(198,55,60,.35)}
+#page-checklist.ns18 .chk-group-title{color:var(--ink);font-weight:700}
+#page-checklist.ns18 .chk-group.done-ok .chk-group-status{color:var(--green);font-weight:700}
+#page-checklist.ns18 .chk-group.done-issue .chk-group-status{color:var(--red);font-weight:700}
+#page-checklist.ns18 .chk-group-arrow{color:var(--ink-3)}
+#page-checklist.ns18 .chk-item-name{color:var(--ink)}
+#page-checklist.ns18 .chk-item{border-bottom-color:var(--line)}
+/* Nút tick nhanh cả nhóm */
+#page-checklist.ns18 .chk-quick-ok{background:var(--teal-tint);border:1.5px solid rgba(63,182,168,.4);color:var(--teal-deep);border-radius:11px;box-shadow:none}
+#page-checklist.ns18 .chk-quick-ok:active,
+#page-checklist.ns18 .chk-quick-ok.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+/* Toggle ĐẠT/VẤN ĐỀ/KHÔNG */
+#page-checklist.ns18 .chk-tg{border:1.5px solid var(--line);color:var(--ink-3);border-radius:9px}
+#page-checklist.ns18 .chk-tg.bt.active{background:var(--green);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(46,139,87,.35)}
+#page-checklist.ns18 .chk-tg.vd.active{background:var(--red);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(198,55,60,.32)}
+#page-checklist.ns18 .chk-tg.ko.active{background:var(--ink-2);color:#fff;border-color:transparent}
+/* Chi tiết vấn đề */
+#page-checklist.ns18 .chk-vd-detail{background:#FCF1F1;border-color:rgba(198,55,60,.28)}
+#page-checklist.ns18 .chk-vd-textarea{border-color:rgba(198,55,60,.3)}
+#page-checklist.ns18 .chk-vd-textarea:focus{border-color:var(--red)}
+#page-checklist.ns18 .chk-photo-add{border-color:rgba(198,55,60,.4);color:var(--red)}
+/* Mức độ vấn đề */
+#page-checklist.ns18 .chk-mucdo{border:1.5px solid var(--line);color:var(--ink-2);font-weight:700}
+#page-checklist.ns18 .chk-mucdo.nhe.active{background:var(--teal-deep);color:#fff;border-color:transparent}
+#page-checklist.ns18 .chk-mucdo.vua.active{background:var(--gold);color:#fff;border-color:transparent}
+#page-checklist.ns18 .chk-mucdo.khan.active{background:var(--red);color:#fff;border-color:transparent}
+/* Ghi chú + nút gửi */
+#page-checklist.ns18 .chk-note-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+#page-checklist.ns18 .chk-note-label{color:var(--ink-2)}
+#page-checklist.ns18 .chk-note-input{border:1.5px solid var(--line);border-radius:10px}
+#page-checklist.ns18 .chk-note-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18);outline:none}
+#page-checklist.ns18 .chk-submit-btn{background:var(--grad);color:#fff;box-shadow:var(--glow);border-radius:12px}
+#page-checklist.ns18 .chk-submit-btn:disabled{background:var(--track);color:var(--ink-3);box-shadow:none}
+/* Thẻ sự vụ / bản ghi hôm nay */
+#page-checklist.ns18 .chk-rec{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border-left:4px solid var(--teal)}
+#page-checklist.ns18 .chk-rec.has-issue{border-left-color:var(--red)}
+#page-checklist.ns18 .chk-rec-time{color:var(--teal-deep)}
+#page-checklist.ns18 .chk-rec-badge.ok{background:var(--teal-tint);color:var(--teal-deep)}
+#page-checklist.ns18 .chk-rec-badge.issue{background:rgba(198,55,60,.12);color:var(--red)}
