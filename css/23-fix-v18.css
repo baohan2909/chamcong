@@ -1,0 +1,43 @@
+/* ============================================================
+   23-fix-v18.css — SỬA THEO FEEDBACK (load CUỐI). Bản đồ header +
+   Giờ công QL restructure (đồng bộ màu, thanh tháng gọn, nút gradient).
+   ============================================================ */
+
+/* Hero chỉ hiện cho v18 (legacy ẩn) */
+.ns18-hero-only{display:none}
+.ns18 .ns18-hero-only{display:block}
+
+/* ===== BẢN ĐỒ CHẤM CÔNG: card v18 + nút gradient ===== */
+#page-bandochidung.ns18 .map-search-wrap,
+#page-bandochidung.ns18 .map-result-card,
+#page-bandochidung.ns18 .map-nearby{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;margin:0 0 14px!important}
+#page-bandochidung.ns18 .map-search-label,#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important;font-weight:700}
+#page-bandochidung.ns18 .map-search-input{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important}
+#page-bandochidung.ns18 .map-btn-primary{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:11px!important}
+#page-bandochidung.ns18 .map-distance-val{color:var(--magenta)!important;font-weight:800}
+#page-bandochidung.ns18 .map-store-name{color:var(--ink)!important}
+
+/* ===== GIỜ CÔNG QL: restructure ===== */
+/* Thanh tháng: gọn, căn giữa (bỏ thanh to đùng) */
+#page-giocong-ql.ns18 #gcql-nav-thang{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;display:flex!important;align-items:center;justify-content:center;gap:12px;margin:12px 0 2px!important;min-height:0!important}
+#page-giocong-ql.ns18 #gcql-nav-range{background:transparent!important;border:none!important;box-shadow:none!important;padding:6px 0!important;margin:0!important;text-align:center;color:var(--ink-2)!important}
+#page-giocong-ql.ns18 .thang-btn{width:34px!important;height:34px!important;min-height:0!important;border-radius:9px!important;background:var(--surface)!important;border:1px solid var(--line)!important;color:var(--teal-deep)!important;font-size:18px!important;font-weight:700!important;cursor:pointer;display:flex!important;align-items:center;justify-content:center;padding:0!important;box-shadow:none!important}
+#page-giocong-ql.ns18 .thang-btn:hover{background:var(--teal-tint)!important}
+#page-giocong-ql.ns18 .thang-label{font-size:15px!important;font-weight:800!important;color:var(--ink)!important;min-width:140px;text-align:center}
+
+/* Mode tabs: active gradient + glow */
+#page-giocong-ql.ns18 .gcql-mode-tab.active{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-color:transparent!important}
+
+/* Khu vực: đồng bộ teal, BỎ màu lòe loẹt (đè inline JS) */
+#page-giocong-ql.ns18 .gcql-kv-header{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-left:4px solid var(--teal)!important;border-radius:11px!important;padding:13px 16px!important;box-shadow:var(--shadow)!important}
+#page-giocong-ql.ns18 .gcql-kv-name{color:var(--ink)!important;font-weight:800!important;font-size:14.5px}
+#page-giocong-ql.ns18 .gcql-kv-meta{color:var(--ink-2)!important;opacity:1!important;font-weight:700!important}
+#page-giocong-ql.ns18 .gcql-kv-group{margin-bottom:10px}
+#page-giocong-ql.ns18 .gc-table-wrap{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important}
+
+/* Thẻ KPI: nền trắng, số magenta (đè "dính trắng"/lòe loẹt) */
+#page-giocong-ql.ns18 .gcql-stats{gap:14px}
+#page-giocong-ql.ns18 .gcql-stats .stat-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-giocong-ql.ns18 .gcql-stats .stat-val{color:var(--magenta)!important;font-weight:800!important}
+#page-giocong-ql.ns18 .gcql-stats .stat-lbl{color:var(--ink-2)!important}
+#page-giocong-ql.ns18 .gcql-search{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important}

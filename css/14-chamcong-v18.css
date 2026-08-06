@@ -100,6 +100,9 @@
 #page-chamcong.ns18 .selfie-btn.done .selfie-badge{background:var(--green);box-shadow:none}
 #page-chamcong.ns18 .camera-err{color:var(--red);font-size:12px;margin-top:8px;font-weight:600}
 
+/* Ẩn ô icon GPS/selfie (emoji ✅ hộp xanh nhìn sến) — dùng nhãn + badge là đủ */
+#page-chamcong.ns18 .gps-icon,#page-chamcong.ns18 .selfie-icon{display:none!important}
+
 /* ===== ICON: chỉ SVG, KHÔNG hộp nền (Aroma yêu cầu) ===== */
 #page-chamcong.ns18 .t-icon svg{width:26px;height:26px;stroke-width:2;fill:none}
 #page-chamcong.ns18 .gps-icon svg,#page-chamcong.ns18 .selfie-icon svg{width:26px;height:26px;stroke-width:2;fill:none}
@@ -200,8 +203,8 @@
   #page-chamcong.ns18 > .card:has(#disp-ten-nv){order:4}
   #page-chamcong.ns18 > .card:has(#input-ch-display){order:5}
   #page-chamcong.ns18 > #card-sale-target{order:6}
-  #page-chamcong.ns18 > .card:has(#gps-btn){order:7}
-  #page-chamcong.ns18 > .card:has(#selfie-btn){order:8}
+  #page-chamcong.ns18 > .card:has(#selfie-btn){order:7}
+  #page-chamcong.ns18 > .card:has(#gps-btn){order:8}
   #page-chamcong.ns18 > .card:has(.type-grid){order:9}
   #page-chamcong.ns18 > .card:has(#submit-btn){order:10}
   #page-chamcong.ns18 > #result-box{order:11}

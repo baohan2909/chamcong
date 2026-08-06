@@ -119,6 +119,7 @@
     if (typeof SESSION === 'undefined' || !SESSION) return;
     if (!ns18Enabled()) return;                 // chỉ NS00490 (giai đoạn thử)
     NS18_PAGES.forEach(function (id) { var p = document.getElementById(id); if (p) p.classList.add('ns18'); });
+    var _mtc = document.getElementById('meta-theme-color'); if (_mtc) _mtc.setAttribute('content', '#17635B'); // thanh trên cùng → teal v18
     var items = ns18BuildItems();
 
     /* ---- Sidebar (laptop) ---- */
@@ -206,6 +207,7 @@
 
   window.ns18TearDownShell = function () {
     document.body.classList.remove('ns18-shell');
+    var _mtc = document.getElementById('meta-theme-color'); if (_mtc) _mtc.setAttribute('content', '#0F6E56'); // trả màu cũ khi đăng xuất
     NS18_PAGES.forEach(function (id) { var p = document.getElementById(id); if (p) p.classList.remove('ns18'); });
     [SIDEBAR_ID, BNAV_ID, DRAWER_ID, DRBG_ID].forEach(function (id) { var e = document.getElementById(id); if (e) e.remove(); });
   };
