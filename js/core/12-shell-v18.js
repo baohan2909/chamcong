@@ -10,6 +10,14 @@
 (function () {
   var SIDEBAR_ID = 'ns18-sidebar', BNAV_ID = 'ns18-bnav', DRAWER_ID = 'ns18-drawer', DRBG_ID = 'ns18-drawer-bg';
 
+  // [v18] GIAI DOAN THU NGHIEM: giao dien v18 CHI bat cho NS00490 (admin toi thuong)
+  // → 539 nguoi con lai giu giao dien cu. Duyet xong → mo cho tat ca (sua ns18Enabled).
+  // NS18_PAGES: danh sach trang DA reskin v18 (them dan khi convert tung phan he).
+  var NS18_PAGES = ['page-chamcong'];
+  function ns18Enabled() {
+    return typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490';
+  }
+
   var _ic = {
     home:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
     acc:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
@@ -101,6 +109,8 @@
 
   window.ns18InitShell = function () {
     if (typeof SESSION === 'undefined' || !SESSION) return;
+    if (!ns18Enabled()) return;                 // chỉ NS00490 (giai đoạn thử)
+    NS18_PAGES.forEach(function (id) { var p = document.getElementById(id); if (p) p.classList.add('ns18'); });
     var items = ns18BuildItems();
 
     /* ---- Sidebar (laptop) ---- */
@@ -167,6 +177,7 @@
 
   window.ns18TearDownShell = function () {
     document.body.classList.remove('ns18-shell');
+    NS18_PAGES.forEach(function (id) { var p = document.getElementById(id); if (p) p.classList.remove('ns18'); });
     [SIDEBAR_ID, BNAV_ID, DRAWER_ID, DRBG_ID].forEach(function (id) { var e = document.getElementById(id); if (e) e.remove(); });
   };
 })();
