@@ -180,9 +180,9 @@
    Chỉ áp khi trang đang active (tránh hiện khi ẩn).
    ============================================================ */
 @media (min-width:900px){
-  #page-chamcong.ns18.active{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;max-width:1120px;margin:0 auto;padding:24px 26px 56px}
+  #page-chamcong.ns18.active{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start;padding:22px 28px 60px;max-width:none!important;min-width:0!important;margin:0!important;width:auto!important}
   #page-chamcong.ns18 > *{margin:0!important}
-  /* full-width (span 2 cột) */
+  /* full-width (span mọi cột) */
   #page-chamcong.ns18 > #diem-card,
   #page-chamcong.ns18 > .cc-hero,
   #page-chamcong.ns18 > #tc-banner,
@@ -193,6 +193,21 @@
   #page-chamcong.ns18 > .card:has(.type-grid),
   #page-chamcong.ns18 > .card:has(#submit-btn),
   #page-chamcong.ns18 > .card:has(#log-list){grid-column:1 / -1}
+  /* THỨ TỰ: dải trên → 4 thẻ nhỏ liền nhau (1 hàng lấp đầy) → thời điểm → gửi → tóm tắt → lịch sử */
+  #page-chamcong.ns18 > #tc-banner,#page-chamcong.ns18 > .banner-pw{order:1}
+  #page-chamcong.ns18 > #diem-card{order:2}
+  #page-chamcong.ns18 > .cc-hero{order:3}
+  #page-chamcong.ns18 > .card:has(#disp-ten-nv){order:4}
+  #page-chamcong.ns18 > .card:has(#input-ch-display){order:5}
+  #page-chamcong.ns18 > #card-sale-target{order:6}
+  #page-chamcong.ns18 > .card:has(#gps-btn){order:7}
+  #page-chamcong.ns18 > .card:has(#selfie-btn){order:8}
+  #page-chamcong.ns18 > .card:has(.type-grid){order:9}
+  #page-chamcong.ns18 > .card:has(#submit-btn){order:10}
+  #page-chamcong.ns18 > #result-box{order:11}
+  #page-chamcong.ns18 > #summary-card{order:12}
+  #page-chamcong.ns18 > .card:has(#log-list){order:13}
+  #page-chamcong.ns18 > #countdown-bar{order:14}
   /* Thời điểm chấm công: 4 nút hàng ngang trên desktop */
   #page-chamcong.ns18 .type-grid{grid-template-columns:repeat(4,1fr)!important}
   /* hero cao thoáng hơn chút */
