@@ -41,3 +41,21 @@
 #page-giocong-ql.ns18 .gcql-stats .stat-val{color:var(--magenta)!important;font-weight:800!important}
 #page-giocong-ql.ns18 .gcql-stats .stat-lbl{color:var(--ink-2)!important}
 #page-giocong-ql.ns18 .gcql-search{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important}
+
+/* ===== LỊCH CA QL: restructure (như Giờ công) ===== */
+/* Tuần nav gọn, căn giữa (bỏ thanh to) */
+#page-lichca-ql.ns18 .lc-header{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;margin:12px 0 2px!important;display:flex!important;flex-direction:column;align-items:center;gap:3px}
+#page-lichca-ql.ns18 .lc-tuan-nav{display:flex;align-items:center;justify-content:center;gap:12px}
+#page-lichca-ql.ns18 .thang-btn{width:34px!important;height:34px!important;min-height:0!important;border-radius:9px!important;background:var(--surface)!important;border:1px solid var(--line)!important;color:var(--teal-deep)!important;font-size:18px!important;font-weight:700!important;cursor:pointer;display:flex!important;align-items:center;justify-content:center;padding:0!important;box-shadow:none!important}
+#page-lichca-ql.ns18 .thang-btn:hover{background:var(--teal-tint)!important}
+#page-lichca-ql.ns18 .lc-tuan-lbl{font-size:15px!important;font-weight:800!important;color:var(--ink)!important;min-width:150px;text-align:center}
+/* Mode tabs active gradient glow */
+#page-lichca-ql.ns18 .lcql-mode-tab.active{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-color:transparent!important}
+/* Thẻ thống kê trắng + số magenta */
+#page-lichca-ql.ns18 .lcql-mode-stats{gap:12px}
+#page-lichca-ql.ns18 .lcql-mstat{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-lichca-ql.ns18 .lcql-mstat-val{color:var(--magenta)!important;font-weight:800!important}
+#page-lichca-ql.ns18 .lcql-mstat-lbl{color:var(--ink-2)!important}
+/* Khu vực (đã đồng bộ teal qua _kvc): thêm dáng card */
+#page-lichca-ql.ns18 .lcql-kv-group{border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow)!important;background:var(--surface)}
+#page-lichca-ql.ns18 .lcql-kv-group > div:first-child{border-left:4px solid var(--teal)!important;color:var(--ink)!important}

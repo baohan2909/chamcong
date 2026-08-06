@@ -329,7 +329,10 @@ function renderLCQL(){
     'Tây Nam Bộ':     { accent:'#BE185D', tint:'#FDF2F8', bd:'#FBCFE8' },
     'Khác':           { accent:'#475569', tint:'#F8FAFC', bd:'#E2E8F0' },
   };
-  const _kvc = (kv) => LCQL_KV_COLORS[kv] || LCQL_KV_COLORS['Khác'];
+  // [v18] NS00490: mọi khu vực dùng 1 tông teal (bỏ màu lòe loẹt); legacy giữ màu riêng
+  const _kvc = (kv) => (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490')
+    ? { accent:'#1E5F63', tint:'#FFFFFF', bd:'#E6E2D8' }
+    : (LCQL_KV_COLORS[kv] || LCQL_KV_COLORS['Khác']);
   let html='<style>.lcql-kv-group.open>.lcql-kv-body{display:block!important}.lcql-kv-group{border-radius:12px;margin-bottom:10px;overflow:hidden;transition:transform .15s,box-shadow .15s}.lcql-kv-group:hover{transform:translateX(2px);box-shadow:0 4px 14px -4px rgba(15,23,42,.1)}</style>';
   if(lcqlMode==='kv'){
     const g={};filtered.forEach(d=>{if(!g[d.khuVuc])g[d.khuVuc]={};if(!g[d.khuVuc][d.maCH])g[d.khuVuc][d.maCH]={ten:d.tenCH,nvs:{}};if(!g[d.khuVuc][d.maCH].nvs[d.maNV])g[d.khuVuc][d.maCH].nvs[d.maNV]={ten:d.tenNV,days:[]};g[d.khuVuc][d.maCH].nvs[d.maNV].days.push(d);});

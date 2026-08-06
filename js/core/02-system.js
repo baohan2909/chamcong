@@ -2793,6 +2793,10 @@ function renderGioCongQL(){
   const _fmtVN = (n) => Number(n).toLocaleString('vi-VN');
   // [v10.85] fmtPhut → có dấu chấm
   const _fmtPhutVN = (m) => {
+    // [v18] NS00490: bỏ phút (làm tròn giờ) cho gọn; legacy giữ "Xg Yp"
+    if (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490') {
+      return _fmtVN(Math.round(m / 60)) + 'g';
+    }
     const h = Math.floor(m / 60);
     const p = m % 60;
     return _fmtVN(h) + 'g ' + pad(p) + 'p';
