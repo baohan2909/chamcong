@@ -472,6 +472,7 @@ function goToPage(page){
   else { if(typeof dhQLLeave==='function') dhQLLeave(); }
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
   if(page!=='nhansu') stopNSPolling();
+  if(typeof ns18SyncSidebar==='function') ns18SyncSidebar(page); // [v18] tô sáng mục sidebar đang mở
 }
 // Tab Giờ công: NV → giocong (cá nhân); QLNS/ADMIN → giocong-ql (toàn hệ thống);
 //   CUA_HANG → giocong-ql (lọc riêng NV chấm công tại CH mình — xem taiGioCongQL)
@@ -840,6 +841,7 @@ async function doLogout(){
   state={loai:null,btnId:null,lat:null,lng:null,gpsAcc:null,gpsOk:false,selfieB64:null,selfieOk:false,submitting:false,submitted:false};
   document.getElementById('main-app').style.display='none';
   document.getElementById('main-header').style.display='none';
+  if(typeof ns18TearDownShell==='function') ns18TearDownShell(); // [v18] dọn sidebar khi đăng xuất
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('ln-ma').value='';document.getElementById('ln-pw').value='';
   document.getElementById('login-err').style.display='none';
@@ -1086,6 +1088,7 @@ function khoiDongApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-header').style.display='block';
   document.getElementById('main-app').style.display='block';
+  if(typeof ns18InitShell==='function') ns18InitShell(); // [v18] dựng sidebar desktop sau đăng nhập
   if(typeof tcRefreshBanner==='function') setTimeout(tcRefreshBanner, 350); // [v17.67] khôi phục thẻ Trưởng ca + hero khi tải lại
   // [v11.7+ fix] Force scroll về đầu - gọi nhiều lần để bắt async scroll restoration
   // Chrome/Safari đôi khi tự khôi phục scroll position sau khi DOM thay đổi
