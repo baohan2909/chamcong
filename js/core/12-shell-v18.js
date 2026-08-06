@@ -116,10 +116,15 @@
     /* ---- Sidebar (laptop) ---- */
     var side = document.getElementById(SIDEBAR_ID);
     if (!side) { side = document.createElement('aside'); side.id = SIDEBAR_ID; side.className = 'ns18'; document.body.appendChild(side); }
-    side.innerHTML = '<div class="brand"><div class="lg">NS</div><div><b>CHẤM CÔNG</b><small>Nón Sơn</small></div></div>' +
+    side.innerHTML = '<div class="brand"><div class="lg">NS</div><div style="flex:1;min-width:0"><b>CHẤM CÔNG</b><small>Nón Sơn</small></div>' +
+      '<button type="button" class="ns18-bell" id="ns18-bell" title="Thông báo"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="ns18-bell-badge" id="ns18-bell-badge" style="display:none">0</span></button></div>' +
       '<div class="side-scroll ns18-nav">' + _menuHTML(items) + '</div>' +
       '<div class="spacer"></div>' + _whoHTML();
     _wireMenu(side, items, false);
+    // Chuông sidebar → mở panel thông báo + đồng bộ badge từ chuông header cũ
+    var bell = side.querySelector('#ns18-bell');
+    if (bell) bell.addEventListener('click', function () { if (typeof toggleNotifPanel === 'function') toggleNotifPanel(); });
+    ns18SyncBell();
 
     /* ---- Drawer (điện thoại — menu đầy đủ) ---- */
     var bg = document.getElementById(DRBG_ID);
@@ -173,6 +178,22 @@
         b.classList.toggle('on', !!page && b.getAttribute('data-page') === page);
       });
     });
+  };
+
+  // Đồng bộ badge chuông sidebar từ badge chuông header cũ (theo dõi live)
+  var _bellObs = null;
+  window.ns18SyncBell = function () {
+    var src = document.getElementById('cc-header-bell-badge');
+    var dst = document.getElementById('ns18-bell-badge');
+    if (!dst) return;
+    var t = src ? (src.textContent || '').trim() : '';
+    if (src && src.style.display !== 'none' && t && t !== '0') {
+      dst.textContent = t; dst.style.display = 'flex';
+    } else { dst.style.display = 'none'; }
+    if (!_bellObs && src && typeof MutationObserver !== 'undefined') {
+      _bellObs = new MutationObserver(function () { window.ns18SyncBell(); });
+      _bellObs.observe(src, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    }
   };
 
   window.ns18TearDownShell = function () {

@@ -203,9 +203,15 @@
   /* Vùng nội dung dùng HẾT bề ngang (bỏ khung cột mobile 430px) → trang v18 tự căn max-width riêng */
   body.ns18-shell #main-app,
   body.ns18-shell .app{max-width:none!important;min-width:0!important;width:auto!important;margin:0!important;padding:0!important;background:transparent!important}
-  /* Topbar cũ → thanh trên gọn full-width */
-  body.ns18-shell #main-header .header-inner{max-width:none!important}
+  /* Bỏ hẳn thanh header trên cùng ở desktop (tên/ngày đã có ở sidebar; chuông dời vào sidebar) */
+  body.ns18-shell #main-header{display:none!important}
 }
+/* Chuông thông báo trong sidebar (thay cho header đã ẩn) */
+#ns18-sidebar .brand{justify-content:space-between}
+#ns18-sidebar .ns18-bell{position:relative;flex:none;width:34px;height:34px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-2)}
+#ns18-sidebar .ns18-bell:hover{background:var(--teal-tint);color:var(--teal-deep)}
+#ns18-sidebar .ns18-bell svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+#ns18-sidebar .ns18-bell-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--magenta);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
 /* Topbar cũ nền trắng v18 khi shell bật (cả 2 khổ) */
 body.ns18-shell #main-header{background:var(--surface);border-bottom:1px solid var(--line);box-shadow:none}
 @media (max-width:899px){
