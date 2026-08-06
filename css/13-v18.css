@@ -200,7 +200,14 @@
   body.ns18-shell #ns18-sidebar{display:flex}
   body.ns18-shell #ns18-bnav{display:none}
   body.ns18-shell #bottom-nav{display:none !important}
+  /* Vùng nội dung dùng HẾT bề ngang (bỏ khung cột mobile 430px) → trang v18 tự căn max-width riêng */
+  body.ns18-shell #main-app,
+  body.ns18-shell .app{max-width:none!important;min-width:0!important;width:auto!important;margin:0!important;padding:0!important;background:transparent!important}
+  /* Topbar cũ → thanh trên gọn full-width */
+  body.ns18-shell #main-header .header-inner{max-width:none!important}
 }
+/* Topbar cũ nền trắng v18 khi shell bật (cả 2 khổ) */
+body.ns18-shell #main-header{background:var(--surface);border-bottom:1px solid var(--line);box-shadow:none}
 @media (max-width:899px){
   body.ns18-shell #ns18-sidebar{display:none}
   body.ns18-shell #ns18-bnav{display:flex}
