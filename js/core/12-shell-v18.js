@@ -1,22 +1,22 @@
 /* ============================================================
-   12-shell-v18.js — SHELL SIDEBAR (ĐẠI TU v18)
-   Dựng sidebar desktop bằng JS từ HUB_GROUPS (lọc theo _hubItemVisible).
-   - Desktop (>=900px): hiện sidebar cố định trái, dời nội dung sang phải,
-     ẩn bottom-nav cũ.
-   - Mobile (<900px): sidebar ẩn, giữ bottom-nav cũ (không đổi).
-   Bọc trong .ns18. KHÔNG sửa cấu trúc HTML — sidebar tạo bằng JS.
-   Móc: ns18InitShell() sau login · ns18SyncSidebar(page) trong goToPage ·
-        dọn class .ns18-shell trong doLogout.
+   12-shell-v18.js — SHELL ĐIỀU HƯỚNG (ĐẠI TU v18)
+   Dựng điều hướng từ HUB_GROUPS (lọc theo _hubItemVisible), bọc .ns18.
+   - Laptop (>=900px): sidebar cố định trái.
+   - Điện thoại (<900px): bottom-nav v18 (4 mục chính + "Thêm" mở drawer đầy đủ).
+   Ẩn bottom-nav CŨ khi shell bật. KHÔNG sửa cấu trúc HTML — tạo bằng JS.
+   Móc: ns18InitShell() sau login · ns18SyncSidebar(page) cuối goToPage ·
+        ns18TearDownShell() trong doLogout.
    ============================================================ */
 (function () {
-  var SIDEBAR_ID = 'ns18-sidebar';
+  var SIDEBAR_ID = 'ns18-sidebar', BNAV_ID = 'ns18-bnav', DRAWER_ID = 'ns18-drawer', DRBG_ID = 'ns18-drawer-bg';
 
   var _ic = {
     home:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
     acc:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
     admin:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>',
     logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
-    dl:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>'
+    dl:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>',
+    menu:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
   };
 
   function _esc(s) {
@@ -28,15 +28,18 @@
     var m = { NV: 'Nhân viên', CTV: 'Cộng tác viên', CUA_HANG: 'Cửa hàng', QLNS: 'QL Nhân sự', QLBH: 'QL Bán hàng', ADMIN: 'Quản trị' };
     return m[r] || r || '';
   }
-  // Suy trang đích cho các mục không dùng goToPage trực tiếp (để tô sáng mục đang mở)
   function _labelPage(l) {
-    var map = {
-      'Giờ công': 'giocong',
-      'Lịch ca của tôi': 'lichca',
-      'Lịch ca hệ thống': 'lichca-ql',
-      'Lịch hoạt động CH': 'lichhd-ql'
-    };
+    var map = { 'Giờ công': 'giocong', 'Lịch ca của tôi': 'lichca', 'Lịch ca hệ thống': 'lichca-ql', 'Lịch hoạt động CH': 'lichhd-ql' };
     return map[l] || null;
+  }
+  // nhãn ngắn cho bottom-nav
+  function _shortLabel(l) {
+    var m = { 'Bản đồ chấm công': 'Bản đồ', 'Lịch ca của tôi': 'Lịch ca', 'Đăng ký khuôn mặt': 'Khuôn mặt',
+      'Bàn giao ca': 'Bàn giao', 'Bàn giao (Quản lý)': 'Bàn giao', 'Phiên bán hàng': 'Bán hàng',
+      'Dashboard bán hàng': 'Dashboard', 'Giám sát Trưởng ca': 'Trưởng ca', 'Điểm hệ thống': 'Điểm',
+      'Lịch ca hệ thống': 'Lịch ca', 'Lịch hoạt động CH': 'Hoạt động', 'Mục kiểm tra bàn giao': 'Mục BG',
+      'Mẫu nón sưu tầm': 'Mẫu nón', 'Khuôn mặt (AI)': 'Khuôn mặt', 'Duyệt yêu cầu': 'Duyệt' };
+    return m[l] || l;
   }
 
   function ns18BuildItems() {
@@ -46,15 +49,12 @@
       Object.keys(HUB_GROUPS).forEach(function (gk) {
         var g = HUB_GROUPS[gk];
         if (!g || !Array.isArray(g.items)) return;
-        var vis = g.items.filter(function (it) {
-          try { return _hubItemVisible(it); } catch (e) { return false; }
-        });
+        var vis = g.items.filter(function (it) { try { return _hubItemVisible(it); } catch (e) { return false; } });
         if (!vis.length) return;
         out.push({ sec: g.title });
         vis.forEach(function (it) {
           var m = String(it.act).match(/goToPage\(['"]([^'"]+)['"]\)/);
-          var pg = m ? m[1] : _labelPage(it.label);
-          out.push({ label: it.label, ic: it.ic, page: pg, act: it.act });
+          out.push({ label: it.label, ic: it.ic, page: m ? m[1] : _labelPage(it.label), act: it.act });
         });
       });
     }
@@ -66,39 +66,74 @@
     return out;
   }
 
+  function _menuHTML(items) {
+    var h = '';
+    items.forEach(function (it, i) {
+      if (it.label === undefined && it.sec !== undefined) { h += '<div class="nav-sec">' + _esc(it.sec) + '</div>'; return; }
+      h += '<button type="button" class="side-item" data-idx="' + i + '"' + (it.page ? ' data-page="' + _esc(it.page) + '"' : '') +
+        '>' + (it.ic || '') + '<span>' + _esc(it.label) + '</span></button>';
+    });
+    return h;
+  }
+  function _whoHTML() {
+    var nm = SESSION.ten || SESSION.ma || '--';
+    return '<div class="who"><b>' + _esc(nm) + '</b><small>' + _esc((SESSION.ma || '') + ' · ' + _roleLabel(SESSION.vaiTro)) + '</small>' +
+      '<button type="button" class="side-btn sb-dl">' + _ic.dl + 'Tải ứng dụng</button>' +
+      '<button type="button" class="side-btn sb-out">' + _ic.logout + 'Đăng xuất</button></div>';
+  }
+
+  // gắn click cho danh sách .side-item + nút dl/out trong 1 container
+  function _wireMenu(container, items, closeAfter) {
+    container.querySelectorAll('.side-item').forEach(function (btn) {
+      var idx = +btn.getAttribute('data-idx');
+      btn.addEventListener('click', function () {
+        var it = items[idx];
+        if (closeAfter) ns18CloseDrawer();
+        if (it && typeof it.act === 'function') { try { it.act(); } catch (e) {} }
+        ns18SyncSidebar(it ? it.page : null);
+      });
+    });
+    var dl = container.querySelector('.sb-dl');
+    if (dl) dl.addEventListener('click', function () { if (typeof window.pwaInstall === 'function') window.pwaInstall(); });
+    var out = container.querySelector('.sb-out');
+    if (out) out.addEventListener('click', function () { if (typeof doLogout === 'function') doLogout(); });
+  }
+
   window.ns18InitShell = function () {
     if (typeof SESSION === 'undefined' || !SESSION) return;
-    var side = document.getElementById(SIDEBAR_ID);
-    if (!side) {
-      side = document.createElement('aside');
-      side.id = SIDEBAR_ID;
-      side.className = 'ns18';
-      document.body.appendChild(side);
-    }
     var items = ns18BuildItems();
-    var nm = SESSION.ten || SESSION.ma || '--';
-    var html = '';
-    html += '<div class="brand"><div class="lg">NS</div><div><b>CHẤM CÔNG</b><small>Nón Sơn</small></div></div>';
-    html += '<div class="side-scroll">';
-    items.forEach(function (it, i) {
-      if (it.label === undefined && it.sec !== undefined) {
-        html += '<div class="nav-sec">' + _esc(it.sec) + '</div>';
-        return;
-      }
-      html += '<button type="button" class="side-item" data-idx="' + i + '"' +
-        (it.page ? ' data-page="' + _esc(it.page) + '"' : '') + '>' +
-        (it.ic || '') + '<span>' + _esc(it.label) + '</span></button>';
-    });
-    html += '</div>';
-    html += '<div class="spacer"></div>';
-    html += '<div class="who"><b>' + _esc(nm) + '</b><small>' +
-      _esc((SESSION.ma || '') + ' · ' + _roleLabel(SESSION.vaiTro)) + '</small>' +
-      '<button type="button" class="side-btn sb-dl" id="ns18-dl">' + _ic.dl + 'Tải ứng dụng</button>' +
-      '<button type="button" class="side-btn sb-out" id="ns18-out">' + _ic.logout + 'Đăng xuất</button>' +
-      '</div>';
-    side.innerHTML = html;
 
-    side.querySelectorAll('.side-item').forEach(function (btn) {
+    /* ---- Sidebar (laptop) ---- */
+    var side = document.getElementById(SIDEBAR_ID);
+    if (!side) { side = document.createElement('aside'); side.id = SIDEBAR_ID; side.className = 'ns18'; document.body.appendChild(side); }
+    side.innerHTML = '<div class="brand"><div class="lg">NS</div><div><b>CHẤM CÔNG</b><small>Nón Sơn</small></div></div>' +
+      '<div class="side-scroll ns18-nav">' + _menuHTML(items) + '</div>' +
+      '<div class="spacer"></div>' + _whoHTML();
+    _wireMenu(side, items, false);
+
+    /* ---- Drawer (điện thoại — menu đầy đủ) ---- */
+    var bg = document.getElementById(DRBG_ID);
+    if (!bg) { bg = document.createElement('div'); bg.id = DRBG_ID; document.body.appendChild(bg); bg.addEventListener('click', ns18CloseDrawer); }
+    var dr = document.getElementById(DRAWER_ID);
+    if (!dr) { dr = document.createElement('div'); dr.id = DRAWER_ID; dr.className = 'ns18'; document.body.appendChild(dr); }
+    dr.innerHTML = '<div class="grip"></div><div class="ns18-nav">' + _menuHTML(items) + '</div>' + _whoHTML();
+    _wireMenu(dr, items, true);
+
+    /* ---- Bottom-nav (điện thoại — 4 mục chính + Thêm) ---- */
+    var bn = document.getElementById(BNAV_ID);
+    if (!bn) { bn = document.createElement('nav'); bn.id = BNAV_ID; bn.className = 'ns18'; document.body.appendChild(bn); }
+    var primary = [];
+    items.forEach(function (it, i) { if (it.label !== undefined && it.page && primary.length < 4) primary.push(i); });
+    var bh = '';
+    primary.forEach(function (idx) {
+      var it = items[idx];
+      bh += '<button type="button" class="bi" data-idx="' + idx + '" data-page="' + _esc(it.page) + '">' +
+        (it.ic || '') + '<span>' + _esc(_shortLabel(it.label)) + '</span></button>';
+    });
+    bh += '<button type="button" class="bi" data-menu="1">' + _ic.menu + '<span>Thêm</span></button>';
+    bn.innerHTML = bh;
+    bn.querySelectorAll('.bi').forEach(function (btn) {
+      if (btn.getAttribute('data-menu')) { btn.addEventListener('click', ns18OpenDrawer); return; }
       var idx = +btn.getAttribute('data-idx');
       btn.addEventListener('click', function () {
         var it = items[idx];
@@ -106,27 +141,32 @@
         ns18SyncSidebar(it ? it.page : null);
       });
     });
-    var dl = side.querySelector('#ns18-dl');
-    if (dl) dl.addEventListener('click', function () { if (typeof window.pwaInstall === 'function') window.pwaInstall(); });
-    var out = side.querySelector('#ns18-out');
-    if (out) out.addEventListener('click', function () { if (typeof doLogout === 'function') doLogout(); });
 
     document.body.classList.add('ns18-shell');
     ns18SyncSidebar(typeof currentPage !== 'undefined' ? currentPage : 'chamcong');
   };
 
+  window.ns18OpenDrawer = function () {
+    var dr = document.getElementById(DRAWER_ID), bg = document.getElementById(DRBG_ID);
+    if (bg) bg.classList.add('open');
+    if (dr) dr.classList.add('open');
+  };
+  window.ns18CloseDrawer = function () {
+    var dr = document.getElementById(DRAWER_ID), bg = document.getElementById(DRBG_ID);
+    if (bg) bg.classList.remove('open');
+    if (dr) dr.classList.remove('open');
+  };
+
   window.ns18SyncSidebar = function (page) {
-    var side = document.getElementById(SIDEBAR_ID);
-    if (!side) return;
-    side.querySelectorAll('.side-item').forEach(function (b) {
-      b.classList.toggle('on', !!page && b.getAttribute('data-page') === page);
+    ['#' + SIDEBAR_ID + ' .side-item', '#' + DRAWER_ID + ' .side-item', '#' + BNAV_ID + ' .bi'].forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (b) {
+        b.classList.toggle('on', !!page && b.getAttribute('data-page') === page);
+      });
     });
   };
 
-  // Dọn shell khi đăng xuất (gọi từ doLogout)
   window.ns18TearDownShell = function () {
     document.body.classList.remove('ns18-shell');
-    var side = document.getElementById(SIDEBAR_ID);
-    if (side) side.remove();
+    [SIDEBAR_ID, BNAV_ID, DRAWER_ID, DRBG_ID].forEach(function (id) { var e = document.getElementById(id); if (e) e.remove(); });
   };
 })();

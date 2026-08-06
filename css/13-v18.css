@@ -146,20 +146,25 @@
 #ns18-sidebar .brand b{color:var(--ink);font-size:14.5px;font-weight:800;display:block;line-height:1.15}
 #ns18-sidebar .brand small{color:var(--ink-3);font-size:10.5px;display:block;margin-top:2px}
 #ns18-sidebar .side-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin:0 -3px;padding:0 3px}
-#ns18-sidebar .nav-sec{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);padding:14px 10px 6px}
-#ns18-sidebar .side-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;color:var(--ink-2);font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;border:none;background:none;font-family:inherit;transition:.14s}
-#ns18-sidebar .side-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
-#ns18-sidebar .side-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#ns18-sidebar .side-item:hover{background:var(--teal-tint);color:var(--teal-deep)}
-#ns18-sidebar .side-item.on{background:var(--grad);color:#fff;box-shadow:0 0 14px rgba(63,182,168,.4)}
 #ns18-sidebar .spacer{height:4px}
-#ns18-sidebar .who{border-top:1px solid var(--line);margin-top:8px;padding:12px 8px 2px}
-#ns18-sidebar .who b{font-size:13px;font-weight:800;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#ns18-sidebar .who small{font-size:11px;color:var(--ink-3);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#ns18-sidebar .side-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:9px;padding:11px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
-#ns18-sidebar .side-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
-#ns18-sidebar .sb-dl{background:var(--grad);color:#fff;box-shadow:var(--glow)}
-#ns18-sidebar .sb-out{background:transparent;color:var(--ink-2);border:1.5px solid var(--line);margin-top:8px}
+
+/* menu dùng chung sidebar + drawer */
+.ns18-nav{display:flex;flex-direction:column;gap:2px}
+.ns18-nav .nav-sec{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);padding:14px 10px 6px}
+.ns18-nav .side-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--ink-2);font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;border:none;background:none;font-family:inherit;transition:.14s}
+.ns18-nav .side-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.ns18-nav .side-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ns18-nav .side-item:hover{background:var(--teal-tint);color:var(--teal-deep)}
+.ns18-nav .side-item.on{background:var(--grad);color:#fff;box-shadow:0 0 14px rgba(63,182,168,.4)}
+
+/* khối user + nút — dùng chung sidebar + drawer */
+#ns18-sidebar .who,#ns18-drawer .who{border-top:1px solid var(--line);margin-top:8px;padding:12px 8px 2px}
+#ns18-sidebar .who b,#ns18-drawer .who b{font-size:13px;font-weight:800;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ns18-sidebar .who small,#ns18-drawer .who small{font-size:11px;color:var(--ink-3);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ns18-sidebar .side-btn,#ns18-drawer .side-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:9px;padding:11px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+#ns18-sidebar .side-btn svg,#ns18-drawer .side-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+#ns18-sidebar .sb-dl,#ns18-drawer .sb-dl{background:var(--grad);color:#fff;box-shadow:var(--glow)}
+#ns18-sidebar .sb-out,#ns18-drawer .sb-out{background:transparent;color:var(--ink-2);border:1.5px solid var(--line);margin-top:8px}
 
 /* mini KPI trong dashboard */
 .ns18 .mk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;box-shadow:var(--shadow)}
@@ -172,12 +177,32 @@
 .ns18 .mk.teal .v{color:var(--teal-deep)}
 .ns18 .mk .s{font-size:11px;color:var(--ink-2);margin-top:6px;position:relative}
 
+/* ===== BOTTOM-NAV điện thoại (v18) ===== */
+#ns18-bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-top:1px solid var(--line);padding:7px 6px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -3px 16px rgba(20,33,58,.07);font-family:'Be Vietnam Pro',system-ui,-apple-system,sans-serif}
+#ns18-bnav .bi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--ink-3);background:none;border:none;font-family:inherit;cursor:pointer;padding:5px 2px;border-radius:12px;min-width:0}
+#ns18-bnav .bi svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+#ns18-bnav .bi span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ns18-bnav .bi.on{color:#fff;background:var(--grad);box-shadow:0 4px 12px -2px rgba(30,95,99,.5)}
+
+/* ===== DRAWER điện thoại (menu đầy đủ) ===== */
+#ns18-drawer-bg{position:fixed;inset:0;z-index:70;background:rgba(20,33,58,.42);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+#ns18-drawer-bg.open{opacity:1;visibility:visible}
+#ns18-drawer{position:fixed;left:0;right:0;bottom:0;z-index:71;background:var(--surface);border-radius:20px 20px 0 0;max-height:84vh;overflow-y:auto;transform:translateY(101%);transition:transform .28s cubic-bezier(.22,.61,.36,1);padding:8px 14px calc(18px + env(safe-area-inset-bottom));font-family:'Be Vietnam Pro',system-ui,-apple-system,sans-serif;color:var(--ink)}
+#ns18-drawer.open{transform:translateY(0)}
+#ns18-drawer .grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 12px}
+
 /* ============================================================
-   BẬT SHELL — desktop (>=900px): hiện sidebar + dời nội dung sang phải,
-   ẩn bottom-nav cũ. Mobile (<900px): sidebar ẩn, giữ bottom-nav cũ.
+   BẬT SHELL — laptop (>=900px): sidebar + dời 246px, ẩn bottom-nav.
+   Điện thoại (<900px): bottom-nav v18. Ẩn bottom-nav CŨ cả 2 khổ.
    ============================================================ */
 @media (min-width:900px){
   body.ns18-shell{padding-left:246px}
   body.ns18-shell #ns18-sidebar{display:flex}
+  body.ns18-shell #ns18-bnav{display:none}
+  body.ns18-shell #bottom-nav{display:none !important}
+}
+@media (max-width:899px){
+  body.ns18-shell #ns18-sidebar{display:none}
+  body.ns18-shell #ns18-bnav{display:flex}
   body.ns18-shell #bottom-nav{display:none !important}
 }
