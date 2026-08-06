@@ -41,6 +41,7 @@
 <link rel="stylesheet" href="css/10-muanon-admin.css?v=17.96">
 <link rel="stylesheet" href="css/11-face.css?v=17.96">
 <link rel="stylesheet" href="css/13-v18.css?v=17.96">
+<link rel="stylesheet" href="css/14-chamcong-v18.css?v=17.96">
 </head>
 <body class="cc-redesign-active">
 
@@ -1197,25 +1198,17 @@
   </div>
 
   <!-- PAGE: CHẤM CÔNG -->
-  <div class="page active" id="page-chamcong">
+  <div class="page active ns18" id="page-chamcong">
     <!-- [v17.5x] THẺ ĐIỂM PHONG ĐỘ -->
-    <div id="diem-card" style="position:relative;overflow:hidden;margin:0 14px 14px;border-radius:22px;background:linear-gradient(135deg,#FB923C 0%,#F97316 45%,#C2410C 100%);box-shadow:0 16px 36px -12px rgba(234,88,12,.6)">
-      <div style="position:absolute;top:-50px;right:-26px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none"></div>
-      <div style="position:absolute;bottom:-66px;right:48px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.09);pointer-events:none"></div>
-      <div style="position:absolute;top:22px;right:120px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,.18);pointer-events:none"></div>
-      <div style="position:relative;padding:20px 20px 18px;display:flex;align-items:center;gap:18px">
-        <div style="flex:none;width:92px;height:92px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;border:2.5px solid rgba(255,255,255,.45)">
-          <div id="diem-so" style="font-size:38px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px">--</div>
-          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.85);margin-top:1px">/ 10 điểm</div>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:999px;margin-bottom:8px">
-            <svg viewBox="0 0 24 24" fill="#fff" style="width:13px;height:13px"><path d="M12 2l2.9 6.3 6.8.6-5.1 4.5 1.5 6.7L12 17.3 5.9 20.6l1.5-6.7L2.3 8.9l6.8-.6z"/></svg>
-            <span style="font-size:10.5px;font-weight:800;color:#fff;letter-spacing:.6px">ĐIỂM PHONG ĐỘ</span>
-          </div>
-          <div style="font-size:18px;font-weight:800;color:#fff;line-height:1.2">Phong độ tháng này</div>
-          <div id="diem-mota" style="font-size:12px;color:rgba(255,255,255,.92);margin-top:3px;line-height:1.4">Khởi điểm 10 — mỗi vi phạm trừ 1 điểm.</div>
-        </div>
+    <div id="diem-card" class="cc-diem">
+      <div class="cc-diem-ring">
+        <div class="cc-diem-so" id="diem-so">--</div>
+        <div class="cc-diem-max">/ 10 điểm</div>
+      </div>
+      <div class="cc-diem-info">
+        <div class="cc-diem-badge"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.8.6-5.1 4.5 1.5 6.7L12 17.3 5.9 20.6l1.5-6.7L2.3 8.9l6.8-.6z"/></svg>ĐIỂM PHONG ĐỘ</div>
+        <div class="cc-diem-title">Phong độ tháng này</div>
+        <div class="cc-diem-mota" id="diem-mota">Khởi điểm 10 — mỗi vi phạm trừ 1 điểm.</div>
       </div>
     </div>
 
