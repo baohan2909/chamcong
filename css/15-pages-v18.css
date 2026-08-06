@@ -1,0 +1,52 @@
+/* ============================================================
+   15-pages-v18.css — RESKIN DÙNG CHUNG cho các trang .ns18
+   (header .cc-hero-page, .card, full-width desktop, input/table chung).
+   Áp cho MỌI trang có class .ns18 (thêm qua NS18_PAGES). Trang có file
+   riêng (vd 14-chamcong) đè bằng #id đặc hiệu hơn.
+   ============================================================ */
+
+/* ===== KHUNG TRANG: full-width desktop, bỏ max-width legacy ===== */
+.page.ns18{background:var(--bg)}
+@media (min-width:900px){
+  body.ns18-shell .page.ns18.active{max-width:none!important;min-width:0!important;margin:0!important;padding:22px 28px 60px!important;display:block}
+}
+
+/* ===== HERO .cc-hero-page → cmdbar v18 (navy→teal + bong bóng) ===== */
+.ns18 .cc-hero-page{background:var(--grad)!important;border-radius:var(--r)!important;margin:0 0 16px!important;padding:20px 22px!important;color:#fff!important;box-shadow:var(--shadow-lg)!important;position:relative;overflow:hidden}
+.ns18 .cc-hero-page::before{content:'';position:absolute;right:-30px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.10)!important;pointer-events:none}
+.ns18 .cc-hero-page::after{content:'';position:absolute;right:110px;top:26px;width:96px;height:96px;border-radius:50%;background:rgba(203,164,90,.18)!important;pointer-events:none}
+.ns18 .cc-hero-page-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.20)!important;border:1px solid rgba(255,255,255,.2)!important;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.ns18 .cc-hero-page-icon svg{width:22px;height:22px;color:#fff;stroke:#fff}
+.ns18 .cc-hero-page-label{font-size:11px;opacity:.85;letter-spacing:.12em;font-weight:700;text-transform:uppercase;color:#fff}
+.ns18 .cc-hero-page-title{font-size:22px;font-weight:800;margin-top:5px;letter-spacing:-.4px;line-height:1.15;color:#fff}
+.ns18 .cc-hero-page-sub{font-size:12.5px;opacity:.9;margin-top:5px;color:#fff}
+
+/* ===== CARD chung ===== */
+.ns18 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;margin:0 0 14px}
+.ns18 .card-section{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:12px}
+
+/* ===== INPUT / SELECT / DATE chung ===== */
+.ns18 input[type="text"],.ns18 input[type="search"],.ns18 input[type="number"],.ns18 input[type="date"],.ns18 select,.ns18 textarea{font-family:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+.ns18 input:focus,.ns18 select:focus,.ns18 textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+
+/* ===== BẢNG chung (.gc-table + generic table) ===== */
+.ns18 table{width:100%;border-collapse:collapse;font-size:13.5px}
+.ns18 .gc-table th,.ns18 table thead th{text-align:center;vertical-align:middle;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);padding:12px 12px;background:#FBFAF7;border-bottom:1px solid var(--line);white-space:nowrap}
+.ns18 .gc-table th:first-child,.ns18 table thead th:first-child{text-align:left}
+.ns18 .gc-table td,.ns18 table tbody td{padding:11px 12px;text-align:center;vertical-align:middle;border-bottom:1px solid var(--line);white-space:nowrap}
+.ns18 .gc-table td:first-child,.ns18 table tbody td:first-child{text-align:left;font-weight:600}
+.ns18 .gc-table{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+
+/* ===== TOOLBAR / SEARCH chung ===== */
+.ns18 .cc-search-wrap,.ns18 .filter-bar,.ns18 [class$="-filter"],.ns18 [class$="-search"]{border-radius:12px}
+
+/* ===== Tài khoản: đè màu inline JS (giữ inline cho legacy; chỉ .ns18 = NS00490 đổi) ===== */
+#page-taikhoan.ns18 .tk-diem-card{background:var(--grad)!important;box-shadow:var(--shadow-lg)!important;border-radius:var(--r)!important;margin:0 0 14px!important}
+#page-taikhoan.ns18 .tk-ico,#page-taikhoan.ns18 .menu-icon{background:var(--grad)!important}
+#page-taikhoan.ns18 .tk-inst-btn{background:var(--grad)!important;box-shadow:var(--glow)!important;border-radius:10px!important}
+/* avatar + tên trên hero (nếu inline) giữ; menu item nền trắng v18 */
+#page-taikhoan.ns18 .menu-item,#page-taikhoan.ns18 .acc-menu-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px}
+
+/* ===== NÚT chung: gom nhiều họ nút legacy về gradient teal ===== */
+.ns18 .btn-primary,.ns18 .adm2-btn-primary,.ns18 .bh-btn-primary,.ns18 .lsd-btn-duyet,.ns18 .yc-bulk-ok,.ns18 .dnp-btn-ok,.ns18 .ns-btn-ok{background:var(--grad)!important;color:#fff!important;border:none!important;box-shadow:var(--glow)!important;border-radius:10px!important}
+.ns18 .adm2-btn-danger,.ns18 .lsd-btn-tuchoi,.ns18 .yc-bulk-no,.ns18 .dnp-btn-no,.ns18 .ns-btn-no{background:transparent!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;border-radius:10px!important}

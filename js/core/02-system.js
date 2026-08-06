@@ -1011,7 +1011,7 @@ async function taiDiemTaiKhoan(){
           + '</div>';
       }).join('');
     }
-    wrap.innerHTML = '<div style="margin:0 14px 14px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#FB923C 0%,#F97316 45%,#C2410C 100%);box-shadow:0 12px 30px -12px rgba(234,88,12,.55)">'
+    wrap.innerHTML = '<div class="tk-diem-card" style="margin:0 14px 14px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#FB923C 0%,#F97316 45%,#C2410C 100%);box-shadow:0 12px 30px -12px rgba(234,88,12,.55)">'
       + '<div style="padding:16px 16px 12px;display:flex;align-items:center;gap:14px">'
       +   '<div style="flex:none;width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.18);border:2.5px solid rgba(255,255,255,.45);display:flex;flex-direction:column;align-items:center;justify-content:center">'
       +     '<div style="font-size:28px;font-weight:900;color:#fff;line-height:1">'+diem+'</div><div style="font-size:9px;color:rgba(255,255,255,.8);font-weight:700">/ 10</div>'
@@ -3056,7 +3056,7 @@ function tkRefreshInstallCard() {
   if (!card) return;
   const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
-  const ico = (path) => '<div style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1D9E75,#0F6E56);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg></div>';
+  const ico = (path) => '<div class="tk-ico" style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1D9E75,#0F6E56);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg></div>';
   const dlIcon = ico('<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="18" width="16" height="3" rx="1"/>');
   let inner;
   if (standalone) {
@@ -3069,7 +3069,7 @@ function tkRefreshInstallCard() {
       '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">' + dlIcon +
       '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600;color:#0F172A">Tải ứng dụng về máy</div>' +
       '<div style="font-size:12px;color:#94A3B8;margin-top:2px">Cài Chấm công thành ứng dụng riêng trên máy</div></div></div>' +
-      '<button onclick="tkInstallApp()" style="flex-shrink:0;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Cài đặt</button></div>';
+      '<button onclick="tkInstallApp()" class="tk-inst-btn" style="flex-shrink:0;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Cài đặt</button></div>';
   } else if (isIOS) {
     inner = '<div style="display:flex;align-items:flex-start;gap:12px">' +
       ico('<path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>') +

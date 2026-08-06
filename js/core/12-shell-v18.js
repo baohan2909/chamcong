@@ -13,7 +13,7 @@
   // [v18] GIAI DOAN THU NGHIEM: giao dien v18 CHI bat cho NS00490 (admin toi thuong)
   // → 539 nguoi con lai giu giao dien cu. Duyet xong → mo cho tat ca (sua ns18Enabled).
   // NS18_PAGES: danh sach trang DA reskin v18 (them dan khi convert tung phan he).
-  var NS18_PAGES = ['page-chamcong'];
+  var NS18_PAGES = ['page-chamcong', 'page-taikhoan'];
   function ns18Enabled() {
     return typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490';
   }
