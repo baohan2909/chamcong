@@ -1,0 +1,342 @@
+/* ============================================================
+   18-bangiao-v18.css — CỤM BÀN GIAO CA v18 (ép phẳng sub-brand)
+   Scope: #page-bangiao.ns18 (bàn giao ca NV) · #page-bangiao-ql.ns18 (quản lý).
+   GIỮ NGUYÊN markup/ID/handler — chỉ CSS. Đè legacy (06-modules.css:
+   green #047857/#10B981 + navy #0F2E45/#1B4965 + blue) về teal/magenta/gold v18.
+
+   THẮNG SPECIFICITY: mọi selector thêm .ns18 → hơn legacy "#page-bangiao …"
+   đúng 1 class. Inline JS (#bg-tien-tong…) đè bằng !important.
+
+   NGOÀI PHẠM VI (append vào <body>, không nằm trong page → GIỮ legacy):
+   modal chi tiết sự vụ (.bgql-svd-*, #bgsv-detail), sheet xác nhận gửi
+   (.bg-cf-*), .bg-respond-*, .bgql-modal, .bgql-multiselect-bar, #bg-undo-bar,
+   .ai-digest-modal, lightbox. Cần reskin sau bằng scope body.ns18-shell.
+
+   Trạng thái brand: teal = nhấn/nút; green = ĐẠT/hoàn tất; red = khẩn/vấn đề;
+   gold = quan trọng/chờ; magenta = SỐ lớn (tiền/tổng).
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   1. KHUNG TRANG — full-width desktop, 1 cột mobile
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18,
+#page-bangiao-ql.ns18{background:var(--bg)}
+#page-bangiao.ns18 .chk-wrap,
+#page-bangiao-ql.ns18 .chk-wrap{max-width:560px;margin:0 auto;padding:14px 14px 96px}
+
+/* Sticky topbar (subtabs) nền kem v18 */
+#page-bangiao.ns18 .chk-topbar,
+#page-bangiao-ql.ns18 .chk-topbar{background:var(--bg);padding-top:4px;margin-top:-4px}
+
+/* ns-empty (loading / trống) */
+#page-bangiao.ns18 .ns-empty,
+#page-bangiao-ql.ns18 .ns-empty{color:var(--ink-3);font-size:13px;text-align:center;padding:22px 12px;font-weight:500}
+
+@media (min-width:900px){
+  #page-bangiao.ns18.active,
+  #page-bangiao-ql.ns18.active{max-width:none!important;min-width:0!important;margin:0!important;width:auto!important;padding:20px 28px 60px!important;display:block}
+  #page-bangiao.ns18 .chk-wrap,
+  #page-bangiao-ql.ns18 .chk-wrap{max-width:none;margin:0;padding:0}
+  /* Bảng/timeline/list dàn hết ngang */
+  #page-bangiao.ns18 .chk-topbar,
+  #page-bangiao-ql.ns18 .chk-topbar{position:static;margin:0 0 14px}
+}
+
+/* ══════════════════════════════════════════════════════════
+   2. THẺ THÔNG TIN CỬA HÀNG (chk-ch-info) → thẻ trắng v18
+   (bỏ banner gradient xanh lá — tránh chồng gradient với hero)
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-ch-info,
+#page-bangiao-ql.ns18 .chk-ch-info{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px;position:relative;overflow:hidden}
+#page-bangiao.ns18 .chk-ch-info::after,
+#page-bangiao-ql.ns18 .chk-ch-info::after{content:"";position:absolute;right:-30px;top:-30px;width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.16),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-bangiao.ns18 .chk-ch-name,
+#page-bangiao-ql.ns18 .chk-ch-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;position:relative}
+#page-bangiao.ns18 .chk-ch-sub,
+#page-bangiao-ql.ns18 .chk-ch-sub{font-size:12.5px;font-weight:500;color:var(--ink-2);margin-top:3px;position:relative}
+
+/* ══════════════════════════════════════════════════════════
+   3. SUBTABS (tab cấp trang) → track kem, active teal-deep đặc
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-subtabs,
+#page-bangiao-ql.ns18 .chk-subtabs{background:var(--track);padding:4px;border-radius:12px;gap:4px}
+#page-bangiao.ns18 .chk-subtab,
+#page-bangiao-ql.ns18 .chk-subtab{color:var(--ink-2);font-weight:700;font-size:13px;border-radius:8px}
+#page-bangiao.ns18 .chk-subtab.active,
+#page-bangiao-ql.ns18 .chk-subtab.active{background:var(--teal-deep);color:#fff;box-shadow:0 2px 8px rgba(30,95,99,.28)}
+#page-bangiao.ns18 .chk-subtab-count,
+#page-bangiao-ql.ns18 .chk-subtab-count{background:var(--magenta);color:#fff;font-weight:800;border-radius:9px}
+#page-bangiao.ns18 .chk-subtab.active .chk-subtab-count,
+#page-bangiao-ql.ns18 .chk-subtab.active .chk-subtab-count{background:rgba(255,255,255,.25);color:#fff}
+
+/* ══════════════════════════════════════════════════════════
+   4. PROGRESS (chk-progress) → teal
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-progress-wrap{background:var(--bg)}
+#page-bangiao.ns18 .chk-progress-info{color:var(--ink-2)}
+#page-bangiao.ns18 .chk-progress-issues{color:var(--red)}
+#page-bangiao.ns18 .chk-progress-bar{background:var(--track)}
+#page-bangiao.ns18 .chk-progress-fill{background:var(--grad);box-shadow:var(--glow)}
+
+/* ══════════════════════════════════════════════════════════
+   5. BANNER BÀN GIAO ĐẦU CA (chk-handover) — giữ ngữ nghĩa, bo v18
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-handover{border-radius:var(--r)}
+#page-bangiao.ns18 .chk-handover.clean{background:var(--teal-tint);border-color:rgba(63,182,168,.3);border-left-color:var(--teal)}
+#page-bangiao.ns18 .chk-handover.clean .chk-handover-title{color:var(--teal-deep)}
+
+/* ══════════════════════════════════════════════════════════
+   6. NÚT "TOÀN BỘ BÌNH THƯỜNG" (bg-global-ok) → teal grad + glow
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .bg-global-ok{background:var(--grad);box-shadow:var(--glow);border-radius:var(--r)}
+
+/* ══════════════════════════════════════════════════════════
+   7. SECTION CARD (Tiền / Hàng) — bg-section, số thứ tự teal
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .bg-section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+#page-bangiao.ns18 .bg-section-num{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(30,95,99,.3)}
+#page-bangiao.ns18 .bg-section-title{color:var(--ink);font-weight:800}
+#page-bangiao.ns18 .bg-section-status{color:var(--ink-2)}
+#page-bangiao.ns18 .bg-section-arrow{color:var(--ink-3)}
+#page-bangiao.ns18 .bg-section-body{border-top-color:var(--line)}
+#page-bangiao.ns18 .bg-section.done .bg-section-num{background:linear-gradient(135deg,#256B45,#2E8B57)}
+#page-bangiao.ns18 .bg-section.done .bg-section-status{color:var(--green);font-weight:800}
+
+/* ══════════════════════════════════════════════════════════
+   8. TIỀN MẶT (bg-tien-*) — input v18, tổng = SỐ magenta
+   Hàng tiền render inline trong JS → cần !important đè inline
+   (kể cả onfocus/onblur set this.style.* KHÔNG important).
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .bg-tien-row{border-bottom-color:var(--line)!important}
+#page-bangiao.ns18 .bg-tien-input{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important}
+#page-bangiao.ns18 .bg-tien-input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important;outline:none}
+/* Nút ghi chú tiền (JS render class .bg-note-btn, chỉ có inline) */
+#page-bangiao.ns18 .bg-note-btn{background:#fff!important;border:1.5px solid var(--line)!important;color:var(--ink-3)!important;border-radius:10px!important}
+#page-bangiao.ns18 .bg-note-btn.has{background:var(--gold)!important;border-color:transparent!important;color:#fff!important}
+/* #bg-tien-tong: đè inline JS (green gradient → thẻ hồng, SỐ magenta) */
+#page-bangiao.ns18 #bg-tien-tong{background:var(--pink-card)!important;color:var(--magenta)!important;border:1px solid var(--pink-line)!important;box-shadow:none!important}
+
+/* ══════════════════════════════════════════════════════════
+   9. HÀNG HÓA (bg-hang-*) — subhead teal; input/nút render inline
+   (input & nút ghi chú là thẻ trần → target qua .bg-hang-row con)
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .bg-subhead{color:var(--teal-deep)!important;border-bottom-color:rgba(63,182,168,.3)}
+#page-bangiao.ns18 .bg-subhead::before{background:var(--teal)}
+#page-bangiao.ns18 .bg-hang-row{border-bottom-color:var(--line)!important}
+#page-bangiao.ns18 .bg-hang-row input{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important}
+#page-bangiao.ns18 .bg-hang-row input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important;outline:none}
+#page-bangiao.ns18 .bg-hang-row button{background:#fff!important;border:1.5px solid var(--line)!important;color:var(--ink-3)!important;border-radius:9px!important}
+#page-bangiao.ns18 .bg-hang-row button.has{background:var(--gold)!important;border-color:transparent!important;color:#fff!important}
+
+/* ══════════════════════════════════════════════════════════
+   10. ACCORDION 45 MỤC (chk-group / chk-tg) — done xanh lục, VĐ đỏ
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-group{background:var(--surface);border:1.5px solid transparent;border-radius:var(--r);box-shadow:var(--shadow)}
+#page-bangiao.ns18 .chk-group.done-ok{border-color:rgba(46,139,87,.4);background:linear-gradient(180deg,#fff 0%,#F0F8F3 100%);box-shadow:var(--shadow)}
+#page-bangiao.ns18 .chk-group.done-issue{border-color:rgba(198,55,60,.4);background:linear-gradient(180deg,#fff 0%,#FCF1F1 100%)}
+#page-bangiao.ns18 .chk-group-num{background:var(--track);color:var(--ink-2);font-weight:800}
+#page-bangiao.ns18 .chk-group.done-ok .chk-group-num{background:var(--green);color:#fff;box-shadow:0 3px 10px rgba(46,139,87,.4)}
+#page-bangiao.ns18 .chk-group.done-issue .chk-group-num{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(198,55,60,.35)}
+#page-bangiao.ns18 .chk-group-title{color:var(--ink);font-weight:700}
+#page-bangiao.ns18 .chk-group.done-ok .chk-group-status{color:var(--green);font-weight:700}
+#page-bangiao.ns18 .chk-group.done-issue .chk-group-status{color:var(--red);font-weight:700}
+#page-bangiao.ns18 .chk-group-arrow{color:var(--ink-3)}
+#page-bangiao.ns18 .chk-item-name{color:var(--ink)}
+#page-bangiao.ns18 .chk-item{border-bottom-color:var(--line)}
+
+/* Nút tick nhanh cả nhóm */
+#page-bangiao.ns18 .chk-quick-ok{background:var(--teal-tint);border:1.5px solid rgba(63,182,168,.4);color:var(--teal-deep);border-radius:11px;box-shadow:none}
+#page-bangiao.ns18 .chk-quick-ok:active,
+#page-bangiao.ns18 .chk-quick-ok.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+
+/* Toggle ĐẠT(bt)/VẤN ĐỀ(vd)/KHÔNG(ko) — solid v18 */
+#page-bangiao.ns18 .chk-tg{border:1.5px solid var(--line);color:var(--ink-3);border-radius:9px}
+#page-bangiao.ns18 .chk-tg.bt.active{background:var(--green);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(46,139,87,.35)}
+#page-bangiao.ns18 .chk-tg.vd.active{background:var(--red);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(198,55,60,.32)}
+#page-bangiao.ns18 .chk-tg.ko.active{background:var(--ink-2);color:#fff;border-color:transparent}
+
+/* Chi tiết vấn đề (chk-vd-detail) — giữ khung đỏ nhạt v18 */
+#page-bangiao.ns18 .chk-vd-detail{background:#FCF1F1;border-color:rgba(198,55,60,.28)}
+#page-bangiao.ns18 .chk-vd-textarea{border-color:rgba(198,55,60,.3)}
+#page-bangiao.ns18 .chk-vd-textarea:focus{border-color:var(--red)}
+#page-bangiao.ns18 .chk-photo-add{border-color:rgba(198,55,60,.4);color:var(--red)}
+
+/* ══════════════════════════════════════════════════════════
+   11. MỨC ĐỘ vấn đề (chk-mucdo) — nhẹ=teal · vừa=gold · khẩn=đỏ
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-mucdo{border:1.5px solid var(--line);color:var(--ink-2);font-weight:700}
+#page-bangiao.ns18 .chk-mucdo.nhe.active{background:var(--teal-deep);color:#fff;border-color:transparent}
+#page-bangiao.ns18 .chk-mucdo.vua.active{background:var(--gold);color:#fff;border-color:transparent}
+#page-bangiao.ns18 .chk-mucdo.khan.active{background:var(--red);color:#fff;border-color:transparent}
+
+/* ══════════════════════════════════════════════════════════
+   12. GHI CHÚ + NÚT GỬI (chk-note / chk-submit) → teal grad glow
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-note-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+#page-bangiao.ns18 .chk-note-label{color:var(--ink-2)}
+#page-bangiao.ns18 .chk-note-input{border:1.5px solid var(--line);border-radius:10px}
+#page-bangiao.ns18 .chk-note-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18);outline:none}
+#page-bangiao.ns18 .chk-submit-btn{background:var(--grad);color:#fff;box-shadow:var(--glow);border-radius:12px}
+#page-bangiao.ns18 .chk-submit-btn:disabled{background:var(--track);color:var(--ink-3);box-shadow:none}
+
+/* ══════════════════════════════════════════════════════════
+   13. SỰ VỤ — thẻ NV (chk-rec / bg-sv-*) : viền mức độ theo tông v18
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .chk-rec{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border-left:4px solid var(--teal)}
+#page-bangiao.ns18 .chk-rec.has-issue{border-left-color:var(--red)}
+#page-bangiao.ns18 .chk-rec-time{color:var(--teal-deep)}
+#page-bangiao.ns18 .chk-rec-badge.ok{background:var(--teal-tint);color:var(--teal-deep)}
+#page-bangiao.ns18 .chk-rec-badge.issue{background:rgba(198,55,60,.12);color:var(--red)}
+
+#page-bangiao.ns18 .bg-sv-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);border-left:4px solid var(--ink-3)}
+#page-bangiao.ns18 .bg-sv-card.khan{border-left-color:var(--red)}
+#page-bangiao.ns18 .bg-sv-card.quan{border-left-color:var(--gold)}
+#page-bangiao.ns18 .bg-sv-card.can{border-left-color:var(--teal)}
+#page-bangiao.ns18 .bg-sv-title{color:var(--ink)}
+#page-bangiao.ns18 .bg-sv-seen b{color:var(--teal-deep)}
+
+/* ══════════════════════════════════════════════════════════
+   14. TIMELINE (bg-tl-*) — dùng chung NV + QL. Tab active teal.
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao.ns18 .bg-tl-mode-tabs,
+#page-bangiao-ql.ns18 .bg-tl-mode-tabs{background:var(--track);border-radius:12px}
+#page-bangiao.ns18 .bg-tl-mode,
+#page-bangiao-ql.ns18 .bg-tl-mode{color:var(--ink-2)}
+#page-bangiao.ns18 .bg-tl-mode.active,
+#page-bangiao-ql.ns18 .bg-tl-mode.active{background:var(--teal-deep);color:#fff;box-shadow:0 2px 8px rgba(30,95,99,.28)}
+#page-bangiao.ns18 .bg-tl-mode.active .bg-tl-mode-c,
+#page-bangiao-ql.ns18 .bg-tl-mode.active .bg-tl-mode-c{background:rgba(255,255,255,.22);color:#fff}
+#page-bangiao.ns18 .bg-tl-dropdown,
+#page-bangiao-ql.ns18 .bg-tl-dropdown{border:1.5px solid var(--line);border-radius:10px;color:var(--ink)}
+#page-bangiao.ns18 .bg-tl-daysep,
+#page-bangiao-ql.ns18 .bg-tl-daysep{color:var(--ink-2)}
+#page-bangiao.ns18 .bg-tl-card,
+#page-bangiao-ql.ns18 .bg-tl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+#page-bangiao.ns18 .bg-tl-time,
+#page-bangiao-ql.ns18 .bg-tl-time,
+#page-bangiao.ns18 .bg-tl-metric-v,
+#page-bangiao-ql.ns18 .bg-tl-metric-v{color:var(--ink)}
+#page-bangiao.ns18 .bg-tl-tag.khan,
+#page-bangiao-ql.ns18 .bg-tl-tag.khan{background:var(--red);color:#fff}
+#page-bangiao.ns18 .bg-tl-tag.xn-ok,
+#page-bangiao-ql.ns18 .bg-tl-tag.xn-ok{background:var(--teal-tint);color:var(--teal-deep);border:1px solid rgba(63,182,168,.35)}
+#page-bangiao.ns18 .bg-tl-tag.xn-cho,
+#page-bangiao-ql.ns18 .bg-tl-tag.xn-cho{background:rgba(203,164,90,.18);color:#8a6a1f;border:1px solid rgba(203,164,90,.4)}
+
+/* ══════════════════════════════════════════════════════════
+   15. QUẢN LÝ — filter, thẻ sự vụ, tag mức độ/trạng thái, nút
+   ══════════════════════════════════════════════════════════ */
+/* Inner tabs (Sự vụ/Tiền chi …) */
+#page-bangiao-ql.ns18 .bgql-inner-tabs{background:var(--track);border-radius:11px}
+#page-bangiao-ql.ns18 .bgql-inner-tab{color:var(--ink-2)}
+#page-bangiao-ql.ns18 .bgql-inner-tab.active{background:var(--teal-deep);color:#fff;box-shadow:0 2px 8px rgba(30,95,99,.28)}
+#page-bangiao-ql.ns18 .bgql-inner-tab.active .bgql-itab-c{background:rgba(255,255,255,.22);color:#fff}
+
+/* Filter dropdown */
+#page-bangiao-ql.ns18 .bgql-fselect{border:1.5px solid var(--line);color:var(--ink)}
+
+/* Thẻ sự vụ */
+#page-bangiao-ql.ns18 .bgql-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+#page-bangiao-ql.ns18 .bgql-card-title{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-card-meta{color:var(--ink-2)}
+#page-bangiao-ql.ns18 .bgql-card-body{background:var(--bg);border-radius:8px;color:var(--ink)}
+
+/* Tag MỨC ĐỘ: khẩn=đỏ · quan trọng=gold · cần thiết=teal */
+#page-bangiao-ql.ns18 .bgql-md-KHAN_CAP{background:rgba(198,55,60,.12);color:var(--red);border-color:rgba(198,55,60,.3)}
+#page-bangiao-ql.ns18 .bgql-md-QUAN_TRONG{background:rgba(203,164,90,.18);color:#8a6a1f;border-color:rgba(203,164,90,.4)}
+#page-bangiao-ql.ns18 .bgql-md-CAN_THIET{background:var(--teal-tint);color:var(--teal-deep);border-color:rgba(63,182,168,.35)}
+#page-bangiao-ql.ns18 .bgql-sv-mini-md.khan{background:rgba(198,55,60,.12);color:var(--red);border-color:rgba(198,55,60,.3)}
+#page-bangiao-ql.ns18 .bgql-sv-mini-md.qt{background:rgba(203,164,90,.18);color:#8a6a1f;border-color:rgba(203,164,90,.4)}
+#page-bangiao-ql.ns18 .bgql-sv-mini-md.ct{background:var(--teal-tint);color:var(--teal-deep);border-color:rgba(63,182,168,.35)}
+
+/* Box phản hồi QL — teal nhạt thay sky */
+#page-bangiao-ql.ns18 .bgql-reply{background:var(--teal-tint);border-left-color:var(--teal-deep);color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-reply-l{color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-reply-txt{color:var(--ink)}
+
+/* Nút hành động */
+#page-bangiao-ql.ns18 .bgql-act-primary{background:var(--grad);color:#fff;box-shadow:var(--glow)}
+#page-bangiao-ql.ns18 .bgql-act-secondary{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal);box-shadow:none}
+#page-bangiao-ql.ns18 .bgql-act-success{background:linear-gradient(135deg,#256B45,#2E8B57);color:#fff;box-shadow:0 3px 10px rgba(46,139,87,.3)}
+#page-bangiao-ql.ns18 .bgql-act-danger{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(198,55,60,.3)}
+#page-bangiao-ql.ns18 .bgql-act-ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+
+/* Mã sự vụ badge */
+#page-bangiao-ql.ns18 .bgql-masv{color:var(--teal-deep)}
+
+/* ══════════════════════════════════════════════════════════
+   16. QL — THỐNG KÊ (bgql-stat-c, ch-row, sv-mini)
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao-ql.ns18 .bgql-stat-c.stat-ok{background:var(--grad)}
+#page-bangiao-ql.ns18 .bgql-stat-c.stat-warn{background:linear-gradient(135deg,#B8923F 0%,#CBA45A 100%)}
+#page-bangiao-ql.ns18 .bgql-stat-c.stat-bad{background:linear-gradient(135deg,#A02A2E 0%,#C6373C 100%)}
+#page-bangiao-ql.ns18 .bgql-ch-row{background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}
+#page-bangiao-ql.ns18 .bgql-ch-row-name{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-ch-row.opened .bgql-ch-chev{color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-ch-badge-ok{background:var(--teal-tint);color:var(--teal-deep);border-color:rgba(63,182,168,.3)}
+#page-bangiao-ql.ns18 .bgql-sv-mini-reply{background:var(--teal-tint);color:var(--teal-deep);border-left-color:var(--teal)}
+
+/* Ô tìm cửa hàng / khu vực (bgql-stats-search) */
+#page-bangiao-ql.ns18 .bgql-stats-search-dd{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg)}
+#page-bangiao-ql.ns18 .bgql-stats-dd-it:hover{background:var(--teal-tint)}
+#page-bangiao-ql.ns18 .bgql-stats-dd-l{color:var(--ink-3)}
+
+/* ══════════════════════════════════════════════════════════
+   17. QL — TIỀN CHI (bgql-tc-* / tienchi) : SỐ magenta
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao-ql.ns18 .bgql-tc-summary{background:var(--teal-tint);border:1px solid rgba(63,182,168,.3)}
+#page-bangiao-ql.ns18 .bgql-tc-summary-l{color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-tc-summary-v{color:var(--magenta)}
+#page-bangiao-ql.ns18 .bgql-tc-summary-s{color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-tienchi-card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:var(--r);box-shadow:var(--shadow)}
+#page-bangiao-ql.ns18 .bgql-tienchi-tag{background:var(--teal-tint);color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-tienchi-amount{color:var(--magenta)}
+#page-bangiao-ql.ns18 .bgql-tc-ch{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-tc-note{background:var(--bg)}
+
+/* ══════════════════════════════════════════════════════════
+   18. QL — IN ẤN (bgql-print-*) : chọn = teal
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao-ql.ns18 .bgql-print-card{background:var(--surface);border:2px solid transparent;border-radius:12px;box-shadow:var(--shadow)}
+#page-bangiao-ql.ns18 .bgql-print-card.selected{border-color:var(--teal);background:var(--teal-tint);box-shadow:0 4px 14px rgba(63,182,168,.2)}
+#page-bangiao-ql.ns18 .bgql-print-checkbox{border:2px solid var(--ink-3)}
+#page-bangiao-ql.ns18 .bgql-print-checkbox.checked{background:var(--grad);border-color:transparent}
+#page-bangiao-ql.ns18 .bgql-print-card-name{color:var(--ink)}
+
+/* ══════════════════════════════════════════════════════════
+   19. QL — HEATMAP (bgql-hm-*) + LỊCH SỬ THIẾT BỊ (bgql-tb-*)
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao-ql.ns18 .bgql-hm-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+#page-bangiao-ql.ns18 .bgql-hm-rank{background:var(--track);color:var(--ink-2)}
+#page-bangiao-ql.ns18 .bgql-hm-rank.top{background:rgba(198,55,60,.12);color:var(--red)}
+#page-bangiao-ql.ns18 .bgql-hm-ten{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-hm-num b{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-hm-num.khan b{color:var(--red)}
+#page-bangiao-ql.ns18 .bgql-tb-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+#page-bangiao-ql.ns18 .bgql-tb-ten{color:var(--ink)}
+#page-bangiao-ql.ns18 .bgql-tb-count{background:var(--track);color:var(--ink-2)}
+#page-bangiao-ql.ns18 .bgql-tb-count.do{background:rgba(198,55,60,.12);color:var(--red)}
+
+/* ══════════════════════════════════════════════════════════
+   20. QL — AI (bgql-dg-* cấu hình digest · aibc-* báo cáo on-demand)
+   ══════════════════════════════════════════════════════════ */
+#page-bangiao-ql.ns18 .bgql-dg-info{background:var(--bg);border:1px solid var(--line)}
+#page-bangiao-ql.ns18 .bgql-dg-toggle{background:var(--surface);border:1px solid var(--line)}
+#page-bangiao-ql.ns18 .bgql-dg-toggle b.on{color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-dg-sec-ttl,
+#page-bangiao-ql.ns18 .aibc-sec-ttl{color:var(--ink-2)}
+#page-bangiao-ql.ns18 .bgql-dg-row{background:var(--surface);border:1px solid var(--line)}
+#page-bangiao-ql.ns18 .bgql-dg-badge.ROLE{background:var(--teal-tint);color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .bgql-dg-name{color:var(--ink)}
+
+/* AI Báo cáo */
+#page-bangiao-ql.ns18 .aibc-intro{background:var(--grad);box-shadow:var(--shadow-lg)}
+#page-bangiao-ql.ns18 .aibc-range{background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+#page-bangiao-ql.ns18 .aibc-range.active{background:var(--teal-tint);border-color:var(--teal);color:var(--teal-deep)}
+#page-bangiao-ql.ns18 .aibc-gen-btn{background:var(--grad);box-shadow:var(--glow)}
+#page-bangiao-ql.ns18 .aibc-gen-btn.busy,
+#page-bangiao-ql.ns18 .aibc-gen-btn:disabled{background:var(--track);color:var(--ink-3);box-shadow:none}
+#page-bangiao-ql.ns18 .aibc-his-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+#page-bangiao-ql.ns18 .aibc-his-ttl{color:var(--ink)}

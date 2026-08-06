@@ -1,0 +1,266 @@
+/* ============================================================
+   21-admin-home-v18.css — RESKIN v18: CỤM ADMIN + TRANG CHỦ
+   Scope: #page-home.ns18 · #page-admin.ns18 · #page-giaodien.ns18
+   GIỮ NGUYÊN markup / ID / handler — CHỈ CSS.
+   Đè legacy: hub-* (08-redesign light), adm2-* (05-admin + 08 + 04),
+   pq-* / xkc-* (08-redesign), gd-* (02-giao-dien-dashboard).
+   - Điện thoại (<900px): xếp gọn, ít cột.
+   - Máy tính (>=900px): full-width sát 2 mép (đè max-width legacy), nhiều cột.
+   - Icon: chỉ SVG, KHÔNG hộp nền. Stroke teal tường minh.
+   - Số lớn KPI: magenta. Tab/nút/chip active: teal + glow.
+   ============================================================ */
+
+
+/* ══════════════════════════════════════════════════════════
+   A) TRANG CHỦ — #page-home (Home Hub)
+   ══════════════════════════════════════════════════════════ */
+#page-home.ns18{background:var(--bg)!important}
+
+/* Khung: bỏ max-width 640 legacy, dùng hết bề ngang */
+#page-home.ns18 .hub-shell{
+  max-width:none!important;margin:0!important;
+  color:var(--ink)!important;
+  font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
+  padding:14px 14px 96px!important;
+}
+@media (min-width:900px){
+  body.ns18-shell #page-home.ns18 .hub-shell{padding:4px 0 44px!important}
+}
+
+/* Topbar: avatar teal + chuông trắng v18 */
+#page-home.ns18 .hub-topbar{margin-bottom:16px}
+#page-home.ns18 .hub-avatar{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  border-radius:14px!important;box-shadow:var(--glow)!important;
+}
+#page-home.ns18 .hub-uname{color:var(--ink)!important}
+#page-home.ns18 .hub-urole{color:var(--ink-3)!important}
+#page-home.ns18 .hub-bell{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  color:var(--ink-2)!important;border-radius:12px!important;box-shadow:var(--shadow)!important;
+}
+#page-home.ns18 .hub-bell:active{background:var(--teal-tint)!important}
+
+/* Head dark → HERO teal v18 sáng (bong bóng chìm như cmdbar) */
+#page-home.ns18 .hub-head{
+  position:relative;overflow:hidden;
+  background:var(--grad)!important;border-radius:var(--r);
+  padding:22px 24px!important;margin-bottom:18px!important;
+  box-shadow:var(--shadow-lg);
+}
+#page-home.ns18 .hub-head::before{
+  content:'';position:absolute;right:-34px;top:-40px;width:180px;height:180px;
+  border-radius:50%;background:rgba(255,255,255,.10);pointer-events:none;
+}
+#page-home.ns18 .hub-head::after{
+  content:'';position:absolute;right:120px;top:26px;width:92px;height:92px;
+  border-radius:50%;background:rgba(203,164,90,.20);pointer-events:none;
+}
+#page-home.ns18 .hub-head-label{color:var(--gold)!important;position:relative;z-index:1}
+#page-home.ns18 .hub-head-title{
+  color:#fff!important;position:relative;z-index:1;
+  font-family:'Be Vietnam Pro',system-ui,-apple-system,sans-serif!important;
+  font-size:24px!important;font-weight:800!important;letter-spacing:-.4px!important;
+}
+
+/* Lưới thẻ phân hệ: nhiều cột lấp đầy */
+#page-home.ns18 .hub-grid{
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;gap:14px!important;
+}
+@media (min-width:900px){
+  #page-home.ns18 .hub-grid{grid-template-columns:repeat(auto-fill,minmax(196px,1fr))!important;gap:16px!important}
+}
+
+/* Thẻ trắng v18 */
+#page-home.ns18 .hub-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+  min-height:0!important;padding:16px 15px!important;
+}
+#page-home.ns18 .hub-card::before{display:none!important}
+#page-home.ns18 .hub-card:active{transform:scale(.98)}
+@media (hover:hover){
+  #page-home.ns18 .hub-card:hover{border-color:var(--teal)!important;box-shadow:var(--shadow-lg)!important}
+}
+#page-home.ns18 .hub-nm{color:var(--ink)!important}
+#page-home.ns18 .hub-ds{color:var(--ink-2)!important}
+
+/* Icon: bỏ hộp gradient (inline), CHỈ SVG stroke teal */
+#page-home.ns18 .hub-ic,
+#page-home.ns18 .hub-ic-sm{
+  background:none!important;box-shadow:none!important;
+  width:auto!important;height:auto!important;border-radius:0!important;
+  margin-bottom:12px!important;color:var(--teal-deep)!important;
+}
+#page-home.ns18 .hub-ic svg{width:32px!important;height:32px!important;stroke:var(--teal-deep)!important;stroke-width:2;fill:none}
+#page-home.ns18 .hub-ic-sm svg{width:28px!important;height:28px!important}
+/* vá các circle fill="white" (mắt icon AI...) cho hiện trên nền trắng */
+#page-home.ns18 .hub-ic svg [fill="white"],
+#page-home.ns18 .hub-ic svg [fill="#fff"],
+#page-home.ns18 .hub-ic svg [fill="#FFF"]{fill:var(--teal-deep)!important}
+
+/* Badge "MỚI" → magenta */
+#page-home.ns18 .hub-bdg{
+  background:var(--grad-mag)!important;color:#fff!important;
+  box-shadow:0 3px 9px -2px rgba(214,0,108,.42)!important;
+}
+#page-home.ns18 .hub-foot{color:var(--ink-3)!important}
+
+
+/* ══════════════════════════════════════════════════════════
+   B) ADMIN — #page-admin (Admin Control Panel)
+   ══════════════════════════════════════════════════════════ */
+#page-admin.ns18{background:var(--bg)!important;min-height:0!important}
+
+/* Khung: bỏ max-width 960, full-width */
+#page-admin.ns18 .adm2-wrap{
+  max-width:none!important;margin:0!important;padding:12px 14px 88px!important;
+}
+@media (min-width:900px){
+  body.ns18-shell #page-admin.ns18 .adm2-wrap{padding:0 0 44px!important}
+}
+
+/* ---- Tabs adm2 → pill v18, active teal + glow ---- */
+#page-admin.ns18 .adm2-tabs{
+  position:static!important;
+  display:flex!important;flex-wrap:wrap!important;gap:6px!important;
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+  padding:6px!important;margin-bottom:16px!important;
+}
+#page-admin.ns18 .adm2-tab{
+  flex:1 1 auto!important;display:flex!important;align-items:center;justify-content:center;gap:7px;
+  background:transparent!important;border:none!important;border-radius:10px!important;
+  color:var(--ink-2)!important;font-size:13px!important;font-weight:700!important;
+  box-shadow:none!important;padding:10px 12px!important;min-height:40px;white-space:nowrap;
+}
+#page-admin.ns18 .adm2-tab span{white-space:nowrap!important;word-break:keep-all}
+#page-admin.ns18 .adm2-tab svg{display:none!important}
+#page-admin.ns18 .adm2-tab:hover{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-admin.ns18 .adm2-tab.active{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+@media (min-width:900px){
+  /* desktop rộng: hiện icon SVG trong tab (không hộp) */
+  #page-admin.ns18 .adm2-tab svg{display:inline-block!important;width:16px!important;height:16px!important;stroke:currentColor!important;fill:none;stroke-width:2;flex:none}
+  #page-admin.ns18 .adm2-tab.active svg{stroke:#fff!important}
+}
+
+/* ---- Section head ---- */
+#page-admin.ns18 .adm2-section-title{color:var(--ink)!important;font-size:16px!important;font-weight:800!important}
+#page-admin.ns18 .adm2-section-sub{color:var(--ink-2)!important}
+
+/* ---- KPI Tổng quan: thẻ trắng, số magenta, icon teal ---- */
+#page-admin.ns18 .adm2-stats{
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;gap:12px!important;
+}
+@media (min-width:900px){
+  #page-admin.ns18 .adm2-stats{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))!important;gap:14px!important}
+}
+#page-admin.ns18 .adm2-stat{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:16px!important;
+}
+#page-admin.ns18 .adm2-stat::after{
+  content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.15),rgba(63,182,168,.03) 70%);pointer-events:none;
+}
+#page-admin.ns18 .adm2-stat:hover{border-color:var(--teal)!important;box-shadow:var(--shadow-lg)!important;transform:translateY(-2px)}
+/* icon: bỏ hộp tint, CHỈ SVG teal */
+#page-admin.ns18 .adm2-stat-icon{
+  background:none!important;width:auto!important;height:auto!important;
+  margin-bottom:10px!important;color:var(--teal-deep)!important;position:relative;
+}
+#page-admin.ns18 .adm2-stat-icon svg{width:24px!important;height:24px!important;stroke:var(--teal-deep)!important;stroke-width:2;fill:none}
+#page-admin.ns18 .adm2-stat-label{color:var(--ink-2)!important;position:relative}
+#page-admin.ns18 .adm2-stat-value{
+  color:var(--magenta)!important;font-size:30px!important;font-weight:800!important;
+  letter-spacing:-.5px!important;position:relative;font-variant-numeric:tabular-nums;
+}
+#page-admin.ns18 .adm2-stat-value.warn,
+#page-admin.ns18 .adm2-stat-value.alert{color:var(--red)!important}
+#page-admin.ns18 .adm2-stat-suffix{color:var(--ink-3)!important;font-size:14px!important}
+#page-admin.ns18 .adm2-stat-chev{color:var(--ink-3)!important}
+
+/* ---- Action cards (Phiên BH / Chấm công) ---- */
+#page-admin.ns18 .adm2-action-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:16px 18px!important;
+}
+#page-admin.ns18 .adm2-action-icon{
+  background:none!important;width:auto!important;height:auto!important;color:var(--teal-deep)!important;
+}
+#page-admin.ns18 .adm2-action-icon svg{width:22px!important;height:22px!important;stroke:var(--teal-deep)!important;fill:none;stroke-width:2}
+#page-admin.ns18 .adm2-action-icon.danger svg{stroke:var(--red)!important}
+#page-admin.ns18 .adm2-action-icon.success svg{stroke:var(--green)!important}
+#page-admin.ns18 .adm2-action-icon.warn svg{stroke:var(--gold-d,#A9863F)!important}
+#page-admin.ns18 .adm2-action-title{color:var(--ink)!important;font-weight:800!important}
+#page-admin.ns18 .adm2-action-desc{color:var(--ink-2)!important;margin-left:32px!important}
+#page-admin.ns18 .adm2-action-body{padding-left:32px!important}
+
+/* ---- Nút adm2 (primary/danger đã do 15-pages lo; bổ sung secondary/ghost/warn) ---- */
+#page-admin.ns18 .adm2-btn-secondary,
+#page-admin.ns18 .adm2-btn-ghost{
+  background:var(--surface)!important;color:var(--ink-2)!important;
+  border:1.5px solid var(--line)!important;border-radius:10px!important;
+}
+#page-admin.ns18 .adm2-btn-secondary:hover,
+#page-admin.ns18 .adm2-btn-ghost:hover{border-color:var(--teal)!important;color:var(--teal-deep)!important}
+#page-admin.ns18 .adm2-btn-warn{
+  background:#FCF6E9!important;color:#8a6a1f!important;
+  border:1.5px solid var(--gold)!important;border-radius:10px!important;
+}
+
+/* ---- Tài khoản: filter bar ---- */
+#page-admin.ns18 .adm2-filter{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:10px!important;
+}
+#page-admin.ns18 .adm2-select,
+#page-admin.ns18 .adm2-date{background:var(--teal-tint)!important;color:var(--ink)!important;border-radius:9px!important}
+#page-admin.ns18 .adm2-input-text{color:var(--ink)!important}
+
+/* ---- Detail panel (khung; nội dung động giữ nguyên) ---- */
+#page-admin.ns18 .adm2-detail{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important}
+#page-admin.ns18 .adm2-detail-head{background:#FBFAF7!important;border-bottom:1px solid var(--line)!important}
+#page-admin.ns18 .adm2-detail-title{color:var(--ink)!important;font-weight:800!important}
+#page-admin.ns18 .adm2-detail-close:hover{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-admin.ns18 .adm2-row-title{color:var(--ink)!important}
+#page-admin.ns18 .adm2-empty{color:var(--ink-3)!important}
+
+/* ---- Phân quyền [NHẠY CẢM — chỉ đổi màu qua remap biến] ----
+   pq-* dùng var(--green)/--green-lt/--green-m. Remap trong phạm vi pane
+   → toàn bộ trạng thái active/chip/check/scope/tree đổi sang teal, KHÔNG
+   đụng logic. */
+#page-admin.ns18 #adm2-pane-phanquyen{--green:#1E5F63;--green-m:#3FB6A8;--green-lt:#EEF6F5}
+#page-admin.ns18 .pq-footer-save{background:var(--grad)!important;box-shadow:var(--glow)!important;border-radius:11px!important}
+#page-admin.ns18 .pq-footer-save:hover{box-shadow:0 0 20px rgba(63,182,168,.6)!important}
+
+/* ---- Khẩn cấp [NHẠY CẢM — GIỮ đỏ danger; chỉ đồng bộ viền thẻ] ---- */
+#page-admin.ns18 #adm2-pane-khancap .xkc-grp:not(.danger){border-color:var(--line)!important}
+#page-admin.ns18 #adm2-pane-khancap .xkc-form{border-color:var(--line)!important;border-radius:var(--r)!important}
+
+
+/* ══════════════════════════════════════════════════════════
+   C) GIAO DIỆN — #page-giaodien (chọn màu chủ đạo)
+   Hero .cc-hero-page đã do 15-pages lo (teal). Body reskin v18.
+   ══════════════════════════════════════════════════════════ */
+#page-giaodien.ns18{background:var(--bg)!important}
+#page-giaodien.ns18 .gd-title{color:var(--ink)!important;font-weight:800!important}
+#page-giaodien.ns18 .gd-subtitle{color:var(--ink-2)!important}
+
+/* thẻ trắng v18 */
+#page-giaodien.ns18 .gd-custom,
+#page-giaodien.ns18 .gd-preview-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+#page-giaodien.ns18 .gd-custom-lbl,
+#page-giaodien.ns18 .gd-pv-lbl{color:var(--ink-2)!important}
+#page-giaodien.ns18 #gd-picker-hex{border:1.5px solid var(--line)!important;border-radius:9px!important;color:var(--ink)!important}
+#page-giaodien.ns18 .gd-reset-btn{background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;border-radius:9px!important}
+
+/* xem trước → teal v18 (GIỮ swatch đúng màu thật) */
+#page-giaodien.ns18 .gd-pv-header{background:var(--grad)!important;color:#fff!important;border-radius:10px!important}
+#page-giaodien.ns18 .gd-pv-btn{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:9px!important}
+#page-giaodien.ns18 .gd-pv-badge{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-giaodien.ns18 .gd-pv-link{color:var(--teal-deep)!important}
+#page-giaodien.ns18 .gd-swatch.selected{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--teal),0 4px 14px rgba(20,33,58,.22)!important}

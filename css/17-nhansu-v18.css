@@ -1,0 +1,455 @@
+/* ============================================================
+   17-nhansu-v18.css — CỤM NHÂN SỰ v18 (ĐẠI TU UI)
+   Scope: #page-nhansu.ns18 · #page-donnghi-acc.ns18 · #page-duyetyc.ns18
+   GIỮ NGUYÊN markup/ID/handler (chỉ CSS). Không sửa JS/index.html/shell.
+   - Điện thoại (<900px): 1 cột xếp dọc (giữ gutter 14px cũ).
+   - Máy tính (>=900px): full-width sát 2 mép, list/bảng dàn hết ngang.
+   - Icon: chỉ SVG, KHÔNG hộp nền. Số KPI magenta, active teal.
+   - Mọi selector prefix bằng #id để đè legacy 08-redesign
+     (body.cc-redesign-active ... !important) + inline JS.
+   Trang dùng chung class: .ns-subtab .ns-time-tab .dnp-* .yc-bulk-*.
+   ============================================================ */
+
+/* ============================================================
+   A. KHUNG TRANG (cả 3 trang) — full-width desktop
+   ============================================================ */
+#page-nhansu.ns18,
+#page-donnghi-acc.ns18,
+#page-duyetyc.ns18{background:var(--bg)}
+
+@media (min-width:900px){
+  body.ns18-shell #page-nhansu.ns18.active,
+  body.ns18-shell #page-donnghi-acc.ns18.active,
+  body.ns18-shell #page-duyetyc.ns18.active{
+    max-width:none!important;min-width:0!important;width:auto!important;
+    margin:0!important;padding:20px 26px 72px!important;display:block}
+  /* Bung sát 2 mép: bỏ gutter 14px của các khối con trên desktop */
+  #page-nhansu.ns18 .ns-subtabs,
+  #page-nhansu.ns18 .ns-filter,
+  #page-nhansu.ns18 .ns-time-row,
+  #page-nhansu.ns18 .ns-tabs,
+  #page-nhansu.ns18 .ns-stats-grid,
+  #page-nhansu.ns18 .ns-list,
+  #page-nhansu.ns18 .ns-updated,
+  #page-nhansu.ns18 .dnp-list,
+  #page-nhansu.ns18 .dnp-filter-row,
+  #page-nhansu.ns18 #dnp-bulk-bar,
+  #page-nhansu.ns18 .yc-bulk-bar,
+  #page-donnghi-acc.ns18 .ns-time-row,
+  #page-donnghi-acc.ns18 .dnp-filter-row,
+  #page-donnghi-acc.ns18 .dnp-list,
+  #page-duyetyc.ns18 .ns-time-row,
+  #page-duyetyc.ns18 .ns-subtabs,
+  #page-duyetyc.ns18 .yc-bulk-bar{margin-left:0!important;margin-right:0!important}
+  /* các subpanel: bỏ padding ngang cũ */
+  #page-nhansu.ns18 #ns-sub-lichsu,
+  #page-nhansu.ns18 #ns-sub-lichsucc,
+  #page-nhansu.ns18 #ns-sub-chuyenma{padding-left:0!important;padding-right:0!important}
+  /* wrapper search inline (margin:6px 14px 0) */
+  #page-nhansu.ns18 [style*="margin:6px 14px 0"],
+  #page-donnghi-acc.ns18 [style*="margin:6px 14px 0"]{margin-left:0!important;margin-right:0!important}
+}
+
+/* Card trắng dùng chung: nâng các div inline "#fff + #E5E7EB + radius:10px" lên v18 */
+#page-nhansu.ns18 [style*="border:1px solid #E5E7EB"][style*="border-radius:10px"],
+#page-donnghi-acc.ns18 [style*="border:1px solid #E5E7EB"][style*="border-radius:10px"]{
+  border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+
+/* ============================================================
+   B. SUBTABS (.ns-subtab) — nhansu + duyetyc. Active = gradient teal.
+   ============================================================ */
+#page-nhansu.ns18 .ns-subtabs,
+#page-duyetyc.ns18 .ns-subtabs{
+  background:var(--surface)!important;border:1px solid var(--line);border-radius:var(--r);
+  padding:5px;gap:5px;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none}
+#page-nhansu.ns18 .ns-subtabs::-webkit-scrollbar,
+#page-duyetyc.ns18 .ns-subtabs::-webkit-scrollbar{display:none}
+#page-nhansu.ns18 .ns-subtab,
+#page-duyetyc.ns18 .ns-subtab{
+  flex:1 0 auto;background:transparent!important;border:none!important;box-shadow:none!important;
+  color:var(--ink-2)!important;font-family:inherit;font-weight:700!important;font-size:12.5px;
+  padding:9px 14px!important;border-radius:9px!important;cursor:pointer;position:relative;
+  white-space:nowrap;transition:.15s}
+#page-nhansu.ns18 .ns-subtab:hover,
+#page-duyetyc.ns18 .ns-subtab:hover{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-nhansu.ns18 .ns-subtab.active,
+#page-duyetyc.ns18 .ns-subtab.active{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;overflow:visible}
+#page-nhansu.ns18 .ns-subtab.active::before,
+#page-duyetyc.ns18 .ns-subtab.active::before{display:none!important;content:none!important}
+/* badge trên subtab → magenta */
+#page-nhansu.ns18 .ns-subtab-badge,
+#page-duyetyc.ns18 .ns-subtab-badge{background:var(--magenta)!important;color:#fff!important;
+  box-shadow:0 0 0 2px var(--surface)}
+
+/* ============================================================
+   C. TIME-TABS (.ns-time-tab) — cả 3 trang. Active = teal-deep đặc.
+   ============================================================ */
+#page-nhansu.ns18 .ns-time-tab,
+#page-donnghi-acc.ns18 .ns-time-tab,
+#page-duyetyc.ns18 .ns-time-tab{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;
+  border-radius:999px!important;font-weight:700!important;font-size:11.5px;padding:6px 13px!important;
+  font-family:inherit;white-space:nowrap;transition:.15s}
+#page-nhansu.ns18 .ns-time-tab:hover,
+#page-donnghi-acc.ns18 .ns-time-tab:hover,
+#page-duyetyc.ns18 .ns-time-tab:hover{border-color:var(--teal)!important;color:var(--teal-deep)!important}
+#page-nhansu.ns18 .ns-time-tab.active,
+#page-donnghi-acc.ns18 .ns-time-tab.active,
+#page-duyetyc.ns18 .ns-time-tab.active{
+  background:var(--teal-deep)!important;border-color:transparent!important;color:#fff!important;
+  box-shadow:0 4px 12px -4px rgba(30,95,99,.5)!important}
+
+/* ============================================================
+   D. KV-TABS (.ns-tab) — chỉ trang nhân sự. Active = teal-deep đặc.
+   ============================================================ */
+#page-nhansu.ns18 .ns-tab{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;
+  border-radius:999px!important;font-weight:700!important;font-size:12px;font-family:inherit;
+  white-space:nowrap;transition:.15s}
+#page-nhansu.ns18 .ns-tab:hover{border-color:var(--teal)!important;color:var(--teal-deep)!important}
+#page-nhansu.ns18 .ns-tab.active{background:var(--teal-deep)!important;border-color:transparent!important;color:#fff!important}
+
+/* ============================================================
+   E. NGÀY (.gcql-date-inp / .ns-daterange / .gcql-date-sep)
+   ============================================================ */
+#page-nhansu.ns18 .gcql-date-inp,
+#page-donnghi-acc.ns18 .gcql-date-inp,
+#page-duyetyc.ns18 .gcql-date-inp{
+  background:var(--teal-tint)!important;border:none!important;
+  box-shadow:inset 0 0 0 1.5px rgba(63,182,168,.35)!important;border-radius:10px!important;
+  color:var(--ink)!important;font-family:inherit;font-weight:600}
+#page-nhansu.ns18 .gcql-date-inp:focus,
+#page-donnghi-acc.ns18 .gcql-date-inp:focus,
+#page-duyetyc.ns18 .gcql-date-inp:focus{box-shadow:inset 0 0 0 1.5px var(--teal),0 0 0 3px rgba(63,182,168,.18)!important}
+#page-nhansu.ns18 .gcql-date-sep,
+#page-donnghi-acc.ns18 .gcql-date-sep,
+#page-duyetyc.ns18 .gcql-date-sep{color:var(--teal-deep)!important;font-weight:800}
+
+/* ============================================================
+   F. SEARCH / FILTER (.ns-search .ns-suggest .dnp-filter-sel + yc filters)
+   ============================================================ */
+#page-nhansu.ns18 .ns-search,
+#page-donnghi-acc.ns18 .ns-search{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;border-radius:12px!important;
+  color:var(--ink)!important;font-family:inherit;box-shadow:var(--shadow)!important}
+#page-nhansu.ns18 .ns-search:focus,
+#page-donnghi-acc.ns18 .ns-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-nhansu.ns18 .ns-suggest{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;
+  box-shadow:var(--shadow-lg)!important}
+#page-nhansu.ns18 .dnp-filter-sel,
+#page-donnghi-acc.ns18 .dnp-filter-sel{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;border-radius:10px!important;
+  color:var(--ink)!important;font-family:inherit;font-weight:600}
+#page-nhansu.ns18 .dnp-filter-sel:focus,
+#page-donnghi-acc.ns18 .dnp-filter-sel:focus{border-color:var(--teal)!important}
+/* filter select/input của duyệt yêu cầu (inline border) */
+#page-duyetyc.ns18 #yc-filter-tt,
+#page-duyetyc.ns18 #yc-filter-q{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;border-radius:10px!important;
+  color:var(--ink)!important;font-family:inherit;font-weight:600;padding:9px 12px!important}
+#page-duyetyc.ns18 #yc-filter-tt:focus,
+#page-duyetyc.ns18 #yc-filter-q:focus{border-color:var(--teal)!important;outline:none;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+
+/* ============================================================
+   G. NHÂN SỰ — thẻ KPI (.ns-stats-grid / .ns-stat / .ns-stat-val)
+   ============================================================ */
+#page-nhansu.ns18 .ns-stat{
+  position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line);
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:13px 10px!important}
+#page-nhansu.ns18 .ns-stat::after{content:"";position:absolute;right:-24px;top:-24px;width:86px;height:86px;
+  border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.15),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-nhansu.ns18 .ns-stat-val{
+  font-size:26px!important;font-weight:800!important;letter-spacing:-.5px;position:relative;
+  font-variant-numeric:tabular-nums;line-height:1}
+#page-nhansu.ns18 .ns-stat-lbl{font-size:10.5px!important;color:var(--ink-2)!important;font-weight:600;position:relative;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* remap màu số về palette v18 (giữ ngữ nghĩa) — đè cả class lẫn inline */
+#page-nhansu.ns18 .ns-stat-val.ns-v-green{color:var(--green)!important}
+#page-nhansu.ns18 .ns-stat-val.ns-v-amber{color:#A9863F!important}
+#page-nhansu.ns18 .ns-stat-val.ns-v-blue{color:var(--teal-deep)!important}
+#page-nhansu.ns18 .ns-stat-val.ns-v-red{color:var(--red)!important}
+#page-nhansu.ns18 #ns-s-nghi{color:var(--magenta)!important}   /* Nghỉ phép (inline #C2185B) */
+#page-nhansu.ns18 #ns-s-tong{color:var(--ink)!important}       /* Tất cả */
+
+/* ============================================================
+   H. NHÂN SỰ — danh sách (.ns-list / .ns-item + badge/avatar)
+   ============================================================ */
+#page-nhansu.ns18 .ns-list{
+  background:var(--surface)!important;border:1px solid var(--line);border-radius:var(--r)!important;
+  box-shadow:var(--shadow)!important;overflow:hidden}
+#page-nhansu.ns18 .ns-item{border-bottom:1px solid var(--line)!important}
+#page-nhansu.ns18 .ns-ten{color:var(--ink)!important;font-weight:700}
+#page-nhansu.ns18 .ns-sub{color:var(--ink-2)!important}
+#page-nhansu.ns18 .ns-group-sep{
+  background:var(--bg)!important;color:var(--ink-3)!important;border-bottom:1px solid var(--line)!important}
+#page-nhansu.ns18 .ns-group-dot{background:var(--teal)!important}
+/* pill trạng thái NV — v18 palette */
+#page-nhansu.ns18 .ns-badge{border-radius:999px;font-weight:700;white-space:nowrap}
+#page-nhansu.ns18 .nsb-dang{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+#page-nhansu.ns18 .nsb-ra{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+#page-nhansu.ns18 .nsb-ket{background:#EEF1F4!important;color:var(--ink-2)!important}
+#page-nhansu.ns18 .nsb-chua{background:var(--pink-card)!important;color:var(--magenta)!important}
+#page-nhansu.ns18 .nsb-loi{background:rgba(198,55,60,.13)!important;color:var(--red)!important}
+/* avatar theo trạng thái (fallback chữ) */
+#page-nhansu.ns18 .ns-av-dang{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+#page-nhansu.ns18 .ns-av-ra{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+#page-nhansu.ns18 .ns-av-ket{background:#EEF1F4!important;color:var(--ink-2)!important}
+#page-nhansu.ns18 .ns-av-chua{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-nhansu.ns18 .ns-av-loi{background:rgba(198,55,60,.13)!important;color:var(--red)!important}
+
+/* Nút duyệt/từ chối cảnh báo trong list (ns-btn-ok/no) + wrap */
+#page-nhansu.ns18 .ns-btn-ok{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;border-radius:9px!important;font-family:inherit}
+#page-nhansu.ns18 .ns-btn-no{
+  background:transparent!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;
+  border-radius:9px!important;font-family:inherit}
+#page-nhansu.ns18 .ns-btn-ok::before,
+#page-nhansu.ns18 .ns-btn-no::before{display:none!important;content:none!important}
+
+/* FAB làm mới + dòng cập nhật */
+#page-nhansu.ns18 .ns-refresh{background:var(--grad)!important;box-shadow:var(--glow)!important;color:#fff!important}
+#page-nhansu.ns18 .ns-updated{color:var(--ink-3)!important}
+#page-nhansu.ns18 .ns-empty,
+#page-donnghi-acc.ns18 .dnp-empty,
+#page-duyetyc.ns18 .dnp-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   I. ĐƠN NGHỈ + DUYỆT YC — thẻ ngày/đơn (.dnp-* / .yc-day-*)
+   Dùng chung 3 trang. Reskin card + badge + phụ kiện.
+   ============================================================ */
+#page-nhansu.ns18 .dnp-day-head,
+#page-donnghi-acc.ns18 .dnp-day-head,
+#page-duyetyc.ns18 .yc-day-header{color:var(--ink)!important;font-weight:700}
+#page-nhansu.ns18 .dnp-day-cnt,
+#page-donnghi-acc.ns18 .dnp-day-cnt{background:var(--pink-card)!important;color:var(--magenta)!important}
+#page-duyetyc.ns18 .yc-day-count{background:var(--magenta)!important;color:#fff!important}
+/* card ngày (bọc rows ở trang ACC) */
+#page-nhansu.ns18 .dnp-card,
+#page-donnghi-acc.ns18 .dnp-card,
+#page-duyetyc.ns18 .dnp-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;
+  box-shadow:var(--shadow)!important;overflow:hidden}
+/* item */
+#page-nhansu.ns18 .dnp-item,
+#page-donnghi-acc.ns18 .dnp-item,
+#page-duyetyc.ns18 .dnp-item{border-bottom-color:var(--line)!important}
+#page-nhansu.ns18 .dnp-name,
+#page-donnghi-acc.ns18 .dnp-name,
+#page-duyetyc.ns18 .dnp-name{color:var(--ink)!important;font-weight:700}
+#page-nhansu.ns18 .dnp-sub,
+#page-donnghi-acc.ns18 .dnp-sub,
+#page-duyetyc.ns18 .dnp-sub{color:var(--ink-2)!important}
+#page-nhansu.ns18 .dnp-av,
+#page-donnghi-acc.ns18 .dnp-av,
+#page-duyetyc.ns18 .dnp-av{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+/* pill trạng thái đơn */
+#page-nhansu.ns18 .dnp-badge,
+#page-donnghi-acc.ns18 .dnp-badge,
+#page-duyetyc.ns18 .dnp-badge{border-radius:999px;font-weight:700;white-space:nowrap}
+#page-nhansu.ns18 .dnpb-cho,
+#page-donnghi-acc.ns18 .dnpb-cho,
+#page-duyetyc.ns18 .dnpb-cho{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+#page-nhansu.ns18 .dnpb-da,#page-nhansu.ns18 .dnpb-dd,
+#page-donnghi-acc.ns18 .dnpb-da,#page-donnghi-acc.ns18 .dnpb-dd,
+#page-duyetyc.ns18 .dnpb-da,#page-duyetyc.ns18 .dnpb-dd{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+#page-nhansu.ns18 .dnpb-tc,
+#page-donnghi-acc.ns18 .dnpb-tc,
+#page-duyetyc.ns18 .dnpb-tc{background:rgba(198,55,60,.13)!important;color:var(--red)!important}
+/* lý do + phụ kiện */
+#page-nhansu.ns18 .dnp-lydo,
+#page-donnghi-acc.ns18 .dnp-lydo,
+#page-duyetyc.ns18 .dnp-lydo{background:var(--teal-tint)!important;color:var(--ink-2)!important;border-radius:10px!important}
+#page-nhansu.ns18 .dnp-lydo-lbl,
+#page-donnghi-acc.ns18 .dnp-lydo-lbl,
+#page-duyetyc.ns18 .dnp-lydo-lbl{color:var(--teal-deep)!important}
+#page-nhansu.ns18 .dnp-anh-btn,
+#page-donnghi-acc.ns18 .dnp-anh-btn,
+#page-duyetyc.ns18 .dnp-anh-btn{color:var(--teal-deep)!important}
+#page-nhansu.ns18 .dnp-qlns-note,
+#page-donnghi-acc.ns18 .dnp-qlns-note,
+#page-duyetyc.ns18 .dnp-qlns-note{color:var(--teal-deep)!important}
+/* nút duyệt/từ chối đơn */
+#page-nhansu.ns18 .dnp-btn-ok,
+#page-donnghi-acc.ns18 .dnp-btn-ok,
+#page-duyetyc.ns18 .dnp-btn-ok{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;border-radius:10px!important;font-family:inherit}
+#page-nhansu.ns18 .dnp-btn-no,
+#page-donnghi-acc.ns18 .dnp-btn-no,
+#page-duyetyc.ns18 .dnp-btn-no{
+  background:transparent!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;
+  border-radius:10px!important;font-family:inherit}
+#page-nhansu.ns18 .dnp-btn-ok::before,#page-nhansu.ns18 .dnp-btn-no::before,
+#page-donnghi-acc.ns18 .dnp-btn-ok::before,#page-donnghi-acc.ns18 .dnp-btn-no::before,
+#page-duyetyc.ns18 .dnp-btn-ok::before,#page-duyetyc.ns18 .dnp-btn-no::before{display:none!important;content:none!important}
+/* mục "xin đổi lịch" (viền cam inline) → teal (2 id để thắng rule thẻ #yc-content) */
+#page-duyetyc.ns18 #yc-content > .dnp-item.xdl-item,
+#page-duyetyc.ns18 .dnp-item.xdl-item{
+  border-left:3px solid var(--teal)!important;
+  background:linear-gradient(to right,var(--teal-tint) 0%,var(--surface) 55%)!important}
+/* yc-content: item không có card bọc → cho dáng thẻ v18 */
+#page-duyetyc.ns18 #yc-content > .dnp-item{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;
+  box-shadow:var(--shadow)!important;padding:12px 14px!important;margin-bottom:8px!important}
+
+/* ============================================================
+   J. BULK BAR (.yc-bulk-bar / .yc-bulk-btn) — cả nhansu + duyetyc
+   ============================================================ */
+#page-nhansu.ns18 .yc-bulk-ok,
+#page-duyetyc.ns18 .yc-bulk-ok{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;border-radius:10px!important;font-family:inherit;font-weight:700}
+#page-nhansu.ns18 .yc-bulk-no,
+#page-duyetyc.ns18 .yc-bulk-no{
+  background:var(--surface)!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;
+  border-radius:10px!important;font-family:inherit;font-weight:700}
+#page-nhansu.ns18 .yc-bulk-ok::before,#page-nhansu.ns18 .yc-bulk-no::before,
+#page-duyetyc.ns18 .yc-bulk-ok::before,#page-duyetyc.ns18 .yc-bulk-no::before{display:none!important;content:none!important}
+
+/* ============================================================
+   K. LỊCH SỬ DUYỆT (#ns-sub-lichsu) — filter, KPI, card
+   ============================================================ */
+/* input filter */
+#page-nhansu.ns18 .lsd-inp{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;border-radius:10px!important;
+  color:var(--ink)!important;font-family:inherit;padding:9px 11px!important}
+#page-nhansu.ns18 .lsd-inp:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-nhansu.ns18 .lsd-lbl{color:var(--ink-3)!important;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+#page-nhansu.ns18 .lsd-sug{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:var(--shadow-lg)!important}
+/* nút Reset / Xuất Excel */
+#page-nhansu.ns18 .lsd-action-primary{
+  background:var(--grad)!important;color:#fff!important;border:none!important;box-shadow:var(--glow)!important;border-radius:10px!important}
+#page-nhansu.ns18 .lsd-action-secondary{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;border-radius:10px!important}
+#page-nhansu.ns18 .lsd-action-primary::before,
+#page-nhansu.ns18 .lsd-action-secondary::before{display:none!important;content:none!important}
+/* thẻ KPI thống kê (dùng cho cả lịch sử chấm công) */
+#page-nhansu.ns18 .lsd-stat-card{
+  position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:12px 8px!important}
+#page-nhansu.ns18 .lsd-stat-card::before{display:none!important;content:none!important}
+#page-nhansu.ns18 .lsd-stat-card::after{content:"";position:absolute;right:-22px;top:-22px;width:78px;height:78px;
+  border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.14),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-nhansu.ns18 .lsd-stat-card:hover{border-color:var(--teal)!important;transform:translateY(-1px)}
+#page-nhansu.ns18 .lsd-stat-card.active{border-color:var(--teal)!important;background:var(--teal-tint)!important;
+  box-shadow:0 0 0 2px rgba(63,182,168,.2)!important}
+#page-nhansu.ns18 .lsd-stat-num{font-size:24px!important;font-weight:800!important;letter-spacing:-.5px;position:relative;
+  font-variant-numeric:tabular-nums;color:var(--ink)!important}
+#page-nhansu.ns18 .lsd-stat-lbl{color:var(--ink-2)!important;position:relative;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* remap màu số (đè inline) — giữ ngữ nghĩa trạng thái */
+#page-nhansu.ns18 #lsd-stat-tong,#page-nhansu.ns18 #lscc-stat-tong{color:var(--ink)!important}
+#page-nhansu.ns18 #lsd-stat-chodet{color:#A9863F!important}
+#page-nhansu.ns18 #lsd-stat-bosung{color:var(--teal-deep)!important}
+#page-nhansu.ns18 #lsd-stat-duyet,#page-nhansu.ns18 #lscc-stat-hl{color:var(--green)!important}
+#page-nhansu.ns18 #lsd-stat-tuchoi,#page-nhansu.ns18 #lscc-stat-khl{color:var(--red)!important}
+#page-nhansu.ns18 #lscc-stat-auto{color:var(--teal-deep)!important}
+/* card từng dòng lịch sử duyệt */
+#page-nhansu.ns18 .lsd-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-nhansu.ns18 .lsd-card::before{display:none!important;content:none!important}
+#page-nhansu.ns18 .lsd-card:hover{border-color:var(--teal)!important}
+#page-nhansu.ns18 .lsd-card-name{color:var(--ink)!important;font-weight:700}
+#page-nhansu.ns18 .lsd-card-meta{color:var(--ink-2)!important}
+#page-nhansu.ns18 .lsd-card-noidung{color:var(--ink-2)!important}
+#page-nhansu.ns18 .lsd-card-foot{color:var(--ink-3)!important}
+/* badge trạng thái lịch sử duyệt */
+#page-nhansu.ns18 .lsd-badge-ok{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+#page-nhansu.ns18 .lsd-badge-no{background:rgba(198,55,60,.13)!important;color:var(--red)!important}
+#page-nhansu.ns18 .lsd-badge-wait{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+#page-nhansu.ns18 .lsd-badge-fix{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+/* trích dẫn giải trình/ghi chú */
+#page-nhansu.ns18 .lsd-quote-giai{background:#FCF6E9!important;border-left-color:var(--gold)!important}
+#page-nhansu.ns18 .lsd-quote-ghi{background:var(--bg)!important;border-left-color:var(--ink-3)!important}
+/* nút mini duyệt/từ chối/sửa */
+#page-nhansu.ns18 .lsd-btn-duyet{
+  background:var(--grad)!important;color:#fff!important;border:none!important;box-shadow:var(--glow)!important;font-family:inherit}
+#page-nhansu.ns18 .lsd-btn-duyet::before{display:none!important;content:none!important}
+#page-nhansu.ns18 .lsd-btn-tuchoi{
+  background:var(--surface)!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;font-family:inherit}
+#page-nhansu.ns18 .lsd-btn-sua{
+  background:var(--surface)!important;color:var(--teal-deep)!important;border:1.5px solid var(--teal)!important;font-family:inherit}
+/* nhóm gộp (lsd-group) */
+#page-nhansu.ns18 .lsd-group{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)}
+#page-nhansu.ns18 .lsd-group-name{color:var(--ink)!important}
+#page-nhansu.ns18 .lsd-group-meta{color:var(--ink-2)!important}
+
+/* ============================================================
+   L. LỊCH SỬ CHẤM CÔNG (#ns-sub-lichsucc) — item + nút
+   ============================================================ */
+#page-nhansu.ns18 .lscc-item{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)}
+#page-nhansu.ns18 .lscc-item-line{color:var(--ink-2)!important}
+#page-nhansu.ns18 .lscc-item-line strong{color:var(--ink)!important}
+#page-nhansu.ns18 .lscc-avatar-fallback{background:var(--grad)!important;color:#fff!important}
+/* nút "Thêm ca thủ công" (inline #0F6E56) trong filter lịch sử CC */
+#page-nhansu.ns18 #ns-sub-lichsucc button[onclick="lscThemCa()"]{
+  background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:10px!important;border:none!important}
+#page-nhansu.ns18 #ns-sub-lichsucc button[onclick="lscResetFilter()"]{
+  background:var(--surface)!important;color:var(--ink-2)!important;border:1.5px solid var(--line)!important;border-radius:10px!important}
+
+/* ============================================================
+   M. CHUYỂN ĐỔI MÃ (#ns-sub-chuyenma)
+   ============================================================ */
+/* banner cảnh báo (inline vàng) → giữ nghĩa cảnh báo, phối gold v18 */
+#page-nhansu.ns18 #ns-sub-chuyenma [style*="#FEF3C7"]{
+  background:#FCF6E9!important;border:1px solid var(--gold)!important;border-radius:var(--r)!important;color:#6b531f!important}
+/* segmented hướng chuyển */
+#page-nhansu.ns18 .cdm-huong-seg{background:var(--teal-tint)!important;border-radius:10px!important}
+#page-nhansu.ns18 .cdm-huong-btn{color:var(--ink-2)!important;font-family:inherit;border-radius:7px!important}
+#page-nhansu.ns18 .cdm-huong-btn.active{background:var(--teal-deep)!important;color:#fff!important;box-shadow:none!important}
+/* flow box */
+#page-nhansu.ns18 .cdm-flow-from{background:#FCF6E9!important;color:#6b531f!important}
+#page-nhansu.ns18 .cdm-flow-to{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+/* input/textarea (inline border) */
+#page-nhansu.ns18 #cdm-cu-inp,
+#page-nhansu.ns18 #cdm-moi-inp,
+#page-nhansu.ns18 #cdm-lydo{
+  border:1.5px solid var(--line)!important;border-radius:10px!important;color:var(--ink)!important;font-family:inherit}
+#page-nhansu.ns18 #cdm-cu-inp:focus,
+#page-nhansu.ns18 #cdm-moi-inp:focus,
+#page-nhansu.ns18 #cdm-lydo:focus{border-color:var(--teal)!important;outline:none;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+/* nút Chuyển đổi (inline var(--green)) → gradient teal ; nút Xóa form → ghost */
+#page-nhansu.ns18 #cdm-btn-go{
+  background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:10px!important;border:none!important;font-family:inherit}
+#page-nhansu.ns18 #ns-sub-chuyenma button[onclick="cdmReset()"]{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;border-radius:10px!important;font-family:inherit}
+
+/* ============================================================
+   N. BỐ CỤC MÁY TÍNH (>=900px) — list/bảng dàn hết ngang
+   ============================================================ */
+@media (min-width:900px){
+  /* Nhân sự: list thành lưới thẻ, lấp đầy bề ngang */
+  #page-nhansu.ns18 .ns-list{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;
+    background:transparent!important;border:none!important;box-shadow:none!important;
+    border-radius:0!important;overflow:visible!important;margin:12px 0 0!important}
+  #page-nhansu.ns18 .ns-list .ns-item{
+    background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;
+    box-shadow:var(--shadow)!important;align-items:center}
+  #page-nhansu.ns18 .ns-list .ns-group-sep{grid-column:1/-1;border-bottom:none!important;padding:10px 2px 2px!important}
+  #page-nhansu.ns18 .ns-list .ns-empty{grid-column:1/-1}
+
+  /* Đơn nghỉ (trang nhân sự): item card trong mỗi ngày flow nhiều cột */
+  #page-nhansu.ns18 .dnp-day-group{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;align-items:start;margin-bottom:16px}
+  #page-nhansu.ns18 .dnp-day-head{grid-column:1/-1;margin-bottom:0}
+
+  /* Đơn nghỉ ACC: các thẻ ngày dàn nhiều cột */
+  #page-donnghi-acc.ns18 #accdnp-list{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+
+  /* Duyệt yêu cầu: item card dàn nhiều cột; tiêu đề ngày span đủ */
+  #page-duyetyc.ns18 #yc-content{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;align-items:start}
+  #page-duyetyc.ns18 #yc-content .yc-day-header{grid-column:1/-1;margin-top:6px}
+  #page-duyetyc.ns18 #yc-content > .dnp-empty{grid-column:1/-1}
+
+  /* KPI nhân sự: 6 ô 1 hàng cho thoáng */
+  #page-nhansu.ns18 .ns-stats-grid{grid-template-columns:repeat(6,1fr)}
+  #page-nhansu.ns18 .ns-stats-grid+.ns-stats-grid{margin-top:10px}
+}

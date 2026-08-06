@@ -1,0 +1,365 @@
+/* ============================================================
+   16-giocong-lichca-v18.css — CỤM MÀN THỜI GIAN v18
+   Reskin: #page-giocong · #page-giocong-ql · #page-bandochidung ·
+           #page-lichca · #page-lichca-ql · #page-lichhd-ch · #page-lichhd-ql
+   Mọi rule scope #page-X.ns18 — chỉ NS00490 (gated) thấy, 539 người GIỮ UI cũ.
+   GIỮ NGUYÊN markup/ID/handler — chỉ CSS. Đè legacy (08-redesign
+   body.cc-redesign-active + !important) bằng cùng đặc hiệu + !important,
+   file này nạp SAU 08/15 nên thắng theo thứ tự nguồn.
+   - Mobile (<900px): 1 cột, giữ gutter 14px.
+   - Desktop (>=900px): full-width SÁT 2 MÉP (bỏ margin 14px 2 bên).
+   - Icon SVG stroke màu tường minh, không hộp nền.
+   LƯU Ý: #page-lichhd-ch/ql render TOÀN BỘ bằng inline-style trong JS
+   (js/pages/07-lichhd.js) → recolor bằng attribute-selector [style*=...]
+   (chỉ .ns18). Xem báo cáo mục (d) nếu muốn tích hợp bằng class.
+   ============================================================ */
+
+/* ============================================================
+   0) DESKTOP FULL-WIDTH — bỏ margin ngang 14px của các khối con
+   (page đã max-width:none + padding 28px ở 15-pages-v18.css)
+   ============================================================ */
+@media (min-width:900px){
+  #page-giocong.ns18 .gc-header,
+  #page-giocong.ns18 .gc-stats,
+  #page-giocong.ns18 .gc-table-wrap,
+  #page-giocong-ql.ns18 .gc-header,
+  #page-giocong-ql.ns18 .gcql-mode-tabs,
+  #page-giocong-ql.ns18 .gcql-daterange,
+  #page-giocong-ql.ns18 .gcql-filter,
+  #page-giocong-ql.ns18 .gcql-stats,
+  #page-giocong-ql.ns18 .gc-table-wrap,
+  #page-giocong-ql.ns18 #gcql-filter-thang,
+  #page-lichca.ns18 .lcnv-subtabs,
+  #page-lichca.ns18 .lc-header,
+  #page-lichca.ns18 .lc-progress,
+  #page-lichca.ns18 .lc-week,
+  #page-lichca.ns18 .lc-footer,
+  #page-lichca.ns18 .ns-time-row,
+  #page-lichca.ns18 .dnp-list,
+  #page-lichca.ns18 #lc-xdl-banner,
+  #page-lichca.ns18 #lcnv-nghi-list,
+  #page-lichca-ql.ns18 .lc-header,
+  #page-lichca-ql.ns18 .lcql-mode-tabs,
+  #page-lichca-ql.ns18 .lcql-mode-stats,
+  #page-lichca-ql.ns18 #lcql-search-wrap,
+  #page-lichca-ql.ns18 #lcql-list,
+  #page-bandochidung.ns18 .map-search-wrap,
+  #page-bandochidung.ns18 .map-result-card,
+  #page-bandochidung.ns18 .map-nearby{
+    margin-left:0!important;margin-right:0!important;
+  }
+  /* tận dụng bề ngang: lịch tuần NV 2 cột; đơn nghỉ đã 2 cột từ legacy */
+  #page-lichca.ns18 .lc-week{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+}
+
+/* ============================================================
+   1) THÁNG NAV dùng chung (giocong / giocong-ql / lichca / lichca-ql)
+   ============================================================ */
+#page-giocong.ns18 .thang-btn,
+#page-giocong-ql.ns18 .thang-btn,
+#page-lichca.ns18 .thang-btn,
+#page-lichca-ql.ns18 .thang-btn{
+  background:#fff!important;border:1.5px solid var(--line)!important;border-radius:50%!important;
+  width:38px;height:38px;color:var(--teal-deep)!important;font-weight:700!important;
+  box-shadow:var(--shadow)!important;transition:.15s;
+}
+#page-giocong.ns18 .thang-btn:hover,
+#page-giocong-ql.ns18 .thang-btn:hover,
+#page-lichca.ns18 .thang-btn:hover,
+#page-lichca-ql.ns18 .thang-btn:hover{border-color:var(--teal)!important;color:var(--teal-deep)!important}
+#page-giocong.ns18 .thang-label,
+#page-giocong-ql.ns18 .thang-label,
+#page-lichca.ns18 .lc-tuan-lbl,
+#page-lichca-ql.ns18 .lc-tuan-lbl{color:var(--ink)!important;font-weight:800!important}
+
+/* ============================================================
+   2) PAGE-GIOCONG
+   ============================================================ */
+#page-giocong.ns18 .gc-header{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:12px 14px!important;
+}
+#page-giocong.ns18 .gc-stats{gap:12px!important}
+#page-giocong.ns18 .stat-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:16px 14px!important;
+  position:relative;overflow:hidden;
+}
+#page-giocong.ns18 .stat-card::after,
+#page-giocong-ql.ns18 .stat-card::after{
+  content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.16),rgba(63,182,168,.04) 70%);pointer-events:none;
+}
+#page-giocong.ns18 .stat-val{
+  color:var(--magenta)!important;font-size:30px!important;font-weight:800!important;
+  letter-spacing:-1px!important;font-variant-numeric:tabular-nums;position:relative;z-index:1;
+}
+#page-giocong.ns18 .stat-lbl{
+  color:var(--ink-2)!important;font-size:11px!important;font-weight:700!important;
+  letter-spacing:.05em;text-transform:uppercase;margin-top:6px!important;position:relative;z-index:1;
+}
+#page-giocong.ns18 .gc-table-wrap{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+/* bảng: dùng chung 15-pages-v18; số giờ teal-deep, dòng tổng magenta */
+#page-giocong.ns18 .gc-tong{color:var(--teal-deep)!important;font-weight:800!important;font-variant-numeric:tabular-nums}
+#page-giocong.ns18 .gc-total td{color:var(--magenta)!important;border-top:2px solid var(--line)!important;background:#FBFAF7!important}
+#page-giocong.ns18 .gc-total td:first-child{color:var(--ink-2)!important}
+#page-giocong.ns18 .gc-ngay{color:var(--ink)!important}
+#page-giocong.ns18 .gc-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   3) PAGE-GIOCONG-QL
+   ============================================================ */
+#page-giocong-ql.ns18 .gc-header{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:12px 14px!important;
+}
+/* segmented: Theo tháng / Khoảng ngày */
+#page-giocong-ql.ns18 .gcql-mode-tabs{background:transparent!important;gap:8px!important}
+#page-giocong-ql.ns18 .gcql-mode-tab{
+  border:1.5px solid var(--line)!important;background:#fff!important;color:var(--ink-2)!important;
+  border-radius:10px!important;font-weight:700!important;padding:8px 16px!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#page-giocong-ql.ns18 .gcql-mode-tab.active{
+  border-color:transparent!important;background:var(--teal-deep)!important;color:#fff!important;
+}
+/* tìm + khoảng ngày */
+#page-giocong-ql.ns18 .gcql-search{
+  border:1.5px solid var(--line)!important;background:#fff!important;border-radius:10px!important;
+  box-shadow:none!important;color:var(--ink)!important;
+}
+#page-giocong-ql.ns18 .gcql-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-giocong-ql.ns18 .gcql-date-inp{
+  border:1.5px solid var(--line)!important;background:#fff!important;border-radius:10px!important;
+  box-shadow:none!important;color:var(--ink)!important;
+}
+#page-giocong-ql.ns18 .gcql-date-inp:focus{border-color:var(--teal)!important}
+#page-giocong-ql.ns18 .gcql-date-sep{color:var(--ink-3)!important}
+/* KPI 3 thẻ */
+#page-giocong-ql.ns18 .gcql-stats{gap:12px!important}
+#page-giocong-ql.ns18 .stat-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:16px 12px!important;
+  position:relative;overflow:hidden;
+}
+#page-giocong-ql.ns18 .stat-val{
+  color:var(--magenta)!important;font-size:26px!important;font-weight:800!important;
+  letter-spacing:-.5px!important;font-variant-numeric:tabular-nums;position:relative;z-index:1;
+}
+#page-giocong-ql.ns18 .stat-lbl{
+  color:var(--ink-2)!important;font-size:11px!important;font-weight:700!important;
+  letter-spacing:.05em;text-transform:uppercase;margin-top:6px!important;position:relative;z-index:1;
+}
+#page-giocong-ql.ns18 .gc-table-wrap{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+/* accordion KV -> CH -> NV: giữ màu vùng (categorical), recolor số giờ NV */
+#page-giocong-ql.ns18 .gcql-kv-group{border:1px solid var(--line)!important}
+#page-giocong-ql.ns18 .gcql-nv-name{color:var(--ink)!important}
+#page-giocong-ql.ns18 .gcql-nv-gio{color:var(--teal-deep)!important;font-variant-numeric:tabular-nums}
+#page-giocong-ql.ns18 .gc-tong{color:var(--teal-deep)!important;font-weight:800!important}
+#page-giocong-ql.ns18 .gc-total td{color:var(--magenta)!important;border-top:2px solid var(--line)!important;background:#FBFAF7!important}
+#page-giocong-ql.ns18 .gc-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   4) PAGE-LICHCA (NV)
+   ============================================================ */
+/* tab con Lịch / Đơn nghỉ phép */
+#page-lichca.ns18 .lcnv-subtabs{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:12px!important;box-shadow:var(--shadow)!important;
+}
+#page-lichca.ns18 .lcnv-subtab{
+  background:transparent!important;border:none!important;color:var(--ink-2)!important;
+  font-weight:700!important;border-radius:8px!important;box-shadow:none!important;padding:9px 4px!important;
+}
+#page-lichca.ns18 .lcnv-subtab.active{
+  background:var(--grad)!important;color:#fff!important;
+  box-shadow:0 6px 16px -4px rgba(30,95,99,.4)!important;
+}
+#page-lichca.ns18 .lcnv-subtab svg{stroke:currentColor}
+/* header tuần */
+#page-lichca.ns18 .lc-header{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+#page-lichca.ns18 .lc-han-ok{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-han-het{background:rgba(198,55,60,.13)!important;color:var(--red)!important}
+/* thanh tiến độ tuần */
+#page-lichca.ns18 .lc-prog-day{background:var(--track)!important}
+#page-lichca.ns18 .lc-prog-day.filled{background:var(--teal)!important}
+#page-lichca.ns18 .lc-prog-day.vang{background:var(--ink-3)!important}
+/* thẻ ngày */
+#page-lichca.ns18 .lc-day-card{
+  background:var(--surface)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+#page-lichca.ns18 .lc-day-card.lc-today{border-color:var(--teal)!important;border-left-color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-day-card:has(.lc-day-dot.work){border-left-color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-day-dot.work{background:var(--teal-tint)!important}
+#page-lichca.ns18 .lc-day-dot.work .lc-day-dow,
+#page-lichca.ns18 .lc-day-dot.work .lc-day-num{color:var(--teal-deep)!important}
+#page-lichca.ns18 .lcs-ok{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-day-tt{color:var(--ink)!important}
+/* editor trong ngày */
+#page-lichca.ns18 .lc-ed-sel:focus,
+#page-lichca.ns18 .lc-ed-time:focus{border-color:var(--teal)!important}
+#page-lichca.ns18 .lc-type-btn.sel-work{border-color:var(--teal)!important;background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-slot-lbl{color:var(--teal-deep)!important}
+#page-lichca.ns18 .lc-add-ca{border-color:var(--teal)!important;background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+/* nút gửi lịch tuần */
+#page-lichca.ns18 .lc-btn-send{
+  background:var(--grad)!important;box-shadow:var(--glow)!important;border-radius:12px!important;
+  color:#fff!important;letter-spacing:.02em;
+}
+#page-lichca.ns18 .lc-btn-send:disabled{background:var(--track)!important;color:var(--ink-3)!important;box-shadow:none!important}
+/* banner "Xin đổi lịch" (inline HTML cam) -> info v18 */
+#page-lichca.ns18 #lc-xdl-banner{background:var(--teal-tint)!important;border-left-color:var(--teal-deep)!important}
+#page-lichca.ns18 #lc-xdl-btn{background:var(--grad)!important;box-shadow:var(--glow)!important}
+/* bộ lọc thời gian (Đơn nghỉ phép) — chip v18 */
+#page-lichca.ns18 .ns-time-tab{
+  border:1.5px solid var(--line)!important;background:#fff!important;color:var(--ink-2)!important;font-weight:700!important;
+}
+#page-lichca.ns18 .ns-time-tab.active{border-color:transparent!important;background:var(--teal-deep)!important;color:#fff!important}
+#page-lichca.ns18 .gcql-date-inp{border:1.5px solid var(--line)!important;background:#fff!important;box-shadow:none!important;border-radius:10px!important}
+#page-lichca.ns18 .gcql-date-inp:focus{border-color:var(--teal)!important}
+/* danh sách đơn nghỉ của tôi */
+#page-lichca.ns18 .dnp-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-lichca.ns18 .dnp-name{color:var(--ink)!important}
+#page-lichca.ns18 .dnp-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   5) PAGE-LICHCA-QL (QLNS)
+   ============================================================ */
+#page-lichca-ql.ns18 .lc-header{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+/* segmented: Khu vực / Cửa hàng / Nhân sự */
+#page-lichca-ql.ns18 .lcql-mode-tabs{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:12px!important;box-shadow:var(--shadow)!important;
+}
+#page-lichca-ql.ns18 .lcql-mode-tab{
+  background:transparent!important;color:var(--ink-2)!important;font-weight:700!important;border-radius:8px!important;
+}
+#page-lichca-ql.ns18 .lcql-mode-tab.active{background:var(--teal-deep)!important;color:#fff!important}
+#page-lichca-ql.ns18 .lcql-mode-tab svg{stroke:currentColor}
+/* 4 thẻ thống kê bấm để lọc */
+#page-lichca-ql.ns18 .lcql-mstat{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+#page-lichca-ql.ns18 .lcql-mstat.active{border-color:var(--teal)!important;background:var(--teal-tint)!important}
+#page-lichca-ql.ns18 .lcql-mstat-val{font-variant-numeric:tabular-nums;font-weight:800!important}
+#page-lichca-ql.ns18 .lcql-mstat-lbl{color:var(--ink-2)!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.04em}
+/* màu số 4 thẻ (đè inline HTML: ms2 green / ms3 amber / ms4 blue) */
+#page-lichca-ql.ns18 #lcql-ms1{color:var(--teal-deep)!important}
+#page-lichca-ql.ns18 #lcql-ms2{color:var(--green)!important}
+#page-lichca-ql.ns18 #lcql-ms3{color:var(--gold)!important}
+#page-lichca-ql.ns18 #lcql-ms4{color:var(--magenta)!important}
+/* ô tìm kiếm (inline styled) */
+#page-lichca-ql.ns18 #lcql-search{
+  border:1.5px solid var(--line)!important;background:#fff!important;border-radius:10px!important;
+  box-shadow:none!important;color:var(--ink)!important;
+}
+#page-lichca-ql.ns18 #lcql-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+/* accordion #lcql-list render 100% inline-style trong js/pages/02-nhansu.js
+   (class .lcql-kv-group + màu xanh-lá inline) -> recolor bằng attribute-selector.
+   Header vùng (KV) giữ màu categorical; chỉ recolor xanh-lá #0F6E56 + mint. */
+#page-lichca-ql.ns18 #lcql-list [style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+#page-lichca-ql.ns18 #lcql-list [style*="background:#DCFCE7"]{background:var(--teal-tint)!important}
+#page-lichca-ql.ns18 #lcql-list [style*="background:#F0FDF4"]{background:var(--teal-tint)!important}
+#page-lichca-ql.ns18 #lcql-list svg[stroke="#0F6E56"]{stroke:var(--teal-deep)!important}
+#page-lichca-ql.ns18 .lcql-kv-group{border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow)!important;background:var(--surface)!important}
+#page-lichca-ql.ns18 .ns-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   6) PAGE-BANDOCHIDUNG (bản đồ chỉ đường)
+   ============================================================ */
+#page-bandochidung.ns18 .map-search-wrap,
+#page-bandochidung.ns18 .map-result-card,
+#page-bandochidung.ns18 .map-nearby-list{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+#page-bandochidung.ns18 .map-search-label{color:var(--ink-2)!important;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:11px!important}
+#page-bandochidung.ns18 .map-search-input{
+  border:1.5px solid var(--line)!important;background:#fff!important;border-radius:10px!important;color:var(--ink)!important;
+}
+#page-bandochidung.ns18 .map-search-input:focus{border-color:var(--teal)!important;background:#fff!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-bandochidung.ns18 .map-suggest-list{border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow-lg)!important}
+#page-bandochidung.ns18 .map-suggest-item:active,
+#page-bandochidung.ns18 .map-suggest-item:hover{background:var(--teal-tint)!important}
+#page-bandochidung.ns18 .map-store-name{color:var(--ink)!important;font-weight:800!important}
+#page-bandochidung.ns18 .map-store-kv,
+#page-bandochidung.ns18 .map-store-diachi{color:var(--ink-2)!important}
+#page-bandochidung.ns18 .map-distance-bar{background:var(--teal-tint)!important;color:var(--ink-2)!important;border-radius:10px!important}
+#page-bandochidung.ns18 .map-distance-val{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+/* nút chỉ đường: navy -> gradient teal */
+#page-bandochidung.ns18 .map-btn-primary{background:var(--grad)!important;box-shadow:var(--glow)!important;border-radius:12px!important}
+#page-bandochidung.ns18 .map-btn-primary:active{background:var(--grad)!important;transform:scale(.98)}
+#page-bandochidung.ns18 .map-btn-primary svg{stroke:#fff!important}
+/* cửa hàng gần đây */
+#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important}
+#page-bandochidung.ns18 .map-nearby-pin{background:var(--teal-tint)!important}
+#page-bandochidung.ns18 .map-nearby-name{color:var(--ink)!important}
+#page-bandochidung.ns18 .map-nearby-kv{color:var(--ink-2)!important}
+#page-bandochidung.ns18 .map-nearby-arrow{color:var(--ink-3)!important}
+#page-bandochidung.ns18 .map-nearby-item:active,
+#page-bandochidung.ns18 .map-nearby-item:hover{background:var(--teal-tint)!important}
+
+/* ============================================================
+   7) PAGE-LICHHD-CH / PAGE-LICHHD-QL (Lịch hoạt động)
+   Nội dung render 100% inline-style xanh-lá trong JS -> recolor bằng
+   attribute-selector (chỉ .ns18). Xem báo cáo mục (d) để tích hợp class.
+   ============================================================ */
+/* thanh tab con (Đăng ký / Lịch sử) — container + gạch active */
+#page-lichhd-ch.ns18 #lhd-subtabs{border-bottom-color:var(--line)!important}
+#page-lichhd-ch.ns18 #lhd-subtabs button[style*="border-bottom:2.5px solid #0F6E56"]{
+  border-bottom-color:var(--teal-deep)!important;color:var(--ink)!important;
+}
+/* gradient xanh-lá lớn (thẻ đặt nhanh, ô ngày, nút gửi, header bảng QL) -> teal v18 */
+#page-lichhd-ch.ns18 [style*="linear-gradient(135deg,#1D9E75,#0F6E56)"],
+#page-lichhd-ql.ns18 [style*="linear-gradient(135deg,#1D9E75,#0F6E56)"]{
+  background:var(--grad)!important;
+}
+/* chữ nhấn xanh-lá đậm -> teal-deep */
+#page-lichhd-ch.ns18 [style*="color:#0F6E56"],
+#page-lichhd-ql.ns18 [style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+/* chữ tiêu đề xanh-lá rất đậm -> navy */
+#page-lichhd-ch.ns18 [style*="color:#06382f"],
+#page-lichhd-ql.ns18 [style*="color:#06382f"]{color:var(--ink)!important}
+/* nền mint nhạt -> teal-tint (ô nav tuần, input giờ) */
+#page-lichhd-ch.ns18 [style*="background:#F2FBF7"]{background:var(--teal-tint)!important}
+/* pill "có giờ" xanh-lá -> teal (lịch sử + bảng QL) */
+#page-lichhd-ch.ns18 [style*="background:#ECFDF5"],
+#page-lichhd-ql.ns18 [style*="background:#ECFDF5"]{background:var(--teal-tint)!important}
+#page-lichhd-ch.ns18 [style*="color:#047857"],
+#page-lichhd-ql.ns18 [style*="color:#047857"]{color:var(--teal-deep)!important}
+#page-lichhd-ch.ns18 .ns-empty,
+#page-lichhd-ql.ns18 .ns-empty{color:var(--ink-3)!important}
+
+/* ============================================================
+   8) BOOSTER ĐẶC HIỆU — thắng legacy 08-redesign khối giờ-công/lịch-ca
+   dùng selector (body.cc-redesign-active #page-giocong .X = 1,2,1).
+   Thêm tiền tố body.ns18-shell -> (1,3,1) để đè chắc chắn.
+   (body.ns18-shell luôn có khi v18 bật; page hiện khi .active)
+   ============================================================ */
+body.ns18-shell #page-giocong.ns18 .gc-header{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:12px 14px!important}
+body.ns18-shell #page-giocong.ns18 .stat-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+body.ns18-shell #page-giocong.ns18 .stat-val{color:var(--magenta)!important;font-size:30px!important;letter-spacing:-1px!important}
+body.ns18-shell #page-giocong.ns18 .stat-lbl{color:var(--ink-2)!important;text-transform:uppercase;letter-spacing:.05em}
+body.ns18-shell #page-giocong.ns18 .thang-label{color:var(--ink)!important}
+body.ns18-shell #page-giocong.ns18 .gc-table-wrap{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+body.ns18-shell #page-giocong.ns18 .gc-empty{color:var(--ink-3)!important}
+body.ns18-shell #page-lichca.ns18 .lc-header{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+@media (min-width:900px){
+  body.ns18-shell #page-giocong.ns18 .gc-header,
+  body.ns18-shell #page-giocong.ns18 .gc-stats,
+  body.ns18-shell #page-giocong.ns18 .gc-table-wrap,
+  body.ns18-shell #page-lichca.ns18 .lc-header{margin-left:0!important;margin-right:0!important}
+}

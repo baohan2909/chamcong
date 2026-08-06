@@ -1,0 +1,390 @@
+/* ============================================================
+   19-banhang-v18.css — CỤM BÁN HÀNG v18 (reskin)
+   Trang: #page-banhang · #page-dashboard · #page-chuongtrinh · #page-checklist-ql
+   Scope #page-X.ns18 (chỉ NS00490, thêm qua NS18_PAGES). GIỮ NGUYÊN markup/ID/handler.
+   - Điện thoại (<900px): 1 cột xếp dọc (giữ layout legacy, chỉ đổi màu).
+   - Máy tính (>=900px): full-width sát 2 mép; KPI dàn hàng ngang lấp đầy.
+   - Icon: chỉ SVG, KHÔNG hộp nền. Số lớn: magenta font-mono.
+   - Đè legacy (03-banhang, 06-modules, 02-dashboard, 08-redesign body.cc-redesign-active)
+     bằng !important + đặc hiệu cao hơn khi cần (08-redesign đang bật tĩnh cho mọi user).
+   Modal .bh-modal / #bxh-modal nằm NGOÀI #page-banhang → reskin gated body.ns18-shell.
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   A. #page-banhang — PHIÊN BÁN HÀNG (view CH + view QLBH)
+   ══════════════════════════════════════════════════════════ */
+#page-banhang.ns18{background:var(--bg)}
+#page-banhang.ns18 #tc-banner-ch:not(:empty){background:var(--pink-card);border:1px solid var(--pink-line);border-radius:var(--r);color:var(--ink)}
+
+/* ─── VIEW CH: header cửa hàng ─── */
+#page-banhang.ns18 .bh-ch-header{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px 14px!important;margin-bottom:14px}
+#page-banhang.ns18 .bh-ch-name{font-size:17px;font-weight:800;color:var(--ink)}
+#page-banhang.ns18 .bh-ch-sub{font-size:12px;color:var(--ink-2)}
+#page-banhang.ns18 .bh-ch-time{font-size:15px;font-weight:800;color:var(--teal-deep);font-variant-numeric:tabular-nums}
+#page-banhang.ns18 .bh-ch-sound{background:var(--teal-tint)!important;color:var(--teal-deep)!important;border-radius:8px;font-weight:700}
+#page-banhang.ns18 .bh-ch-sound svg{stroke:var(--teal-deep)}
+
+/* ─── VIEW CH: thẻ KPI (số magenta lớn + bong bóng góc) ─── */
+#page-banhang.ns18 .bh-stats{gap:10px}
+#page-banhang.ns18 .bh-stat{position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;padding:14px 12px!important;box-shadow:var(--shadow);text-align:center}
+#page-banhang.ns18 .bh-stat::after{content:"";position:absolute;right:-22px;top:-22px;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.14),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-banhang.ns18 .bh-stat-num{font-size:28px!important;font-weight:800!important;color:var(--magenta)!important;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;position:relative}
+#page-banhang.ns18 .bh-stat-label{font-size:10px!important;font-weight:700!important;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)!important;margin-top:6px!important;position:relative}
+#page-banhang.ns18 .bh-stat.red .bh-stat-num{color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-stat.green .bh-stat-num{color:var(--green)!important}
+#page-banhang.ns18 .bh-stat.gray .bh-stat-num{color:var(--ink-3)!important}
+#page-banhang.ns18 .bh-stat.blue .bh-stat-num{color:var(--gold)!important}
+/* thẻ "tất cả" đang set inline #FEF3C7 / #92400E → về card trắng + số magenta */
+#page-banhang.ns18 .bh-stat[style]{background:var(--surface)!important}
+#page-banhang.ns18 #bh-stat-all{color:var(--magenta)!important}
+#page-banhang.ns18 .bh-stat-label[style]{color:var(--ink-2)!important}
+#page-banhang.ns18 .bh-stat.active-filter{box-shadow:inset 0 0 0 2px var(--teal),0 0 0 3px rgba(63,182,168,.14)!important}
+
+/* ─── VIEW CH: nút bắt đầu phiên + footer ─── */
+#page-banhang.ns18 .bh-footer{background:transparent!important;border:none!important;padding:0 0 12px!important;position:static!important}
+#page-banhang.ns18 .bh-btn-primary{background:var(--grad)!important;color:#fff!important;border-radius:12px!important;box-shadow:var(--glow)!important;font-weight:800!important}
+#page-banhang.ns18 .bh-btn-primary:hover{box-shadow:0 0 20px rgba(63,182,168,.6)!important}
+#page-banhang.ns18 .bh-footer-link{color:var(--teal-deep);font-weight:700}
+
+/* ─── BXH mini: khung thẻ trắng v18, icon không hộp, LIVE badge magenta ─── */
+#page-banhang.ns18 .bxh-mini{margin:0 0 14px!important;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-banhang.ns18 .bxh-mini-header{border-bottom:1px solid var(--line)!important}
+#page-banhang.ns18 .bxh-mini-title{color:var(--ink)!important}
+#page-banhang.ns18 .bxh-mini-title-icon{background:none!important;box-shadow:none!important;width:auto!important;height:auto!important;color:var(--gold)!important}
+#page-banhang.ns18 .bxh-mini-title-icon svg{width:18px;height:18px;stroke:var(--gold)}
+#page-banhang.ns18 .bxh-mini-arrow{color:var(--ink-2)!important}
+#page-banhang.ns18 .bxh-live-badge{background:var(--pink-card)!important;color:var(--magenta)!important}
+#page-banhang.ns18 .bxh-live-badge .dot{background:var(--magenta)!important;box-shadow:0 0 5px rgba(214,0,108,.6)!important}
+/* các hàng rank giữ tone huy chương (light luxury) — chỉ dịu nền me = teal v18 */
+#page-banhang.ns18 .bxh-mini-row.is-me{border-color:rgba(30,95,99,.5)!important;box-shadow:inset 4px 0 0 var(--teal-deep),0 2px 10px rgba(30,95,99,.15)!important}
+#page-banhang.ns18 .bxh-mini-me-badge{background:var(--teal-deep)!important}
+
+/* ─── Cảnh báo (nhiều phiên) → thẻ hồng ─── */
+#page-banhang.ns18 .bh-warn{background:var(--pink-card)!important;color:var(--magenta)!important;border:1px solid var(--pink-line)!important;border-radius:var(--r)!important;margin:0 0 12px!important;font-weight:600}
+#page-banhang.ns18 .bh-warn svg{stroke:var(--magenta)}
+
+/* ─── Rỗng ─── */
+#page-banhang.ns18 .bh-sessions{padding:0}
+#page-banhang.ns18 .bh-empty-title{color:var(--ink);font-weight:800}
+#page-banhang.ns18 .bh-empty-sub{color:var(--ink-2)}
+#page-banhang.ns18 .bh-empty svg{stroke:var(--teal-deep)}
+
+/* ─── Thẻ phiên (session card) ─── */
+#page-banhang.ns18 .bh-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-left:3px solid var(--teal)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-banhang.ns18 .bh-card .bh-dot{background:var(--teal)!important}
+#page-banhang.ns18 .bh-session-num{color:var(--ink);font-weight:800}
+#page-banhang.ns18 .bh-session-meta{color:var(--ink-2)}
+#page-banhang.ns18 .bh-timer{background:var(--teal-tint)!important;color:var(--teal-deep)!important;border-radius:8px}
+#page-banhang.ns18 .bh-timer.warn{background:#FCF6E9!important;color:#A9863F!important}
+#page-banhang.ns18 .bh-timer.danger{background:#FBEDED!important;color:var(--red)!important}
+#page-banhang.ns18 .bh-card-sp-item{background:var(--bg)!important;border:1px solid var(--line)!important}
+#page-banhang.ns18 .bh-card-sp-name{color:var(--ink)}
+#page-banhang.ns18 .bh-card-add-sp{color:var(--teal-deep)!important;border-color:var(--line)!important}
+#page-banhang.ns18 .bh-card-add-sp:hover,#page-banhang.ns18 .bh-card-add-sp:active{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+#page-banhang.ns18 .bh-card-nv-row{background:var(--teal-tint)!important;border:1px solid rgba(63,182,168,.3)!important}
+#page-banhang.ns18 .bh-card-nv-row svg{stroke:var(--teal-deep);color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-card-nv-empty{color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-card-xinxoa{background:#FCF6E9!important;border-left-color:var(--gold)!important}
+#page-banhang.ns18 .bh-card.bh-card-xinxoa .bh-dot{background:var(--gold)!important}
+#page-banhang.ns18 .bh-chip{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-chip.cust{background:var(--pink-card)!important;color:var(--magenta)!important}
+
+/* ─── Nút .bh-btn-* (thẻ phiên + modal) → gradient teal / ghost / magenta / gold ─── */
+#page-banhang.ns18 .bh-btn.bh-btn-success,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-success{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border:none!important;border-radius:11px!important;font-weight:800!important}
+#page-banhang.ns18 .bh-btn.bh-btn-secondary,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-secondary{background:var(--surface)!important;color:var(--ink)!important;border:1.5px solid var(--line)!important;box-shadow:none!important;border-radius:11px!important;font-weight:700!important}
+#page-banhang.ns18 .bh-btn.bh-btn-secondary::before,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-secondary::before{content:none!important}
+#page-banhang.ns18 .bh-btn.bh-btn-danger-solid,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-danger-solid{background:var(--grad-mag)!important;color:#fff!important;border:none!important;box-shadow:0 8px 20px -8px rgba(214,0,108,.42)!important;border-radius:11px!important;font-weight:800!important}
+#page-banhang.ns18 .bh-btn.bh-btn-danger-solid::before,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-danger-solid::before{content:none!important}
+#page-banhang.ns18 .bh-btn.bh-btn-warning-solid,
+body.ns18-shell .bh-modal .bh-btn.bh-btn-warning-solid{background:var(--gold)!important;color:#fff!important;border:none!important;border-radius:11px!important;font-weight:800!important}
+
+/* ─── VIEW QLBH: header + tab ─── */
+#page-banhang.ns18 .bh-ql-header{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px 0!important;margin-bottom:14px}
+#page-banhang.ns18 .bh-ql-title{color:var(--ink)}
+#page-banhang.ns18 .bh-ql-title svg{stroke:var(--teal-deep)!important;color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-ql-tab{color:var(--ink-2)}
+#page-banhang.ns18 .bh-ql-tab.active{color:var(--teal-deep)!important;border-bottom-color:var(--teal)!important;font-weight:800}
+#page-banhang.ns18 .bh-ql-tab-count{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-ql-tab.active .bh-ql-tab-count{background:var(--teal-deep)!important;color:#fff!important}
+#page-banhang.ns18 .bh-live-dot{background:var(--magenta)!important}
+
+/* ─── VIEW QLBH: filter ─── */
+#page-banhang.ns18 .bh-ql-filter{background:transparent!important;padding:0 0 12px!important;gap:10px}
+#page-banhang.ns18 .bh-ql-filter select,#page-banhang.ns18 .bh-ql-filter input{border:1.5px solid var(--line)!important;border-radius:10px!important;background:#fff!important;padding:10px 12px!important}
+#page-banhang.ns18 .bh-ql-filter select:focus,#page-banhang.ns18 .bh-ql-filter input:focus{outline:none;border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+#page-banhang.ns18 .bh-ql-daterange{background:transparent!important;border-top:none!important;padding:0 0 12px!important}
+#page-banhang.ns18 .bh-ql-daterange input[type=date],#page-banhang.ns18 #bh-ql-sort{border:1.5px solid var(--line)!important;border-radius:10px!important;background:#fff!important}
+#page-banhang.ns18 .bh-ql-refresh{border:1.5px solid var(--line)!important;border-radius:10px!important;background:#fff!important;color:var(--teal-deep)}
+#page-banhang.ns18 .bh-ql-refresh svg{stroke:var(--teal-deep)}
+
+/* ─── VIEW QLBH: thẻ KPI (6 ô, số magenta) ─── */
+#page-banhang.ns18 .bh-ql-stats{padding:0 0 12px!important;gap:10px}
+#page-banhang.ns18 .bh-ql-stat{position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;padding:14px 10px!important;box-shadow:var(--shadow)}
+#page-banhang.ns18 .bh-ql-stat::after{content:"";position:absolute;right:-22px;top:-22px;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.14),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-banhang.ns18 .bh-ql-stat .n{font-size:26px!important;font-weight:800!important;color:var(--magenta)!important;letter-spacing:-1px;font-variant-numeric:tabular-nums;position:relative}
+#page-banhang.ns18 .bh-ql-stat .l{font-size:10px!important;font-weight:700!important;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)!important;margin-top:6px!important;position:relative}
+#page-banhang.ns18 .bh-ql-stat.red .n{color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-ql-stat.green .n{color:var(--green)!important}
+#page-banhang.ns18 .bh-ql-stat.gray .n{color:var(--ink-3)!important}
+#page-banhang.ns18 .bh-ql-stat.teal .n{color:var(--magenta)!important}
+#page-banhang.ns18 .bh-ql-stat.orange .n{color:var(--gold)!important}
+#page-banhang.ns18 .bh-ql-stat.blue .n{color:var(--gold)!important}
+#page-banhang.ns18 .bh-ql-stat.orange{background:var(--surface)!important}
+#page-banhang.ns18 .bh-ql-stat.orange.has-yc{animation:none!important;background:#FCF6E9!important;border-color:var(--gold)!important}
+#page-banhang.ns18 .bh-ql-stat.active{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.14)!important}
+
+/* ─── VIEW QLBH: thanh xóa hàng loạt (cảnh báo) ─── */
+#page-banhang.ns18 .bh-ql-bulk-bar{background:#FCF6E9!important;border:1px solid var(--gold)!important;border-radius:var(--r)!important;margin:0 0 12px!important}
+#page-banhang.ns18 .bh-ql-bulk-text{color:#8a6a1f!important}
+#page-banhang.ns18 .bh-ql-bulk-text strong{color:var(--magenta)!important}
+#page-banhang.ns18 .bh-ql-bulk-btn{background:var(--grad-mag)!important;border-radius:8px!important;font-weight:700}
+
+/* ─── VIEW QLBH: nội dung (live / lịch sử / dashboard) ─── */
+#page-banhang.ns18 .bh-ql-content{padding:0}
+#page-banhang.ns18 .bh-live-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-left:3px solid var(--teal)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-banhang.ns18 .bh-live-card.hot{border-left-color:var(--magenta)!important;background:var(--pink-card)!important}
+#page-banhang.ns18 .bh-live-card.has-yc{border-left-color:var(--gold)!important;background:#FCF6E9!important}
+#page-banhang.ns18 .bh-live-ch{color:var(--ink);font-weight:700}
+#page-banhang.ns18 .bh-live-ch-meta{color:var(--ink-2)}
+#page-banhang.ns18 .bh-live-timer{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-banhang.ns18 .bh-hist-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-banhang.ns18 .bh-hist-ch{color:var(--ink);font-weight:700}
+#page-banhang.ns18 .bh-hist-meta,#page-banhang.ns18 .bh-hist-time{color:var(--ink-2)}
+#page-banhang.ns18 .bh-hist-status.bought{background:var(--green)}
+#page-banhang.ns18 .bh-hist-status.notbought{background:var(--ink-3)}
+#page-banhang.ns18 .bh-hist-status.auto{background:var(--gold)}
+#page-banhang.ns18 .bh-stt-tc,#page-banhang.ns18 .bh-hist-ch-stt{background:var(--teal-deep)!important;color:#fff!important}
+/* dashboard con của QLBH (bh-dash-section + bar teal) */
+#page-banhang.ns18 .bh-dash-section{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-banhang.ns18 .bh-dash-title{color:var(--ink);font-weight:800}
+#page-banhang.ns18 .bh-dash-bar-fill{background:var(--track)!important}
+#page-banhang.ns18 .bh-dash-bar-fill > div{background:var(--grad)!important}
+
+/* ─── BỐ CỤC MÁY TÍNH (>=900px) — full-width, KPI dàn ngang ─── */
+@media (min-width:900px){
+  /* các dải ngang bám sát mép, bỏ margin 14px legacy */
+  #page-banhang.ns18 #tc-banner-ch{margin-left:0!important;margin-right:0!important}
+  /* VIEW CH: bỏ lưới 2 cột của 04-responsive → dòng chảy full-width.
+     JS hiện view bằng style.display='' (rỗng) → guard :not([style*="none"]) để chỉ áp khi đang hiển thị,
+     không đè lên trạng thái ẩn (vai trò QLBH/ADMIN). */
+  #page-banhang.ns18 #bh-view-ch:not([style*="none"]){display:block!important}
+  #page-banhang.ns18 .bh-ch-header{grid-column:auto!important;grid-row:auto!important}
+  #page-banhang.ns18 .bh-footer{grid-column:auto!important;grid-row:auto!important}
+  #page-banhang.ns18 .bh-warn{grid-column:auto!important;grid-row:auto!important;margin:0 0 12px!important}
+  #page-banhang.ns18 .bh-sessions{grid-column:auto!important;grid-row:auto!important;display:grid!important;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))!important;gap:14px!important;padding:0!important}
+  /* KPI hàng ngang lấp đầy */
+  #page-banhang.ns18 .bh-stats-5{grid-template-columns:repeat(5,1fr)!important;gap:12px}
+  #page-banhang.ns18 .bh-stat-num{font-size:32px!important}
+  #page-banhang.ns18 .bh-ql-stats{grid-template-columns:repeat(6,1fr)!important;gap:12px!important;padding:0 0 14px!important}
+  #page-banhang.ns18 .bh-ql-stat .n{font-size:30px!important}
+  /* nội dung QLBH lấp đầy nhiều cột trên màn rộng */
+  #page-banhang.ns18 #bh-ql-content-live,
+  #page-banhang.ns18 #bh-ql-content-history{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))!important;gap:14px!important}
+}
+
+/* ─── MODAL bán hàng (ngoài page) — gated NS00490 ─── */
+body.ns18-shell .bh-modal .bh-md-title{color:var(--ink)!important;font-weight:800}
+body.ns18-shell .bh-modal .bh-md-sub{color:var(--ink-2)!important}
+body.ns18-shell .bh-modal .bh-search-input,
+body.ns18-shell .bh-modal .bh-input-plain,
+body.ns18-shell .bh-modal .bh-textarea{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important}
+body.ns18-shell .bh-modal .bh-search-input:focus,
+body.ns18-shell .bh-modal .bh-input-plain:focus,
+body.ns18-shell .bh-modal .bh-textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+body.ns18-shell .bh-modal .bh-search-icon{color:var(--ink-3)}
+body.ns18-shell .bh-modal .bh-sp-item.selected{background:var(--teal-tint)!important}
+body.ns18-shell .bh-modal .bh-cust-btn.active{background:var(--teal-tint)!important;border-color:var(--teal)!important;color:var(--teal-deep)!important}
+body.ns18-shell .bh-modal .bh-reason-item.selected{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+body.ns18-shell .bh-modal .bh-reason-item.selected .bh-reason-radio{border-color:var(--teal)!important}
+body.ns18-shell .bh-modal .bh-reason-item.selected .bh-reason-radio::after{background:var(--teal)!important}
+body.ns18-shell .bh-modal .bh-chip{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+
+/* ══════════════════════════════════════════════════════════
+   B. #page-dashboard — DASHBOARD QL
+   ══════════════════════════════════════════════════════════ */
+#page-dashboard.ns18{background:var(--bg)}
+/* Bộ lọc thời gian */
+#page-dashboard.ns18 .dash-filter-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;margin:0 0 14px!important;padding:14px 16px!important}
+#page-dashboard.ns18 .dash-filter-label{color:var(--ink-2)!important}
+#page-dashboard.ns18 .dash-time-tab{border:1.5px solid var(--line)!important;background:#fff!important;color:var(--ink-2)!important;font-weight:700}
+#page-dashboard.ns18 .dash-time-tab.active{border-color:transparent!important;background:var(--teal-deep)!important;color:#fff!important}
+#page-dashboard.ns18 .gcql-date-inp{border:1.5px solid var(--line)!important;border-radius:10px!important}
+#page-dashboard.ns18 .gcql-date-inp:focus{border-color:var(--teal)!important}
+#page-dashboard.ns18 .ns-search{border:1.5px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+#page-dashboard.ns18 .ns-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+
+/* Thẻ KPI (số magenta lớn + nhãn uppercase + bong bóng) */
+#page-dashboard.ns18 .dash-kpi-grid{margin:0 0 12px!important;gap:10px}
+#page-dashboard.ns18 .dash-kpi{position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:15px 12px!important;text-align:center}
+#page-dashboard.ns18 .dash-kpi::after{content:"";position:absolute;right:-22px;top:-22px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.14),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-dashboard.ns18 .dash-kpi-val{font-size:28px!important;font-weight:800!important;color:var(--magenta);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;position:relative}
+#page-dashboard.ns18 .dash-kpi-lbl{font-size:10px!important;font-weight:700!important;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)!important;margin-top:7px!important;position:relative}
+
+/* Tiêu đề mục + thẻ biểu đồ */
+#page-dashboard.ns18 .dash-section-title{color:var(--ink-2)!important;margin:16px 0 8px!important;font-weight:800}
+#page-dashboard.ns18 .dash-chart-card,
+#page-dashboard.ns18 .dash-rank-card,
+#page-dashboard.ns18 .dash-alert-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;margin:0 0 14px!important}
+#page-dashboard.ns18 .dash-legend-val{color:var(--ink)}
+#page-dashboard.ns18 .dash-legend-text{color:var(--ink-2)}
+/* Xếp hạng */
+#page-dashboard.ns18 .dash-rank-idx{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-dashboard.ns18 .dash-rank-name{color:var(--ink);font-weight:700}
+#page-dashboard.ns18 .dash-rank-sub{color:var(--ink-2)}
+#page-dashboard.ns18 .dash-rank-val{color:var(--magenta)!important;font-weight:800}
+/* Cảnh báo */
+#page-dashboard.ns18 .dash-alert-txt{color:var(--ink)}
+#page-dashboard.ns18 .dash-alert-empty{color:var(--ink-2)}
+
+@media (min-width:900px){
+  #page-dashboard.ns18 .dash-filter-card,
+  #page-dashboard.ns18 .dash-kpi-grid,
+  #page-dashboard.ns18 .dash-chart-card,
+  #page-dashboard.ns18 .dash-rank-card,
+  #page-dashboard.ns18 .dash-alert-card,
+  #page-dashboard.ns18 .dash-section-title{margin-left:0!important;margin-right:0!important}
+  #page-dashboard.ns18 .dash-kpi-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:12px}
+  #page-dashboard.ns18 .dash-kpi-grid:nth-of-type(2){grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
+  #page-dashboard.ns18 .dash-kpi-val{font-size:32px!important}
+}
+
+/* ══════════════════════════════════════════════════════════
+   C. #page-chuongtrinh — CHƯƠNG TRÌNH KHUYẾN MÃI (.ct-banner riêng)
+   ══════════════════════════════════════════════════════════ */
+#page-chuongtrinh.ns18{background:var(--bg)}
+#page-chuongtrinh.ns18 .ct-wrap{padding:0!important}
+/* Banner: đè 08-redesign (body.cc-redesign-active #page-chuongtrinh .ct-banner = đặc hiệu (1,2,1))
+   → dùng .ct-wrap để nâng đặc hiệu (1,3,0) + !important */
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner{background:var(--grad)!important;border-radius:var(--r)!important;box-shadow:var(--shadow-lg)!important;margin:0 0 14px!important;padding:20px 22px!important;color:#fff!important}
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner::before{content:''!important;position:absolute;top:-40px;right:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.10)!important}
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner::after{content:''!important;position:absolute;top:26px;right:110px;width:96px;height:96px;border-radius:50%;background:rgba(203,164,90,.18)!important}
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner-tag{background:rgba(255,255,255,.20)!important;color:#fff!important;opacity:1!important}
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner-title{color:#fff!important;font-weight:800!important}
+#page-chuongtrinh.ns18 .ct-wrap .ct-banner-sub{color:#fff!important;opacity:.9!important}
+
+/* Card giá TB 2 SP */
+#page-chuongtrinh.ns18 .ct-tb-card{background:var(--teal-tint)!important;border:1px solid rgba(63,182,168,.3)!important;border-radius:var(--r)!important}
+#page-chuongtrinh.ns18 .ct-tb-lbl{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-tb-val{color:var(--magenta)!important}
+
+/* Nhãn mục + reset */
+#page-chuongtrinh.ns18 .ct-section-label{color:var(--ink-2)!important}
+#page-chuongtrinh.ns18 .ct-reset{color:var(--ink-2)!important}
+#page-chuongtrinh.ns18 .ct-reset:hover{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+
+/* Hàng nhập giá */
+#page-chuongtrinh.ns18 .ct-row{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-chuongtrinh.ns18 .ct-row-num{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-row-input{color:var(--ink)!important}
+#page-chuongtrinh.ns18 .ct-row-unit{color:var(--ink-3)!important}
+#page-chuongtrinh.ns18 .ct-row-del{background:var(--pink-card)!important;color:var(--magenta)!important}
+#page-chuongtrinh.ns18 .ct-add-btn{border:2px dashed var(--line)!important;background:#fff!important;color:var(--ink-2)!important;border-radius:11px!important}
+#page-chuongtrinh.ns18 .ct-add-btn:hover{border-color:var(--teal)!important;color:var(--teal-deep)!important;background:var(--teal-tint)!important}
+#page-chuongtrinh.ns18 .ct-add-btn svg{stroke:currentColor}
+
+/* Kết quả gợi ý */
+#page-chuongtrinh.ns18 .ct-empty-hint{background:var(--pink-card)!important;border:1px solid var(--pink-line)!important;color:var(--magenta)!important;border-radius:var(--r)!important}
+#page-chuongtrinh.ns18 .ct-best{background:linear-gradient(135deg,var(--teal-tint) 0%,#E3F1EF 100%)!important;border:1.5px solid var(--teal)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-chuongtrinh.ns18 .ct-best-icon{background:var(--grad)!important;box-shadow:var(--glow)!important}
+#page-chuongtrinh.ns18 .ct-best-eyebrow{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-best-name{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-best-stat{background:rgba(255,255,255,.75)!important}
+#page-chuongtrinh.ns18 .ct-best-stat-lbl{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-best-stat-val{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-best-stat.saving .ct-best-stat-val{color:var(--magenta)!important}
+#page-chuongtrinh.ns18 .ct-order-title{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-order-price{color:var(--ink)!important}
+#page-chuongtrinh.ns18 .ct-compare{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-chuongtrinh.ns18 .ct-compare-row.best{background:var(--teal-tint)!important}
+#page-chuongtrinh.ns18 .ct-compare-row.best .ct-compare-dot{background:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-chuongtrinh.ns18 .ct-compare-row.best .ct-compare-name{color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-compare-saving,#page-chuongtrinh.ns18 .ct-grp-saving{color:var(--magenta)!important}
+
+@media (min-width:900px){
+  /* Full-width: banner trải dài, dưới chia 2 cột (nhập giá | kết quả) */
+  #page-chuongtrinh.ns18 .ct-wrap{display:grid!important;grid-template-columns:1fr 1fr;gap:0 24px;align-items:start}
+  #page-chuongtrinh.ns18 .ct-banner{grid-column:1 / -1}
+  #page-chuongtrinh.ns18 .ct-tb-card{grid-column:1 / -1}
+  #page-chuongtrinh.ns18 .ct-section-label,
+  #page-chuongtrinh.ns18 #ct-prices,
+  #page-chuongtrinh.ns18 .ct-add-btn{grid-column:1}
+  #page-chuongtrinh.ns18 #ct-result{grid-column:2;grid-row:3 / span 3;align-self:start}
+}
+
+/* ══════════════════════════════════════════════════════════
+   D. #page-checklist-ql — SỰ CỐ CỬA HÀNG (QLNS/Admin)
+   ══════════════════════════════════════════════════════════ */
+#page-checklist-ql.ns18{background:var(--bg)}
+#page-checklist-ql.ns18 .chkql-wrap{max-width:none!important;margin:0!important;padding:0!important}
+
+/* Tab con → segmented v18 (active teal-deep đặc) */
+#page-checklist-ql.ns18 .chkql-subtabs{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important}
+#page-checklist-ql.ns18 .chkql-subtab{color:var(--ink-2)!important}
+#page-checklist-ql.ns18 .chkql-subtab.active{background:var(--teal-deep)!important;color:#fff!important;box-shadow:none!important}
+
+/* Thẻ KPI thống kê nhanh */
+#page-checklist-ql.ns18 .chkql-stats{gap:10px}
+#page-checklist-ql.ns18 .chkql-stat{position:relative;overflow:hidden;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;padding:14px 8px!important}
+#page-checklist-ql.ns18 .chkql-stat::after{content:"";position:absolute;right:-20px;top:-20px;width:74px;height:74px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(63,182,168,.14),rgba(63,182,168,.03) 70%);pointer-events:none}
+#page-checklist-ql.ns18 .chkql-stat-val{font-size:26px!important;font-weight:800!important;letter-spacing:-1px;font-variant-numeric:tabular-nums;position:relative}
+#page-checklist-ql.ns18 .chkql-stat-lbl{font-size:10px!important;font-weight:700!important;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)!important;position:relative}
+#page-checklist-ql.ns18 .chkql-stat.total .chkql-stat-val{color:var(--magenta)!important}
+#page-checklist-ql.ns18 .chkql-stat.issue .chkql-stat-val{color:var(--red)!important}
+#page-checklist-ql.ns18 .chkql-stat.khan .chkql-stat-val{color:var(--red)!important}
+#page-checklist-ql.ns18 .chkql-stat.pending .chkql-stat-val{color:var(--gold)!important}
+#page-checklist-ql.ns18 .chkql-stat.issue,#page-checklist-ql.ns18 .chkql-stat.khan{background:var(--pink-card)!important;border-color:var(--pink-line)!important}
+#page-checklist-ql.ns18 .chkql-stat.issue::after,#page-checklist-ql.ns18 .chkql-stat.khan::after{background:radial-gradient(circle at 40% 40%,rgba(214,0,108,.14),rgba(214,0,108,.03) 70%)}
+
+/* Bộ lọc + chip */
+#page-checklist-ql.ns18 .chkql-filters{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-checklist-ql.ns18 .chkql-inp{border:1.5px solid var(--line)!important;border-radius:10px!important}
+#page-checklist-ql.ns18 .chkql-inp:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+#page-checklist-ql.ns18 .chkql-chip{border:1.5px solid var(--line)!important;background:#fff!important;color:var(--ink-2)!important}
+#page-checklist-ql.ns18 .chkql-chip.active{background:var(--teal-deep)!important;color:#fff!important;border-color:transparent!important}
+
+/* Thẻ sự cố (vấn đề) — giữ mức độ theo màu chức năng v18 */
+#page-checklist-ql.ns18 .chkql-vd{background:var(--surface)!important;border:1px solid var(--line)!important;border-left:4px solid var(--gold)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-checklist-ql.ns18 .chkql-vd.vua{border-left-color:var(--gold)!important}
+#page-checklist-ql.ns18 .chkql-vd.khan{border-left-color:var(--red)!important}
+#page-checklist-ql.ns18 .chkql-vd-ch{color:var(--ink)!important}
+#page-checklist-ql.ns18 .chkql-vd-muc{color:var(--ink-2)!important}
+#page-checklist-ql.ns18 .chkql-vd-muc b{color:var(--ink)!important}
+#page-checklist-ql.ns18 .chkql-vd-mota{background:var(--bg)!important;color:var(--ink-2)!important}
+#page-checklist-ql.ns18 .chkql-vd-meta{color:var(--ink-3)!important}
+#page-checklist-ql.ns18 .chkql-vd-xuly{background:var(--grad)!important;border:none!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:8px!important;font-weight:700}
+#page-checklist-ql.ns18 .chkql-vd-done-tag{color:var(--green)!important}
+
+/* Thống kê (top cửa hàng nhiều sự cố) */
+#page-checklist-ql.ns18 .chkql-tk-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+#page-checklist-ql.ns18 .chkql-tk-title{color:var(--ink)!important}
+#page-checklist-ql.ns18 .chkql-tk-rank{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-checklist-ql.ns18 .chkql-tk-name{color:var(--ink)!important}
+#page-checklist-ql.ns18 .chkql-tk-bar-wrap{background:var(--track)!important}
+#page-checklist-ql.ns18 .chkql-tk-bar{background:var(--grad)!important}
+#page-checklist-ql.ns18 .chkql-tk-num{color:var(--magenta)!important}
+#page-checklist-ql.ns18 .ns-empty{color:var(--ink-2)}
+
+@media (min-width:900px){
+  #page-checklist-ql.ns18 .chkql-stats{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))!important;gap:12px}
+  #page-checklist-ql.ns18 .chkql-stat-val{font-size:30px!important}
+  #page-checklist-ql.ns18 #chkql-list{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+}
+
+/* ══════════════════════════════════════════════════════════
+   E. ĐIỆN THOẠI (<=560px) — KPI xuống ít cột, số nhỏ lại cho vừa
+   (legacy để 5-6 cột trên phone → chật; số v18 lớn hơn nên cần thu)
+   ══════════════════════════════════════════════════════════ */
+@media (max-width:560px){
+  #page-banhang.ns18 .bh-ql-stats,
+  #page-banhang.ns18 .bh-stats-5{grid-template-columns:repeat(3,1fr)!important}
+  #page-banhang.ns18 .bh-ql-stat .n,
+  #page-banhang.ns18 .bh-stat-num{font-size:22px!important}
+  #page-dashboard.ns18 .dash-kpi-val{font-size:23px!important}
+  #page-checklist-ql.ns18 .chkql-stats{grid-template-columns:repeat(2,1fr)!important}
+  #page-checklist-ql.ns18 .chkql-stat-val{font-size:24px!important}
+}

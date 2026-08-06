@@ -1,0 +1,701 @@
+/* ============================================================
+   20-donhang-muanon-v18.css — RESKIN v18 cho CỤM ĐƠN HÀNG + MẪU NÓN
+   Scope: #page-donhang.ns18 · #page-donhang-nhan.ns18 · #page-donhang-ql.ns18
+          #page-muanon.ns18 · #page-muanon-admin.ns18
+   Mục tiêu:
+     - ÉP PHẲNG về theme v18 SÁNG chung (bỏ nền tối sub-brand cũ + bỏ xanh lá #0F6E56).
+     - Accent teal (var(--grad)/var(--teal-deep)); SỐ LỚN magenta.
+     - DESKTOP full-width sát 2 mép (đè max-width legacy); mobile 1 cột.
+     - ICON: recolor về teal-tint (giữ layout admin phức tạp), stroke tường minh.
+   GIỮ NGUYÊN markup/ID/handler — chỉ CSS, đè legacy 08/09/10 bằng !important.
+   LƯU Ý: KHÔNG đụng .mna-gallery-tag / .mna-tag-dot / .mna-cluster màu
+          (màu theo DỮ LIỆU tag — giữ để phân biệt nhóm).
+   ============================================================ */
+
+/* ════════════════════════════════════════════════════════════
+   0) KHUNG TRANG + FULL-WIDTH DESKTOP (đè max-width legacy)
+   ════════════════════════════════════════════════════════════ */
+#page-donhang.ns18,
+#page-donhang-nhan.ns18,
+#page-donhang-ql.ns18,
+#page-muanon.ns18,
+#page-muanon-admin.ns18{
+  background:var(--bg)!important;
+  min-height:auto!important;
+}
+/* Đơn hàng: con (form/subnav) đã bỏ margin ngang → page tự chèn 14px */
+#page-donhang.ns18,
+#page-donhang-nhan.ns18,
+#page-donhang-ql.ns18{padding:14px 14px calc(96px + env(safe-area-inset-bottom,0px))!important}
+/* Mẫu nón: section tự có margin:0 14px → page KHÔNG chèn ngang (tránh double) */
+#page-muanon.ns18,
+#page-muanon-admin.ns18{padding:0 0 calc(96px + env(safe-area-inset-bottom,0px))!important}
+/* Bỏ khung cột 640px của .dh-shell + cột 600px của muanon (04-responsive) */
+#page-donhang.ns18 .dh-shell,
+#page-donhang-nhan.ns18 .dh-shell,
+#page-donhang-ql.ns18 .dh-shell{
+  max-width:none!important;margin:0!important;padding:0!important;
+  color:var(--ink)!important;
+  font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
+}
+@media (min-width:900px){
+  #page-donhang.ns18,
+  #page-donhang-nhan.ns18,
+  #page-donhang-ql.ns18{max-width:none!important;margin:0!important;padding:20px 26px 64px!important}
+  #page-muanon.ns18,
+  #page-muanon-admin.ns18{max-width:none!important;margin:0!important;padding:14px 0 64px!important}
+}
+/* Nếu 04-responsive ép max-width các trang này (page-muanon) → gỡ */
+#page-muanon.ns18{max-width:none!important;margin:0!important}
+
+/* ════════════════════════════════════════════════════════════
+   1) HERO (.cc-hero-page.dh-hero) — teal v18, bỏ gold cũ
+   ════════════════════════════════════════════════════════════ */
+#page-donhang.ns18 .cc-hero-page.dh-hero,
+#page-donhang-nhan.ns18 .cc-hero-page.dh-hero,
+#page-donhang-ql.ns18 .cc-hero-page.dh-hero{
+  background:var(--grad)!important;
+  color:#fff!important;
+  border-radius:var(--r)!important;
+  margin:0 0 14px!important;
+  padding:16px 18px!important;
+  box-shadow:var(--shadow-lg)!important;
+  position:relative;overflow:hidden;
+}
+#page-donhang.ns18 .cc-hero-page.dh-hero::before,
+#page-donhang-nhan.ns18 .cc-hero-page.dh-hero::before,
+#page-donhang-ql.ns18 .cc-hero-page.dh-hero::before{
+  content:'';position:absolute;right:-30px;top:-40px;width:170px;height:170px;
+  border-radius:50%;background:rgba(255,255,255,.10)!important;pointer-events:none;
+}
+#page-donhang.ns18 .cc-hero-page.dh-hero::after,
+#page-donhang-nhan.ns18 .cc-hero-page.dh-hero::after,
+#page-donhang-ql.ns18 .cc-hero-page.dh-hero::after{
+  content:'';position:absolute;right:96px;top:24px;width:88px;height:88px;
+  border-radius:50%;background:rgba(203,164,90,.18)!important;pointer-events:none;
+}
+.ns18 .dh-hero-back{
+  background:rgba(255,255,255,.16)!important;border:1px solid rgba(255,255,255,.28)!important;
+  color:#fff!important;border-radius:11px!important;
+}
+.ns18 .dh-hero-back:active{background:rgba(255,255,255,.30)!important}
+.ns18 .dh-hero-txt .cc-hero-page-label{color:rgba(255,255,255,.85)!important;position:relative}
+.ns18 .dh-hero-txt .cc-hero-page-title{color:#fff!important;position:relative}
+.ns18 .dh-hero-tag{
+  background:rgba(255,255,255,.20)!important;color:#fff!important;
+  border-radius:20px!important;font-weight:800;position:relative;
+}
+.ns18 .dh-hero-tag.dh-tag-live{background:rgba(124,255,178,.32)!important;color:#fff!important}
+
+/* ════════════════════════════════════════════════════════════
+   2) ĐIỀU PHỐI (page-donhang) — form, nút, danh sách CH, tiền, QR
+   ════════════════════════════════════════════════════════════ */
+/* Sub-nav 3 tab */
+.ns18 .dh-subnav{margin:0 0 12px!important}
+.ns18 .dh-subnav-btn{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;
+  color:var(--ink-2)!important;border-radius:10px!important;font-family:inherit!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ns18 .dh-subnav-btn.active{
+  background:var(--grad)!important;color:#fff!important;border-color:transparent!important;
+  box-shadow:0 0 14px rgba(63,182,168,.4)!important;
+}
+
+/* Nhãn nhóm + field */
+.ns18 .dh-form{margin:0 0 14px!important}
+.ns18 .dh-grp-label{color:var(--teal-deep)!important;font-weight:800!important;letter-spacing:.05em}
+.ns18 .dh-field-lb{color:var(--ink-2)!important}
+
+/* Ô nhập */
+.ns18 .dh-inp{
+  background:#fff!important;border:1.5px solid var(--line)!important;color:var(--ink)!important;
+  border-radius:10px!important;box-shadow:none!important;font-family:inherit!important;
+}
+.ns18 .dh-inp::placeholder{color:var(--ink-3)!important}
+.ns18 .dh-inp:focus{
+  border-color:var(--teal)!important;background:#fff!important;
+  box-shadow:0 0 0 3px rgba(63,182,168,.18)!important;
+}
+.ns18 .dh-sel{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%234A5670' stroke-width='2'><path d='M4 6l4 4 4-4'/></svg>")!important;
+  background-repeat:no-repeat!important;background-position:right 12px center!important;
+}
+
+/* Nút chính điều phối → gradient teal + glow */
+.ns18 .dh-btn-tim,
+.ns18 .dh-btn-gui{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;border-radius:11px!important;font-family:inherit!important;
+}
+.ns18 .dh-btn-tim:active,
+.ns18 .dh-btn-gui:active{transform:translateY(1px)}
+.ns18 .dh-send-note{color:var(--ink-2)!important}
+
+/* Danh sách cửa hàng AI đề xuất */
+.ns18 .dh-ch-label{color:var(--ink)!important}
+.ns18 .dh-ch-hint{color:var(--ink-2)!important}
+.ns18 .dh-loading,
+.ns18 .dh-empty,
+.ns18 .dh-ql-loading,
+.ns18 .dh-ql-empty,
+.ns18 .dh-nhan-empty{
+  background:var(--surface)!important;color:var(--ink-2)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;
+}
+.ns18 .dh-empty{color:var(--red)!important}
+.ns18 .dh-ch-card{
+  background:var(--surface)!important;border:1.5px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+}
+.ns18 .dh-ch-card.dh-ch-dot1,
+.ns18 .dh-ch-card.dh-ch-on{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+.ns18 .dh-ch-idx{background:var(--track)!important;color:var(--ink-2)!important}
+.ns18 .dh-ch-dot1 .dh-ch-idx{background:var(--grad)!important;color:#fff!important}
+.ns18 .dh-ch-ten{color:var(--ink)!important}
+.ns18 .dh-ch-sub{color:var(--ink-2)!important}
+.ns18 .dh-ch-km-num{color:var(--teal-deep)!important;font-weight:800}
+.ns18 .dh-ch-chk{border-color:var(--line)!important;background:#fff!important}
+.ns18 .dh-ch-chk.on{background:var(--grad)!important;border-color:transparent!important}
+
+/* Autocomplete SP + địa chỉ */
+.ns18 .dh-ac-list,
+.ns18 .dh-addr-dd,
+.ns18 .dh-pop-nv-dd{
+  background:#fff!important;border:1px solid var(--line)!important;border-radius:12px!important;
+  box-shadow:var(--shadow-lg)!important;
+}
+.ns18 .dh-ac-item,
+.ns18 .dh-addr-dd-it,
+.ns18 .dh-pop-nv-item{border-bottom:1px solid var(--line)!important;color:var(--ink)!important}
+.ns18 .dh-ac-item:active,.ns18 .dh-ac-item.hl,
+.ns18 .dh-addr-dd-it:active,
+.ns18 .dh-pop-nv-item:active{background:var(--teal-tint)!important}
+.ns18 .dh-ac-ten{color:var(--ink)!important}
+.ns18 .dh-ac-meta{color:var(--ink-2)!important}
+.ns18 .dh-ac-gia{color:var(--teal-deep)!important}
+
+/* Thẻ sản phẩm đã chọn */
+.ns18 .dh-sp-card{background:var(--teal-tint)!important;border:1px solid var(--teal)!important;border-radius:var(--r)!important}
+.ns18 .dh-sp-card-tt{color:var(--ink)!important}
+.ns18 .dh-sp-card-meta{color:var(--ink-2)!important}
+.ns18 .dh-sp-card-x{background:#fff!important;border:1px solid var(--line)!important;color:var(--magenta)!important}
+
+/* Thành tiền — số magenta */
+.ns18 .dh-money-box{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important}
+.ns18 .dh-money-row{color:var(--ink-2)!important}
+.ns18 .dh-money-v{color:var(--ink)!important}
+.ns18 .dh-money-row.total{border-top:1px dashed var(--line)!important}
+.ns18 .dh-money-row.total .dh-money-v{color:var(--magenta)!important;font-weight:800}
+
+/* QR chuyển khoản (chỉ đổi màu — KHÔNG đụng logic/ảnh QR) */
+#page-donhang.ns18 .dh-qr-box{background:#fff!important;border:1px solid var(--line)!important;border-radius:var(--r)!important}
+#page-donhang.ns18 .dh-qr-bank{color:var(--teal-deep)!important}
+#page-donhang.ns18 .dh-qr-img{background:var(--teal-tint)!important}
+#page-donhang.ns18 .dh-qr-line{color:var(--ink-2)!important}
+#page-donhang.ns18 .dh-qr-line b{color:var(--ink)!important}
+#page-donhang.ns18 .dh-qr-line.total b{color:var(--magenta)!important}
+#page-donhang.ns18 .dh-qr-note{color:var(--ink-2)!important}
+.ns18 .dh-qr-count,.ns18 .dh-qr-status,.ns18 .dh-sepay-count{color:var(--teal-deep)!important}
+
+/* SePay overlay */
+.ns18 .dh-sepay-amt,.ns18 .dh-sepay-title{color:var(--ink)!important}
+.ns18 .dh-sepay-amt{color:var(--magenta)!important}
+.ns18 .dh-sepay-card.paid{box-shadow:0 0 0 3px var(--teal),0 20px 60px rgba(20,33,58,.3)!important}
+.ns18 .dh-sepay-spin{border-top-color:var(--teal-deep)!important}
+.ns18 .dh-sepay-ok,.ns18 .dh-qr-succ-icon{background:var(--grad)!important}
+.ns18 .dh-qr-succ-title{color:var(--teal-deep)!important}
+.ns18 .dh-qr-succ-info{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+
+/* DESKTOP: form 2 cột (form | CH đề xuất) */
+@media (min-width:900px){
+  #page-donhang.ns18 .dh-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:start}
+  #page-donhang.ns18 .dh-form{margin:0!important}
+  #page-donhang.ns18 .dh-ch-section{margin:0!important}
+  #page-donhang.ns18 .dh-send-wrap{grid-column:1 / -1}
+}
+
+/* ════════════════════════════════════════════════════════════
+   3) KHÁCH ONLINE (page-donhang-nhan) — thống kê, thẻ, popup
+   ════════════════════════════════════════════════════════════ */
+.ns18 .dh-nhan-scope-bar{color:var(--ink-2)!important}
+.ns18 .dh-nhan-scope-bar svg{color:var(--teal-deep)!important;stroke:var(--teal-deep)!important}
+.ns18 .dh-nhan-live-dot{background:var(--green)!important}
+
+/* Thẻ thống kê Khách Online */
+.ns18 .ko-stats{margin:0 0 14px!important}
+.ns18 .ko-stat-card{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r)!important;box-shadow:var(--shadow)!important;position:relative;overflow:hidden;
+}
+.ns18 .ko-stat-card.ko-stat-green{background:var(--grad)!important;border-color:transparent!important;box-shadow:var(--shadow-lg)!important}
+.ns18 .ko-stat-num{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .ko-stat-green .ko-stat-num{color:#fff!important}
+.ns18 .ko-stat-lbl{color:var(--ink-2)!important}
+.ns18 .ko-stat-green .ko-stat-lbl{color:rgba(255,255,255,.85)!important}
+
+/* Card đơn chờ nhận */
+.ns18 .dh-nhan-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .dh-nhan-card:active{background:var(--teal-tint)!important}
+.ns18 .dh-nhan-madon{color:var(--teal-deep)!important}
+.ns18 .dh-nhan-km{color:var(--teal)!important}
+.ns18 .dh-nhan-sp{color:var(--ink)!important}
+.ns18 .dh-nhan-gt{color:var(--magenta)!important;font-weight:800}
+.ns18 .dh-nhan-pt{background:var(--track)!important;color:var(--ink-2)!important}
+.ns18 .dh-nhan-pt.dh-pt-ck{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+
+/* Popup nhận đơn */
+.ns18 .dh-pop-card{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;box-shadow:var(--shadow-lg)!important}
+.ns18 .dh-pop-title{color:var(--ink)!important;font-family:inherit!important}
+.ns18 .dh-pop-madon{color:var(--ink-2)!important}
+.ns18 .dh-pop-timer-box{background:var(--teal-tint)!important}
+.ns18 .dh-pop-timer{color:var(--teal-deep)!important}
+.ns18 .dh-pop-timer.dh-timer-red{color:var(--red)!important}
+.ns18 .dh-pop-timer-lbl{color:var(--ink-2)!important}
+.ns18 .dh-pop-body{background:#FBFAF7!important}
+.ns18 .dh-pop-sp{color:var(--ink)!important}
+.ns18 .dh-pop-sl{color:var(--ink-2)!important}
+.ns18 .dh-pop-stat:nth-child(1){background:var(--teal-tint)!important}
+.ns18 .dh-pop-stat:nth-child(2){background:rgba(203,164,90,.12)!important}
+.ns18 .dh-pop-stat-lbl{color:var(--ink-2)!important}
+.ns18 .dh-pop-stat-val{color:var(--magenta)!important}
+.ns18 .dh-pop-km{color:var(--teal)!important}
+.ns18 .dh-pop-gt{color:var(--gold)!important}
+.ns18 .dh-pop-pt-row,.ns18 .dh-pop-diachi-row,.ns18 .dh-pop-creator-row{color:var(--ink)!important}
+.ns18 .dh-pop-pt-row svg,.ns18 .dh-pop-diachi-row svg{color:var(--teal-deep)!important;stroke:var(--teal-deep)!important}
+.ns18 .dh-pop-creator-row svg{color:var(--ink-3)!important;stroke:var(--ink-3)!important}
+.ns18 .dh-pop-creator-row b{color:var(--ink)!important}
+.ns18 .dh-pop-btn-nhan{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:11px!important}
+.ns18 .dh-pop-btn-tuchoi{color:var(--magenta)!important;border:1.5px solid rgba(214,0,108,.35)!important;background:transparent!important}
+.ns18 .dh-pop-nv-lbl{color:var(--ink-2)!important}
+.ns18 .dh-pop-nv-input{border:1.5px solid var(--line)!important;font-family:inherit!important}
+.ns18 .dh-pop-nv-input:focus{border-color:var(--teal)!important}
+.ns18 .dh-lydo-btn{background:var(--pink-card)!important;color:var(--magenta)!important;border:1px solid var(--pink-line)!important}
+.ns18 .dh-lydo-ta{border:1.5px solid var(--line)!important;font-family:inherit!important}
+.ns18 .dh-lydo-ta:focus{border-color:var(--teal)!important}
+.ns18 .dh-lydo-send{background:var(--grad-mag)!important;color:#fff!important}
+
+/* ════════════════════════════════════════════════════════════
+   4) QUẢN LÝ ĐƠN (page-donhang-ql) — tabs, chip, list, báo cáo, cài đặt
+   ════════════════════════════════════════════════════════════ */
+.ns18 .dh-ql-tabs{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;margin:0 0 14px!important}
+.ns18 .dh-ql-tab{color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .dh-ql-tab.active{background:var(--grad)!important;color:#fff!important;box-shadow:0 0 14px rgba(63,182,168,.4)!important}
+
+/* Chip lọc */
+.ns18 .dh-ql-chip{background:var(--surface)!important;border:1.5px solid var(--line)!important;color:var(--ink-2)!important;border-radius:20px!important}
+.ns18 .dh-ql-chip.active{background:var(--teal-tint)!important;border-color:var(--teal)!important;color:var(--teal-deep)!important}
+
+/* List đơn */
+.ns18 .dh-ql-don{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .dh-ql-don:active{background:var(--teal-tint)!important}
+.ns18 .dh-ql-madon{color:var(--teal-deep)!important}
+.ns18 .dh-ql-don-sp{color:var(--ink)!important}
+.ns18 .dh-ql-don-bot{color:var(--ink-2)!important}
+.ns18 .dh-ql-don-gt{color:var(--magenta)!important;font-weight:800}
+
+/* Badge trạng thái — giữ semantic nhưng dịu về pastel v18 */
+.ns18 .dh-tt-slate{background:#F1F3F6!important;color:var(--ink-2)!important}
+.ns18 .dh-tt-navy{background:rgba(30,95,99,.12)!important;color:var(--teal-deep)!important}
+.ns18 .dh-tt-amber{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+.ns18 .dh-tt-teal{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .dh-tt-cyan{background:var(--teal-tint)!important;color:var(--teal)!important}
+.ns18 .dh-tt-emerald{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+.ns18 .dh-tt-red{background:var(--pink-card)!important;color:var(--red)!important}
+.ns18 .dh-nhan-tt.dh-tt-da{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+.ns18 .dh-nhan-tt.dh-tt-cho{background:rgba(203,164,90,.20)!important;color:#8a6a1f!important}
+
+/* Báo cáo — số magenta */
+.ns18 .dh-bc-card,.ns18 .dh-bc-stat{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .dh-bc-num{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .dh-bc-stat-num{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .dh-bc-lbl,.ns18 .dh-bc-stat-lbl{color:var(--ink-2)!important}
+.ns18 .dh-bc-money{background:var(--teal-tint)!important;border:1px solid var(--teal)!important;border-radius:var(--r)!important}
+.ns18 .dh-bc-money-lbl{color:var(--ink-2)!important}
+.ns18 .dh-bc-money-num{color:var(--magenta)!important}
+.ns18 .dh-bc-sec{color:var(--ink-2)!important}
+.ns18 .dh-bc-item{background:var(--surface)!important;border:1px solid var(--line)!important;color:var(--ink)!important;border-radius:10px!important}
+.ns18 .dh-bc-item b{color:var(--teal-deep)!important}
+
+/* Cài đặt */
+.ns18 .dh-cd-warn{background:var(--pink-card)!important;border:1px solid var(--pink-line)!important;color:var(--magenta)!important}
+.ns18 .dh-cd-sec{color:var(--teal-deep)!important}
+.ns18 .dh-cd-toggle{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important}
+.ns18 .dh-cd-tg-ttl{color:var(--ink)!important}
+.ns18 .dh-cd-tg-sub{color:var(--ink-2)!important}
+.ns18 .dh-seg{background:var(--track)!important;border-radius:10px!important}
+.ns18 .dh-seg-btn{color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .dh-seg-btn.active{background:var(--teal-deep)!important;color:#fff!important}
+.ns18 .dh-seg-btn.dh-seg-live.active{background:var(--green)!important}
+.ns18 .dh-cd-fld label{color:var(--ink-2)!important}
+.ns18 .dh-cd-inp{background:#fff!important;border:1.5px solid var(--line)!important;color:var(--ink)!important;font-family:inherit!important}
+.ns18 .dh-cd-inp:focus{border-color:var(--teal)!important}
+.ns18 .dh-cd-save{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:11px!important}
+
+/* Overlay chi tiết đơn */
+.ns18 .dh-det-card{background:#fff!important;border-radius:20px 20px 0 0!important}
+.ns18 .dh-det-head{color:var(--ink)!important;font-family:inherit!important;border-bottom:1px solid var(--line)!important}
+.ns18 .dh-det-close,.ns18 .dh-qr-head .dh-det-close{background:var(--track)!important;color:var(--ink)!important;border-radius:9px!important}
+.ns18 .dh-det-close svg{stroke:var(--ink)!important}
+.ns18 .dh-det-madon{color:var(--teal-deep)!important}
+.ns18 .dh-det-sec{color:var(--ink-2)!important}
+.ns18 .dh-det-row{color:var(--ink-2)!important;border-bottom:1px solid var(--line)!important}
+.ns18 .dh-det-row b{color:var(--ink)!important}
+.ns18 .dh-det-dp{background:#FBFAF7!important}
+.ns18 .dh-det-dp-ch{color:var(--ink)!important}
+.ns18 .dh-det-dp-km{color:var(--ink-2)!important}
+.ns18 .dh-dp-nhan{color:var(--green)!important}
+.ns18 .dh-dp-tu_choi{color:var(--red)!important}
+.ns18 .dh-dp-het_gio{color:var(--ink-2)!important}
+.ns18 .dh-dp-cho{color:#8a6a1f!important}
+.ns18 .dh-det-empty{color:var(--ink-2)!important}
+.ns18 .dh-det-hh{background:var(--teal-tint)!important}
+.ns18 .dh-det-hh-row{color:var(--ink)!important}
+.ns18 .dh-det-hh-row b{color:var(--teal-deep)!important}
+.ns18 .dh-det-btn-next{background:var(--teal-tint)!important;color:var(--teal-deep)!important;border:1.5px solid var(--teal)!important}
+.ns18 .dh-det-btn-done{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+.ns18 .dh-det-btn-qr{background:rgba(203,164,90,.14)!important;color:#8a6a1f!important;border:1.5px solid var(--gold)!important}
+.ns18 .dh-det-paid{background:rgba(46,139,87,.14)!important;color:var(--green)!important}
+
+/* Overlay QR VietQR (dùng chung) — chỉ đổi màu, giữ ảnh QR */
+.ns18 .dh-qr-card{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important}
+.ns18 .dh-qr-head{color:var(--ink)!important;font-family:inherit!important}
+.ns18 .dh-qr-amt{color:var(--magenta)!important}
+.ns18 .dh-qr-info{background:#FBFAF7!important;border-radius:11px!important}
+.ns18 .dh-qr-info-row{color:var(--ink-2)!important}
+.ns18 .dh-qr-info-row b{color:var(--ink)!important}
+.ns18 .dh-qr-note{color:var(--ink-2)!important}
+.ns18 .dh-qr-confirm{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:11px!important}
+
+/* ════════════════════════════════════════════════════════════
+   5) MẪU NÓN — NV (page-muanon)
+   ════════════════════════════════════════════════════════════ */
+/* Status card */
+.ns18 .muanon-status-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .muanon-status-card.pending .muanon-status-icon{background:rgba(203,164,90,.16)!important;color:#8a6a1f!important}
+.ns18 .muanon-status-card.submitted .muanon-status-icon{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .muanon-status-icon svg{stroke:currentColor}
+.ns18 .muanon-status-title{color:var(--ink)!important}
+.ns18 .muanon-status-sub{color:var(--ink-2)!important}
+.ns18 .muanon-status-sub b{color:var(--teal-deep)!important}
+.ns18 .muanon-section-title{color:var(--ink-2)!important}
+
+/* Slots ảnh mẫu nón */
+.ns18 .muanon-slot.empty{border:1.5px dashed var(--line)!important;background:#FBFAF7!important;color:var(--ink-3)!important}
+.ns18 .muanon-slot.empty:hover,.ns18 .muanon-slot.empty:active{border-color:var(--teal)!important;background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .muanon-slot.filled{background:var(--track)!important;border:1px solid var(--line)!important}
+.ns18 .muanon-slot-tag.has-tag{background:var(--grad)!important;box-shadow:0 4px 12px -3px rgba(30,95,99,.5)!important}
+
+/* Mô tả */
+.ns18 .muanon-mota{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;border-radius:var(--r)!important;font-family:inherit!important}
+.ns18 .muanon-mota:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.14)!important}
+
+/* Nút gửi */
+.ns18 .muanon-submit-btn{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:12px!important}
+.ns18 .muanon-bulk-tag-btn{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+
+/* Lịch sử */
+.ns18 .muanon-history-list{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .muanon-history-item.done .muanon-history-icon{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .muanon-history-item.late .muanon-history-icon{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+.ns18 .muanon-history-item.miss .muanon-history-icon{background:var(--pink-card)!important;color:var(--magenta)!important}
+.ns18 .muanon-history-item.open .muanon-history-icon{background:var(--teal-tint)!important;color:var(--teal)!important}
+.ns18 .muanon-history-title{color:var(--ink)!important}
+.ns18 .muanon-history-sub{color:var(--ink-2)!important}
+
+/* Tag bottom sheet */
+.ns18 .muanon-tag-sheet{background:#fff!important}
+.ns18 .muanon-tag-sheet-title{color:var(--ink)!important}
+.ns18 .muanon-tag-chip{background:#F4F6F8!important;border:1.5px solid transparent!important}
+.ns18 .muanon-tag-chip.active{background:var(--grad)!important;box-shadow:0 6px 18px -4px rgba(30,95,99,.45)!important}
+.ns18 .muanon-tag-chip-check{color:var(--teal-deep)!important}
+
+/* Tab bar NV (Gửi / Timeline / Gallery) */
+.ns18 .muanon-tab-bar{background:var(--track)!important;border-radius:12px!important}
+.ns18 .muanon-tab-btn{color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .muanon-tab-btn.active{background:#fff!important;color:var(--teal-deep)!important;box-shadow:0 1px 3px rgba(30,95,99,.14)!important}
+
+/* Timeline NV */
+.ns18 .muanon-tl-card{background:var(--surface)!important;box-shadow:var(--shadow)!important;border:1px solid var(--line)!important}
+.ns18 .muanon-tl-title{color:var(--ink)!important}
+.ns18 .muanon-tl-meta{color:var(--ink-2)!important}
+.ns18 .muanon-tl-mota{color:var(--ink-2)!important}
+.ns18 .muanon-tl-badge.ok{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .muanon-tl-badge.late{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+.ns18 .muanon-tl-badge.open{background:var(--teal-tint)!important;color:var(--teal)!important}
+.ns18 .muanon-tl-chip{background:var(--track)!important;color:var(--ink-2)!important}
+
+/* Gallery NV */
+.ns18 .muanon-gl-chip{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+.ns18 .muanon-gl-chip.active{background:var(--grad)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 2px 6px rgba(30,95,99,.25)!important}
+.ns18 .muanon-tl-empty-title{color:var(--ink-2)!important}
+.ns18 .muanon-err{color:var(--red)!important}
+
+/* DESKTOP muanon NV: slots tự lấp đầy, không giãn quá to */
+@media (min-width:900px){
+  #page-muanon.ns18 .muanon-slots-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}
+  #page-muanon.ns18 .muanon-gl-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important}
+}
+
+/* ════════════════════════════════════════════════════════════
+   6) MẪU NÓN — ADMIN (page-muanon-admin)
+   ════════════════════════════════════════════════════════════ */
+/* Header sticky trắng */
+.ns18 .mna-header-bar{background:rgba(255,255,255,.92)!important;border-bottom:1px solid var(--line)!important}
+.ns18 .mna-tuan-select,.ns18 .mna-facet-input,.ns18 .mna-refresh-btn{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;font-family:inherit!important}
+.ns18 .mna-tuan-panel,.ns18 .mna-facet-dropdown{background:#fff!important;border:1px solid var(--line)!important;box-shadow:var(--shadow-lg)!important}
+.ns18 .mna-tuan-opt,.ns18 .mna-facet-item{color:var(--ink)!important}
+.ns18 .mna-tuan-opt:active,.ns18 .mna-facet-item:active{background:var(--teal-tint)!important}
+.ns18 .mna-tuan-opt input{accent-color:var(--teal-deep)!important}
+.ns18 .mna-tuan-open{color:var(--teal-deep)!important}
+.ns18 .mna-tuan-apply{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+.ns18 .mna-ft-ch{background:var(--teal)!important}
+.ns18 .mna-ft-nv{background:var(--teal-deep)!important}
+.ns18 .mna-ft-kv{background:var(--ink-2)!important}
+.ns18 .mna-facet-label{color:var(--ink)!important}
+.ns18 .mna-facet-sub{color:var(--ink-3)!important}
+
+/* Tabs admin (6 tab) */
+.ns18 .mna-tab{color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .mna-tab.active{color:var(--teal-deep)!important;background:var(--teal-tint)!important}
+.ns18 .mna-tab.active::after{background:var(--grad)!important}
+.ns18 .mna-section-title{color:var(--ink-2)!important}
+
+/* Tổng quan — stat grid (số magenta, semantic giữ) */
+.ns18 .mna-stat-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-stat-label{color:var(--ink-2)!important}
+.ns18 .mna-stat-value{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .mna-stat-success .mna-stat-value,.ns18 .mna-stat-good .mna-stat-value{color:var(--teal-deep)!important}
+.ns18 .mna-stat-medium .mna-stat-value{color:#8a6a1f!important}
+.ns18 .mna-stat-low .mna-stat-value{color:var(--red)!important}
+
+/* Progress card */
+.ns18 .mna-progress-card{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-progress-label{color:var(--ink-2)!important}
+.ns18 .mna-progress-label b{color:var(--ink)!important}
+.ns18 .mna-progress-bar{background:var(--track)!important}
+.ns18 .mna-progress-good{background:var(--grad)!important}
+.ns18 .mna-progress-medium{background:linear-gradient(90deg,#E6C878,#8a6a1f)!important}
+.ns18 .mna-progress-low{background:linear-gradient(90deg,#E8969C,#C6373C)!important}
+.ns18 .mna-progress-detail{color:var(--ink-2)!important}
+
+/* Cards chung (trend / kv / tag stats) */
+.ns18 .mna-trend-chart,.ns18 .mna-kv-list,.ns18 .mna-tag-stats{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-kv-name{color:var(--ink)!important}
+.ns18 .mna-kv-sub{color:var(--ink-2)!important}
+.ns18 .mna-kv-bar{background:var(--track)!important}
+.ns18 .mna-kv-bar-fill{background:var(--grad)!important}
+.ns18 .mna-tag-stat-label{color:var(--ink)!important}
+.ns18 .mna-tag-stat-value{color:var(--ink-2)!important}
+
+/* Filter sticky + search + selects */
+.ns18 .mna-filter-sticky{background:#fff!important;border-bottom:1px solid var(--line)!important}
+.ns18 .mna-filter-sel,.ns18 .mna-filter-search,.ns18 .mna-search-input,.ns18 .mna-bulk-btn-clear{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;font-family:inherit!important}
+.ns18 .mna-filter-search:focus,.ns18 .mna-search-input:focus,.ns18 .mna-filter-sel:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.14)!important}
+.ns18 .mna-gallery-info,.ns18 .mna-cg-info{color:var(--ink-2)!important}
+.ns18 .mna-cg-info b{color:var(--teal-deep)!important}
+.ns18 .mna-bulk-btn{background:var(--grad)!important;color:#fff!important;border:none!important;box-shadow:var(--glow)!important}
+.ns18 .mna-bulk-btn-clear{background:transparent!important;color:var(--ink-2)!important}
+.ns18 .mna-filter-btn{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+.ns18 .mna-filter-badge{background:var(--grad)!important}
+.ns18 .mna-filter-btn.on-fav{background:var(--pink-card)!important;border-color:var(--pink-line)!important;color:var(--magenta)!important}
+
+/* Zoom slider → teal */
+.ns18 .mna-zoom-slider{background:linear-gradient(90deg,var(--teal),var(--line))!important}
+.ns18 .mna-zoom-slider::-webkit-slider-thumb{border-color:var(--teal-deep)!important}
+.ns18 .mna-zoom-slider::-moz-range-thumb{border-color:var(--teal-deep)!important}
+.ns18 .mna-zoom-label{color:var(--teal-deep)!important}
+
+/* Active filter chips */
+.ns18 .mna-filter-chip{background:var(--teal-tint)!important;border:1px solid var(--teal)!important;color:var(--teal-deep)!important}
+.ns18 .mna-filter-chip:active{background:#DDEFEC!important}
+
+/* Chưa gửi (Compliance-list) */
+.ns18 .mna-cg-list,.ns18 .mna-comp-item{background:var(--surface)!important;border:1px solid var(--line)!important}
+.ns18 .mna-cg-item:active{background:var(--teal-tint)!important}
+.ns18 .mna-cg-item.selected{background:var(--teal-tint)!important}
+.ns18 .mna-cg-item.selected .mna-cg-checkbox{background:var(--grad)!important;border-color:transparent!important}
+.ns18 .mna-cg-name{color:var(--ink)!important}
+.ns18 .mna-cg-meta{color:var(--ink-2)!important}
+
+/* FAB nhắc — giữ cảnh báo (cam→gold), multi-bar navy */
+.ns18 .mna-cg-fab{background:linear-gradient(135deg,#E0A94D,#A9863F)!important;box-shadow:0 8px 24px rgba(169,134,63,.4)!important}
+.ns18 .mna-multi-bar{background:var(--ink)!important}
+
+/* Compliance cards + % */
+.ns18 .mna-comp-name{color:var(--ink)!important}
+.ns18 .mna-comp-meta{color:var(--ink-2)!important}
+.ns18 .mna-comp-good,.ns18 .mna-cpl-card.a-green .mna-cpl-card-value{color:var(--teal-deep)!important}
+.ns18 .mna-comp-medium,.ns18 .mna-cpl-card.a-amber .mna-cpl-card-value{color:#8a6a1f!important}
+.ns18 .mna-comp-low,.ns18 .mna-cpl-card.a-red .mna-cpl-card-value{color:var(--red)!important}
+.ns18 .mna-comp-bar{background:var(--track)!important}
+.ns18 .mna-comp-bg-good{background:var(--grad)!important}
+.ns18 .mna-comp-bg-medium{background:linear-gradient(90deg,#E6C878,#8a6a1f)!important}
+.ns18 .mna-comp-bg-low{background:linear-gradient(90deg,#E8969C,#C6373C)!important}
+.ns18 .mna-comp-stats{color:var(--ink-2)!important}
+.ns18 .mna-cpl-card{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-cpl-card.active{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(63,182,168,.22)!important}
+.ns18 .mna-cpl-card-value{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .mna-cpl-card-label{color:var(--ink-2)!important}
+.ns18 .mna-cpl-card-sub{color:var(--ink-3)!important}
+.ns18 .mna-cpl-info{color:var(--ink-2)!important}
+
+/* Tổng quan v11.4 — hero metric cards */
+.ns18 .mna-tq-card{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-tq-card.expanded{box-shadow:0 0 0 2px var(--teal),0 2px 8px rgba(63,182,168,.15)!important}
+.ns18 .mna-tq-card.a-green .mna-tq-card-icon{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .mna-tq-card.a-amber .mna-tq-card-icon{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+.ns18 .mna-tq-card.a-blue .mna-tq-card-icon{background:var(--teal-tint)!important;color:var(--teal)!important}
+.ns18 .mna-tq-card.a-teal .mna-tq-card-icon{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .mna-tq-card-chevron{color:var(--teal-deep)!important}
+.ns18 .mna-tq-card-label{color:var(--ink-2)!important}
+.ns18 .mna-tq-card-value b{color:var(--magenta)!important}
+.ns18 .mna-tq-card-sub{color:var(--ink-3)!important}
+
+/* group chips + sort + list */
+.ns18 .mna-tq-grp-label,.ns18 .mna-tq-sort-label,.ns18 .mna-gb-label{color:var(--ink-2)!important}
+.ns18 .mna-tq-grp-chip,.ns18 .mna-gb-chip{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .mna-tq-grp-chip.active,.ns18 .mna-gb-chip.active{background:var(--grad)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 2px 6px rgba(30,95,99,.25)!important}
+.ns18 .mna-tq-sort-sel{background-color:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;font-family:inherit!important}
+.ns18 .mna-tq-item{background:var(--surface)!important;border:1px solid var(--line)!important}
+.ns18 .mna-tq-item:active{background:var(--teal-tint)!important}
+.ns18 .mna-tq-item-name{color:var(--ink)!important}
+.ns18 .mna-tq-item-sub{color:var(--ink-2)!important}
+.ns18 .mna-tq-item-count{color:var(--magenta)!important;font-variant-numeric:tabular-nums}
+.ns18 .mna-tq-item-bar{background:var(--track)!important}
+.ns18 .mna-tq-item-bar-fill{background:var(--grad)!important}
+.ns18 .mna-tq-sort-arrow{color:var(--teal-deep)!important}
+.ns18 .mna-tq-sort-chip.primary{border-color:var(--teal-deep)!important}
+.ns18 .mna-tq-sort-chip.primary .mna-tq-sort-rank{background:var(--teal-deep)!important;color:#fff!important}
+
+/* Drill-down */
+.ns18 .mna-tq-drill{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-tq-drill-title{color:var(--ink)!important}
+.ns18 .mna-tq-drill-close,.ns18 .mna-pager-btn,.ns18 .mna-album-back,.ns18 .mna-album-h-act,.ns18 .mna-sel-cancel{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .mna-tq-nv-row{background:#FBFAF7!important}
+.ns18 .mna-tq-nv-row:active{background:var(--teal-tint)!important}
+.ns18 .mna-tq-nv-avatar{background:var(--grad)!important}
+.ns18 .mna-tq-nv-name{color:var(--ink)!important}
+.ns18 .mna-tq-nv-meta{color:var(--ink-2)!important}
+.ns18 .mna-tq-nv-stat b{color:var(--ink)!important}
+.ns18 .mna-tq-bai-card{background:#FBFAF7!important}
+.ns18 .mna-tq-badge.ok{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+.ns18 .mna-tq-badge.late{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+
+/* Timeline admin */
+.ns18 .mna-tl-card{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.ns18 .mna-tl-avatar{background:var(--grad)!important}
+.ns18 .mna-tl-name{color:var(--ink)!important}
+.ns18 .mna-tl-ma{color:var(--ink-3)!important}
+.ns18 .mna-tl-meta,.ns18 .mna-tl-time,.ns18 .mna-tl-info{color:var(--ink-2)!important}
+.ns18 .mna-time-chip{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+.ns18 .mna-time-chip.active{background:var(--grad)!important;color:#fff!important;border-color:transparent!important}
+
+/* Filter sheet (bottom) */
+.ns18 .mna-fs-sheet{background:#fff!important}
+.ns18 .mna-fs-title{color:var(--ink)!important}
+.ns18 .mna-fs-clear{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+.ns18 .mna-fs-label{color:var(--ink-2)!important}
+.ns18 .mna-fs-chip{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+.ns18 .mna-fs-chip.active{background:var(--grad)!important;color:#fff!important;border-color:transparent!important}
+.ns18 .mna-fs-apply{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+.ns18 .mna-fs-date-input{background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;font-family:inherit!important}
+
+/* Album + multi-select */
+.ns18 .mna-album-header{background:#fff!important;border-bottom:1px solid var(--line)!important}
+.ns18 .mna-album-h-name{color:var(--ink)!important}
+.ns18 .mna-album-h-meta{color:var(--ink-2)!important}
+.ns18 .mna-album-create-btn{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+.ns18 .mna-album-card{background:var(--surface)!important;border:1px solid var(--line)!important}
+.ns18 .mna-album-name{color:var(--ink)!important}
+.ns18 .mna-sel-count{color:var(--ink)!important}
+.ns18 .mna-sel-count b{color:var(--teal-deep)!important}
+.ns18 .mna-sel-all{background:var(--grad)!important;color:#fff!important}
+.ns18 .mna-sel-cb.on{background:var(--teal-deep)!important}
+.ns18 .mna-gallery-item.selected{outline-color:var(--teal-deep)!important}
+
+/* AI cluster (Nhóm AI) — nút AI dùng magenta gradient; tiến độ teal */
+.ns18 .mna-cluster-header{background:linear-gradient(135deg,rgba(63,182,168,.10),rgba(30,95,99,.05))!important;border:1px solid rgba(30,95,99,.12)!important}
+.ns18 .mna-cluster-title{color:var(--ink)!important}
+.ns18 .mna-cluster-sub{color:var(--ink-2)!important}
+.ns18 .mna-ai-trigger{background:var(--grad-mag)!important;box-shadow:0 6px 16px rgba(214,0,108,.32)!important}
+.ns18 .mna-cluster-bar{background:rgba(30,95,99,.06)!important}
+.ns18 .mna-scope-btn{color:var(--ink-2)!important;font-family:inherit!important}
+.ns18 .mna-scope-btn.active{background:#fff!important;color:var(--ink)!important;box-shadow:0 2px 8px rgba(30,95,99,.15)!important}
+.ns18 .mna-cluster-card{background:var(--surface)!important;border:1px solid var(--line)!important}
+.ns18 .mna-cluster-label{color:var(--ink)!important}
+.ns18 .mna-ai-progress-pct{color:var(--teal-deep)!important}
+.ns18 .mna-ai-progress-fill,.ns18 .mna-dl-fill,.ns18 .mna-ai-bar-fill{background:var(--grad)!important}
+.ns18 .mna-ai-progress-title,.ns18 .mna-dl-title{color:var(--ink)!important}
+.ns18 .mna-ai-stat{background:var(--surface)!important;border:1px solid var(--line)!important}
+.ns18 .mna-ai-stat-num b{color:var(--teal-deep)!important}
+.ns18 .mna-ai-analyze-btn{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important}
+.ns18 .mna-ai-running{color:var(--teal-deep)!important}
+.ns18 .mna-tag-name{color:var(--ink)!important}
+.ns18 .mna-tag-cnt{color:var(--ink-3)!important}
+
+/* ════════════════════════════════════════════════════════════
+   7) OVERLAY DÙNG CHUNG NGOÀI SCOPE .ns18 (đặt cạnh .app, không nằm
+      trong page div) — dùng literal hex vì token --teal chỉ có trong .ns18.
+      Chỉ hiện khi NS00490 mở QR/SePay từ Đơn hàng → an toàn.
+      ════════════════════════════════════════════════════════════ */
+body.ns18-shell #dh-qr-overlay .dh-qr-card{background:#fff!important;border:1px solid #E6E2D8!important;color:#14213A!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-head{color:#14213A!important;font-family:'Be Vietnam Pro',system-ui,sans-serif!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-head .dh-det-close{background:#EAEEF0!important;color:#14213A!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-head .dh-det-close svg{stroke:#14213A!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-amt{color:#D6006C!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-info{background:#FBFAF7!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-info-row{color:#4A5670!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-info-row b{color:#14213A!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-note{color:#4A5670!important}
+body.ns18-shell #dh-qr-overlay .dh-qr-confirm{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important;color:#fff!important;box-shadow:0 0 16px rgba(63,182,168,.45)!important;border-radius:11px!important}
+/* SePay overlay (JS append body-level) */
+body.ns18-shell .dh-sepay-amt{color:#D6006C!important}
+body.ns18-shell .dh-sepay-card.paid{box-shadow:0 0 0 3px #3FB6A8,0 20px 60px rgba(20,33,58,.3)!important}
+body.ns18-shell .dh-sepay-spin{border-top-color:#1E5F63!important}
+body.ns18-shell .dh-sepay-ok{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important}
+body.ns18-shell .dh-sepay-count,body.ns18-shell .dh-sepay-status{color:#1E5F63!important}
+
+/* --- Popup nhận đơn (JS re-parent về body, 02-nhandon.js) --- */
+body.ns18-shell #dh-nhan-popup .dh-pop-card{background:#fff!important;border:1px solid #E6E2D8!important;color:#14213A!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-title{color:#14213A!important;font-family:'Be Vietnam Pro',system-ui,sans-serif!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-madon,
+body.ns18-shell #dh-nhan-popup .dh-pop-timer-lbl,
+body.ns18-shell #dh-nhan-popup .dh-pop-sl,
+body.ns18-shell #dh-nhan-popup .dh-pop-stat-lbl,
+body.ns18-shell #dh-nhan-popup .dh-pop-nv-lbl{color:#4A5670!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-timer-box{background:#EEF6F5!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-timer{color:#1E5F63!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-timer.dh-timer-red{color:#C6373C!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-body{background:#FBFAF7!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-sp,
+body.ns18-shell #dh-nhan-popup .dh-pop-pt-row,
+body.ns18-shell #dh-nhan-popup .dh-pop-diachi-row,
+body.ns18-shell #dh-nhan-popup .dh-pop-creator-row{color:#14213A!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-stat:nth-child(1){background:#EEF6F5!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-stat:nth-child(2){background:rgba(203,164,90,.12)!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-stat-val{color:#D6006C!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-km{color:#3FB6A8!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-gt{color:#CBA45A!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-pt-row svg,
+body.ns18-shell #dh-nhan-popup .dh-pop-diachi-row svg{color:#1E5F63!important;stroke:#1E5F63!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-creator-row b{color:#14213A!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-btn-nhan{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important;color:#fff!important;box-shadow:0 0 16px rgba(63,182,168,.45)!important;border-radius:11px!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-btn-tuchoi{color:#D6006C!important;border:1.5px solid rgba(214,0,108,.35)!important;background:transparent!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-nv-input,
+body.ns18-shell #dh-nhan-popup .dh-lydo-ta{border:1.5px solid #E6E2D8!important;font-family:inherit!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-nv-dd{background:#fff!important;border:1px solid #E6E2D8!important;box-shadow:0 2px 6px rgba(20,33,58,.08),0 16px 48px rgba(20,33,58,.14)!important}
+body.ns18-shell #dh-nhan-popup .dh-pop-nv-item:active{background:#EEF6F5!important}
+body.ns18-shell #dh-nhan-popup .dh-lydo-btn{background:#FCEFF5!important;color:#D6006C!important;border:1px solid #F3D4E2!important}
+body.ns18-shell #dh-nhan-popup .dh-lydo-send{background:linear-gradient(135deg,#A80556 0%,#D6006C 100%)!important;color:#fff!important}
+
+/* --- Filter sheet + download progress admin (JS append body) --- */
+body.ns18-shell .mna-fs-sheet{background:#fff!important}
+body.ns18-shell .mna-fs-title{color:#14213A!important}
+body.ns18-shell .mna-fs-clear{background:#fff!important;border:1px solid #E6E2D8!important;color:#4A5670!important}
+body.ns18-shell .mna-fs-label{color:#4A5670!important}
+body.ns18-shell .mna-fs-chip{background:#fff!important;border:1px solid #E6E2D8!important;color:#4A5670!important}
+body.ns18-shell .mna-fs-chip.active{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important;color:#fff!important;border-color:transparent!important}
+body.ns18-shell .mna-fs-apply{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important;color:#fff!important;box-shadow:0 0 16px rgba(63,182,168,.45)!important}
+body.ns18-shell .mna-fs-date-input{background:#fff!important;border:1px solid #E6E2D8!important;color:#14213A!important}
+body.ns18-shell .mna-dl-title{color:#14213A!important}
+body.ns18-shell .mna-dl-fill{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important}
