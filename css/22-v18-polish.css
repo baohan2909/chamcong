@@ -54,7 +54,7 @@
   body.ns18-shell #page-donhang-ql.ns18.active, body.ns18-shell #page-muanon.ns18.active,
   body.ns18-shell #page-muanon-admin.ns18.active, body.ns18-shell #page-admin.ns18.active,
   body.ns18-shell #page-giaodien.ns18.active{
-    padding-left:14px!important;padding-right:14px!important;
+    padding-left:10px!important;padding-right:10px!important;
   }
   #page-chamcong.ns18 .card, #page-taikhoan.ns18 .card, #page-giocong.ns18 .card,
   #page-giocong-ql.ns18 .card, #page-bandochidung.ns18 .card, #page-lichca.ns18 .card,
@@ -71,7 +71,7 @@
 }
 
 /* ===== Trang chủ: mobile có lề; hub-shell bỏ padding riêng (để page lo lề) ===== */
-@media (max-width:899px){ body.ns18-shell #page-home.ns18.active{padding-left:16px!important;padding-right:16px!important} }
+@media (max-width:899px){ body.ns18-shell #page-home.ns18.active{padding-left:10px!important;padding-right:10px!important} }
 .ns18 .hub-shell{padding-left:0!important;padding-right:0!important;max-width:none!important}
 
 /* ===== Ô NHẬP đồng bộ (cao 42px, bo 10px, focus teal) ===== */

@@ -74,9 +74,9 @@
   font-size:24px!important;font-weight:800!important;letter-spacing:-.4px!important;
 }
 
-/* Lưới thẻ phân hệ: nhiều cột lấp đầy */
+/* Lưới thẻ phân hệ: nhiều cột lấp đầy. [v18.16] gap 14→10 (Aroma: lề dư nhiều, gò bó) */
 #page-home.ns18 .hub-grid{
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;gap:14px!important;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;gap:10px!important;
 }
 @media (min-width:900px){
   #page-home.ns18 .hub-grid{grid-template-columns:repeat(auto-fill,minmax(196px,1fr))!important;gap:16px!important}
