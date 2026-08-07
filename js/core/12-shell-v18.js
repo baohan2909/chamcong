@@ -69,8 +69,16 @@
         if (!vis.length) return;
         out.push({ sec: g.title });
         vis.forEach(function (it) {
-          var m = String(it.act).match(/goToPage\(['"]([^'"]+)['"]\)/);
-          out.push({ label: it.label, ic: it.ic, page: m ? m[1] : _labelPage(it.label), act: it.act });
+          var actStr = String(it.act);
+          var m = actStr.match(/goToPage\(['"]([^'"]+)['"]\)/);
+          var page = m ? m[1] : _labelPage(it.label);
+          // [v18.09] Các mục mở overlay-hub (Giám sát TC / Điểm hệ thống) → gán pseudo-page
+          // để sidebar highlight như trang thật + để ns18SyncSidebar nhận diện.
+          if (!page) {
+            if (actStr.indexOf('tcOpenGiamSat') >= 0) page = 'giamsat';
+            else if (actStr.indexOf('diemHubOpen') >= 0) page = 'diem';
+          }
+          out.push({ label: it.label, ic: it.ic, page: page, act: it.act });
         });
       });
     }
@@ -104,6 +112,7 @@
       var idx = +btn.getAttribute('data-idx');
       btn.addEventListener('click', function () {
         var it = items[idx];
+        if (window.ns18CloseOverlays) window.ns18CloseOverlays();   // [v18.09] điều hướng = đóng overlay-hub (như rời trang)
         if (closeAfter) ns18CloseDrawer();
         if (it && typeof it.act === 'function') { try { it.act(); } catch (e) {} }
         ns18SyncSidebar(it ? it.page : null);
@@ -161,6 +170,7 @@
       var idx = +btn.getAttribute('data-idx');
       btn.addEventListener('click', function () {
         var it = items[idx];
+        if (window.ns18CloseOverlays) window.ns18CloseOverlays();   // [v18.09] điều hướng = đóng overlay-hub
         if (it && typeof it.act === 'function') { try { it.act(); } catch (e) {} }
         ns18SyncSidebar(it ? it.page : null);
       });
@@ -179,6 +189,14 @@
     var dr = document.getElementById(DRAWER_ID), bg = document.getElementById(DRBG_ID);
     if (bg) bg.classList.remove('open');
     if (dr) dr.classList.remove('open');
+  };
+
+  // [v18.09] Đóng các overlay-hub body-level (Điểm HT / Giám sát TC / Sự vụ khu vực + con)
+  // khi điều hướng qua sidebar/bottom-nav → chúng hành xử như TRANG trong shell, không
+  // treo phủ lên trang mới. CHỈ NS00490 (chỉ shell mới gọi). appConfirm/busy KHÔNG đụng.
+  window.ns18CloseOverlays = function () {
+    ['diem-hub-ov', 'diem-bulk-ov', 'diem-history-ov', 'tcgs-overlay', 'svcd-overlay', 'bgsv-detail']
+      .forEach(function (id) { var e = document.getElementById(id); if (e) e.remove(); });
   };
 
   window.ns18SyncSidebar = function (page) {

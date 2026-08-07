@@ -218,3 +218,12 @@ body.ns18-shell .ns-fa-btn-save,
 body.ns18-shell .ns-fa-btn-done{background:var(--grad)!important;box-shadow:var(--glow)!important}
 body.ns18-shell .ns-fa-slider{background:linear-gradient(90deg,#E4E7EC,#3FB6A8)!important}
 body.ns18-shell .ns-fa-slider::-webkit-slider-thumb{border-color:var(--teal-deep)!important}
+
+/* [v18.09] "TRANG THẬT TRONG SHELL" (Aroma chốt): trên DESKTOP, overlay-hub bắt đầu
+   SAU sidebar (246px) → sidebar hiện + nội dung ở vùng chính, không phủ toàn màn như tab.
+   Kèm JS đóng overlay khi điều hướng (12-shell). Mobile (<900) giữ full-màn (không sidebar). */
+@media (min-width:900px){
+  body.ns18-shell #diem-hub-ov,
+  body.ns18-shell #tcgs-overlay,
+  body.ns18-shell #svcd-overlay{left:246px!important}
+}
