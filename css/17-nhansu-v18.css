@@ -449,7 +449,18 @@
   #page-duyetyc.ns18 #yc-content .yc-day-header{grid-column:1/-1;margin-top:6px}
   #page-duyetyc.ns18 #yc-content > .dnp-empty{grid-column:1/-1}
 
-  /* KPI nhân sự: 6 ô 1 hàng cho thoáng */
-  #page-nhansu.ns18 .ns-stats-grid{grid-template-columns:repeat(6,1fr)}
+  /* KPI nhân sự: mỗi khối .ns-stats-grid có 3 ô → 3 cột (repeat(6) làm 3 ô dồn nửa trái) */
+  #page-nhansu.ns18 .ns-stats-grid{grid-template-columns:repeat(3,1fr)}
   #page-nhansu.ns18 .ns-stats-grid+.ns-stats-grid{margin-top:10px}
 }
+
+/* [v18.09] Đè legacy còn sót cụm Nhân sự/Duyệt (an toàn: chỉ .ns18 = NS00490) */
+/* Nút "Sửa" (loại Bổ sung ca) legacy = xanh dương #185FA5 → viền teal */
+#page-nhansu.ns18 .ns-btn-edit,
+#page-duyetyc.ns18 .ns-btn-edit{background:var(--surface)!important;color:var(--teal-deep)!important;border:1.5px solid var(--teal)!important}
+#page-nhansu.ns18 .ns-btn-edit::before,
+#page-nhansu.ns18 .ns-btn-edit::after,
+#page-duyetyc.ns18 .ns-btn-edit::before,
+#page-duyetyc.ns18 .ns-btn-edit::after{display:none!important;content:none!important}
+/* Bong bóng ::before xanh-lá của thẻ KPI .ns-stat (08-redesign radial #1D9E75) → tắt (đã có ::after teal) */
+#page-nhansu.ns18 .ns-stat::before{display:none!important;content:none!important}

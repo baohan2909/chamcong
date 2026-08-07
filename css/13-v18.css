@@ -16,6 +16,14 @@
   --magenta:#D6006C; --red:#C6373C; --green:#2E8B57;
   --teal-tint:#EEF6F5; --track:#EAEEF0;
   --pink-card:#FCEFF5; --pink-line:#F3D4E2;
+  /* [v18.09] VÁ TOKEN TREO: các tên dưới KHÔNG được .ns18 định nghĩa lại nên rơi về
+     :root legacy (00-tokens) = xanh lá #1D9E75/#E1F5EE, xanh dương #185FA5, mù tạt #BA7517
+     → rò rỉ off-brand ở KPI/badge/note dùng var(--green-m/--blue/--amber/--green-lt/...).
+     Remap về on-brand, CHỈ trong .ns18 (539 người legacy giữ nguyên :root). */
+  --surface-2:#FBFAF7; --gold-d:#A9863F;
+  --green-m:#2E8B57; --green-lt:#E9F3ED; --green-bd:#BFE3D0;
+  --blue:#1E5F63; --blue-m:#3FB6A8; --blue-lt:#EEF6F5; --blue-bd:rgba(63,182,168,.35);
+  --amber:#A9863F; --amber-m:#CBA45A; --amber-lt:#FCF6E9; --amber-bd:rgba(203,164,90,.4);
   --grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%);
   --grad-mag:linear-gradient(135deg,#A80556 0%,#D6006C 100%);
   --shadow:0 1px 2px rgba(20,33,58,.06),0 8px 24px rgba(20,33,58,.08);

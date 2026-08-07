@@ -264,3 +264,12 @@
 #page-giaodien.ns18 .gd-pv-badge{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
 #page-giaodien.ns18 .gd-pv-link{color:var(--teal-deep)!important}
 #page-giaodien.ns18 .gd-swatch.selected{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--teal),0 4px 14px rgba(20,33,58,.22)!important}
+
+/* [v18.09] Trang chủ trên desktop shell: sidebar đã có brand+chuông+user →
+   ẩn .hub-topbar (tránh 2 chuông + 2 khối user trùng lặp). Giữ topbar cho mobile. */
+@media (min-width:900px){
+  body.ns18-shell #page-home.ns18 .hub-topbar{display:none!important}
+}
+/* Số KPI Admin bằng cỡ chuẩn KPI v18 (.mk .v=34px); nhãn 700 uppercase */
+#page-admin.ns18 .adm2-stat-value{font-size:34px!important}
+#page-admin.ns18 .adm2-stat-label{font-weight:700!important;font-size:10.5px!important;letter-spacing:.05em!important;text-transform:uppercase!important}

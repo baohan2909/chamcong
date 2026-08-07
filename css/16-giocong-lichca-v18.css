@@ -363,3 +363,19 @@ body.ns18-shell #page-lichca.ns18 .lc-header{background:var(--surface)!important
   body.ns18-shell #page-giocong.ns18 .gc-table-wrap,
   body.ns18-shell #page-lichca.ns18 .lc-header{margin-left:0!important;margin-right:0!important}
 }
+
+/* [v18.09] FIX FONT: <button> KHÔNG kế thừa font-family → các nút reskin cụm này
+   render Arial (base + override đều quên set). Ép Be Vietnam Pro (inherit) cho mọi nút.
+   Xác minh runtime: .lcnv-subtab/.thang-btn/.lc-btn-send ra Arial. */
+#page-giocong.ns18 .thang-btn,
+#page-giocong-ql.ns18 .thang-btn,
+#page-giocong-ql.ns18 .gcql-mode-tab,
+#page-lichca.ns18 .lcnv-subtab,
+#page-lichca.ns18 .lc-btn-send,
+#page-lichca.ns18 .ns-time-tab,
+#page-lichca.ns18 .lc-preset-chip,
+#page-lichca.ns18 .lc-add-ca,
+#page-lichca.ns18 .lc-slot-del,
+#page-lichca.ns18 .thang-btn,
+#page-lichca-ql.ns18 .lcql-mode-tab,
+#page-lichca-ql.ns18 .thang-btn{font-family:inherit!important}

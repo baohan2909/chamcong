@@ -388,3 +388,15 @@ body.ns18-shell .bh-modal .bh-chip{background:var(--teal-tint)!important;color:v
   #page-checklist-ql.ns18 .chkql-stats{grid-template-columns:repeat(2,1fr)!important}
   #page-checklist-ql.ns18 .chkql-stat-val{font-size:24px!important}
 }
+
+/* [v18.09] Chương trình KM: hủy clamp max-width:600px của 04-responsive trên desktop
+   (Section C biến .ct-wrap thành lưới nhưng cả trang bị nhốt cột 600px giữa màn). */
+@media (min-width:900px){
+  #page-chuongtrinh.ns18{max-width:none!important;margin:0!important}
+}
+/* Vùng KẾT QUẢ gợi ý KM (.ct-order-*) legacy 06-modules: NGUYÊN GIÁ xanh lá,
+   giảm% xanh dương, amber → kéo về teal/magenta/gold. Class có sẵn nên đè được. */
+#page-chuongtrinh.ns18 .ct-order-tag.nguyen{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-chuongtrinh.ns18 .ct-order-tag.giam{background:var(--pink-card)!important;color:var(--magenta)!important}
+#page-chuongtrinh.ns18 .ct-order-tag.gift,
+#page-chuongtrinh.ns18 .ct-grp-num{color:var(--gold-d)!important}

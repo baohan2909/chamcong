@@ -420,3 +420,32 @@
 #page-checklist.ns18 .chk-rec-time{color:var(--teal-deep)}
 #page-checklist.ns18 .chk-rec-badge.ok{background:var(--teal-tint);color:var(--teal-deep)}
 #page-checklist.ns18 .chk-rec-badge.issue{background:rgba(198,55,60,.12);color:var(--red)}
+
+/* ============================================================
+   [v18.09] Đè legacy còn sót ở CÁC SUB-COMPONENT sự vụ / checklist
+   (thẻ sự vụ, badge, tag — render động từ JS, class có sẵn nên CSS đè được).
+   An toàn: chỉ .ns18 = NS00490. Worst-case no-op nếu class đổi.
+   ============================================================ */
+/* chip "Người xử lý" legacy xanh dương #1D4ED8 → teal */
+#page-bangiao.ns18 .bg-sv-xl-chip,
+#page-bangiao-ql.ns18 .bg-sv-xl-chip{background:var(--teal-tint)!important;border:1px solid rgba(63,182,168,.35)!important;color:var(--teal-deep)!important}
+/* nút "Đã xử lý"/"Đóng" gradient xanh lá → gradient teal */
+#page-bangiao.ns18 .bg-sv-btn-done,
+#page-bangiao.ns18 .bg-sv-btn-close,
+#page-bangiao-ql.ns18 .bg-sv-btn-done,
+#page-bangiao-ql.ns18 .bg-sv-btn-close{background:var(--grad)!important;box-shadow:var(--glow)!important;color:#fff!important}
+/* badge tuổi thẻ sự vụ QL: cool/done xanh lá → teal-tint; warm → gold; hot → đỏ */
+#page-bangiao-ql.ns18 .bgql-age.cool,
+#page-bangiao-ql.ns18 .bgql-age.done{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-bangiao-ql.ns18 .bgql-age.warm{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+#page-bangiao-ql.ns18 .bgql-age.hot{background:rgba(198,55,60,.12)!important;color:var(--red)!important}
+/* badge deadline: amber legacy → gold; quá hạn → đỏ */
+#page-bangiao-ql.ns18 .bgql-deadline{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important;border-color:rgba(203,164,90,.4)!important}
+#page-bangiao-ql.ns18 .bgql-deadline.past{background:rgba(198,55,60,.12)!important;color:var(--red)!important}
+/* tag mức độ thẻ sự vụ: nhẹ → teal, vừa → gold, khẩn → đỏ */
+#page-bangiao.ns18 .chk-mucdo-tag.nhe,
+#page-bangiao-ql.ns18 .chk-mucdo-tag.nhe{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+#page-bangiao.ns18 .chk-mucdo-tag.vua,
+#page-bangiao-ql.ns18 .chk-mucdo-tag.vua{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+#page-bangiao.ns18 .chk-mucdo-tag.khan,
+#page-bangiao-ql.ns18 .chk-mucdo-tag.khan{background:rgba(198,55,60,.12)!important;color:var(--red)!important}

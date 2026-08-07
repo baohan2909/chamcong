@@ -28,6 +28,11 @@ body.ns18-shell{
   --ink:#14213A; --ink-2:#4A5670; --ink-3:#8A93A5; --line:#E6E2D8;
   --teal:#3FB6A8; --teal-deep:#1E5F63; --gold:#CBA45A; --magenta:#D6006C;
   --teal-tint:#EEF6F5; --track:#EAEEF0; --pink-card:#FCEFF5; --pink-line:#F3D4E2;
+  /* [v18.09] Vá token treo (như .ns18) cho overlay body-level — chỉ NS00490. */
+  --surface-2:#FBFAF7; --gold-d:#A9863F;
+  --green-m:#2E8B57; --green-lt:#E9F3ED; --green-bd:#BFE3D0;
+  --blue:#1E5F63; --blue-m:#3FB6A8; --blue-lt:#EEF6F5; --blue-bd:rgba(63,182,168,.35);
+  --amber:#A9863F; --amber-m:#CBA45A; --amber-lt:#FCF6E9; --amber-bd:rgba(203,164,90,.4);
   --grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%);
   --grad-mag:linear-gradient(135deg,#A80556 0%,#D6006C 100%);
   --shadow-lg:0 2px 6px rgba(20,33,58,.08),0 16px 48px rgba(20,33,58,.14);
@@ -205,3 +210,11 @@ body.ns18-shell .mna-gallery-info button[style*="background:#1D9E75"]{background
 body.ns18-shell .mna-gallery-info button[style*="color:#0F6E56"]{color:var(--teal-deep)!important;border-color:var(--teal)!important}
 /* Bán hàng — ngày highlight lịch sử phiên */
 body.ns18-shell .bh-hist-meta span[style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+
+/* [v18.09] Face ADMIN modal (.ns-fa-*): công tắc/slider/nút Lưu dùng xanh thép
+   #1B4965/#0F2E45 (11-face.css) chưa được retint → kéo về teal v18. Chỉ NS00490. */
+body.ns18-shell .ns-fa-toggle.on{background:var(--grad)!important}
+body.ns18-shell .ns-fa-btn-save,
+body.ns18-shell .ns-fa-btn-done{background:var(--grad)!important;box-shadow:var(--glow)!important}
+body.ns18-shell .ns-fa-slider{background:linear-gradient(90deg,#E4E7EC,#3FB6A8)!important}
+body.ns18-shell .ns-fa-slider::-webkit-slider-thumb{border-color:var(--teal-deep)!important}

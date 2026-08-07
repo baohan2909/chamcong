@@ -216,3 +216,36 @@
   /* hero cao thoáng hơn chút */
   #page-chamcong.ns18 .cc-hero-body{padding:22px 26px}
 }
+
+/* ============================================================
+   [v18.09] BỊT NỐT LEGACY 08-redesign trên MÀN CHUẨN.
+   body vẫn giữ cc-redesign-active (không gỡ) → các rule (1,3,0)+!important
+   của 08 còn thắng rule v18 (1,2,0) không-!important. Các override dưới có
+   specificity ngang (1,3,0) + !important + LOAD SAU (14 > 08) nên thắng chắc.
+   Xác minh runtime: card-section/badge/nhãn hết xanh-lá.
+   ============================================================ */
+/* Tiêu đề mục: xám ink-2, bỏ gạch xanh lá */
+#page-chamcong.ns18 .card .card-section{color:var(--ink-2)!important;border-left:none!important;padding:0!important;font-size:11px!important;letter-spacing:.06em!important;margin-bottom:12px!important}
+#page-chamcong.ns18 #card-sale-target .card-section{color:var(--gold-d)!important;border-left:none!important;padding:0!important}
+/* Badge "Lấy vị trí"/"Quét khuôn mặt" mặc định = gradient teal + glow (legacy ép pill xanh lá) */
+#page-chamcong.ns18 .card .gps-badge,
+#page-chamcong.ns18 .card .selfie-badge{background:var(--grad)!important;color:#fff!important;box-shadow:var(--glow)!important;border-radius:10px!important;padding:8px 13px!important;font-size:12px!important;min-width:112px!important;text-align:center!important}
+/* Trạng thái badge vẫn thắng mặc định (đặc hiệu cao hơn + !important) */
+#page-chamcong.ns18 .card .gps-btn.success .gps-badge{background:var(--green)!important;box-shadow:none!important}
+#page-chamcong.ns18 .card .gps-btn.warn .gps-badge{background:var(--gold-d)!important;box-shadow:none!important}
+#page-chamcong.ns18 .card .gps-btn.error .gps-badge{background:var(--red)!important;box-shadow:none!important}
+#page-chamcong.ns18 .card .selfie-btn.done .selfie-badge{background:var(--green)!important;box-shadow:none!important}
+/* Nút GPS/Ảnh: trả padding (legacy ép padding:0 → dán sát mép) */
+#page-chamcong.ns18 .card .gps-btn,
+#page-chamcong.ns18 .card .selfie-btn{padding:14px 16px!important}
+/* Nhãn field + text phụ về token v18 (legacy ép xám #6b7280 / nâu #BA7517) */
+#page-chamcong.ns18 .card .field label{color:var(--ink-3)!important;font-weight:700!important;font-size:11px!important;letter-spacing:.05em!important;text-transform:uppercase!important}
+#page-chamcong.ns18 .card .field-val-name{color:var(--ink)!important}
+#page-chamcong.ns18 .card .field-val-readonly{color:var(--ink-2)!important}
+#page-chamcong.ns18 .card .gps-label,
+#page-chamcong.ns18 .card .selfie-text{color:var(--ink)!important}
+#page-chamcong.ns18 .card .gps-sub,
+#page-chamcong.ns18 .card .selfie-sub{color:var(--ink-2)!important}
+/* Ô tìm cửa hàng: nền trắng + viền line + focus teal (legacy ép nền be + focus xanh lá) */
+#page-chamcong.ns18 .ch-input{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;padding:12px 14px!important}
+#page-chamcong.ns18 .ch-input:focus{background:#fff!important;border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
