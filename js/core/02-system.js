@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.14',
+  'sys.cache_version': 'v18.15',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -536,7 +536,7 @@ const HUB_GROUPS = {
       { label:'Bản đồ chấm công',   desc:'Vị trí chấm công',      ic:_hubIc.map,   roles:['NV','CTV'],               quyen:'bando.xem',        act:()=>goToPage('bandochidung') },
       { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
       { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
-      { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV'],               act:()=>nsFaceOpenEnrollment() },
+      { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV','QLNS','QLBH','ADMIN'], act:()=>nsFaceOpenEnrollment() },  // [v18.15] mọi vai trò trừ CUA_HANG (Aroma)
       { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
       { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
       { label:'Lịch hoạt động CH',   desc:'Mở/đóng toàn hệ thống', ic:_hubIc.cal,   roles:['QLNS','QLBH'], setting:'lichhd.enabled', quyen:'lichca.hoatdong', act:()=>moLichHDQL() },
@@ -1035,7 +1035,7 @@ function khoiDongApp(){
   document.getElementById('disp-ma-nv').textContent=SESSION.ma;
   if(typeof taiDiemPhongDo==='function') taiDiemPhongDo(); // [v17.5x] điểm phong độ
   // [v2-cam] Preload model nhận diện khuôn mặt cho NV có bật face → lúc chấm công mở camera là quét ngay (không chờ tải model)
-  if (String(SESSION.vaiTro||'').toUpperCase() === 'NV' && typeof nsFaceCheckEnabled === 'function' && typeof nsFacePreload === 'function') {
+  if (String(SESSION.vaiTro||'').toUpperCase() !== 'CUA_HANG' && typeof nsFaceCheckEnabled === 'function' && typeof nsFacePreload === 'function') {  // [v18.15] preload cho mọi vai trò trừ CUA_HANG
     setTimeout(function(){ nsFaceCheckEnabled().then(function(on){ if (on) nsFacePreload(); }).catch(function(){}); }, 2500);
   }
   // [v2-role] Kiểm tra đổi vị trí CTV⇄NV → buộc đăng nhập lại (delay để không chặn khởi động)
@@ -1487,8 +1487,8 @@ async function moCamera(){
   _cameraTarget = 'cham_cong';
 
   // [v12.4] Nếu face.chamcong_enabled BẬT + NV enrolled → mở face verify thay vì camera chụp
-  // Chỉ áp dụng cho role NV (admin/QL vẫn dùng camera thường)
-  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() === 'NV') {
+  // [v18.15] Aroma chốt 08/08: TẤT CẢ vai trò đều quét khuôn mặt, TRỪ CUA_HANG (trước chỉ NV)
+  if (typeof nsFaceCheckEnabled === 'function' && String(SESSION.vaiTro||'').toUpperCase() !== 'CUA_HANG') {
     const faceOn = await nsFaceCheckEnabled();
     if (faceOn) {
       // Mở face verify
