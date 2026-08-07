@@ -227,3 +227,9 @@ body.ns18-shell .ns-fa-slider::-webkit-slider-thumb{border-color:var(--teal-deep
   body.ns18-shell #tcgs-overlay,
   body.ns18-shell #svcd-overlay{left:246px!important}
 }
+
+/* [v18.09] Chi tiết sự vụ (#bgsv-detail): xanh thép #1B4965 / navy #0F2E45 → teal/ink */
+body.ns18-shell #bgsv-ph-btn{background:var(--grad)!important;box-shadow:var(--glow)!important}
+body.ns18-shell #bgsv-detail b[style*="color:#1B4965"]{color:var(--teal-deep)!important}
+body.ns18-shell #bgsv-detail div[style*="border-left:3px solid #1B4965"]{border-left-color:var(--teal)!important;background:var(--teal-tint)!important}
+body.ns18-shell #bgsv-detail [style*="color:#0F2E45"]{color:var(--ink)!important}
