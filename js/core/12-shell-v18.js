@@ -23,7 +23,13 @@
     'page-muanon', 'page-muanon-admin',
     'page-home', 'page-admin', 'page-giaodien', 'page-nvai'];
   function ns18Enabled() {
-    return typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490';
+    if (typeof SESSION === 'undefined' || !SESSION) return false;
+    // [v18.10] KILL-SWITCH ROLLBACK: đặt app_settings ui.v18_off = true → TẮT v18 cho TẤT CẢ
+    // (mọi người quay về UI cũ ngay khi tải lại, KHÔNG cần build/deploy lại). Legacy UI vẫn
+    // nằm nguyên trong app nên rollback tức thì. Mặc định (không set) → v18 BẬT.
+    try { if (typeof _getSetting === 'function' && _getSetting('ui.v18_off', false) === true) return false; } catch (e) {}
+    // [v18.10] MỞ v18 cho MỌI tài khoản đã đăng nhập (trước đây chỉ NS00490 — đã test 6 vai trò).
+    return true;
   }
 
   var _ic = {
