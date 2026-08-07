@@ -226,4 +226,8 @@ body.ns18-shell #main-header{background:var(--surface);border-bottom:1px solid v
   body.ns18-shell #ns18-sidebar{display:none}
   body.ns18-shell #ns18-bnav{display:flex}
   body.ns18-shell #bottom-nav{display:none !important}
+  /* [v18.11] CHỪA CHỖ cho bottom-nav v18 cố định (63px + safe-area) → nội dung/thẻ cuối
+     KHÔNG bị nav che, bấm được. Trang có padding-bottom riêng (vd Chấm công 96px) vẫn OK
+     (cộng dồn = dư đáy, vô hại). Fix lỗi "trang chủ thẻ Tài khoản không bấm được". */
+  body.ns18-shell #main-app{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
 }
