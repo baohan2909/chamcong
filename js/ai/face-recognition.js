@@ -34,6 +34,28 @@ function _withTimeout(promise, ms, tag) {
   });
   return Promise.race([promise, guard]).finally(() => clearTimeout(tid));
 }
+// [v18.14 fix-cam-treo] getUserMedia có timeout — iOS có thể để promise pending VÔ HẠN
+// (quyền treo / camera bị app khác giữ / Screen Time chặn ngầm) → kẹt "Đang mở camera…" đen.
+// Nếu stream về TRỄ sau khi đã timeout thì stop tracks ngay để không rò camera.
+function _gumWithTimeout(constraints, ms) {
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const tid = setTimeout(() => {
+      if (done) return;
+      done = true;
+      const err = new Error('camera-open-timeout');
+      err.name = 'CameraTimeoutError';
+      reject(err);
+    }, ms);
+    navigator.mediaDevices.getUserMedia(constraints).then(
+      (stream) => {
+        if (done) { try { stream.getTracks().forEach(t => t.stop()); } catch (_) {} return; }
+        done = true; clearTimeout(tid); resolve(stream);
+      },
+      (e) => { if (done) return; done = true; clearTimeout(tid); reject(e); }
+    );
+  });
+}
 // [fix-cam] Nạp <script> có timeout (script tag mặc định không tự huỷ khi treo)
 function _loadScript(src, ms) {
   return new Promise((resolve, reject) => {
@@ -178,10 +200,14 @@ async function _openCam(videoEl) {
   let stream;
   for (let i = 0; i < _CAM_TRIES.length; i++) {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: _CAM_TRIES[i], audio: false });
+      // [v18.14] timeout 15s — hết treo "Đang mở camera…" vô hạn (màn đen ở nhiều CH)
+      stream = await _gumWithTimeout({ video: _CAM_TRIES[i], audio: false }, 15000);
       _camMode = i;
       break;
     } catch (e) {
+      // Treo (timeout) = lỗi hệ thống, không phải lỗi constraint → báo ngay,
+      // KHÔNG thử tiếp các constraint còn lại (mỗi lần sẽ treo thêm 15s).
+      if (e && e.name === 'CameraTimeoutError') throw e;
       if (i === _CAM_TRIES.length - 1) throw e;
     }
   }
@@ -482,6 +508,8 @@ async function _startEnrollmentFlow() {
     const isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
     if (isPerm) {
       _setInstruction('fe', 'Cần cấp quyền camera — vào Cài đặt cho phép rồi bấm "Thử lại"');
+    } else if (e && e.name === 'CameraTimeoutError') {
+      _setInstruction('fe', 'Không mở được camera — kiểm tra quyền Camera trong Cài đặt > Safari rồi bấm "Thử lại"');
     } else {
       _setInstruction('fe', 'Không mở được camera — bấm "Thử lại"');
     }
@@ -634,6 +662,10 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
     if (isPerm) {
       _setInstruction('fv', 'Cần cấp quyền camera');
       _setSubstatus('fv', 'Vào Cài đặt cho phép camera, rồi bấm "Thử lại"', 'err');
+    } else if (e && e.name === 'CameraTimeoutError') {
+      // [v18.14] camera treo quá 15s (quyền treo / app khác giữ camera)
+      _setInstruction('fv', 'Không mở được camera');
+      _setSubstatus('fv', 'Kiểm tra quyền Camera trong Cài đặt > Safari, đóng app đang dùng camera, rồi bấm "Thử lại" — hoặc chấm công bằng ảnh tay', 'err');
     } else {
       _setInstruction('fv', 'Không mở được camera');
       _setSubstatus('fv', 'Bấm "Thử lại" hoặc chấm công bằng ảnh tay', 'err');

@@ -920,8 +920,8 @@ function atlShowCHSug() {
   ).slice(0, 15);
   if (!matched.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = matched.map(ch => {
-    const isDoi = /đội\s*sale/i.test(ch.ten_ch || '');
-    const tagHtml = isDoi ? `<span style="background:#F0FDFA;color:#0F766E;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">ĐỘI</span>` : '';
+    const isDoi = (typeof _laViTriDiDong === 'function') ? _laViTriDiDong(ch.ten_ch || '', ch.ma_ch || '') : /đội\s*sale/i.test(ch.ten_ch || '');  // [v18.14] nhận cả Cơ Động (CODONG)
+    const tagHtml = isDoi ? `<span style="background:#F0FDFA;color:#0F766E;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px">DI ĐỘNG</span>` : '';
     return `<div onmousedown="event.preventDefault();atlPickCH('${ch.ma_ch}', \`${(ch.ten_ch||'').replace(/`/g,"'")}\`)"
          style="padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9"
          onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background='#fff'">
@@ -937,7 +937,8 @@ function atlPickCH(ma, ten) {
   document.getElementById('atl-ch').value = ma;
   document.getElementById('atl-ch-sug').style.display = 'none';
   // [v10.85] Nếu chọn Đội SALE → hiện field CH thực
-  const isDoi = /đội\s*sale/i.test(ten);
+  // [v18.14] nhận cả Cơ Động (CODONG) — trước đây chọn Cơ Động KHÔNG hiện ô CH thực (Aroma báo)
+  const isDoi = (typeof _laViTriDiDong === 'function') ? _laViTriDiDong(ten, ma) : /đội\s*sale/i.test(ten);
   const wrap = document.getElementById('atl-chthuc-wrap');
   if (wrap) {
     wrap.style.display = isDoi ? '' : 'none';
@@ -957,7 +958,7 @@ function atlOnCHThucInput() {
 function atlShowCHThucSug() {
   const inp = document.getElementById('atl-chthuc-inp');
   const sug = document.getElementById('atl-chthuc-sug');
-  const list = (window._bscChList || []).filter(ch => !/đội\s*sale/i.test(ch.ten_ch || ''));
+  const list = (window._bscChList || []).filter(ch => !((typeof _laViTriDiDong === 'function') ? _laViTriDiDong(ch.ten_ch || '', ch.ma_ch || '') : /đội\s*sale/i.test(ch.ten_ch || '')));  // [v18.14] CODONG không lọt vào gợi ý "CH thực tế"
   const q = inp.value.trim().toLowerCase();
   let matched;
   if (!q) matched = list.slice(0, 12);
@@ -1001,7 +1002,8 @@ async function atlConfirm() {
   if (!maCH) { errEl.textContent = 'Chưa chọn cửa hàng / đội SALE'; errEl.style.display='block'; return; }
 
   // [v10.85] Nếu chọn Đội SALE → bắt buộc nhập CH thực
-  const isDoi = /đội\s*sale/i.test(tenCHChon);
+  // [v18.14] nhận cả Cơ Động — log ghi vào CH THỰC + lý do "[Cơ Động] hỗ trợ <CH>"
+  const isDoi = (typeof _laViTriDiDong === 'function') ? _laViTriDiDong(tenCHChon, maCH) : /đội\s*sale/i.test(tenCHChon);
   let maChFinal = maCH;
   let lyDoFinal = lyDo;
   if (isDoi) {

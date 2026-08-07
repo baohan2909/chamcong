@@ -37,6 +37,39 @@
   }
 }
 
+/* ===== [v18.14] MOBILE: LỀ + BỀ NGANG HERO ĐỒNG NHẤT MỌI TAB (Aroma: "chiều dài
+   thẻ header các tab không bằng nhau, lề 2 bên cũng vậy") — chuẩn 14px 2 bên,
+   hero/card margin 0 (đè legacy margin 14px id-!important, file nạp cuối thắng). ===== */
+@media (max-width:899px){
+  body.ns18-shell #page-chamcong.ns18.active, body.ns18-shell #page-taikhoan.ns18.active,
+  body.ns18-shell #page-giocong.ns18.active, body.ns18-shell #page-giocong-ql.ns18.active,
+  body.ns18-shell #page-bandochidung.ns18.active, body.ns18-shell #page-lichca.ns18.active,
+  body.ns18-shell #page-lichca-ql.ns18.active, body.ns18-shell #page-lichhd-ch.ns18.active,
+  body.ns18-shell #page-lichhd-ql.ns18.active, body.ns18-shell #page-nhansu.ns18.active,
+  body.ns18-shell #page-donnghi-acc.ns18.active, body.ns18-shell #page-duyetyc.ns18.active,
+  body.ns18-shell #page-bangiao.ns18.active, body.ns18-shell #page-bangiao-ql.ns18.active,
+  body.ns18-shell #page-banhang.ns18.active, body.ns18-shell #page-dashboard.ns18.active,
+  body.ns18-shell #page-chuongtrinh.ns18.active, body.ns18-shell #page-checklist-ql.ns18.active,
+  body.ns18-shell #page-donhang.ns18.active, body.ns18-shell #page-donhang-nhan.ns18.active,
+  body.ns18-shell #page-donhang-ql.ns18.active, body.ns18-shell #page-muanon.ns18.active,
+  body.ns18-shell #page-muanon-admin.ns18.active, body.ns18-shell #page-admin.ns18.active,
+  body.ns18-shell #page-giaodien.ns18.active{
+    padding-left:14px!important;padding-right:14px!important;
+  }
+  #page-chamcong.ns18 .card, #page-taikhoan.ns18 .card, #page-giocong.ns18 .card,
+  #page-giocong-ql.ns18 .card, #page-bandochidung.ns18 .card, #page-lichca.ns18 .card,
+  #page-lichca-ql.ns18 .card, #page-lichhd-ch.ns18 .card, #page-lichhd-ql.ns18 .card,
+  #page-nhansu.ns18 .card, #page-donnghi-acc.ns18 .card, #page-duyetyc.ns18 .card,
+  #page-bangiao.ns18 .card, #page-bangiao-ql.ns18 .card, #page-banhang.ns18 .card,
+  #page-dashboard.ns18 .card, #page-chuongtrinh.ns18 .card, #page-checklist-ql.ns18 .card,
+  #page-donhang.ns18 .card, #page-donhang-nhan.ns18 .card, #page-donhang-ql.ns18 .card,
+  #page-muanon.ns18 .card, #page-muanon-admin.ns18 .card, #page-admin.ns18 .card,
+  .ns18 .cc-hero-page, .ns18 .hub-head,
+  #page-chamcong.ns18 .cc-hero, #page-chamcong.ns18 .cc-diem, #page-chamcong.ns18 .summary-card{
+    margin-left:0!important; margin-right:0!important; width:auto!important; max-width:none!important;
+  }
+}
+
 /* ===== Trang chủ: mobile có lề; hub-shell bỏ padding riêng (để page lo lề) ===== */
 @media (max-width:899px){ body.ns18-shell #page-home.ns18.active{padding-left:16px!important;padding-right:16px!important} }
 .ns18 .hub-shell{padding-left:0!important;padding-right:0!important;max-width:none!important}

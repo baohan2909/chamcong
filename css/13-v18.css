@@ -198,6 +198,17 @@
 #ns18-drawer{position:fixed;left:0;right:0;bottom:0;z-index:71;background:var(--surface);border-radius:20px 20px 0 0;max-height:84vh;overflow-y:auto;transform:translateY(101%);transition:transform .28s cubic-bezier(.22,.61,.36,1);padding:8px 14px calc(18px + env(safe-area-inset-bottom));font-family:'Be Vietnam Pro',system-ui,-apple-system,sans-serif;color:var(--ink)}
 #ns18-drawer.open{transform:translateY(0)}
 #ns18-drawer .grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 12px}
+/* [v18.14] LÀM MỚI drawer "Thêm" (Aroma: dòng dài nhìn không pro) →
+   LƯỚI TILE 3 CỘT theo nhóm: nhãn nhóm uppercase, tile trắng ngà bo 12,
+   icon teal trần + nhãn gọn; active = gradient. */
+#ns18-drawer .ns18-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:0 2px}
+#ns18-drawer .nav-sec{grid-column:1/-1;padding:13px 4px 3px}
+#ns18-drawer .side-item{flex-direction:column;align-items:center;justify-content:center;gap:7px;background:#FBFAF7;border:1px solid var(--line);border-radius:12px;padding:13px 6px;font-size:11.5px;font-weight:700;color:var(--ink-2);text-align:center;min-height:74px}
+#ns18-drawer .side-item svg{width:22px;height:22px;stroke:var(--teal-deep)}
+#ns18-drawer .side-item span{flex:none;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ns18-drawer .side-item:hover{background:var(--teal-tint);color:var(--teal-deep)}
+#ns18-drawer .side-item.on{background:var(--grad);color:#fff;box-shadow:0 0 14px rgba(63,182,168,.4)}
+#ns18-drawer .side-item.on svg{stroke:#fff}
 
 /* ============================================================
    BẬT SHELL — laptop (>=900px): sidebar + dời 246px, ẩn bottom-nav.

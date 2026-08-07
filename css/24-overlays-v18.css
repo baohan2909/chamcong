@@ -307,6 +307,17 @@ body.ns18-shell .notif-item-icon.cb-duyet{background:rgba(46,139,87,.14)!importa
 body.ns18-shell .notif-panel-close:hover,
 body.ns18-shell .notif-panel-close:active{background:var(--teal-tint)!important}
 
+/* ============================================================
+   [v18.14] MÀN ĐĂNG NHẬP → brand teal v18 (Aroma chốt "giao diện đăng nhập
+   cũng vậy"). KHÔNG gated được (trước đăng nhập chưa biết ai) → áp cho TẤT CẢ,
+   chỉ đổi MÀU (không đổi layout/hành vi). Literal vì :root chưa có token v18. */
+#login-screen .login-logo-icon{background:#EEF6F5!important;color:#1E5F63!important}
+#login-screen .login-logo-icon svg{stroke:#1E5F63!important}
+#login-screen .login-title{color:#1E5F63!important}
+#login-screen .login-btn{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important;box-shadow:0 0 16px rgba(63,182,168,.45)!important;-webkit-appearance:none;appearance:none}
+#login-screen .login-btn:disabled{background:#c5c3bb!important;box-shadow:none!important}
+#login-screen .login-input:focus{border-color:#3FB6A8!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+
 /* [v18.09] Chi tiết sự vụ (#bgsv-detail): xanh thép #1B4965 / navy #0F2E45 → teal/ink */
 body.ns18-shell #bgsv-ph-btn{background:var(--grad)!important;box-shadow:var(--glow)!important}
 body.ns18-shell #bgsv-detail b[style*="color:#1B4965"]{color:var(--teal-deep)!important}

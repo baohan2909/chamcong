@@ -126,6 +126,19 @@
 #page-giocong-ql.ns18 .gcql-mode-tab.active{
   border-color:transparent!important;background:var(--teal-deep)!important;color:#fff!important;
 }
+/* [v18.14] BELT-BRACES viền đen cứng (Aroma còn thấy trên iPhone): ép literal
+   (không var) + appearance + bỏ mọi bóng lạ trên 2 nút Theo tháng/Khoảng ngày. */
+#page-giocong-ql.ns18 .gcql-mode-tab,
+#page-lichca-ql.ns18 .lcql-mode-tab{
+  -webkit-appearance:none!important;appearance:none!important;
+  border:1.5px solid #E6E2D8!important;box-shadow:none!important;outline:none!important;
+  background-clip:padding-box!important;
+}
+#page-giocong-ql.ns18 .gcql-mode-tab.active,
+#page-lichca-ql.ns18 .lcql-mode-tab.active{
+  border-color:transparent!important;
+  box-shadow:0 0 16px rgba(63,182,168,.45)!important;
+}
 /* tìm + khoảng ngày */
 #page-giocong-ql.ns18 .gcql-search{
   border:1.5px solid var(--line)!important;background:#fff!important;border-radius:10px!important;

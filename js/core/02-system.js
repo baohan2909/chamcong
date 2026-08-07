@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.13',
+  'sys.cache_version': 'v18.14',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -565,7 +565,7 @@ const HUB_GROUPS = {
     title: 'Mẫu nón',
     items: [
       { label:'Mẫu nón sưu tầm',    desc:'Ảnh sản phẩm hàng tuần',ic:_hubIc.img,   roles:[],                         quyen:'muanon.quanly',    act:()=>moPageMuanonAdmin() },
-      { label:'Mua nón',            desc:'Đăng ký mua nón',       ic:_hubIc.cart,  roles:['NV','CTV'],               quyen:'muanon.xem',       act:()=>moPageMuanon() },
+      { label:'Gửi ảnh nón',        desc:'Gửi ảnh nón sưu tầm',   ic:_hubIc.cart,  roles:['NV','CTV'],               quyen:'muanon.xem',       act:()=>moPageMuanon() },  // [v18.14] Aroma đổi tên (thực chất là gửi ảnh nón)
     ]
   },
 };

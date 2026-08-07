@@ -29,8 +29,17 @@
   body.ns18-shell #page-home.ns18 .hub-shell{padding:4px 0 44px!important}
 }
 
-/* Topbar: avatar teal + chuông trắng v18 */
-#page-home.ns18 .hub-topbar{margin-bottom:16px}
+/* Topbar: avatar teal + chuông trắng v18.
+   [v18.14] GHIM DÍNH đầu trang (Aroma: "không cố định dòng trên cùng"):
+   sticky + nền kem che nội dung cuộn phía sau + tự lo safe-area top. */
+#page-home.ns18 .hub-topbar{
+  position:sticky!important;top:0;z-index:60;
+  background:var(--bg)!important;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 0 10px!important;
+  margin:0 0 8px!important;
+}
+/* shell đã có sticky topbar lo safe-area → bỏ padding-top kép */
+#page-home.ns18 .hub-shell{padding-top:0!important}
 #page-home.ns18 .hub-avatar{
   background:var(--grad)!important;color:#fff!important;border:none!important;
   border-radius:14px!important;box-shadow:var(--glow)!important;
