@@ -117,6 +117,24 @@
 }
 #page-home.ns18 .hub-foot{color:var(--ink-3)!important}
 
+/* ============================================================
+   [v18.17-uplift] TRANG CHỦ MOBILE LÀM MỚI (Aroma: thẻ cao quá + gò bó)
+   — thẻ hub NÉN GỌN: icon 26, tên 1 dòng, mô tả 1 dòng → ~96px (trước 152px,
+     màn 812px giờ thấy ~5 hàng thay 3, gần hết khỏi cuộn);
+   — hero chào thanh mảnh; nhịp khoảng cách 10px đều.
+   Desktop (≥900px) giữ cỡ thoáng như cũ.
+   ============================================================ */
+@media (max-width:899px){
+  #page-home.ns18 .hub-card{padding:12px 12px 11px!important}
+  #page-home.ns18 .hub-ic{margin-bottom:8px!important}
+  #page-home.ns18 .hub-ic svg{width:26px!important;height:26px!important}
+  #page-home.ns18 .hub-nm{font-size:13.5px!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #page-home.ns18 .hub-ds{font-size:11px!important;line-height:1.35!important;margin-top:3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #page-home.ns18 .hub-head{padding:16px 18px!important;margin-bottom:12px!important}
+  #page-home.ns18 .hub-head-title{font-size:20px!important}
+  #page-home.ns18 .hub-bdg{top:8px!important;right:8px!important}
+}
+
 
 /* ══════════════════════════════════════════════════════════
    B) ADMIN — #page-admin (Admin Control Panel)

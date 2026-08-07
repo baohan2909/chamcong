@@ -282,3 +282,27 @@
 #page-chamcong.ns18 .type-btn.sel .t-name{color:#fff!important}
 #page-chamcong.ns18 .type-btn.sel .t-sub{color:rgba(255,255,255,.85)!important}
 #page-chamcong.ns18 .type-btn.sel .t-icon svg{stroke:#fff!important;color:#fff!important}
+
+/* ============================================================
+   [v18.17-uplift] CHẤM CÔNG MOBILE LÀM MỚI — nhịp gọn, bớt phí chỗ
+   (Aroma: màn nhỏ mà lề/đệm dư nhiều). Desktop giữ thoáng như cũ.
+   ============================================================ */
+@media (max-width:899px){
+  #page-chamcong.ns18{padding-top:10px!important}
+  #page-chamcong.ns18 > .card,
+  #page-chamcong.ns18 > .cc-diem,
+  #page-chamcong.ns18 > .cc-hero,
+  #page-chamcong.ns18 > .summary-card,
+  #page-chamcong.ns18 > .banner-pw{margin-bottom:10px!important}
+  #page-chamcong.ns18 .card{padding:14px!important}
+  #page-chamcong.ns18 .summary-card{padding:14px!important}
+  #page-chamcong.ns18 .cc-hero-body{padding:16px 18px!important}
+  #page-chamcong.ns18 .cc-hero-time{font-size:26px!important}
+  #page-chamcong.ns18 .cc-diem{padding:13px 14px!important;gap:13px!important}
+  #page-chamcong.ns18 .cc-diem-ring{width:72px!important;height:72px!important}
+  #page-chamcong.ns18 .cc-diem-so{font-size:30px!important}
+  #page-chamcong.ns18 .type-btn{padding:12px!important}
+  #page-chamcong.ns18 .t-icon svg{width:24px!important;height:24px!important}
+  #page-chamcong.ns18 .card .gps-btn,
+  #page-chamcong.ns18 .card .selfie-btn{padding:12px 13px!important}
+}
