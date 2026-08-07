@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.12',
+  'sys.cache_version': 'v18.13',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2794,8 +2794,9 @@ function renderGioCongQL(){
   // [v10.85] fmtPhut → có dấu chấm
   const _fmtPhutVN = (m) => {
     // [v18] NS00490: bỏ phút (làm tròn giờ) cho gọn; legacy giữ "Xg Yp"
+    // [v18.13] bỏ luôn hậu tố "g" — nhãn thẻ đã ghi "TỔNG GIỜ" (Aroma).
     if (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490') {
-      return _fmtVN(Math.round(m / 60)) + 'g';
+      return _fmtVN(Math.round(m / 60));
     }
     const h = Math.floor(m / 60);
     const p = m % 60;

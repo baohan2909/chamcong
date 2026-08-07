@@ -249,3 +249,36 @@
 /* Ô tìm cửa hàng: nền trắng + viền line + focus teal (legacy ép nền be + focus xanh lá) */
 #page-chamcong.ns18 .ch-input{background:#fff!important;border:1.5px solid var(--line)!important;border-radius:10px!important;padding:12px 14px!important}
 #page-chamcong.ns18 .ch-input:focus{background:#fff!important;border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+
+/* ============================================================
+   [v18.13] (1) FULL-WIDTH MOBILE: legacy 08-redesign ép margin 14px 2 bên
+   cho .card (!important) → nội dung hẹp hơn hero, thừa mép 2 bên (Aroma báo).
+   Cùng đặc hiệu (1,2,0)+!important, file nạp SAU → thắng.
+   ============================================================ */
+#page-chamcong.ns18 > .card,
+#page-chamcong.ns18 > .cc-diem,
+#page-chamcong.ns18 > .cc-hero,
+#page-chamcong.ns18 > .summary-card,
+#page-chamcong.ns18 > .banner-pw,
+#page-chamcong.ns18 > #result-box,
+#page-chamcong.ns18 > #countdown-bar,
+#page-chamcong.ns18 > #card-sale-target{margin-left:0!important;margin-right:0!important;max-width:none!important;width:auto!important}
+
+/* ============================================================
+   [v18.13] (2) THỜI ĐIỂM CHẤM CÔNG — làm mới (Aroma: 4 nút quá giống nhau,
+   dễ nhầm; chữ phải TRẮNG khi chọn). Phân biệt: VÀO (vao, vao-g) = teal;
+   RA (ra, ra-g) = magenta. Chưa chọn: thẻ trắng, icon mang màu nhóm.
+   ============================================================ */
+#page-chamcong.ns18 .type-btn{outline:none!important;box-shadow:var(--shadow)!important}
+/* icon nhóm RA = magenta (chưa chọn) — VÀO giữ teal-deep mặc định */
+#page-chamcong.ns18 .type-btn.tb-ra .t-icon svg,
+#page-chamcong.ns18 .type-btn.tb-ra-g .t-icon svg{stroke:var(--magenta)!important;color:var(--magenta)!important}
+/* CHỌN: VÀO = gradient teal + glow; RA = gradient magenta + glow hồng */
+#page-chamcong.ns18 .type-btn.tb-vao.sel,
+#page-chamcong.ns18 .type-btn.tb-vao-g.sel{background:var(--grad)!important;border-color:transparent!important;box-shadow:var(--glow)!important}
+#page-chamcong.ns18 .type-btn.tb-ra.sel,
+#page-chamcong.ns18 .type-btn.tb-ra-g.sel{background:var(--grad-mag)!important;border-color:transparent!important;box-shadow:0 0 16px rgba(214,0,108,.4)!important}
+/* CHỌN: chữ + mô tả + icon TRẮNG (đè legacy #1a1d18/#6b7280 !important) */
+#page-chamcong.ns18 .type-btn.sel .t-name{color:#fff!important}
+#page-chamcong.ns18 .type-btn.sel .t-sub{color:rgba(255,255,255,.85)!important}
+#page-chamcong.ns18 .type-btn.sel .t-icon svg{stroke:#fff!important;color:#fff!important}

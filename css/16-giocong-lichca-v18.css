@@ -303,11 +303,19 @@
 #page-bandochidung.ns18 .map-btn-primary{background:var(--grad)!important;box-shadow:var(--glow)!important;border-radius:12px!important}
 #page-bandochidung.ns18 .map-btn-primary:active{background:var(--grad)!important;transform:scale(.98)}
 #page-bandochidung.ns18 .map-btn-primary svg{stroke:#fff!important}
-/* cửa hàng gần đây */
-#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important}
-#page-bandochidung.ns18 .map-nearby-pin{background:var(--teal-tint)!important}
-#page-bandochidung.ns18 .map-nearby-name{color:var(--ink)!important}
+/* cửa hàng gần đây — [v18.13] cấu trúc lại theo Aroma: tiêu đề = nhãn TRẦN
+   (không khung/nền), danh sách = 1 THẺ duy nhất, các dòng phân cách bằng
+   GẠCH CHÌM NGẮN (inset — không gạch dài hết bề ngang), KHÔNG khung/viền
+   từng dòng, pin KHÔNG hộp nền. */
+#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important;background:none!important;border:none!important;border-radius:0!important;padding:0 2px 8px!important;box-shadow:none!important}
+#page-bandochidung.ns18 .map-nearby-list{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;overflow:hidden!important;padding:0!important}
+#page-bandochidung.ns18 .map-nearby-item{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:12px 14px!important;position:relative;overflow:visible!important;min-height:0!important;height:auto!important}
+#page-bandochidung.ns18 .map-nearby-item::after{content:'';position:absolute;left:52px;right:14px;bottom:0;height:1px;background:var(--line)}
+#page-bandochidung.ns18 .map-nearby-item:last-child::after{display:none}
+#page-bandochidung.ns18 .map-nearby-pin{background:none!important;border:none!important;box-shadow:none!important;width:auto!important;height:auto!important;border-radius:0!important;font-size:17px!important}
+#page-bandochidung.ns18 .map-nearby-name{color:var(--ink)!important;font-weight:700!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #page-bandochidung.ns18 .map-nearby-kv{color:var(--ink-2)!important}
+#page-bandochidung.ns18 .map-nearby-kv strong{color:var(--teal-deep)!important}
 #page-bandochidung.ns18 .map-nearby-arrow{color:var(--ink-3)!important}
 #page-bandochidung.ns18 .map-nearby-item:active,
 #page-bandochidung.ns18 .map-nearby-item:hover{background:var(--teal-tint)!important}

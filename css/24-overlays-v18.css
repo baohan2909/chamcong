@@ -228,6 +228,85 @@ body.ns18-shell .ns-fa-slider::-webkit-slider-thumb{border-color:var(--teal-deep
   body.ns18-shell #svcd-overlay{left:246px!important}
 }
 
+/* ============================================================
+   [v18.13] MOBILE BODY-LEVEL — các bề mặt CHƯA TỪNG reskin (desktop ẩn
+   main-header nên không lộ; mobile lộ hết → "màu xanh cũ khắp nơi").
+   Tất cả gated body.ns18-shell (chỉ NS00490).
+   ============================================================ */
+/* (a) RESET APPEARANCE: nhiều nút legacy là <button> KHÔNG reset appearance
+   → iOS bản mới vẽ viền/bóng UA mặc định = "viền đen nét cứng không loang"
+   (Theo tháng/Khoảng ngày, Vào ca/Ra ca...). Reset toàn cục trong shell v18. */
+body.ns18-shell button{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent}
+body.ns18-shell button:focus{outline:none}
+/* ô ngày/giờ native cũng bị iOS vẽ UA style viền cứng → reset (giữ select nguyên
+   để không mất mũi tên hệ thống) */
+body.ns18-shell input[type="date"],
+body.ns18-shell input[type="time"]{-webkit-appearance:none;appearance:none;background:#fff}
+/* (b) HEADER mobile (#main-header): avatar + đồng hồ + nút Home → v18 */
+body.ns18-shell .cc-header-avatar{background:var(--grad)!important;box-shadow:0 4px 12px rgba(30,95,99,.28)!important;border-radius:12px!important}
+body.ns18-shell .cc-header-meta .cc-clock-live{color:var(--teal-deep)!important}
+body.ns18-shell .cc-header-name{color:var(--ink)!important}
+body.ns18-shell .cc-header-meta{color:var(--ink-3)!important}
+body.ns18-shell .cc-header-home-btn{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;color:var(--teal-deep)!important;box-shadow:var(--shadow)!important}
+body.ns18-shell .cc-header-home-btn:active{background:var(--teal-tint)!important}
+body.ns18-shell .cc-header-home-btn svg{stroke:var(--teal-deep)!important}
+body.ns18-shell .cc-header-bell-btn{background:var(--surface)!important;border:1px solid var(--line)!important;color:var(--ink-2)!important}
+/* (c) MENU CON CỦA HUB (#hub-submenu-overlay — body-level, trước giờ dark+icon
+   hộp gradient xanh lá): về nền sáng v18, icon KHÔNG hộp, 1 thẻ + gạch chìm ngắn. */
+body.ns18-shell #hub-submenu-overlay{background:var(--bg, #F7F5F1)!important;color:var(--ink)!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-head{background:transparent!important;border:none!important;padding-top:calc(10px + env(safe-area-inset-top,0px))!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-title{color:var(--ink)!important;font-weight:800!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-back{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;color:var(--teal-deep)!important;box-shadow:var(--shadow)!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-back svg{stroke:var(--teal-deep)!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-list{gap:0!important;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 24px)!important;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin:0 14px}
+body.ns18-shell #hub-submenu-overlay .hubsub-item{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;padding:13px 6px!important;position:relative}
+body.ns18-shell #hub-submenu-overlay .hubsub-item:active{background:var(--teal-tint)!important;transform:none!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-item::after{content:'';position:absolute;left:46px;right:6px;bottom:0;height:1px;background:var(--line)}
+body.ns18-shell #hub-submenu-overlay .hubsub-item:last-child::after{display:none}
+body.ns18-shell #hub-submenu-overlay .hubsub-ic{background:none!important;border:none!important;box-shadow:none!important;width:auto!important;height:auto!important;border-radius:0!important;color:var(--teal-deep)!important;margin-right:4px}
+body.ns18-shell #hub-submenu-overlay .hubsub-ic svg{width:24px!important;height:24px!important;stroke:var(--teal-deep)!important;color:var(--teal-deep)!important;fill:none!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-lb{color:var(--ink)!important;font-weight:700!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-ds{color:var(--ink-2)!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-arr{color:var(--ink-3)!important;stroke:var(--ink-3)!important}
+body.ns18-shell #hub-submenu-overlay .hubsub-empty{color:var(--ink-2)!important}
+/* (d) BỎ nút AI (FAB) + nút "Tải lại" ở hero Điểm HT / Giám sát TC (Aroma chốt) */
+body.ns18-shell #nvai-fab{display:none!important}
+body.ns18-shell #diem-hub-ov button[onclick="diemHubLoad()"]{display:none!important}
+body.ns18-shell #tcgs-overlay button[onclick="tcGsReload()"]{display:none!important}
+/* (e) SAFE-AREA TOP cho overlay full-màn (hero không chui dưới tai thỏ/status bar) */
+body.ns18-shell #diem-hub-ov,
+body.ns18-shell #tcgs-overlay,
+body.ns18-shell #svcd-overlay{padding-top:env(safe-area-inset-top,0px)!important}
+/* (f) CATCH-ALL chữ xanh-lá inline (Aroma: "không được phép có BẤT KỲ màu lệch
+   chuẩn") — mọi text inline #0F6E56/#1D9E75 còn sót ở bất kỳ đâu → teal-deep.
+   Chỉ khớp inline literal, chỉ NS00490; không đụng background/nút (đã có rule riêng). */
+body.ns18-shell [style*="color:#0F6E56"]{color:var(--teal-deep)!important}
+body.ns18-shell [style*="color:#1D9E75"]{color:var(--teal-deep)!important}
+body.ns18-shell [style*="color:#047857"]{color:var(--teal-deep)!important}
+body.ns18-shell [style*="color:#10B981"]{color:var(--teal-deep)!important}
+/* (g) Ô GỢI Ý TÌM KIẾM (mọi màn): hover/active mint xanh-lá → teal-tint */
+body.ns18-shell .suggest-item:active,
+body.ns18-shell .suggest-item:hover,
+body.ns18-shell .map-suggest-item:active,
+body.ns18-shell .map-suggest-item:hover,
+body.ns18-shell .ns-suggest-item:active,
+body.ns18-shell .ns-suggest-item:hover{background:var(--teal-tint)!important}
+body.ns18-shell .suggest-list,
+body.ns18-shell .map-suggest-list{border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow-lg)!important}
+/* (h) TOAST: success dùng var(--green) tầng body = xanh lá cũ → green chuẩn v18 */
+body.ns18-shell .bh-toast.success{background:#2E8B57!important}
+/* (i) PANEL THÔNG BÁO: mint/emerald/slate → token v18 */
+body.ns18-shell .notif-mark-all{color:var(--teal-deep)!important}
+body.ns18-shell .notif-item:hover,
+body.ns18-shell .notif-item:active{background:#FBFAF7!important}
+body.ns18-shell .notif-item.unread{background:var(--teal-tint)!important}
+body.ns18-shell .notif-item.unread:hover,
+body.ns18-shell .notif-item.unread:active{background:#E2F0EE!important}
+body.ns18-shell .notif-item-icon.don-duyet,
+body.ns18-shell .notif-item-icon.cb-duyet{background:rgba(46,139,87,.14)!important;color:#2E8B57!important}
+body.ns18-shell .notif-panel-close:hover,
+body.ns18-shell .notif-panel-close:active{background:var(--teal-tint)!important}
+
 /* [v18.09] Chi tiết sự vụ (#bgsv-detail): xanh thép #1B4965 / navy #0F2E45 → teal/ink */
 body.ns18-shell #bgsv-ph-btn{background:var(--grad)!important;box-shadow:var(--glow)!important}
 body.ns18-shell #bgsv-detail b[style*="color:#1B4965"]{color:var(--teal-deep)!important}
