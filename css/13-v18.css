@@ -238,7 +238,20 @@ body.ns18-shell #main-header{background:var(--surface);border-bottom:1px solid v
   body.ns18-shell #ns18-bnav{display:flex}
   body.ns18-shell #bottom-nav{display:none !important}
   /* [v18.11] CHỪA CHỖ cho bottom-nav v18 cố định (63px + safe-area) → nội dung/thẻ cuối
-     KHÔNG bị nav che, bấm được. Trang có padding-bottom riêng (vd Chấm công 96px) vẫn OK
-     (cộng dồn = dư đáy, vô hại). Fix lỗi "trang chủ thẻ Tài khoản không bấm được". */
-  body.ns18-shell #main-app{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+     KHÔNG bị nav che, bấm được. [v18.19] nâng 78→94px vì dock nổi cao hơn bar cũ. */
+  body.ns18-shell #main-app{padding-bottom:calc(94px + env(safe-area-inset-bottom))!important}
+  /* [v18.19] BOTTOM-NAV → DOCK NỔI hiện đại (Aroma: bố cục hiện đại hơn):
+     nổi cách mép 10px, bo 20px, kính mờ, bóng mềm — thay bar dán đáy kiểu cũ. */
+  body.ns18-shell #ns18-bnav{
+    left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));
+    border-radius:20px;border:1px solid var(--line);
+    padding:7px 8px;
+    background:rgba(255,255,255,.92);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    box-shadow:0 8px 28px rgba(20,33,58,.14),0 2px 8px rgba(20,33,58,.06);
+  }
+  body.ns18-shell #ns18-bnav .bi{border-radius:14px;padding:6px 2px}
+  body.ns18-shell #ns18-bnav .bi.on{box-shadow:0 0 14px rgba(63,182,168,.4)}  /* glow đều thay bóng lệch */
+  /* toast nổi trên dock */
+  body.ns18-shell .bh-toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
 }

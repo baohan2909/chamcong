@@ -21,9 +21,10 @@
   max-width:none!important;margin:0!important;
   color:var(--ink)!important;
   font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
-  /* [v18.13] + safe-area-inset-top: Trang chủ ẩn main-header → nội dung từng chui
-     dưới status bar/tai thỏ iPhone (bấm không được nút trên cùng). */
-  padding:calc(14px + env(safe-area-inset-top,0px)) 14px 96px!important;
+  /* [v18.13] safe-area-top nay do sticky topbar lo. [v18.19] BỎ padding ngang 14px
+     (page đã có gutter 10px) — trước đây nội dung Trang chủ 327px trong khi mọi
+     trang khác 355px (đo runtime) → giờ ĐỀU 355px. */
+  padding:0 0 96px!important;
 }
 @media (min-width:900px){
   body.ns18-shell #page-home.ns18 .hub-shell{padding:4px 0 44px!important}
