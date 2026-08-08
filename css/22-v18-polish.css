@@ -98,3 +98,24 @@
 .ns18 input:not([type=checkbox]):not([type=radio]):not([type=range]),
 .ns18 select, .ns18 .sel-btn, .ns18 textarea{min-height:42px;border-radius:10px}
 .ns18 input:focus,.ns18 select:focus,.ns18 textarea:focus{outline:none;border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(63,182,168,.18)!important}
+
+/* ===== [v18.22] FILTER/TAB KHÔNG TRÀN NGANG (Aroma: ghét kéo qua lại) =====
+   Mọi dãy tab/chip filter chuyển WRAP xuống dòng — thấy trọn một lúc.
+   Bảng dữ liệu (.tbl-wrap/.gc-table-wrap) + gallery ảnh (.bgql-gal-scroll)
+   GIỮ scroll ngang vì đó là đúng chức năng. */
+body.ns18-shell .ns-tabs,
+body.ns18-shell .ns-time-tabs,
+body.ns18-shell .dnp-filter-row,
+body.ns18-shell .dash-time-tabs,
+body.ns18-shell .adm2-tabs,
+body.ns18-shell .muanon-gl-filters,
+body.ns18-shell .mna-time-chips,
+body.ns18-shell .mna-tq-grp-chips,
+body.ns18-shell .bg-steps,
+body.ns18-shell .set-sidebar{
+  flex-wrap:wrap!important;
+  overflow-x:visible!important;
+  overflow:visible!important;
+  padding-bottom:0!important;
+  row-gap:6px;
+}
