@@ -24,18 +24,13 @@
     'page-home', 'page-admin', 'page-giaodien', 'page-nvai'];
   function ns18Enabled() {
     if (typeof SESSION === 'undefined' || !SESSION) return false;
-    // [v18.12] RE-GATE (Aroma chốt 07/08): 539 người QUAY VỀ UI CŨ, CHỈ NS00490 giữ v18 để
-    // test/hoàn thiện (lỗi mobile "thẻ trang chủ cao quá / khó bấm"). Mở lại khi xong.
-    if (SESSION.ma === 'NS00490') return true;
-    // MỞ LẠI cho TẤT CẢ khi hoàn thiện = set app_settings ui.v18_all = true (runtime, KHÔNG cần
-    // build lại). Giữ luôn kill-switch ui.v18_off (ưu tiên cao nhất) để tắt khẩn kể cả NS00490.
-    try {
-      if (typeof _getSetting === 'function') {
-        if (_getSetting('ui.v18_off', false) === true) return false;
-        if (_getSetting('ui.v18_all', false) === true) return true;
-      }
-    } catch (e) {}
-    return false;
+    // [v18.25] MỞ v18 CHO TẤT CẢ (~540 người) — Aroma chốt 08/08 "đổi giao diện toàn hệ thống".
+    // KILL-SWITCH ROLLBACK (backup tức thì, KHÔNG cần build lại): đặt app_settings
+    //   ui.v18_off = true  → tắt v18 cho TẤT CẢ (kể cả NS00490), mọi người về UI CŨ khi tải lại.
+    // Legacy UI vẫn nằm nguyên trong app nên rollback tức thì. Mặc định (không set) → v18 BẬT.
+    // Backup code: git tag backup-v18.24-gated (chỉ NS00490) để khôi phục bản gated nếu cần.
+    try { if (typeof _getSetting === 'function' && _getSetting('ui.v18_off', false) === true) return false; } catch (e) {}
+    return true;
   }
 
   var _ic = {
