@@ -62,7 +62,7 @@
   }
   // nhãn ngắn cho bottom-nav
   function _shortLabel(l) {
-    var m = { 'Bản đồ chấm công': 'Bản đồ', 'Lịch ca của tôi': 'Lịch ca', 'Đăng ký khuôn mặt': 'Khuôn mặt',
+    var m = { 'Bản đồ cửa hàng': 'Bản đồ', 'Bản đồ chấm công': 'Bản đồ', 'Lịch ca của tôi': 'Lịch ca', 'Đăng ký khuôn mặt': 'Khuôn mặt',
       'Bàn giao ca': 'Bàn giao', 'Bàn giao (Quản lý)': 'Bàn giao', 'Phiên bán hàng': 'Bán hàng',
       'Dashboard bán hàng': 'Dashboard', 'Giám sát Trưởng ca': 'Trưởng ca', 'Điểm hệ thống': 'Điểm',
       'Lịch ca hệ thống': 'Lịch ca', 'Lịch hoạt động CH': 'Hoạt động', 'Mục kiểm tra bàn giao': 'Mục BG',
