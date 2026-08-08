@@ -248,21 +248,26 @@ body.ns18-shell #main-header{background:var(--surface);border-bottom:1px solid v
   body.ns18-shell #ns18-sidebar{display:none}
   body.ns18-shell #ns18-bnav{display:flex}
   body.ns18-shell #bottom-nav{display:none !important}
-  /* [v18.11] CHỪA CHỖ cho bottom-nav v18 cố định (63px + safe-area) → nội dung/thẻ cuối
-     KHÔNG bị nav che, bấm được. [v18.19] nâng 78→94px vì dock nổi cao hơn bar cũ. */
-  body.ns18-shell #main-app{padding-bottom:calc(94px + env(safe-area-inset-bottom))!important}
-  /* [v18.19] BOTTOM-NAV → DOCK NỔI hiện đại (Aroma: bố cục hiện đại hơn):
-     nổi cách mép 10px, bo 20px, kính mờ, bóng mềm — thay bar dán đáy kiểu cũ. */
+  /* [v18.11] CHỪA CHỖ cho bottom-nav v18. [v18.24] full-width frosted → 82px. */
+  body.ns18-shell #main-app{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
+  /* [v18.24] BOTTOM-NAV → THANH FROSTED FULL-WIDTH (Aroma: dock nổi "bị hở" nhìn
+     không đẹp → muốn hơi mờ nhẹ). Kéo sát 2 mép (hết hở), bo góc TRÊN, kính mờ
+     translucent + saturate, viền trên mảnh, bóng hắt lên nhẹ. */
   body.ns18-shell #ns18-bnav{
-    left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));
-    border-radius:20px;border:1px solid var(--line);
-    padding:7px 8px;
-    background:rgba(255,255,255,.92);
-    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-    box-shadow:0 8px 28px rgba(20,33,58,.14),0 2px 8px rgba(20,33,58,.06);
+    left:0;right:0;bottom:0;
+    border:none;border-top:1px solid rgba(230,226,216,.6);
+    border-radius:18px 18px 0 0;
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
+    background:rgba(255,255,255,.80);
+    -webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
+    box-shadow:0 -6px 24px rgba(20,33,58,.08);
   }
   body.ns18-shell #ns18-bnav .bi{border-radius:14px;padding:6px 2px}
   body.ns18-shell #ns18-bnav .bi.on{box-shadow:0 0 14px rgba(63,182,168,.4)}  /* glow đều thay bóng lệch */
-  /* toast nổi trên dock */
-  body.ns18-shell .bh-toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
+  /* toast nổi trên thanh */
+  body.ns18-shell .bh-toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
+  /* [v18.24] NVAI (chat AI): ẩn thanh dưới (dock v18 KHÁC #bottom-nav legacy nên
+     trước đây vẫn hiện, ĐÈ ô chat) + bỏ chừa chỗ đáy để chat kín màn. */
+  body.nvai-active #ns18-bnav{display:none!important}
+  body.nvai-active #main-app{padding-bottom:0!important}
 }

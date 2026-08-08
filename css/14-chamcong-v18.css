@@ -278,6 +278,24 @@
 #page-chamcong.ns18 .type-btn.tb-vao-g.sel{background:var(--grad)!important;border-color:transparent!important;box-shadow:var(--glow)!important}
 #page-chamcong.ns18 .type-btn.tb-ra.sel,
 #page-chamcong.ns18 .type-btn.tb-ra-g.sel{background:var(--grad-mag)!important;border-color:transparent!important;box-shadow:0 0 16px rgba(214,0,108,.4)!important}
+/* ============================================================
+   [v18.24] MÀU BÁO THÀNH CÔNG (GPS / khuôn mặt) → BỘ MÀU v18
+   (Aroma: xanh success cũ #EAF7F2/#2E8B57 "quê" → gradient teal thương hiệu
+   + nền teal-tint + glow — nhìn hiện đại, đồng bộ app).
+   ============================================================ */
+#page-chamcong.ns18 .card .gps-btn.success{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+#page-chamcong.ns18 .card .gps-btn.success .gps-label{color:var(--teal-deep)!important}
+#page-chamcong.ns18 .card .gps-btn.success .gps-badge{background:var(--grad)!important;box-shadow:var(--glow)!important;color:#fff!important}
+#page-chamcong.ns18 .card .gps-btn.success .gps-sub{color:var(--teal-deep)!important}
+#page-chamcong.ns18 .card .gps-btn.success .gps-icon svg{stroke:var(--teal-deep)!important;color:var(--teal-deep)!important}
+#page-chamcong.ns18 .card .selfie-btn.done{background:var(--teal-tint)!important;border-color:var(--teal)!important}
+#page-chamcong.ns18 .card .selfie-btn.done .selfie-text{color:var(--teal-deep)!important}
+#page-chamcong.ns18 .card .selfie-btn.done .selfie-badge{background:var(--grad)!important;box-shadow:var(--glow)!important;color:#fff!important}
+#page-chamcong.ns18 .card .selfie-btn.done .selfie-icon svg{stroke:var(--teal-deep)!important;color:var(--teal-deep)!important}
+/* Hộp kết quả "Đã chấm công thành công" + badge log (nếu render class .r-ok/.lb-v) */
+#page-chamcong.ns18 .result-box.r-ok{background:var(--teal-tint)!important;border-color:var(--teal)!important;color:var(--teal-deep)!important}
+#page-chamcong.ns18 .log-item .lb-v,#page-chamcong.ns18 .log-item .lb-vg{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+
 /* CHỌN: chữ + mô tả + icon TRẮNG (đè legacy #1a1d18/#6b7280 !important) */
 #page-chamcong.ns18 .type-btn.sel .t-name{color:#fff!important}
 #page-chamcong.ns18 .type-btn.sel .t-sub{color:rgba(255,255,255,.85)!important}

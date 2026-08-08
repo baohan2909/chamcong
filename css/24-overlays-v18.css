@@ -319,6 +319,22 @@ body.ns18-shell .notif-item-icon.don-duyet,
 body.ns18-shell .notif-item-icon.cb-duyet{background:rgba(46,139,87,.14)!important;color:#2E8B57!important}
 body.ns18-shell .notif-panel-close:hover,
 body.ns18-shell .notif-panel-close:active{background:var(--teal-tint)!important}
+/* [v18.24] CHUÔNG: bỏ nốt màu emerald/mint/blue/pink "quê" → bộ màu v18 */
+body.ns18-shell .notif-item.unread{background:var(--teal-tint)!important}
+body.ns18-shell .notif-item.unread:hover,
+body.ns18-shell .notif-item.unread:active{background:#E2F0EE!important}
+body.ns18-shell .notif-item-icon.dn-duyet{background:rgba(46,139,87,.14)!important;color:#2E8B57!important}
+body.ns18-shell .notif-item-icon.cb-moi{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
+body.ns18-shell .notif-item-icon.gt-moi{background:var(--teal-tint)!important;color:var(--teal-deep)!important}
+body.ns18-shell .notif-item-icon.don-nghi-moi{background:var(--pink-card)!important;color:var(--magenta)!important}
+body.ns18-shell .notif-panel-title{color:var(--ink)!important}
+body.ns18-shell .notif-panel-title::before{background:var(--teal)!important}
+body.ns18-shell .notif-panel-head{border-bottom-color:var(--line)!important}
+body.ns18-shell .notif-mark-all{color:var(--teal-deep)!important}
+body.ns18-shell .notif-empty svg{stroke:var(--teal)!important}
+body.ns18-shell #cc-header-bell-badge,
+body.ns18-shell #header-bell-badge,
+body.ns18-shell #ns18-bell-badge{background:var(--magenta)!important}
 
 /* ============================================================
    [v18.14] MÀN ĐĂNG NHẬP → brand teal v18 (Aroma chốt "giao diện đăng nhập
