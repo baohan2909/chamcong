@@ -483,3 +483,46 @@
 #page-duyetyc.ns18 [style*="background:#EA580C"],#page-nhansu.ns18 [style*="background:#EA580C"]{background:var(--gold)!important}
 #page-duyetyc.ns18 [style*="#FED7AA"],#page-nhansu.ns18 [style*="#FED7AA"]{border-color:var(--line)!important;background:#FCF6E9!important}
 #page-duyetyc.ns18 svg[stroke="#EA580C"],#page-nhansu.ns18 svg[stroke="#EA580C"]{stroke:var(--gold-d)!important}
+
+/* ============================================================
+   [v18.17-uplift] NÂNG CẤP MOBILE — Nhân sự · Đơn nghỉ · Duyệt YC
+   Nhịp gọn 10-12px, KPI đều tầm, list gạch chìm ngắn (không gạch dài).
+   ============================================================ */
+@media (max-width:899px){
+  /* Bỏ margin ngang 14px legacy các khối con — thẳng gutter 10px trang */
+  #page-nhansu.ns18 .ns-header,
+  #page-nhansu.ns18 .ns-stats-grid,
+  #page-nhansu.ns18 .ns-toolbar,
+  #page-nhansu.ns18 .ns-list,
+  #page-nhansu.ns18 #ns-loi-list,
+  #page-donnghi-acc.ns18 .dnp-header,
+  #page-donnghi-acc.ns18 .dnp-toolbar,
+  #page-donnghi-acc.ns18 #accdnp-list,
+  #page-donnghi-acc.ns18 .dnp-list,
+  #page-duyetyc.ns18 .yc-header,
+  #page-duyetyc.ns18 .yc-toolbar,
+  #page-duyetyc.ns18 #yc-content{margin-left:0!important;margin-right:0!important}
+  /* KPI Nhân sự: đều tầm 76px, số 22px */
+  #page-nhansu.ns18 .ns-stat{min-height:76px;padding:12px 10px!important;display:flex;flex-direction:column;justify-content:center}
+  #page-nhansu.ns18 .ns-stat-val{font-size:22px!important;letter-spacing:-.5px}
+  #page-nhansu.ns18 .ns-stat-lbl{font-size:10px!important;margin-top:3px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #page-nhansu.ns18 .ns-stats-grid{gap:8px!important;margin-top:10px!important}
+  /* List NV: 1 thẻ card, item không viền/nền riêng — gạch chìm inset 16px */
+  #page-nhansu.ns18 .ns-list{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;overflow:hidden;padding:0!important}
+  #page-nhansu.ns18 .ns-list .ns-item,
+  #page-nhansu.ns18 .ns-item{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;padding:12px 14px!important;position:relative;margin:0!important}
+  #page-nhansu.ns18 .ns-list .ns-item::after,
+  #page-nhansu.ns18 .ns-item::after{content:'';position:absolute;left:14px;right:14px;bottom:0;height:1px;background:var(--line)}
+  #page-nhansu.ns18 .ns-list .ns-item:last-child::after,
+  #page-nhansu.ns18 .ns-item:last-child::after{display:none}
+  /* Đơn nghỉ acc + Duyệt YC: card gọn 12px, header ngày ink-2 uppercase */
+  #page-donnghi-acc.ns18 .dnp-item,
+  #page-duyetyc.ns18 .dnp-item,
+  #page-duyetyc.ns18 .xdl-item{padding:12px 14px!important;margin-bottom:8px!important}
+  #page-donnghi-acc.ns18 .dnp-day-head,
+  #page-duyetyc.ns18 .yc-day-header{color:var(--ink-2)!important;font-size:11px!important;letter-spacing:.05em;text-transform:uppercase;padding:8px 2px 6px!important}
+  /* Toolbar bar: 42px cao đều */
+  #page-nhansu.ns18 .ns-search,
+  #page-donnghi-acc.ns18 .dnp-search,
+  #page-duyetyc.ns18 .yc-search{height:42px}
+}

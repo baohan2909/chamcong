@@ -449,3 +449,38 @@
 #page-bangiao-ql.ns18 .chk-mucdo-tag.vua{background:rgba(203,164,90,.18)!important;color:#8a6a1f!important}
 #page-bangiao.ns18 .chk-mucdo-tag.khan,
 #page-bangiao-ql.ns18 .chk-mucdo-tag.khan{background:rgba(198,55,60,.12)!important;color:var(--red)!important}
+
+/* ============================================================
+   [v18.17-uplift] NÂNG CẤP MOBILE — Bàn giao · Checklist
+   ============================================================ */
+@media (max-width:899px){
+  #page-bangiao.ns18 .bg-header,
+  #page-bangiao.ns18 .bg-subtabs,
+  #page-bangiao.ns18 .bg-toolbar,
+  #page-bangiao.ns18 .bg-list,
+  #page-bangiao.ns18 #bg-content,
+  #page-bangiao-ql.ns18 .bgql-header,
+  #page-bangiao-ql.ns18 .bgql-toolbar,
+  #page-bangiao-ql.ns18 .bgql-list,
+  #page-bangiao-ql.ns18 #bgql-content,
+  #page-checklist.ns18 .chk-header,
+  #page-checklist.ns18 .chk-list,
+  #page-checklist-ql.ns18 .chkql-header,
+  #page-checklist-ql.ns18 .chkql-list{margin-left:0!important;margin-right:0!important}
+  /* Card sự vụ: nén padding + margin dọc */
+  #page-bangiao.ns18 .bg-sv-card,
+  #page-bangiao-ql.ns18 .bgql-card{padding:12px 14px!important;margin-bottom:8px!important}
+  /* Stat card đều tầm 76px */
+  #page-bangiao-ql.ns18 .bgql-stat,
+  #page-checklist-ql.ns18 .chkql-stat{min-height:76px;padding:12px 10px!important;display:flex;flex-direction:column;justify-content:center}
+  #page-bangiao-ql.ns18 .bgql-stat-val,
+  #page-checklist-ql.ns18 .chkql-stat-val{font-size:22px!important;letter-spacing:-.5px}
+  #page-bangiao-ql.ns18 .bgql-stat-lbl,
+  #page-checklist-ql.ns18 .chkql-stat-lbl{font-size:10px!important;margin-top:3px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Toolbar 42px */
+  #page-bangiao.ns18 .bg-search,
+  #page-bangiao-ql.ns18 .bgql-search,
+  #page-checklist-ql.ns18 .chkql-search{height:42px}
+  /* Header subtabs gọn */
+  #page-bangiao.ns18 .bg-subtab{padding:9px 12px!important;font-size:12.5px!important}
+}

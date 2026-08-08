@@ -699,3 +699,37 @@ body.ns18-shell .mna-fs-apply{background:linear-gradient(135deg,#182D3D 0%,#1E5F
 body.ns18-shell .mna-fs-date-input{background:#fff!important;border:1px solid #E6E2D8!important;color:#14213A!important}
 body.ns18-shell .mna-dl-title{color:#14213A!important}
 body.ns18-shell .mna-dl-fill{background:linear-gradient(135deg,#182D3D 0%,#1E5F63 50%,#3FB6A8 100%)!important}
+
+/* ============================================================
+   [v18.17-uplift] NÂNG CẤP MOBILE — Đơn hàng · Mẫu nón
+   ============================================================ */
+@media (max-width:899px){
+  #page-donhang.ns18 .dh-header,
+  #page-donhang.ns18 .dh-toolbar,
+  #page-donhang.ns18 .dh-list,
+  #page-donhang-nhan.ns18 .dh-header,
+  #page-donhang-nhan.ns18 #dh-nhan-list,
+  #page-donhang-ql.ns18 .dh-header,
+  #page-donhang-ql.ns18 #dh-ql-body,
+  #page-muanon.ns18 .muanon-header,
+  #page-muanon.ns18 .muanon-list,
+  #page-muanon-admin.ns18 .mna-header,
+  #page-muanon-admin.ns18 .mna-toolbar,
+  #page-muanon-admin.ns18 .mna-gallery-info,
+  #page-muanon-admin.ns18 .mna-list{margin-left:0!important;margin-right:0!important}
+  /* Thẻ đơn: nén padding + margin */
+  #page-donhang.ns18 .dh-card,
+  #page-donhang-nhan.ns18 .dh-card,
+  #page-donhang-ql.ns18 .dh-card{padding:12px 14px!important;margin-bottom:8px!important}
+  /* Mẫu nón grid — thumbnail vuông đều */
+  #page-muanon-admin.ns18 .mna-grid{gap:8px!important}
+  #page-muanon-admin.ns18 .mna-item{padding:8px!important}
+  /* Search 42px */
+  #page-donhang.ns18 .dh-search,
+  #page-donhang-ql.ns18 .dh-search,
+  #page-muanon-admin.ns18 .mna-search{height:42px}
+  /* Tag trạng thái: nowrap không xuống dòng */
+  #page-donhang.ns18 .dh-badge,
+  #page-donhang-nhan.ns18 .dh-badge,
+  #page-donhang-ql.ns18 .dh-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+}

@@ -400,3 +400,36 @@ body.ns18-shell .bh-modal .bh-chip{background:var(--teal-tint)!important;color:v
 #page-chuongtrinh.ns18 .ct-order-tag.giam{background:var(--pink-card)!important;color:var(--magenta)!important}
 #page-chuongtrinh.ns18 .ct-order-tag.gift,
 #page-chuongtrinh.ns18 .ct-grp-num{color:var(--gold-d)!important}
+
+/* ============================================================
+   [v18.17-uplift] NÂNG CẤP MOBILE — Bán hàng · Dashboard · KM
+   ============================================================ */
+@media (max-width:899px){
+  #page-banhang.ns18 .bh-header,
+  #page-banhang.ns18 .bh-toolbar,
+  #page-banhang.ns18 .bh-list,
+  #page-dashboard.ns18 .dash-header,
+  #page-dashboard.ns18 .dash-stats-grid,
+  #page-dashboard.ns18 .dash-list,
+  #page-chuongtrinh.ns18 .ct-header,
+  #page-chuongtrinh.ns18 .ct-wrap,
+  #page-chuongtrinh.ns18 #ct-result{margin-left:0!important;margin-right:0!important}
+  /* KPI dashboard: đều tầm 88px, số 26px */
+  #page-dashboard.ns18 .mk,
+  #page-dashboard.ns18 .dash-kpi{min-height:88px;padding:14px 12px!important;display:flex;flex-direction:column;justify-content:center}
+  #page-dashboard.ns18 .mk .v,
+  #page-dashboard.ns18 .dash-kpi-val{font-size:clamp(24px,7vw,30px)!important;letter-spacing:-1px!important}
+  #page-dashboard.ns18 .mk .l,
+  #page-dashboard.ns18 .dash-kpi-lbl{font-size:10.5px!important;margin-top:4px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #page-dashboard.ns18 .dash-stats-grid{gap:8px!important}
+  /* Phiên bán hàng: nén card */
+  #page-banhang.ns18 .bh-phien-card,
+  #page-banhang.ns18 .bh-item{padding:12px 14px!important;margin-bottom:8px!important}
+  /* Toolbar bán hàng 42px */
+  #page-banhang.ns18 .bh-search,
+  #page-chuongtrinh.ns18 .ct-search{height:42px}
+  /* Chương trình KM: 1 cột (không lưới 2), thẻ gọn */
+  #page-chuongtrinh.ns18 .ct-wrap{grid-template-columns:1fr!important;gap:10px!important}
+  #page-chuongtrinh.ns18 .ct-order-item,
+  #page-chuongtrinh.ns18 .ct-grp-card{padding:12px 14px!important;margin-bottom:8px!important}
+}

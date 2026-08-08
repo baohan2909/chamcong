@@ -336,3 +336,38 @@ body.ns18-shell #bgsv-ph-btn{background:var(--grad)!important;box-shadow:var(--g
 body.ns18-shell #bgsv-detail b[style*="color:#1B4965"]{color:var(--teal-deep)!important}
 body.ns18-shell #bgsv-detail div[style*="border-left:3px solid #1B4965"]{border-left-color:var(--teal)!important;background:var(--teal-tint)!important}
 body.ns18-shell #bgsv-detail [style*="color:#0F2E45"]{color:var(--ink)!important}
+
+/* ============================================================
+   [v18.17-uplift] NÂNG CẤP MOBILE — Admin · Overlay Điểm/Giám sát/Sự vụ KV
+   ============================================================ */
+@media (max-width:899px){
+  #page-admin.ns18 .adm2-header,
+  #page-admin.ns18 .adm2-tabs,
+  #page-admin.ns18 .adm2-content,
+  #page-taikhoan.ns18 .acc-header,
+  #page-taikhoan.ns18 .acc-content,
+  #page-giaodien.ns18 .gd-header,
+  #page-giaodien.ns18 .gd-content{margin-left:0!important;margin-right:0!important}
+  /* KPI admin: đều tầm 88px, số 28px */
+  #page-admin.ns18 .adm2-stat-card{min-height:88px;padding:14px 12px!important;display:flex;flex-direction:column;justify-content:center}
+  #page-admin.ns18 .adm2-stat-value{font-size:28px!important;letter-spacing:-1px!important}
+  #page-admin.ns18 .adm2-stat-label{font-size:10.5px!important;margin-top:4px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* OVERLAY-HUB (Điểm HT / Giám sát / Sự vụ KV): hero nén trên mobile */
+  body.ns18-shell #diem-hub-ov > div[style*="border-radius:22px"],
+  body.ns18-shell #tcgs-overlay > div[style*="border-radius:22px"],
+  body.ns18-shell #svcd-overlay > div[style*="border-radius:22px"]{padding:14px 16px!important;border-radius:14px!important}
+  body.ns18-shell #diem-hub-ov h2,
+  body.ns18-shell #tcgs-overlay h2,
+  body.ns18-shell #svcd-overlay h2,
+  body.ns18-shell #diem-hub-ov [style*="font-size:22px"],
+  body.ns18-shell #tcgs-overlay [style*="font-size:22px"]{font-size:18px!important;font-weight:800!important}
+  /* Controls + body overlay: nhịp 10px */
+  body.ns18-shell #diem-hub-controls,
+  body.ns18-shell #tcgs-controls{padding:8px 12px 10px!important;gap:8px!important}
+  body.ns18-shell #diem-hub-body,
+  body.ns18-shell #tcgs-body,
+  body.ns18-shell #svcd-body{padding:0 12px 12px!important}
+  /* Card list trong overlay: nén padding */
+  body.ns18-shell #diem-hub-list > div,
+  body.ns18-shell #tcgs-body > div > div{padding:12px 14px!important;margin-bottom:8px!important}
+}
