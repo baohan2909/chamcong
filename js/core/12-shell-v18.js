@@ -203,6 +203,32 @@
     if (dr) dr.classList.remove('open');
   };
 
+  // [v18.20] SKELETON LOADING (chỉ v18): mọi loader chữ "Đang tải..." (hàng chục chỗ
+  // innerHTML rải khắp app) được swap thành khối shimmer qua 1 MutationObserver duy nhất.
+  // Gated runtime: chỉ hành động khi body.ns18-shell bật → 539 người legacy giữ chữ cũ.
+  window.ns18SkeletonHTML = function () {
+    var card = '<div class="sk-card"><div class="sk-bar w70"></div><div class="sk-bar"></div><div class="sk-bar w45"></div></div>';
+    return '<div class="ns18-skel">' + card + card + card + '</div>';
+  };
+  if (typeof MutationObserver !== 'undefined') {
+    try {
+      new MutationObserver(function (muts) {
+        if (!document.body.classList.contains('ns18-shell')) return;
+        for (var i = 0; i < muts.length; i++) {
+          var ns = muts[i].addedNodes;
+          for (var j = 0; j < ns.length; j++) {
+            var n = ns[j];
+            if (n.nodeType !== 1 || n.childElementCount > 2) continue;   // loader = div gọn
+            var t = (n.textContent || '').trim();
+            if (t.length < 40 && t.indexOf('Đang tải') >= 0) {
+              try { n.innerHTML = window.ns18SkeletonHTML(); } catch (e) {}
+            }
+          }
+        }
+      }).observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+
   // [v18.09] Đóng các overlay-hub body-level (Điểm HT / Giám sát TC / Sự vụ khu vực + con)
   // khi điều hướng qua sidebar/bottom-nav → chúng hành xử như TRANG trong shell, không
   // treo phủ lên trang mới. CHỈ NS00490 (chỉ shell mới gọi). appConfirm/busy KHÔNG đụng.

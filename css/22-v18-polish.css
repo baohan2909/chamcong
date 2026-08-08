@@ -74,6 +74,26 @@
 @media (max-width:899px){ body.ns18-shell #page-home.ns18.active{padding-left:10px!important;padding-right:10px!important} }
 .ns18 .hub-shell{padding-left:0!important;padding-right:0!important;max-width:none!important}
 
+/* ===== [v18.20] STICKY SUBTABS mobile — thanh tab con DÍNH dưới header (59px)
+   khi cuộn: đổi tab không phải cuộn ngược lên (Aroma: hiện đại/pro). ===== */
+@media (max-width:899px){
+  body.ns18-shell #page-nhansu.ns18 .ns-subtabs,
+  body.ns18-shell #page-duyetyc.ns18 .ns-subtabs,
+  body.ns18-shell #page-lichca.ns18 .lcnv-subtabs,
+  body.ns18-shell #page-bangiao.ns18 .chk-topbar,
+  body.ns18-shell #page-bangiao-ql.ns18 .chk-topbar{
+    position:sticky!important;top:59px!important;z-index:40;
+  }
+  body.ns18-shell #page-bangiao.ns18 .chk-topbar,
+  body.ns18-shell #page-bangiao-ql.ns18 .chk-topbar{background:var(--bg)!important}
+}
+
+/* ===== [v18.20] PAGE TRANSITION — vào trang fade+trượt nhẹ 0.18s ===== */
+@media (prefers-reduced-motion:no-preference){
+  body.ns18-shell .page.ns18.active{animation:ns18PageIn .18s ease both}
+}
+@keyframes ns18PageIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
+
 /* ===== Ô NHẬP đồng bộ (cao 42px, bo 10px, focus teal) ===== */
 .ns18 input:not([type=checkbox]):not([type=radio]):not([type=range]),
 .ns18 select, .ns18 .sel-btn, .ns18 textarea{min-height:42px;border-radius:10px}
