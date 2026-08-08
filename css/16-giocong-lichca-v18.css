@@ -320,8 +320,12 @@
    (không khung/nền), danh sách = 1 THẺ duy nhất, các dòng phân cách bằng
    GẠCH CHÌM NGẮN (inset — không gạch dài hết bề ngang), KHÔNG khung/viền
    từng dòng, pin KHÔNG hộp nền. */
-#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important;background:none!important;border:none!important;border-radius:0!important;padding:0 2px 8px!important;box-shadow:none!important}
-#page-bandochidung.ns18 .map-nearby-list{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;overflow:hidden!important;padding:0!important}
+/* [v18.21] Aroma: chữ "Cửa hàng gần đây" lỗi (label trơ ngoài thẻ, dính mép — trong
+   khi label khối Tìm kiếm nằm TRONG thẻ). Đồng nhất: wrapper .map-nearby thành THẺ,
+   title thành header TRONG thẻ (padding + gạch dưới), list bỏ khung riêng. */
+#page-bandochidung.ns18 .map-nearby{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:var(--shadow)!important;overflow:hidden!important;padding:0!important}
+#page-bandochidung.ns18 .map-nearby-title{color:var(--ink-2)!important;background:none!important;border:none!important;border-radius:0!important;margin:0!important;padding:13px 16px 10px!important;border-bottom:1px solid var(--line)!important;box-shadow:none!important}
+#page-bandochidung.ns18 .map-nearby-list{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;padding:0!important}
 #page-bandochidung.ns18 .map-nearby-item{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:12px 14px!important;position:relative;overflow:visible!important;min-height:0!important;height:auto!important}
 #page-bandochidung.ns18 .map-nearby-item::after{content:'';position:absolute;left:52px;right:14px;bottom:0;height:1px;background:var(--line)}
 #page-bandochidung.ns18 .map-nearby-item:last-child::after{display:none}
