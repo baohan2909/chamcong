@@ -1570,6 +1570,9 @@ function showToastVoiHoanTac(msg, token, expiresAt){
   if(!token){showToast(msg,'ok');return;}
   // Lưu token để có thể gọi lại từ menu
   _luuUndoToken(token, expiresAt, msg);
+  // [v18.27] Aroma: tắt toast đáy màn hình (kể cả toast Hoàn tác khi duyệt) cho v18 —
+  // chỉ để ở chuông. Token ĐÃ lưu (_luuUndoToken) nên vẫn hoàn tác được qua menu.
+  try { if (document.body.classList.contains('ns18-shell')) return; } catch (e) {}
   let t=document.getElementById('_toast_undo');
   if(!t){
     t=document.createElement('div');t.id='_toast_undo';

@@ -209,6 +209,19 @@
   border-radius:9px!important;font-family:inherit}
 #page-nhansu.ns18 .ns-btn-ok::before,
 #page-nhansu.ns18 .ns-btn-no::before{display:none!important;content:none!important}
+/* [v18.27] Nút Duyệt/Từ chối trên DUYỆT YÊU CẦU + ĐƠN NGHỈ ACC — 17:204 chỉ scope
+   #page-nhansu nên duyetyc/donnghi-acc còn ăn GREEN legacy (Aroma: nút không đồng bộ).
+   Ép teal gradient như brand + bulk button (id-scope thắng chắc). */
+#page-duyetyc.ns18 .ns-btn-ok,
+#page-donnghi-acc.ns18 .ns-btn-ok{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:var(--glow)!important;border-radius:9px!important;font-family:inherit!important}
+#page-duyetyc.ns18 .ns-btn-no,
+#page-donnghi-acc.ns18 .ns-btn-no{
+  background:transparent!important;color:var(--red)!important;border:1.5px solid rgba(198,55,60,.35)!important;
+  border-radius:9px!important;font-family:inherit!important}
+#page-duyetyc.ns18 .ns-btn-ok::before,#page-duyetyc.ns18 .ns-btn-no::before,
+#page-donnghi-acc.ns18 .ns-btn-ok::before,#page-donnghi-acc.ns18 .ns-btn-no::before{display:none!important;content:none!important}
 
 /* FAB làm mới + dòng cập nhật */
 #page-nhansu.ns18 .ns-refresh{background:var(--grad)!important;box-shadow:var(--glow)!important;color:#fff!important}

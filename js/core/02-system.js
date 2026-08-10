@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.26',
+  'sys.cache_version': 'v18.27',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4638,6 +4638,10 @@ function appConfirmDo(result){
 }
 
 function showToast(msg,type){
+  // [v18.27] Aroma: "tắt tất cả thông báo hiện dưới màn hình, chỉ để ở chuông".
+  // v18 (body.ns18-shell): BỎ toast BÁO THÀNH CÔNG/thông tin ('ok') ở đáy màn hình
+  // (hành động đã hiện kết quả trực quan trên trang). GIỮ toast LỖI để không nuốt lỗi.
+  try { if (document.body.classList.contains('ns18-shell') && (type === 'ok' || type === 'info' || type == null)) return; } catch (e) {}
   let t=document.getElementById('_toast');
   if(!t){
     t=document.createElement('div');t.id='_toast';

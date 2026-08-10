@@ -4,6 +4,12 @@
    (đặc hiệu 1,2,0) → phải dùng `#page-X.ns18 .card` (1,3,0) mới đè được.
    ============================================================ */
 
+/* [v18.26] TÀI KHOẢN: acc-top/acc-menu có margin ngang 14px legacy (01-base) →
+   thụt vào 14px so với hero (.cc-hero-page margin 0) → "lề lớn không đồng đều"
+   (Aroma báo, khoanh thẻ Điểm phong độ). Bỏ margin ngang → thẳng lề hero mọi khổ. */
+#page-taikhoan.ns18 .acc-top,
+#page-taikhoan.ns18 .acc-menu{margin-left:0!important;margin-right:0!important}
+
 /* ===== LỀ TRANG desktop đồng nhất ===== */
 @media (min-width:900px){
   body.ns18-shell #page-chamcong.ns18.active, body.ns18-shell #page-taikhoan.ns18.active,
