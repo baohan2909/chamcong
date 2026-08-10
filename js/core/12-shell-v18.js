@@ -21,7 +21,8 @@
     'page-banhang', 'page-dashboard', 'page-chuongtrinh', 'page-checklist', 'page-checklist-ql',
     'page-donhang', 'page-donhang-nhan', 'page-donhang-ql',
     'page-muanon', 'page-muanon-admin',
-    'page-home', 'page-admin', 'page-giaodien', 'page-nvai'];
+    'page-home', 'page-admin', 'page-giaodien', 'page-nvai',
+    'page-tn', 'page-tn-admin'];
   function ns18Enabled() {
     if (typeof SESSION === 'undefined' || !SESSION) return false;
     // [v18.25] MỞ v18 CHO TẤT CẢ (~540 người) — Aroma chốt 08/08 "đổi giao diện toàn hệ thống".

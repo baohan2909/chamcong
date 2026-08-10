@@ -423,6 +423,8 @@ function _laCuaHang(){ return (typeof SESSION!=='undefined' && SESSION && SESSIO
 try{ window._canXemNS=_canXemNS; window._chanXemNS=_chanXemNS; window._laCuaHang=_laCuaHang; }catch(e){}
 
 function goToPage(page){
+  // [v18.34] Rời phân hệ TN → xóa mật khẩu đã xác thực (bảo mật lương: buộc nhập lại mỗi lần mở)
+  if(page!=='tn' && page!=='tn-admin' && typeof TN!=='undefined' && TN){ try{ TN.pw=null; }catch(e){} }
   currentPage=page;
   // [v15.2] Rời trang → dọn thanh "chọn nhiều" của Bàn giao (thanh fixed, nếu không dọn sẽ
   // lơ lửng đè lên trang khác khiến nút bấm không ăn).
@@ -498,6 +500,8 @@ function goToPage(page){
   if(page==='donhang-ql')   { if(typeof dhQLInit==='function') dhQLInit(); }  // [v13.46] Quản lý đơn hàng
   else { if(typeof dhQLLeave==='function') dhQLLeave(); }
   if(page==='chuongtrinh')  ctInitPage();    // [v10.85] Chương trình KM
+  if(page==='tn' && typeof tnInitPage==='function')          tnInitPage();        // [v18.34] TN nhân viên
+  if(page==='tn-admin' && typeof tnAdminInitPage==='function') tnAdminInitPage(); // [v18.34] TN quản trị
   if(page!=='nhansu') stopNSPolling();
   if(typeof ns18SyncSidebar==='function') ns18SyncSidebar(page); // [v18] tô sáng mục sidebar đang mở
 }
@@ -576,6 +580,9 @@ const HUB_GROUPS = {
       { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS','CUA_HANG'], quyen:'diem.xem', act:()=>diemHubOpen() },
       // [v18.32] Chuyển từ nhóm Bán hàng: "Dashboard bán hàng" thực chất là báo cáo nhân sự (chấm công/giờ công/cảnh báo)
       { label:'Tổng quan nhân sự',  desc:'Chấm công · giờ công · cảnh báo', ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.xem', act:()=>goToPage('dashboard') },
+      // [v18.34] TN — bảng thu nhập cá nhân. Mọi vai trò TRỪ CUA_HANG. ADMIN thấy thêm console.
+      { label:'TN',                 desc:'Thông tin cá nhân của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>', roles:['NV','CTV','QLNS','QLBH'], act:()=>goToPage('tn') },
+      { label:'Quản lý TN',         desc:'Đồng bộ · mở/ẩn · phản hồi', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>', roles:[], act:()=>goToPage('tn-admin') },
     ]
   },
   banhang: {
