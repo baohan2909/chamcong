@@ -35,7 +35,9 @@
 .tn-btn-ok{background:var(--tn-grad);color:#fff;padding:12px 20px;box-shadow:var(--tn-glow);width:100%}
 .tn-btn-ok.wide{flex:1;min-width:190px}
 .tn-btn-ok:hover,.tn-btn-teal:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(63,182,168,.55)}
-.tn-btn-ok:active{transform:translateY(0)}
+/* [v18.35] cảm giác NHẤN nút — lún xuống + glow co lại */
+.tn-btn-ok:active,.tn-btn-teal:active{transform:translateY(1px) scale(.985);box-shadow:0 0 6px rgba(63,182,168,.3)!important}
+.tn-btn-ghost:active{transform:translateY(1px) scale(.985);background:#EEF1EF}
 .tn-btn-ok:disabled{opacity:.6;box-shadow:none;cursor:default}
 .tn-btn-teal{background:var(--tn-teal);color:#fff;padding:11px 18px}
 .tn-btn-teal.sm{padding:9px 14px;font-size:12.5px}
@@ -122,8 +124,14 @@
 .tn-ad-actions .tn-btn-ok{width:auto}
 .tn-sel{border:1.5px solid var(--tn-line);border-radius:10px;padding:9px 12px;font:inherit;font-weight:600;background:#fff;color:var(--tn-ink)}
 .tn-file{position:relative;overflow:hidden;display:inline-flex;align-items:center}
-.tn-ad-cfg{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--tn-line)}
-.tn-ad-cfg .tn-inp.sm{flex:1;min-width:160px}
+/* [v18.35] hàng đồng bộ — bỏ "Lưu nguồn"; secret memory-only; nút gradient+glow */
+.tn-sync-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:14px;padding-top:14px;border-top:1px dashed var(--tn-line)}
+.tn-fld{display:flex;flex-direction:column;gap:4px}
+.tn-fld label{font-size:11px;font-weight:600;color:var(--tn-ink2);display:flex;align-items:center;gap:6px}
+.tn-nolock{font-size:9.5px;font-weight:700;background:#F0F2F0;color:var(--tn-ink3);padding:1px 7px;border-radius:999px;letter-spacing:.02em}
+.tn-fld .tn-inp.sm{min-width:150px}
+.tn-sync-btn{width:auto!important;display:inline-flex;align-items:center;gap:7px;height:40px}
+.tn-sync-row .tn-file{display:inline-flex;align-items:center;height:40px}
 .tn-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
 .tn-stat{background:#fff;border:1px solid var(--tn-line);border-radius:13px;padding:12px 14px;box-shadow:var(--tn-sh)}
 .tn-stat .n{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--tn-teal)}

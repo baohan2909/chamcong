@@ -5,7 +5,7 @@
 const TN = { pw:null, ma:null, kyList:[], ky:null, phieu:null,
              adKy:null, adData:null, adThreadId:null,
              syncUrl:(localStorage.getItem('tn_sync_url')||'https://script.google.com/macros/s/AKfycbxKNNRjt0K3gM0k60bi3alHGEG-e6rFZwgicOXFXLjHtd9sNvuRSqVri8LAbRFvGzgLrQ/exec'),
-             syncSecret:(localStorage.getItem('tn_sync_secret')||'') };
+             syncSecret:'' };  // [v18.35] secret CHỈ giữ trong phiên (memory), KHÔNG lưu localStorage — Aroma: không lưu key trên máy
 
 function _tnLaCH(){ return typeof _laCuaHang==='function' && _laCuaHang(); }
 function _tnEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -213,41 +213,34 @@ function tnAdminShell(){
 }
 function tnAdminSyncCardHtml(){
   const kySel=(TN.adData&&TN.adData.kyList||[]).map(k=>'<option value="'+k.ky+'"'+(k.ky===TN.adKy?' selected':'')+'>'+_tnEsc(k.ten||k.ky)+'</option>').join('');
-  return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ &amp; kỳ</div>'+
-    '<div class="tn-ad-sub">Nguồn: Google Sheet (Apps Script) hoặc tải CSV</div></div>'+
-    '<div class="tn-ad-actions">'+
-      '<select class="tn-sel" onchange="tnAdminLoad(this.value)">'+(kySel||'<option>—</option>')+'</select>'+
-      '<button class="tn-btn-ok" onclick="tnAdminSyncPrompt()">⟳ Đồng bộ từ Sheet</button>'+
+  const now=new Date(); const defM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ dữ liệu</div>'+
+    '<div class="tn-ad-sub">Kéo TẤT CẢ dòng trong sheet TN vào kỳ. Secret chỉ giữ trong phiên — không lưu trên máy.</div></div>'+
+    (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tnAdminLoad(this.value)">'+kySel+'</select>':'')+'</div>'+
+    '<div class="tn-sync-row">'+
+      '<div class="tn-fld"><label>Kỳ đồng bộ vào</label><input id="tn-sync-month" class="tn-inp sm" type="month" value="'+defM+'"></div>'+
+      '<div class="tn-fld"><label>Secret <span class="tn-nolock">không lưu</span></label><input id="tn-secret" class="tn-inp sm" type="password" placeholder="Nhập secret" autocomplete="off"></div>'+
+      '<button class="tn-btn-ok tn-sync-btn" onclick="tnAdminSyncNow()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Đồng bộ ngay</button>'+
       '<label class="tn-btn-ghost tn-file">Tải CSV<input type="file" accept=".csv" style="display:none" onchange="tnAdminCsv(this)"></label>'+
-    '</div></div>'+
-    '<div class="tn-ad-cfg"><input id="tn-cfg-url" class="tn-inp sm" placeholder="URL Apps Script (/exec)" value="'+_tnEsc(TN.syncUrl)+'">'+
-      '<input id="tn-cfg-sec" class="tn-inp sm" placeholder="Secret" value="'+_tnEsc(TN.syncSecret)+'"><button class="tn-btn-teal sm" onclick="tnAdminSaveCfg()">Lưu nguồn</button></div>'+
-    '</div>';
+    '</div></div>';
 }
-function tnAdminSaveCfg(){
-  TN.syncUrl=(document.getElementById('tn-cfg-url')||{}).value||''; TN.syncSecret=(document.getElementById('tn-cfg-sec')||{}).value||'';
-  localStorage.setItem('tn_sync_url',TN.syncUrl); localStorage.setItem('tn_sync_secret',TN.syncSecret);
-  if(typeof showToast==='function')showToast('✓ Đã lưu nguồn','ok');
-}
-function tnAdminSyncPrompt(){
-  tnAdminSaveCfg();
-  if(!TN.syncUrl||!TN.syncSecret){ if(typeof showToast==='function')showToast('Nhập URL + Secret trước','warn'); return; }
-  const ky=prompt('Đồng bộ kỳ nào? (định dạng YYYY-MM)', TN.adKy||new Date().toISOString().slice(0,7));
-  if(!ky) return;
-  const ten=prompt('Tên hiển thị kỳ:', 'Tháng '+parseInt(ky.slice(5))+', '+ky.slice(0,4))||ky;
+function _tnSyncKy(){ const m=(document.getElementById('tn-sync-month')||{}).value||new Date().toISOString().slice(0,7); return {ky:m, ten:'Tháng '+parseInt(m.slice(5))+', '+m.slice(0,4)}; }
+function tnAdminSyncNow(){
+  const sec=((document.getElementById('tn-secret')||{}).value||'').trim();
+  if(!sec){ if(typeof showToast==='function')showToast('Nhập secret để đồng bộ','warn'); const i=document.getElementById('tn-secret'); if(i)i.focus(); return; }
+  const k=_tnSyncKy();
   if(typeof showToast==='function')showToast('Đang lấy dữ liệu từ Sheet...','ok');
-  const url=TN.syncUrl+(TN.syncUrl.indexOf('?')>=0?'&':'?')+'secret='+encodeURIComponent(TN.syncSecret);
+  const url=TN.syncUrl+(TN.syncUrl.indexOf('?')>=0?'&':'?')+'secret='+encodeURIComponent(sec);
   fetch(url).then(r=>r.json()).then(res=>{
-    if(!res||!res.success){ if(typeof showToast==='function')showToast('Sheet: '+((res&&res.error)||'lỗi'),'err'); return; }
-    tnAdminDoSync(ky,ten,res.rows||[]);
-  }).catch(e=>{ if(typeof showToast==='function')showToast('Lỗi lấy Sheet (kiểm URL/secret/CORS)','err'); });
+    if(!res||!res.success){ if(typeof showToast==='function')showToast('Sheet: '+((res&&res.error)||'lỗi — kiểm secret'),'err'); return; }
+    tnAdminDoSync(k.ky,k.ten,res.rows||[]);
+  }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi lấy Sheet (kiểm secret/CORS)','err'); });
 }
 function tnAdminCsv(inp){
   const f=inp.files&&inp.files[0]; if(!f) return;
-  const ky=prompt('Đồng bộ kỳ nào? (YYYY-MM)', TN.adKy||new Date().toISOString().slice(0,7)); if(!ky){inp.value='';return;}
-  const ten=prompt('Tên hiển thị kỳ:', 'Tháng '+parseInt(ky.slice(5))+', '+ky.slice(0,4))||ky;
+  const k=_tnSyncKy();
   const rd=new FileReader();
-  rd.onload=()=>{ const rows=tnParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tnAdminDoSync(ky,ten,rows); };
+  rd.onload=()=>{ const rows=tnParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tnAdminDoSync(k.ky,k.ten,rows); };
   rd.readAsText(f,'utf-8');
 }
 const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
