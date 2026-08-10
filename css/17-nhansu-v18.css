@@ -443,11 +443,21 @@
   #page-donnghi-acc.ns18 #accdnp-list{
     display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
 
-  /* Duyệt yêu cầu: item card dàn nhiều cột; tiêu đề ngày span đủ */
-  #page-duyetyc.ns18 #yc-content{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;align-items:start}
-  #page-duyetyc.ns18 #yc-content .yc-day-header{grid-column:1/-1;margin-top:6px}
-  #page-duyetyc.ns18 #yc-content > .dnp-empty{grid-column:1/-1}
+  /* [v18.26] Duyệt yêu cầu desktop — Aroma: "thẻ dồn trái, lề lớn không đều" +
+     "cho 4 NV/hàng đều nhau, gọn đẹp". GỐC: grid đặt ở #yc-content nhưng items nằm
+     TRONG .dnp-list (con duy nhất) → grid vô hiệu. Chuyển grid VÀO .dnp-list, 4 CỘT,
+     item thành THẺ, tiêu đề ngày span đủ hàng. */
+  #page-duyetyc.ns18 #yc-content{display:block!important}
+  #page-duyetyc.ns18 #yc-content .dnp-list{
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:12px!important;align-items:start!important}
+  #page-duyetyc.ns18 #yc-content .dnp-list .yc-day-header{grid-column:1/-1;margin:8px 0 0!important}
+  #page-duyetyc.ns18 #yc-content .dnp-list .dnp-empty{grid-column:1/-1}
+  /* item = thẻ trắng đều tầm (bọc trong .dnp-list nên rule #yc-content>.dnp-item cũ không tới) */
+  #page-duyetyc.ns18 #yc-content .dnp-list .dnp-item{
+    background:var(--surface)!important;border:1px solid var(--line)!important;
+    border-radius:var(--r)!important;box-shadow:var(--shadow)!important;
+    padding:14px!important;margin:0!important;display:flex;flex-direction:column;min-height:0}
 
   /* KPI nhân sự: mỗi khối .ns-stats-grid có 3 ô → 3 cột (repeat(6) làm 3 ô dồn nửa trái) */
   #page-nhansu.ns18 .ns-stats-grid{grid-template-columns:repeat(3,1fr)}
