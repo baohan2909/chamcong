@@ -107,7 +107,8 @@ function tnRenderPhieu(){
   let h='<div class="tn-slip">';
   // head
   h+='<div class="tn-slip-head"><div><div class="tn-kicker">TN · Kỳ '+_tnEsc((p.ky||'').replace('-','/'))+'</div>'+
-     '<div class="tn-slip-title">Phiếu kỳ '+_tnEsc(p.kyTen||p.ky)+'</div></div>'+
+     '<div class="tn-slip-title">Phiếu kỳ '+_tnEsc(p.kyTen||p.ky)+'</div>'+
+     (p.ngayChi?'<div class="tn-paydate"><span class="tn-gold-dot"></span>Ngày chi lương: '+_tnDate(p.ngayChi)+'</div>':'')+'</div>'+
      '<span class="tn-chip '+(daXN?'ok':'live')+'"><span class="tn-dot"></span>'+(daXN?'Đã xác nhận':'Đang mở')+'</span></div>';
   // who
   h+='<div class="tn-who">'+
@@ -154,6 +155,7 @@ function tnRenderPhieu(){
 }
 function _tnWho(l,v){ return '<div><span>'+_tnEsc(l)+'</span><b>'+(_tnEsc(v)||'—')+'</b></div>'; }
 function _tnDt(t){ if(!t)return''; const d=new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+function _tnDate(s){ if(!s)return''; const p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):s; }
 function tnThreadHtml(list){
   if(!list||!list.length) return '';
   let h='<div class="tn-thread"><div class="tn-thread-l">Trao đổi</div>';
@@ -284,7 +286,9 @@ function tnAdminRenderMain(){
      '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAllEff?' on':'')+'" onclick="tnAdOpenAll('+(!hienAllEff)+')"></button></label>'+
      '<select id="tn-openall-dur" class="tn-sel sm" onchange="tnAdDurChange(this.value)" title="Thời hạn mở"><option value="0">Vĩnh viễn</option><option value="24">Trong 24 giờ</option><option value="72">Trong 3 ngày</option><option value="168">Trong 7 ngày</option><option value="date">Đến ngày…</option></select>'+
      '<input id="tn-openall-date" type="datetime-local" class="tn-inp sm" style="display:none">'+
-     tnOpenAllStatus(hienAllEff,den)+'</div>';
+     tnOpenAllStatus(hienAllEff,den)+
+     '<label class="tn-tgl-lbl tn-paydate-fld"><span class="tn-gold-dot"></span>Ngày chi lương <input type="date" id="tn-ngaychi" class="tn-inp sm" value="'+_tnEsc((TN.adData.ngayChi||'').slice(0,10))+'" onchange="tnAdSetNgayChi(this.value)"></label>'+
+     '</div>';
   // bảng: lọc + sort
   const rows=tnAdFilterSort(list);
   h+='<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr>'+
@@ -335,6 +339,14 @@ function tnOpenAllStatus(eff,den){
   return '<span class="tn-openall-st" id="tn-countdown" data-den="'+den.toISOString()+'">● Đang mở…</span>';
 }
 function tnAdDurChange(v){ const d=document.getElementById('tn-openall-date'); if(d)d.style.display=(v==='date')?'':'none'; }
+// [v18.39] Đặt ngày chi lương cho kỳ → hiển thị trên phiếu NV
+function tnAdSetNgayChi(v){
+  supa.rpc('fn_tn_admin_ngaychi',{p_ma:TN.ma,p_password:TN.pw,p_ky:TN.adKy,p_ngay:v||null}).then(({data,error})=>{
+    if(error && /find the function|does not exist|schema cache/i.test(error.message||'')){ if(typeof showToast==='function')showToast('Hãy chạy SQL tn_v3_ngaychi.sql trước','warn'); return; }
+    if(data&&data.success){ if(typeof showToast==='function')showToast(v?('✓ Ngày chi lương: '+_tnDate(v)):'✓ Đã xóa ngày chi','ok'); if(TN.adData)TN.adData.ngayChi=v||null; }
+    else if(typeof showToast==='function')showToast((data&&data.error)||'Lỗi','warn');
+  });
+}
 function tnAdOpenAll(on){
   let den=null;
   if(on){
