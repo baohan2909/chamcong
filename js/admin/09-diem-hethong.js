@@ -260,8 +260,8 @@ async function _diemHubLoadCt(maNv) {
           <div style="font-size:13px;font-weight:700;${off ? 'text-decoration:line-through' : ''}"><span style="color:${L.c}">${escHtml(L.t)}</span></div>
           <div style="font-size:11px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(_diemNgay(e.ngay))} · ${escHtml(e.mo_ta || '')}</div>
         </div>
-        <button onclick="diemHubMien('${escHtml(maNv)}','${escHtml(e.loai)}','${escHtml((e.source_key || '').replace(/'/g, ''))}','${escHtml(e.ngay || '')}')"
-          style="flex:none;border:1px solid ${off ? '#CBD5E1' : '#FCA5A5'};background:${off ? '#F8FAFC' : '#FEF2F2'};color:${off ? '#64748B' : '#DC2626'};font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:9px;cursor:pointer;white-space:nowrap">${off ? 'Khôi phục' : 'Xóa điểm trừ'}</button>
+        ${(typeof _laCuaHang==='function'&&_laCuaHang()) ? '' : `<button onclick="diemHubMien('${escHtml(maNv)}','${escHtml(e.loai)}','${escHtml((e.source_key || '').replace(/'/g, ''))}','${escHtml(e.ngay || '')}')"
+          style="flex:none;border:1px solid ${off ? '#CBD5E1' : '#FCA5A5'};background:${off ? '#F8FAFC' : '#FEF2F2'};color:${off ? '#64748B' : '#DC2626'};font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:9px;cursor:pointer;white-space:nowrap">${off ? 'Khôi phục' : 'Xóa điểm trừ'}</button>`}
       </div>`;
     }).join('') + `<div style="font-size:11px;color:#94A3B8;text-align:center;padding:8px 0 2px">Điểm: <b style="color:#0F2E45">${data.diem}/10</b> · ${data.so_su_kien} lỗi · ${data.so_mien} đã xóa</div>`;
   } catch (e) { box.innerHTML = '<div style="color:#DC2626;font-size:12.5px;padding:8px">Lỗi kết nối</div>'; }
@@ -317,6 +317,7 @@ window.diemAvatarZoom = function (el, url) {
 window.diemAvatarUnzoom = function () { const p = document.getElementById('diem-av-zoom'); if (p) p.style.display = 'none'; };
 
 async function diemHubMien(maNv, loai, sourceKey, ngay) {
+  if (typeof _laCuaHang==='function' && _laCuaHang()){ if(typeof showToast==='function') showToast('Tài khoản cửa hàng chỉ được xem','warn'); return; }  // [v18.28] CH chỉ xem
   try {
     const { data, error } = await supa.rpc('fn_toggle_mien_diem', {
       p_ma_ql: SESSION.ma, p_ma_nv: maNv, p_loai: loai,

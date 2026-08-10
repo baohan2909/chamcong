@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.27',
+  'sys.cache_version': 'v18.28',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -394,6 +394,33 @@ function _chanQuanLyNS(){
   setTimeout(()=>{ try{ goToPage(r); }catch(e){} }, 50);
   return true;
 }
+// [v18.28] Quyền XEM nhân sự (CHỈ XEM, không hành động) — dùng cho tài khoản CỬA HÀNG.
+// Tách khỏi _canQuanLyNS (quản lý/duyệt): trang XEM dùng _chanXemNS() để cho CH vào,
+// nhưng MỌI nút hành động vẫn gate bằng _canQuanLyNS()/isQL (CH không thuộc) → tự động view-only.
+// Phạm vi CH = cửa hàng của mình (các loader tự lọc theo SESSION.cuaHangMa).
+function _canXemNS(){
+  if(!(typeof SESSION!=='undefined' && SESSION)) return false;
+  if(_canQuanLyNS()) return true;                       // ADMIN/QLNS + chức danh cấu hình quản lý
+  if(SESSION.vaiTro==='CUA_HANG') return true;          // [v18.28] CH xem HR trong phạm vi cửa hàng mình
+  if(typeof _quyenCauHinh==='function'){                // chức danh có quyền xem cấu hình rõ ràng (cộng thêm)
+    return _quyenCauHinh('nhansu.xem') || _quyenCauHinh('giocong.xem_all');
+  }
+  return false;
+}
+// Trả true nếu ĐÃ chặn (không có quyền XEM) → hàm gọi nên return ngay
+function _chanXemNS(){
+  if(_canXemNS()) return false;
+  if(typeof showToast==='function') showToast('Bạn không có quyền xem mục này', 'warn');
+  const r = (SESSION&&SESSION.vaiTro==='CUA_HANG') ? 'banhang'
+          : (SESSION&&SESSION.vaiTro==='ADMIN')    ? 'home'
+          : 'chamcong';
+  setTimeout(()=>{ try{ goToPage(r); }catch(e){} }, 50);
+  return true;
+}
+// [v18.28] true nếu tài khoản hiện tại là CỬA HÀNG → dùng để ẨN nút hành động (CH chỉ-xem).
+// Loại trừ CH mà KHÔNG đổi hành vi vai trò khác (managers không bao giờ là CUA_HANG).
+function _laCuaHang(){ return (typeof SESSION!=='undefined' && SESSION && SESSION.vaiTro==='CUA_HANG'); }
+try{ window._canXemNS=_canXemNS; window._chanXemNS=_chanXemNS; window._laCuaHang=_laCuaHang; }catch(e){}
 
 function goToPage(page){
   currentPage=page;
@@ -537,7 +564,10 @@ const HUB_GROUPS = {
       { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
       { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
       { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV','QLNS','QLBH','ADMIN'], act:()=>nsFaceOpenEnrollment() },  // [v18.15] mọi vai trò trừ CUA_HANG (Aroma)
-      { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
+      { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS','CUA_HANG'],         quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
+      // [v18.28] Tài khoản CỬA HÀNG — mục CHỈ XEM, phạm vi cửa hàng mình (nút hành động đã gate riêng)
+      { label:'Giờ công cửa hàng',  desc:'Giờ công NV tại cửa hàng', ic:_hubIc.clock, roles:['CUA_HANG'],           act:()=>goToPage('giocong-ql') },
+      { label:'Đơn nghỉ phép',      desc:'Xem đơn nghỉ tại cửa hàng', ic:_hubIc.check, roles:['CUA_HANG'],          act:()=>goToPage('donnghi-acc') },
       { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
       { label:'Lịch hoạt động CH',   desc:'Mở/đóng toàn hệ thống', ic:_hubIc.cal,   roles:['QLNS','QLBH'], setting:'lichhd.enabled', quyen:'lichca.hoatdong', act:()=>moLichHDQL() },
       { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
@@ -4165,7 +4195,7 @@ function _dedupedFetch(url){
 }
 
 function taiNhanSu(forceRefresh){
-  if(_chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS
+  if(_chanXemNS()) return;   // [v18.28] ADMIN/QLNS + CỬA HÀNG (xem, lọc theo cuaHangMa); nút hành động vẫn gate _canQuanLyNS/isQL
   const list=document.getElementById('ns-list');
   if(!nsData.length||forceRefresh)
     list.innerHTML='<div class="ns-empty">⏳ Đang tải nhân sự...</div>';

@@ -580,7 +580,10 @@ function bgqlSuVuCardHtml(s){
   // (DA_TIEP_NHAN, DA_PHAN_HOI: legacy data, đối xử như DANG_XU_LY)
   let actions = '';
   const isProcessing = ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG'].includes(s.trang_thai);
-  if (s.trang_thai === 'MOI_TAO') {
+  const _chiXemSuVu = (typeof _laCuaHang==='function' && _laCuaHang());  // [v18.28] CH chỉ XEM sự vụ → ẩn mọi nút hành động
+  if (_chiXemSuVu) {
+    actions = '';
+  } else if (s.trang_thai === 'MOI_TAO') {
     actions = `<button class="bgql-act bgql-act-secondary" onclick="event.stopPropagation();bgqlOpenPhanHoi('${s.id}')">Phản hồi & xử lý</button>
                <button class="bgql-act bgql-act-ghost" onclick="event.stopPropagation();bgqlHuy('${s.id}')">Hủy</button>`;
   } else if (isProcessing) {
@@ -671,6 +674,7 @@ window.bgqlBatDau = async function(id){
   finally { window._svActing = false; }
 };
 window.bgqlHoanTat = async function(id){
+  if (typeof _laCuaHang==='function' && _laCuaHang()){ if(typeof showToast==='function') showToast('Tài khoản cửa hàng chỉ được xem','warn'); return; }  // [v18.28]
   const note = prompt('Ghi chú đóng sự vụ (tùy chọn):', '');
   if (note === null) return;
   if (window._svActing) return; window._svActing = true;
@@ -686,6 +690,7 @@ window.bgqlHoanTat = async function(id){
   finally { window._svActing = false; }
 };
 window.bgqlHuy = async function(id){
+  if (typeof _laCuaHang==='function' && _laCuaHang()){ if(typeof showToast==='function') showToast('Tài khoản cửa hàng chỉ được xem','warn'); return; }  // [v18.28]
   const reason = prompt('Lý do hủy:', '');
   if (!reason || !reason.trim()) return;
   if (window._svActing) return; window._svActing = true;
@@ -705,6 +710,7 @@ window.bgqlHuy = async function(id){
 //  MODAL PHẢN HỒI — deadline BẮT BUỘC
 // ═════════════════════════════════════════════════════════════════════════
 window.bgqlOpenPhanHoi = function(id, focusField){
+  if (typeof _laCuaHang==='function' && _laCuaHang()){ if(typeof showToast==='function') showToast('Tài khoản cửa hàng chỉ được xem','warn'); return; }  // [v18.28]
   const sv = (bgqlSuVuCache || []).find(s => s.id === id);
   if (!sv) return;
   // Default deadline: 24h kể từ giờ, làm tròn 30 phút

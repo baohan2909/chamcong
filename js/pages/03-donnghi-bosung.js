@@ -1357,7 +1357,7 @@ function _renderYC(filterQ){
   const ttFilter = (document.getElementById('yc-filter-tt')||{}).value || '';
   // Hiện/ẩn nút duyệt tất cả: chỉ khi filter = chờ duyệt
   if(bulkBar){
-    if(ds.length>0 && !ttFilter){
+    if(ds.length>0 && !ttFilter && !(typeof _laCuaHang==='function'&&_laCuaHang())){  // [v18.28] ẩn "Duyệt tất cả" với CH (chỉ xem)
       bulkBar.style.display='flex';
       if(bulkCnt)bulkCnt.textContent=ds.length;
     } else bulkBar.style.display='none';
