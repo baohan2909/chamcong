@@ -145,6 +145,7 @@
 /* [v18.36] Mở tất cả + hẹn giờ tự tắt */
 .tn-openall{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--tn-line)}
 .tn-openall-st{font-size:12px;color:var(--tn-ink2);font-weight:600}
+.tn-cd-num{font-family:ui-monospace,'Cascadia Code',Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--tn-teal);font-weight:800;letter-spacing:.02em}
 .tn-openall .tn-sel.sm{padding:7px 10px;font-size:12.5px}
 .tn-openall .tn-inp.sm{width:auto;min-width:0}
 /* [v18.36] tiêu đề cột bấm để sort */

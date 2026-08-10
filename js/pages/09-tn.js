@@ -284,7 +284,7 @@ function tnAdminRenderMain(){
      '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAllEff?' on':'')+'" onclick="tnAdOpenAll('+(!hienAllEff)+')"></button></label>'+
      '<select id="tn-openall-dur" class="tn-sel sm" onchange="tnAdDurChange(this.value)" title="Thời hạn mở"><option value="0">Vĩnh viễn</option><option value="24">Trong 24 giờ</option><option value="72">Trong 3 ngày</option><option value="168">Trong 7 ngày</option><option value="date">Đến ngày…</option></select>'+
      '<input id="tn-openall-date" type="datetime-local" class="tn-inp sm" style="display:none">'+
-     '<span class="tn-openall-st">'+tnOpenAllStatus(hienAllEff,den)+'</span></div>';
+     tnOpenAllStatus(hienAllEff,den)+'</div>';
   // bảng: lọc + sort
   const rows=tnAdFilterSort(list);
   h+='<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr>'+
@@ -297,6 +297,25 @@ function tnAdminRenderMain(){
   });
   h+='</tbody></table></div>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">Không có phiếu khớp bộ lọc</div>')+'</div><div id="tn-ad-thread"></div>';
   root.innerHTML=h;
+  tnStartCountdown();
+}
+// [v18.38] Đồng hồ đếm ngược tới lúc "Mở tất cả" tự tắt (nhảy giờ:phút:giây)
+function tnStartCountdown(){
+  if(TN.cdTimer){ clearInterval(TN.cdTimer); TN.cdTimer=null; }
+  if(!document.getElementById('tn-countdown')) return;
+  const pad=n=>('0'+n).slice(-2);
+  const tick=()=>{
+    const e=document.getElementById('tn-countdown');
+    if(!e){ if(TN.cdTimer){clearInterval(TN.cdTimer);TN.cdTimer=null;} return; }
+    let ms=new Date(e.getAttribute('data-den')).getTime()-Date.now();
+    if(ms<=0){ e.innerHTML='<b style="color:#C6373C">Đã hết hạn — đang tự ẩn…</b>'; clearInterval(TN.cdTimer); TN.cdTimer=null; setTimeout(()=>{try{tnAdminLoad(TN.adKy);}catch(x){}},1500); return; }
+    const d=Math.floor(ms/86400000); ms-=d*86400000;
+    const h=Math.floor(ms/3600000); ms-=h*3600000;
+    const m=Math.floor(ms/60000); ms-=m*60000;
+    const s=Math.floor(ms/1000);
+    e.innerHTML='● Đang mở · còn <b class="tn-cd-num">'+(d>0?d+' ngày ':'')+pad(h)+':'+pad(m)+':'+pad(s)+'</b>';
+  };
+  tick(); TN.cdTimer=setInterval(tick,1000);
 }
 function _tnStatF(f,n,l,warn){ return '<button type="button" class="tn-stat'+(warn?' warn':'')+(TN.adFilter===f?' active':'')+'" onclick="tnAdSetFilter(\''+f+'\')"><div class="n">'+n+'</div><div class="l">'+_tnEsc(l)+'</div></button>'; }
 function tnAdSetFilter(f){ TN.adFilter=(TN.adFilter===f && f!=='all')?'all':f; tnAdminRenderMain(); }
@@ -310,11 +329,10 @@ function tnAdFilterSort(list){
   return r;
 }
 function tnOpenAllStatus(eff,den){
-  if(!eff) return 'Đang ẩn với NV';
-  if(!den) return '● Đang mở · vĩnh viễn';
-  const ms=den.getTime()-Date.now(); if(ms<=0) return 'Đã hết hạn (ẩn)';
-  const hrs=ms/3600000; const con=hrs>=24?(Math.round(hrs/24)+' ngày'):(Math.round(hrs)+' giờ');
-  return '● Đang mở · tự tắt '+_tnDt(den.toISOString())+' (còn ~'+con+')';
+  if(!eff) return '<span class="tn-openall-st">Đang ẩn với NV</span>';
+  if(!den) return '<span class="tn-openall-st">● Đang mở · vĩnh viễn</span>';
+  if(den.getTime()-Date.now()<=0) return '<span class="tn-openall-st">Đã hết hạn (ẩn)</span>';
+  return '<span class="tn-openall-st" id="tn-countdown" data-den="'+den.toISOString()+'">● Đang mở…</span>';
 }
 function tnAdDurChange(v){ const d=document.getElementById('tn-openall-date'); if(d)d.style.display=(v==='date')?'':'none'; }
 function tnAdOpenAll(on){
