@@ -306,8 +306,8 @@ body.ns18-shell .ns-suggest-item:active,
 body.ns18-shell .ns-suggest-item:hover{background:var(--teal-tint)!important}
 body.ns18-shell .suggest-list,
 body.ns18-shell .map-suggest-list{border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow-lg)!important}
-/* (h) TOAST: success dùng var(--green) tầng body = xanh lá cũ → green chuẩn v18 */
-body.ns18-shell .bh-toast.success{background:#2E8B57!important}
+/* (h) TOAST: success xanh lá cũ → TEAL brand v18 (Aroma: "thông báo xóa phiên còn xanh cũ") */
+body.ns18-shell .bh-toast.success{background:#1E5F63!important;color:#fff!important}
 /* (i) PANEL THÔNG BÁO: mint/emerald/slate → token v18 */
 body.ns18-shell .notif-mark-all{color:var(--teal-deep)!important}
 body.ns18-shell .notif-item:hover,
