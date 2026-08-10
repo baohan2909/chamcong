@@ -305,92 +305,92 @@ function _getDashDateRange(){
 }
 
 function taiDashboard(){
-  if(_dashLoading)return; // tránh trùng request
+  if(_dashLoading)return;
   _dashLoading=true;
   const [tu,den]=_getDashDateRange();
   const q=document.getElementById('dash-search')?.value?.trim()||'';
-  // [v10 Yc #6] Visual feedback ngay lập tức — không để người dùng tưởng "bấm không phản ứng"
-  ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong',
-   'dash-k-giodk','dash-k-giott','dash-k-chenh'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.textContent='…';
-  });
-  document.getElementById('dash-donut').innerHTML='<text x="80" y="80" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
-  document.getElementById('dash-bar').innerHTML='<text x="170" y="70" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
-  document.getElementById('dash-trend').innerHTML='<text x="170" y="80" text-anchor="middle" fill="#9b9a96" font-size="11">Đang tải...</text>';
-  document.getElementById('dash-rank-kv').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
-  document.getElementById('dash-rank-ch').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
-  document.getElementById('dash-alerts').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
-
-  // [v12-P3] Supabase RPC. Format khác Apps Script → adapt nội bộ
-  supa.rpc('fn_get_dashboard', { p_tu_ngay: tu, p_den_ngay: den, p_q: q || null, p_ma_ch: (typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null })
-  .then(({ data: res, error }) => {
+  const _ch=(typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null;
+  ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong','dash-k-cb','dash-k-cbcho','dash-k-dncho']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='…';});
+  ['dash-alerts','dash-diem','dash-tc'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';});
+  const _den = den || _fmtNgayLocal(new Date());
+  const thang = String(_den).slice(0,7);
+  const today = _fmtNgayLocal(new Date());
+  // [v18.33] 3 RPC: dashboard (KPI + cảnh báo phân loại) + điểm phong độ + độ phủ trưởng ca — đều scope p_ma_ch cho CH
+  Promise.all([
+    supa.rpc('fn_get_dashboard', { p_tu_ngay: tu, p_den_ngay: den, p_q: q || null, p_ma_ch: _ch }),
+    Promise.resolve(supa.rpc('fn_diem_tat_ca', { p_thang: thang, p_ma_ch: _ch })).catch(()=>({data:null})),
+    Promise.resolve(supa.rpc('fn_truong_ca_toan_chuoi', { p_ngay: today, p_ma_ch: _ch })).catch(()=>({data:null}))
+  ]).then(([dRes,diemRes,tcRes])=>{
     _dashLoading=false;
-    if(error || !res){
-      showToast('Dashboard: ' + (error ? error.message : 'dữ liệu rỗng'),'err');
-      ['dash-k-tong','dash-k-dilam','dash-k-nghi','dash-k-khong',
-       'dash-k-giodk','dash-k-giott','dash-k-chenh'].forEach(id=>{
-        const el=document.getElementById(id);if(el)el.textContent='0';
-      });
-      return;
-    }
-    // Adapt sang format Apps Script gốc — keys khớp với renderDashboard
-    const tq = res.tongQuan || {};
-    const dashboard = {
-      kpi: {
-        tongNS: tq.tongNV || 0,
-        diLam: tq.tongChamCong || 0,
-        nghiPhep: tq.tongDonNghi || 0,
-        khongHoatDong: Math.max(0, (tq.tongNV || 0) - (tq.tongChamCong || 0) - (tq.tongDonNghi || 0))
-      },
-      gioCong: {
-        tongGioDK: tq.tongGioDK || '0g',
-        tongGioTT: tq.tongGioTT || '0g',
-        chenhGio: tq.chenhGio || '0g',
-        tongPhutDK: tq.tongPhutDK || 0,
-        tongPhutTT: tq.tongPhutTT || 0,
-        chenhPct: tq.chenhPct || '—'
-      },
-      trend7: [],
-      theoKhuVuc: [],
-      theoCuaHang: [],
-      canhBao: (res.topNVCB || []).slice(0, 10).map(x => ({
-        maNV: x.maNV, tenNV: x.tenNV, soCB: x.soCB,
-        ngay: '', loaiCB: '', noiDung: 'Tổng ' + x.soCB + ' cảnh báo'
-      }))
-    };
-    renderDashboard(dashboard);
+    if(dRes.error || !dRes.data){ showToast('Dashboard: ' + (dRes.error?dRes.error.message:'dữ liệu rỗng'),'err'); return; }
+    const tq = dRes.data.tongQuan || {};
+    const _set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+    _set('dash-k-tong', tq.tongNV||0);
+    _set('dash-k-dilam', tq.tongChamCong||0);
+    _set('dash-k-nghi', tq.tongDonNghi||0);
+    _set('dash-k-khong', Math.max(0,(tq.tongNV||0)-(tq.tongChamCong||0)-(tq.tongDonNghi||0)));
+    _set('dash-k-cb', tq.tongCanhBao||0);
+    _set('dash-k-cbcho', tq.cbChuaXuLy||0);
+    _set('dash-k-dncho', tq.dnChoDuyet||0);
+    _renderCanhBaoLoai(dRes.data.canhBaoLoai||{}, dRes.data.topNVCB||[]);
+    _renderDiemDash((diemRes.data&&diemRes.data.danh_sach)||[]);
+    _renderTCDash((tcRes.data&&tcRes.data.cua_hang)||[]);
   }).catch(err=>{
     _dashLoading=false;
-    showToast('Lỗi tải dashboard: '+(err&&err.message?err.message:'network'),'err');
+    showToast('Lỗi tải dashboard: '+((err&&err.message)?err.message:'network'),'err');
   });
 }
 
-function renderDashboard(d){
-  const k = d.kpi || {}, gc = d.gioCong || {};
-  // KPI
-  document.getElementById('dash-k-tong').textContent=k.tongNS||0;
-  document.getElementById('dash-k-dilam').textContent=k.diLam||0;
-  document.getElementById('dash-k-nghi').textContent=k.nghiPhep||0;
-  document.getElementById('dash-k-khong').textContent=k.khongHoatDong||0;
-  document.getElementById('dash-k-giodk').textContent=gc.tongGioDK||'0g';
-  document.getElementById('dash-k-giott').textContent=gc.tongGioTT||'0g';
-  const chenh=document.getElementById('dash-k-chenh');
-  chenh.textContent=gc.chenhGio||'0g';
-  chenh.style.color=(gc.tongPhutTT||0)>=(gc.tongPhutDK||0)?'var(--green-m)':'var(--red)';
-  document.getElementById('dash-k-chenh-lbl').textContent='Chênh lệch · '+(gc.chenhPct||'—');
+// [v18.33] fmt ngày local yyyy-mm-dd (tránh lệch timezone)
+function _fmtNgayLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _dashEsc(s){ return String(s==null?'':s).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 
-  // Donut cơ cấu NS
-  _renderDonut(k);
-  // Bar đăng ký vs thực tế theo khu vực
-  _renderBarChart(d.theoKhuVuc);
-  // Line trend 7 ngày
-  _renderTrendChart(d.trend7);
-  // Xếp hạng
-  _renderRankKV(d.theoKhuVuc);
-  _renderRankCH(d.theoCuaHang);
-  // Cảnh báo
-  _renderDashAlerts(d.canhBao);
+// [v18.33] Cảnh báo PHÂN LOẠI (theo loai_canh_bao) + top NV cảnh báo
+const _DASH_CB_LBL = {CO_LICH_KHONG_TT:'Có lịch, không chấm công', KHONG_HOAT_DONG:'Không hoạt động', THIEU_RA:'Thiếu ra ca', THIEU_VAO:'Thiếu vào ca', QUEN_RA:'Quên ra ca', DI_TRE:'Đi trễ', VE_SOM:'Về sớm', KHAC:'Khác'};
+function _renderCanhBaoLoai(loaiObj, topNV){
+  const box=document.getElementById('dash-alerts'); if(!box) return;
+  const keys=Object.keys(loaiObj||{}).filter(k=>loaiObj[k]).sort((a,b)=>(loaiObj[b]||0)-(loaiObj[a]||0));
+  let html='';
+  if(keys.length){
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:10px">';
+    html+=keys.map(k=>'<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:9px 11px"><div style="font-size:20px;font-weight:800;color:#C2410C;font-variant-numeric:tabular-nums">'+loaiObj[k]+'</div><div style="font-size:11px;color:#9A3412;line-height:1.25">'+_dashEsc(_DASH_CB_LBL[k]||k)+'</div></div>').join('');
+    html+='</div>';
+  }
+  if((topNV||[]).length){
+    html+='<div style="font-size:11.5px;font-weight:700;color:var(--text-m);margin:6px 0 4px">Nhân viên nhiều cảnh báo nhất</div>';
+    html+=topNV.slice(0,5).map(x=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid #F1EFE8"><span style="font-size:13px">'+_dashEsc(x.tenNV)+' <span style="color:var(--text-m);font-size:11px">'+_dashEsc(x.maNV)+'</span></span><span style="font-weight:800;color:#DC2626">'+x.soCB+'</span></div>').join('');
+  }
+  box.innerHTML = html || '<div class="dash-alert-empty">Không có cảnh báo</div>';
+}
+
+// [v18.33] Điểm phong độ: điểm TB + số NV bị trừ + top thấp nhất
+function _renderDiemDash(list){
+  const box=document.getElementById('dash-diem'); if(!box) return;
+  if(!list || !list.length){ box.innerHTML='<div class="dash-alert-empty">Chưa có dữ liệu điểm</div>'; return; }
+  const arr=list.slice().sort((a,b)=>(a.diem||0)-(b.diem||0));
+  const avg=(arr.reduce((s,x)=>s+(x.diem||0),0)/arr.length).toFixed(1);
+  const duoi=arr.filter(x=>(x.diem||0)<10);
+  let html='<div style="display:flex;gap:10px;margin-bottom:10px"><div style="flex:1;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:9px 11px"><div style="font-size:20px;font-weight:800;color:#15803D">'+avg+'</div><div style="font-size:11px;color:#166534">Điểm trung bình</div></div><div style="flex:1;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:9px 11px"><div style="font-size:20px;font-weight:800;color:#DC2626">'+duoi.length+'</div><div style="font-size:11px;color:#991B1B">NV bị trừ điểm</div></div></div>';
+  if(duoi.length){
+    html+='<div style="font-size:11.5px;font-weight:700;color:var(--text-m);margin:4px 0 4px">Điểm thấp nhất</div>';
+    html+=duoi.slice(0,5).map(x=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid #F1EFE8"><span style="font-size:13px">'+_dashEsc(x.ho_ten||x.ma_nv)+'</span><span style="font-weight:800;color:'+((x.diem||0)>=7?'#D97706':'#DC2626')+'">'+(x.diem||0)+'/10</span></div>').join('');
+  } else html+='<div class="dash-alert-empty" style="padding:8px 0">Tất cả NV đạt điểm tối đa</div>';
+  box.innerHTML=html;
+}
+
+// [v18.33] Độ phủ trưởng ca hôm nay
+function _renderTCDash(list){
+  const box=document.getElementById('dash-tc'); if(!box) return;
+  if(!list || !list.length){ box.innerHTML='<div class="dash-alert-empty">Chưa có dữ liệu trưởng ca hôm nay</div>'; return; }
+  const co=list.filter(c=>(c.so_tc||0)>0).length;
+  const thieu=list.filter(c=>(c.so_tc||0)===0);
+  let html='<div style="display:flex;gap:10px;margin-bottom:10px"><div style="flex:1;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:9px 11px"><div style="font-size:20px;font-weight:800;color:#15803D">'+co+'/'+list.length+'</div><div style="font-size:11px;color:#166534">CH có trưởng ca</div></div><div style="flex:1;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:9px 11px"><div style="font-size:20px;font-weight:800;color:#DC2626">'+thieu.length+'</div><div style="font-size:11px;color:#991B1B">CH thiếu trưởng ca</div></div></div>';
+  if(thieu.length){
+    html+='<div style="font-size:11.5px;font-weight:700;color:var(--text-m);margin:4px 0 4px">Cửa hàng thiếu trưởng ca</div>';
+    html+=thieu.slice(0,10).map(c=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid #F1EFE8"><span style="font-size:13px">'+_dashEsc(c.ten_ch||c.ma_ch)+'</span><span style="font-size:11px;color:var(--text-m)">'+(c.so_dang_ca||0)+' đang trong ca</span></div>').join('');
+  }
+  box.innerHTML=html;
 }
 
 function _renderDonut(k){
