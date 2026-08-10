@@ -329,7 +329,7 @@ async function tcGsReload(){
   const body=document.getElementById('tcgs-body'); if(!body) return;
   body.innerHTML='<div style="text-align:center;color:#64748B;padding:30px">Đang tải...</div>';
   try{
-    const { data, error } = await supa.rpc('fn_truong_ca_toan_chuoi',{p_ngay:tcToday()});
+    const { data, error } = await supa.rpc('fn_truong_ca_toan_chuoi',{p_ngay:tcToday(), p_ma_ch:(typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null});  // [v18.29] CH chỉ xem cửa hàng mình
     if(error||!data){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi tải dữ liệu.</div>'; return; }
     _tcGsData=data; tcGsRender();
   }catch(e){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi kết nối.</div>'; }

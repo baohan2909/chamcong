@@ -186,7 +186,7 @@ function onLCQLSearch(){
 
 let _lcqlAllData = [];
 function taiLichCaQL(){
-  if(typeof _chanQuanLyNS==='function' && _chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS
+  if(typeof _chanXemNS==='function' && _chanXemNS()) return;   // [v18.29] ADMIN/QLNS + CH (xem, lọc client theo cửa hàng); roster read-only không có nút
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
   document.getElementById('lcql-list').innerHTML='<div class="ns-empty">⏳ Đang tải...</div>';
@@ -246,6 +246,10 @@ function taiLichCaQL(){
         trangThai: dn.trang_thai || 'CHO_DUYET', ghiChu: dn.ly_do || ''
       });
     });
+    // [v18.29] CỬA HÀNG: chỉ xem lịch ca NV tại cửa hàng mình (lọc client, giống giờ công)
+    if (typeof _laCuaHang==='function' && _laCuaHang() && SESSION.cuaHangMa) {
+      _lcqlAllData = _lcqlAllData.filter(d => d.maCH === SESSION.cuaHangMa);
+    }
     renderLCQL();
     const kvs = new Set(_lcqlAllData.map(d=>d.khuVuc));
     const chs = new Set(_lcqlAllData.map(d=>d.maCH));

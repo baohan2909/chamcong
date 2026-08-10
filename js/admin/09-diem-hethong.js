@@ -116,7 +116,7 @@ async function diemHubLoad() {
   if (ctr) ctr.innerHTML = _diemHubControlsHtml();
   body.innerHTML = '<div style="text-align:center;color:#64748B;padding:34px">Đang tải...</div>';
   try {
-    const { data, error } = await supa.rpc('fn_diem_tat_ca', { p_thang: _diemHub.thang });
+    const { data, error } = await supa.rpc('fn_diem_tat_ca', { p_thang: _diemHub.thang, p_ma_ch: (typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null });  // [v18.29] CH lọc theo cửa hàng mình
     if (error || !data || !data.success) {
       body.innerHTML = '<div style="text-align:center;color:#DC2626;padding:34px">Lỗi tải điểm: ' + escHtml((data && data.error) || (error && error.message) || '') + '</div>';
       return;

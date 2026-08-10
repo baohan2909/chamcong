@@ -568,12 +568,12 @@ const HUB_GROUPS = {
       // [v18.28] Tài khoản CỬA HÀNG — mục CHỈ XEM, phạm vi cửa hàng mình (nút hành động đã gate riêng)
       { label:'Giờ công cửa hàng',  desc:'Giờ công NV tại cửa hàng', ic:_hubIc.clock, roles:['CUA_HANG'],           act:()=>goToPage('giocong-ql') },
       { label:'Đơn nghỉ phép',      desc:'Xem đơn nghỉ tại cửa hàng', ic:_hubIc.check, roles:['CUA_HANG'],          act:()=>goToPage('donnghi-acc') },
-      { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS'],                   quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
+      { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS','CUA_HANG'],        quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
       { label:'Lịch hoạt động CH',   desc:'Mở/đóng toàn hệ thống', ic:_hubIc.cal,   roles:['QLNS','QLBH'], setting:'lichhd.enabled', quyen:'lichca.hoatdong', act:()=>moLichHDQL() },
-      { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS'],                   quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
+      { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS','CUA_HANG'],         quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
-      { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH'], quyen:'nhansu.giamsat', act:()=>tcOpenGiamSat() },
-      { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS'], quyen:'diem.xem', act:()=>diemHubOpen() },
+      { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.giamsat', act:()=>tcOpenGiamSat() },
+      { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS','CUA_HANG'], quyen:'diem.xem', act:()=>diemHubOpen() },
     ]
   },
   banhang: {

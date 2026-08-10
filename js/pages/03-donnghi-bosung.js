@@ -323,7 +323,7 @@ function taiDashboard(){
   document.getElementById('dash-alerts').innerHTML='<div class="dash-alert-empty">⏳ Đang tải...</div>';
 
   // [v12-P3] Supabase RPC. Format khác Apps Script → adapt nội bộ
-  supa.rpc('fn_get_dashboard', { p_tu_ngay: tu, p_den_ngay: den, p_q: q || null })
+  supa.rpc('fn_get_dashboard', { p_tu_ngay: tu, p_den_ngay: den, p_q: q || null, p_ma_ch: (typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null })
   .then(({ data: res, error }) => {
     _dashLoading=false;
     if(error || !res){
@@ -1229,7 +1229,8 @@ async function _fetchYeuCauDoiLich(tu, den, ttFilter) {
     
     if (tu) query = query.gte('ngay', tu);
     if (den) query = query.lte('ngay', den);
-    
+    if (typeof _laCuaHang==='function' && _laCuaHang() && SESSION.cuaHangMa) query = query.eq('ma_ch', SESSION.cuaHangMa);  // [v18.29] CH chỉ xem đổi lịch tại cửa hàng mình
+
     const { data, error } = await query;
     if (error) {
       console.warn('[XDL fetch] Lỗi:', error);
@@ -1243,7 +1244,7 @@ async function _fetchYeuCauDoiLich(tu, den, ttFilter) {
 }
 
 function taiDuyetYC(){
-  if(typeof _chanQuanLyNS==='function' && _chanQuanLyNS()) return;   // [v13.49] chỉ ADMIN/QLNS (CH-xem chờ RPC lọc theo CH)
+  if(typeof _chanXemNS==='function' && _chanXemNS()) return;   // [v18.29] ADMIN/QLNS + CH (xem, lọc p_ma_ch); nút duyệt vẫn gate _canQuanLyNS
   const content=document.getElementById('yc-content');
   content.innerHTML='<div class="dnp-empty">⏳ Đang tải...</div>';
   const [tu,den]=_getYCRange();
@@ -1251,7 +1252,7 @@ function taiDuyetYC(){
   // [v12-FIX] Truyền filter trạng thái
   // [v9.45] Parallel: fetch yêu cầu + fetch đề nghị XIN ĐỔI LỊCH
   Promise.all([
-    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den, p_trang_thai: ttFilter || null }),
+    supa.rpc('fn_get_duyet_yeu_cau', { p_tu_ngay: tu, p_den_ngay: den, p_trang_thai: ttFilter || null, p_ma_ch: (typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null }),
     _fetchYeuCauDoiLich(tu, den, ttFilter)
   ])
   .then(([ycRes, doiLichArr]) => {
