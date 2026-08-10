@@ -271,24 +271,68 @@ function tnAdminLoad(ky){
 }
 function tnAdminRenderMain(){
   const root=document.getElementById('tn-ad-main'); if(!root) return;
+  if(!TN.adFilter)TN.adFilter='all'; if(!TN.adSort)TN.adSort={col:'hoTen',dir:1};
   const list=TN.adData.danhSach||[];
   const c={xem:0,xn:0,yk:0}; list.forEach(p=>{ if(p.xemLuc)c.xem++; if(p.xacNhanLuc)c.xn++; if(p.coYkien && p.chuaTraLoi)c.yk++; });
-  const hienAll=!!TN.adData.hienAll;
+  const den=TN.adData.hienAllDen? new Date(TN.adData.hienAllDen):null;
+  const hienAllEff=!!TN.adData.hienAll && (!den || den.getTime()>Date.now());
+  // [v18.36] thẻ số = FILTER (bấm để lọc)
   let h='<div class="tn-stats">'+
-    _tnStat(list.length,'Phiếu')+_tnStat(c.xem,'Đã xem')+_tnStat(c.xn,'Đã xác nhận')+_tnStat(c.yk,'Ý kiến chờ',c.yk>0)+'</div>';
-  h+='<div class="tn-card"><div class="tn-ad-top"><div class="tn-ad-title" style="font-size:14px">Danh sách phiếu</div>'+
-     '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAll?' on':'')+'" onclick="tnAdminToggleAll('+(!hienAll)+')"></button></label></div>'+
-     '<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr><th>Nhân viên</th><th>Cửa hàng</th><th class="r">Thực lãnh</th><th>Trạng thái</th><th>Hiện</th></tr></thead><tbody>';
-  list.forEach(p=>{
+    _tnStatF('all',list.length,'Phiếu')+_tnStatF('xem',c.xem,'Đã xem')+_tnStatF('xacnhan',c.xn,'Đã xác nhận')+_tnStatF('ykien',c.yk,'Ý kiến chờ',c.yk>0)+'</div>';
+  // [v18.36] Mở tất cả + hẹn giờ tự tắt
+  h+='<div class="tn-card"><div class="tn-openall">'+
+     '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAllEff?' on':'')+'" onclick="tnAdOpenAll('+(!hienAllEff)+')"></button></label>'+
+     '<select id="tn-openall-dur" class="tn-sel sm" onchange="tnAdDurChange(this.value)" title="Thời hạn mở"><option value="0">Vĩnh viễn</option><option value="24">Trong 24 giờ</option><option value="72">Trong 3 ngày</option><option value="168">Trong 7 ngày</option><option value="date">Đến ngày…</option></select>'+
+     '<input id="tn-openall-date" type="datetime-local" class="tn-inp sm" style="display:none">'+
+     '<span class="tn-openall-st">'+tnOpenAllStatus(hienAllEff,den)+'</span></div>';
+  // bảng: lọc + sort
+  const rows=tnAdFilterSort(list);
+  h+='<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr>'+
+     tnTh('hoTen','Nhân viên')+tnTh('maCH','Cửa hàng')+tnTh('thucLanh','Thực lãnh','r')+tnTh('trangThai','Trạng thái')+'<th>Hiện</th></tr></thead><tbody>';
+  rows.forEach(p=>{
     h+='<tr><td><b>'+_tnEsc(p.hoTen||p.maNV)+'</b><small>'+_tnEsc(p.maNV)+'</small></td><td>'+_tnEsc(p.maCH||'—')+'</td>'+
        '<td class="r">'+_tnMoney(p.thucLanh)+'</td><td>'+tnPill(p)+'</td>'+
-       '<td><button class="tn-tgl sm'+((p.hien||hienAll)?' on':'')+'" '+(hienAll?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
+       '<td><button class="tn-tgl sm'+((p.hien||hienAllEff)?' on':'')+'" '+(hienAllEff?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
     if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5"><button class="tn-fb-open" onclick="tnAdminOpenThread(\''+p.id+'\',\''+_tnEsc(p.hoTen||p.maNV)+'\')">💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button></td></tr>'; }
   });
-  h+='</tbody></table></div></div><div id="tn-ad-thread"></div>';
+  h+='</tbody></table></div>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">Không có phiếu khớp bộ lọc</div>')+'</div><div id="tn-ad-thread"></div>';
   root.innerHTML=h;
 }
-function _tnStat(n,l,warn){ return '<div class="tn-stat'+(warn?' warn':'')+'"><div class="n">'+n+'</div><div class="l">'+_tnEsc(l)+'</div></div>'; }
+function _tnStatF(f,n,l,warn){ return '<button type="button" class="tn-stat'+(warn?' warn':'')+(TN.adFilter===f?' active':'')+'" onclick="tnAdSetFilter(\''+f+'\')"><div class="n">'+n+'</div><div class="l">'+_tnEsc(l)+'</div></button>'; }
+function tnAdSetFilter(f){ TN.adFilter=(TN.adFilter===f && f!=='all')?'all':f; tnAdminRenderMain(); }
+function tnTh(col,label,cls){ const s=TN.adSort; const arr=(s.col===col)?(s.dir>0?' ↑':' ↓'):''; return '<th class="'+(cls||'')+' tn-th-sort" onclick="tnAdSort(\''+col+'\')">'+_tnEsc(label)+arr+'</th>'; }
+function tnAdSort(col){ const s=TN.adSort; if(s.col===col)s.dir=-s.dir; else {s.col=col;s.dir=1;} tnAdminRenderMain(); }
+function tnAdFilterSort(list){
+  let r=list.slice(); const f=TN.adFilter;
+  if(f==='xem')r=r.filter(p=>p.xemLuc); else if(f==='xacnhan')r=r.filter(p=>p.xacNhanLuc); else if(f==='ykien')r=r.filter(p=>p.coYkien&&p.chuaTraLoi);
+  const s=TN.adSort;
+  r.sort((a,b)=>{ let va,vb; if(s.col==='thucLanh'){va=_tnNum(a.thucLanh);vb=_tnNum(b.thucLanh);} else {va=(a[s.col]||'').toString().toLowerCase();vb=(b[s.col]||'').toString().toLowerCase();} return (va<vb?-1:va>vb?1:0)*s.dir; });
+  return r;
+}
+function tnOpenAllStatus(eff,den){
+  if(!eff) return 'Đang ẩn với NV';
+  if(!den) return '● Đang mở · vĩnh viễn';
+  const ms=den.getTime()-Date.now(); if(ms<=0) return 'Đã hết hạn (ẩn)';
+  const hrs=ms/3600000; const con=hrs>=24?(Math.round(hrs/24)+' ngày'):(Math.round(hrs)+' giờ');
+  return '● Đang mở · tự tắt '+_tnDt(den.toISOString())+' (còn ~'+con+')';
+}
+function tnAdDurChange(v){ const d=document.getElementById('tn-openall-date'); if(d)d.style.display=(v==='date')?'':'none'; }
+function tnAdOpenAll(on){
+  let den=null;
+  if(on){
+    const dur=((document.getElementById('tn-openall-dur')||{}).value)||'0';
+    if(dur==='date'){ const dv=(document.getElementById('tn-openall-date')||{}).value; if(!dv){ if(typeof showToast==='function')showToast('Chọn ngày giờ tự tắt','warn'); return; } den=new Date(dv).toISOString(); }
+    else if(dur!=='0'){ den=new Date(Date.now()+parseInt(dur)*3600000).toISOString(); }
+  }
+  const done=(data)=>{ if(data&&data.success){ if(typeof showToast==='function')showToast(on?'✓ Đã mở tất cả':'✓ Đã ẩn','ok'); tnAdminLoad(TN.adKy); } else if(typeof showToast==='function')showToast((data&&data.error)||'Lỗi','warn'); };
+  supa.rpc('fn_tn_admin_toggle',{p_ma:TN.ma,p_password:TN.pw,p_ky:TN.adKy,p_ma_nv:null,p_hien:on,p_hien_all_den:den}).then(({data,error})=>{
+    if(error && /find the function|does not exist|schema cache|p_hien_all_den/i.test(error.message||'')){
+      // RPC cũ chưa có tham số hạn (chưa chạy tn_v2_hengio.sql) → lùi về 5 tham số, không hẹn giờ
+      if(den && typeof showToast==='function')showToast('Chưa bật được hẹn giờ — hãy chạy SQL tn_v2_hengio.sql','warn');
+      supa.rpc('fn_tn_admin_toggle',{p_ma:TN.ma,p_password:TN.pw,p_ky:TN.adKy,p_ma_nv:null,p_hien:on}).then(({data:d2})=>done(d2));
+    } else done(data);
+  });
+}
 function tnPill(p){
   const s=p.trangThai;
   const m={AN:['p-hid','Chưa mở'],MO:['p-hid','Đã mở'],DA_XEM:['p-seen','Đã xem'],DA_XAC_NHAN:['p-ok','Đã xác nhận'],CO_YKIEN:['p-fb','Có ý kiến'],HOAN_TAT:['p-ok','Hoàn tất']}[s]||['p-hid',s];

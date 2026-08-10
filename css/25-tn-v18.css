@@ -133,10 +133,23 @@
 .tn-sync-btn{width:auto!important;display:inline-flex;align-items:center;gap:7px;height:40px}
 .tn-sync-row .tn-file{display:inline-flex;align-items:center;height:40px}
 .tn-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
-.tn-stat{background:#fff;border:1px solid var(--tn-line);border-radius:13px;padding:12px 14px;box-shadow:var(--tn-sh)}
+/* [v18.36] thẻ stat = nút LỌC bấm được */
+.tn-stat{background:#fff;border:1px solid var(--tn-line);border-radius:13px;padding:12px 14px;box-shadow:var(--tn-sh);font:inherit;text-align:left;cursor:pointer;transition:border-color .12s,box-shadow .12s,transform .1s}
+.tn-stat:hover{border-color:var(--tn-teal2)}
+.tn-stat:active{transform:translateY(1px)}
+.tn-stat.active{border-color:var(--tn-teal);box-shadow:0 0 0 2px rgba(63,182,168,.28),var(--tn-sh)}
+.tn-stat:focus-visible{outline:2px solid var(--tn-teal2);outline-offset:2px}
 .tn-stat .n{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--tn-teal)}
 .tn-stat.warn .n{color:#C6373C}
 .tn-stat .l{font-size:11.5px;color:var(--tn-ink2)}
+/* [v18.36] Mở tất cả + hẹn giờ tự tắt */
+.tn-openall{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--tn-line)}
+.tn-openall-st{font-size:12px;color:var(--tn-ink2);font-weight:600}
+.tn-openall .tn-sel.sm{padding:7px 10px;font-size:12.5px}
+.tn-openall .tn-inp.sm{width:auto;min-width:0}
+/* [v18.36] tiêu đề cột bấm để sort */
+.tn-th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.tn-th-sort:hover{color:var(--tn-teal)}
 .tn-tbl-wrap{overflow-x:auto;margin-top:6px}
 .tn-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
 .tn-tbl th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--tn-ink3);font-weight:700;text-align:left;padding:9px 8px;border-bottom:1.5px solid var(--tn-line)}
