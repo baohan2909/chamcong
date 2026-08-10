@@ -19,7 +19,7 @@ function _tnMaskStk(v){ const s=String(v||'').replace(/\s/g,''); return s.length
 const TN_GROUPS = [
   { name:'Công & giờ làm', accent:'#1E5F63', rows:[
     ['tong_gio_cong','Tổng giờ công','gio'], ['gio_chuan','Giờ công chuẩn','gio'],
-    ['tangca_12','Tăng ca ×1.2','gio'], ['tangca_20','Tăng ca ×2.0','gio'], ['tangca_30','Tăng ca ×3.0 (lễ)','gio'],
+    ['gio_12','Giờ tăng ca ×1.2','gio'], ['gio_x2','Giờ tăng ca ×2.0','gio'], ['gio_x3','Giờ tăng ca ×3.0 (lễ)','gio'],
     ['nghi_phep','Nghỉ phép','txt'], ['tong_ngay_nghi','Ngày nghỉ trong tháng','txt'],
     ['phep_su_dung','Phép đã dùng','txt'], ['phep_con_lai','Phép năm còn lại','txt'] ] },
   { name:'Các khoản thu nhập', accent:'#2E8B57', total:'tong_thu_nhap', rows:[
@@ -213,7 +213,8 @@ function tnAdminShell(){
 }
 function tnAdminSyncCardHtml(){
   const kySel=(TN.adData&&TN.adData.kyList||[]).map(k=>'<option value="'+k.ky+'"'+(k.ky===TN.adKy?' selected':'')+'>'+_tnEsc(k.ten||k.ky)+'</option>').join('');
-  const now=new Date(); const defM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  // [v18.36] mặc định = THÁNG TRƯỚC (lương tháng N chốt đầu tháng N+1)
+  const now=new Date(); const pm=new Date(now.getFullYear(), now.getMonth()-1, 1); const defM=pm.getFullYear()+'-'+String(pm.getMonth()+1).padStart(2,'0');
   return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ dữ liệu</div>'+
     '<div class="tn-ad-sub">Kéo TẤT CẢ dòng trong sheet TN vào kỳ. Secret chỉ giữ trong phiên — không lưu trên máy.</div></div>'+
     (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tnAdminLoad(this.value)">'+kySel+'</select>':'')+'</div>'+
