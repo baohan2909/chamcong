@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.31',
+  'sys.cache_version': 'v18.32',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -574,13 +574,15 @@ const HUB_GROUPS = {
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
       { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.giamsat', act:()=>tcOpenGiamSat() },
       { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS','CUA_HANG'], quyen:'diem.xem', act:()=>diemHubOpen() },
+      // [v18.32] Chuyển từ nhóm Bán hàng: "Dashboard bán hàng" thực chất là báo cáo nhân sự (chấm công/giờ công/cảnh báo)
+      { label:'Tổng quan nhân sự',  desc:'Chấm công · giờ công · cảnh báo', ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.xem', act:()=>goToPage('dashboard') },
     ]
   },
   banhang: {
     title: 'Bán hàng hệ thống',
     items: [
       { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.phien',     act:()=>goToPage('banhang') },
-      { label:'Dashboard bán hàng', desc:'Theo dõi phiên bán hàng',      ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.dashboard', act:()=>goToPage('dashboard') },
+      // [v18.32] "Dashboard bán hàng" cũ = thực chất báo cáo NHÂN SỰ → đã chuyển sang nhóm Chấm công & Nhân sự (đổi nhãn "Tổng quan nhân sự")
     ]
   },
   bangiao: {

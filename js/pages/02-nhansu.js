@@ -246,9 +246,13 @@ function taiLichCaQL(){
         trangThai: dn.trang_thai || 'CHO_DUYET', ghiChu: dn.ly_do || ''
       });
     });
-    // [v18.29] CỬA HÀNG: chỉ xem lịch ca NV tại cửa hàng mình (lọc client, giống giờ công)
+    // [v18.32] CỬA HÀNG: xem lịch ca NV THUỘC cửa hàng mình (nhan_vien.ma_ch_mac_dinh)
+    // + NV nơi khác đến làm ca TẠI cửa hàng mình. (Trước lọc theo NƠI làm ca (lich_ca.ma_ch)
+    // → mất ngày NV nhà đi hỗ trợ CH khác, roster thiếu ngày — Aroma báo Hình 2.)
     if (typeof _laCuaHang==='function' && _laCuaHang() && SESSION.cuaHangMa) {
-      _lcqlAllData = _lcqlAllData.filter(d => d.maCH === SESSION.cuaHangMa);
+      _lcqlAllData = _lcqlAllData.filter(d =>
+        (nvMap[d.maNV]||{}).ma_ch_mac_dinh === SESSION.cuaHangMa || d.maCH === SESSION.cuaHangMa
+      );
     }
     renderLCQL();
     const kvs = new Set(_lcqlAllData.map(d=>d.khuVuc));

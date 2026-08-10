@@ -452,9 +452,19 @@
     display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;align-items:start;margin-bottom:16px}
   #page-nhansu.ns18 .dnp-day-head{grid-column:1/-1;margin-bottom:0}
 
-  /* Đơn nghỉ ACC: các thẻ ngày dàn nhiều cột */
-  #page-donnghi-acc.ns18 #accdnp-list{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+  /* [v18.32] Đơn nghỉ ACC desktop — Aroma Hình 4: "dồn cục về bên trái". GỐC: grid đặt ở
+     #accdnp-list nhưng con là .dnp-day-group (cả cụm ngày) → 1-vài ngày dồn trái, phải trống.
+     Chuyển grid VÀO .dnp-card (nơi chứa .dnp-item thật), giống nhansu(:451)/duyetyc(:464). */
+  #page-donnghi-acc.ns18 #accdnp-list{display:block!important}
+  #page-donnghi-acc.ns18 #accdnp-list .dnp-day-group{margin-bottom:16px}
+  #page-donnghi-acc.ns18 #accdnp-list .dnp-day-head{grid-column:1/-1}
+  #page-donnghi-acc.ns18 #accdnp-list .dnp-card{
+    display:grid!important;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start;
+    background:transparent!important;border:none!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important;padding:0!important}
+  #page-donnghi-acc.ns18 #accdnp-list .dnp-item{
+    background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;
+    box-shadow:var(--shadow)!important;margin:0!important}
+  #page-donnghi-acc.ns18 #accdnp-list .dnp-empty{width:100%;grid-column:1/-1}
 
   /* [v18.26] Duyệt yêu cầu desktop — Aroma: "thẻ dồn trái, lề lớn không đều" +
      "cho 4 NV/hàng đều nhau, gọn đẹp". GỐC: grid đặt ở #yc-content nhưng items nằm
