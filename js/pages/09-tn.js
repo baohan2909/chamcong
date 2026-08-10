@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 const TN = { pw:null, ma:null, kyList:[], ky:null, phieu:null,
              adKy:null, adData:null, adThreadId:null,
-             syncUrl:(localStorage.getItem('tn_sync_url')||''), syncSecret:(localStorage.getItem('tn_sync_secret')||'') };
+             syncUrl:(localStorage.getItem('tn_sync_url')||'https://script.google.com/macros/s/AKfycbxKNNRjt0K3gM0k60bi3alHGEG-e6rFZwgicOXFXLjHtd9sNvuRSqVri8LAbRFvGzgLrQ/exec'),
+             syncSecret:(localStorage.getItem('tn_sync_secret')||'') };
 
 function _tnLaCH(){ return typeof _laCuaHang==='function' && _laCuaHang(); }
 function _tnEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
