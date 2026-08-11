@@ -246,3 +246,24 @@
 #page-tn-admin.ns18 .tn-ad-search input{flex:1; min-width:0; border:none; outline:none; background:none;
   font:inherit; font-size:13.5px; color:var(--tn-ink); height:100%}
 #page-tn-admin.ns18 .tn-ad-tools .tn-sel{min-width:180px; height:40px}
+
+/* ── [Request 1] Vùng xóa dữ liệu / phản hồi ── */
+#page-tn-admin.ns18 .tn-danger{margin-top:14px; border:1.5px solid #F3D2D2; background:#FEF6F6}
+#page-tn-admin.ns18 .tn-danger-t{font-size:13px; font-weight:800; color:#B4322F; margin-bottom:10px}
+#page-tn-admin.ns18 .tn-danger-row{display:flex; gap:10px; flex-wrap:wrap}
+#page-tn-admin.ns18 .tn-btn-danger{flex:1; min-width:210px; display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  padding:11px 14px; border-radius:11px; border:1.5px solid #D9534F; background:#fff; color:#C6373C;
+  font:inherit; font-weight:700; font-size:13px; cursor:pointer; text-align:left; transition:background .12s,transform .12s}
+#page-tn-admin.ns18 .tn-btn-danger small{font-weight:500; font-size:11px; color:#9A5B5B}
+#page-tn-admin.ns18 .tn-btn-danger:hover{background:#FBEDED}
+#page-tn-admin.ns18 .tn-btn-danger:active{transform:translateY(1px)}
+#page-tn-admin.ns18 .tn-btn-danger.solid{background:#C6373C; color:#fff; border-color:#C6373C}
+#page-tn-admin.ns18 .tn-btn-danger.solid small{color:rgba(255,255,255,.85)}
+#page-tn-admin.ns18 .tn-btn-danger.solid:hover{background:#AC2E33}
+#page-tn-admin.ns18 .tn-danger-note{margin-top:9px; font-size:11.5px; color:var(--tn-ink3)}
+
+/* [Request 2] checkbox thay dữ liệu cũ trong sync card */
+#page-tn-admin.ns18 .tn-sync-replace{display:flex; align-items:center; gap:8px; margin-top:11px;
+  font-size:12.5px; color:var(--tn-ink2); cursor:pointer; line-height:1.4}
+#page-tn-admin.ns18 .tn-sync-replace input{width:16px; height:16px; accent-color:var(--tn-teal); flex:none; cursor:pointer}
+#page-tn-admin.ns18 .tn-sync-replace b{color:var(--tn-ink)}

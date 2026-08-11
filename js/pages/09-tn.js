@@ -30,7 +30,7 @@ const TN_GROUPS = [
     ['thuong_hieu_qua','Thưởng hiệu quả','money'], ['hieu_qua_thanhtien','Hiệu quả công việc','money'],
     ['pc_trach_nhiem','Phụ cấp trách nhiệm, điện thoại','money'],
     ['hh_cht','Hoa hồng CHT 1%','money'], ['hh_nvbhsx','Hoa hồng đơn hàng NVBH SX','money'], ['hh_dungca_db','Hoa hồng đứng ca 3% DB','money'],
-    ['online_tiktok','Online (Tiktok)','money'], ['sale_hoahong','Sale (hoa hồng + thưởng)','money'], ['sale_tai_ch','Sale tại cửa hàng','money'],
+    ['online_tiktok','Online (Tiktok)','money'], ['sale_hoahong','Hoa hồng Sale Đội','money'], ['sale_tai_ch','Hoa hồng cửa hàng','money'], ['hh_thi_dua','Hoa hồng thi đua','money'],
     ['pc_com','Phụ cấp cơm','money'], ['com_ch','Tiền cơm cửa hàng','money'], ['com_doi_live','Tiền cơm đội Live','money'],
     ['pc_xang','Phụ cấp xăng','money'], ['pc_dilai','Phụ cấp đi lại','money'],
     ['cong_tac_phi','Công tác phí','money'], ['tien_tham_nien','Tiền thâm niên','money'],
@@ -302,14 +302,16 @@ function tnAdminSyncCardHtml(){
   // [v18.36] mặc định = THÁNG TRƯỚC (lương tháng N chốt đầu tháng N+1)
   const now=new Date(); const pm=new Date(now.getFullYear(), now.getMonth()-1, 1); const defM=pm.getFullYear()+'-'+String(pm.getMonth()+1).padStart(2,'0');
   return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ dữ liệu</div>'+
-    '<div class="tn-ad-sub">Kéo TẤT CẢ dòng trong sheet TN vào kỳ. Secret chỉ giữ trong phiên — không lưu trên máy.</div></div>'+
+    '<div class="tn-ad-sub">Chọn <b>tháng</b> cần đồng bộ → kéo TẤT CẢ dòng sheet TN vào kỳ đó (đây cũng là tháng hiển thị cho NV). Secret chỉ giữ trong phiên.</div></div>'+
     (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tnAdminLoad(this.value)">'+kySel+'</select>':'')+'</div>'+
     '<div class="tn-sync-row">'+
-      '<div class="tn-fld"><label>Kỳ đồng bộ vào</label><input id="tn-sync-month" class="tn-inp sm" type="month" value="'+defM+'"></div>'+
+      '<div class="tn-fld"><label>Tháng đồng bộ / hiển thị</label><input id="tn-sync-month" class="tn-inp sm" type="month" value="'+defM+'"></div>'+
       '<div class="tn-fld"><label>Secret <span class="tn-nolock">không lưu</span></label><input id="tn-secret" class="tn-inp sm" type="password" placeholder="Nhập secret" autocomplete="off"></div>'+
       '<button class="tn-btn-ok tn-sync-btn" onclick="tnAdminSyncNow()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Đồng bộ ngay</button>'+
       '<label class="tn-btn-ghost tn-file">Tải CSV<input type="file" accept=".csv" style="display:none" onchange="tnAdminCsv(this)"></label>'+
-    '</div></div>';
+    '</div>'+
+    '<label class="tn-sync-replace"><input type="checkbox" id="tn-sync-replace" checked> <b>Thay dữ liệu cũ</b> — xóa sạch phiếu của tháng này trước khi nạp (nạp mới bỏ cũ)</label>'+
+    '</div>';
 }
 function _tnSyncKy(){ const m=(document.getElementById('tn-sync-month')||{}).value||new Date().toISOString().slice(0,7); return {ky:m, ten:'Tháng '+parseInt(m.slice(5))+', '+m.slice(0,4)}; }
 function tnAdminSyncNow(){
@@ -330,7 +332,7 @@ function tnAdminCsv(inp){
   rd.onload=()=>{ const rows=tnParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tnAdminDoSync(k.ky,k.ten,rows); };
   rd.readAsText(f,'utf-8');
 }
-const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
+const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_thi_dua','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
 function tnParseCsv(text){
   const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length); const out=[];
   for(let i=1;i<lines.length;i++){
@@ -341,12 +343,20 @@ function tnParseCsv(text){
 }
 function tnCsvLine(line){ const r=[]; let cur='',q=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(q){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; } else { if(ch==='"')q=true; else if(ch===','){r.push(cur);cur='';} else cur+=ch; } } r.push(cur); return r; }
 function tnAdminDoSync(ky,ten,rows){
-  if(typeof showToast==='function')showToast('Đang ghi '+rows.length+' phiếu...','ok');
-  supa.rpc('fn_tn_sync',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
-    if(error||!data||!data.success){ if(typeof showToast==='function')showToast('Đồng bộ lỗi: '+((data&&data.error)||(error&&error.message)),'err'); return; }
-    if(typeof showToast==='function')showToast('✓ Đã đồng bộ '+data.so_phieu+' phiếu kỳ '+ky,'ok');
-    TN.adKy=ky; supa.rpc('fn_tn_admin_list',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky}).then(({data:d2})=>{ if(d2&&d2.success){TN.adData=d2; tnAdminShell();} });
-  });
+  // [Request 2] "Thay dữ liệu cũ": xóa sạch phiếu kỳ này TRƯỚC khi nạp (best-effort — chưa có RPC xóa thì bỏ qua)
+  const replace = !!(document.getElementById('tn-sync-replace')||{}).checked;
+  const _write=()=>{
+    supa.rpc('fn_tn_sync',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
+      if(error||!data||!data.success){ if(typeof showToast==='function')showToast('Đồng bộ lỗi: '+((data&&data.error)||(error&&error.message)),'err'); return; }
+      if(typeof showToast==='function')showToast('✓ Đã đồng bộ '+data.so_phieu+' phiếu kỳ '+ky,'ok');
+      TN.adKy=ky; supa.rpc('fn_tn_admin_list',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky}).then(({data:d2})=>{ if(d2&&d2.success){TN.adData=d2; tnAdminShell();} });
+    });
+  };
+  if(typeof showToast==='function')showToast((replace?'Đang thay dữ liệu cũ + ghi ':'Đang ghi ')+rows.length+' phiếu...','ok');
+  if(replace){
+    Promise.resolve(supa.rpc('fn_tn_admin_clear',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_mode:'all'}))
+      .then(()=>_write()).catch(()=>_write());   // xóa lỗi/chưa có RPC → vẫn ghi (fn_tn_sync tự upsert)
+  } else _write();
 }
 function tnAdminLoad(ky){
   TN.adKy=ky;
@@ -381,11 +391,38 @@ function tnAdminRenderMain(){
      '<select id="tn-ad-ch" class="tn-sel sm" onchange="tnAdApplyFilter()"><option value="">Tất cả cửa hàng ('+chSet.length+')</option>'+
        chSet.map(ch=>'<option value="'+_tnEsc(ch)+'"'+(TN.adCH===ch?' selected':'')+'>'+_tnEsc(ch)+'</option>').join('')+'</select>'+
      '</div>';
-  h+='<div class="tn-tbl-wrap"><div id="tn-ad-tbl"></div></div><div id="tn-ad-thread"></div>';
+  h+='<div class="tn-tbl-wrap"><div id="tn-ad-tbl"></div></div>';
+  // [Request 1] Vùng xóa dữ liệu / phản hồi (kỳ hiện tại)
+  h+='<div class="tn-card tn-danger">'+
+     '<div class="tn-danger-t">⚠ Vùng xóa dữ liệu · kỳ '+_tnEsc(TN.adKy||'')+'</div>'+
+     '<div class="tn-danger-row">'+
+       '<button class="tn-btn-danger" onclick="tnAdClearResponses()">↺ Xóa phản hồi NV<small>Reset "đã xem/xác nhận" + xóa ý kiến</small></button>'+
+       '<button class="tn-btn-danger solid" onclick="tnAdClearData()">🗑 Xóa toàn bộ dữ liệu kỳ<small>Xóa sạch phiếu để nạp lại từ đầu</small></button>'+
+     '</div><div class="tn-danger-note">Thao tác không hoàn tác được. Dùng khi cần làm sạch để đồng bộ dữ liệu mới.</div></div>';
+  h+='<div id="tn-ad-thread"></div>';
   root.innerHTML=h;
   tnAdRenderTable();
   tnStartCountdown();
 }
+// [Request 1] Xóa dữ liệu / phản hồi của kỳ hiện tại (cần SQL fn_tn_admin_clear)
+function tnAdClearData(){ tnAdClear('all'); }
+function tnAdClearResponses(){ tnAdClear('responses'); }
+async function tnAdClear(mode){
+  const ky=TN.adKy; if(!ky) return;
+  const msg = mode==='all'
+    ? 'XÓA TOÀN BỘ dữ liệu lương kỳ '+ky+'?\nMọi phiếu và phản hồi của kỳ này sẽ bị xóa vĩnh viễn.'
+    : 'Xóa phản hồi NV kỳ '+ky+'?\nReset trạng thái "đã xem / đã xác nhận" và xóa hết ý kiến. Nhân viên sẽ phải xác nhận lại.';
+  let ok=false;
+  if(typeof appConfirm==='function'){ ok=await appConfirm(msg,{title: mode==='all'?'Xóa dữ liệu kỳ':'Xóa phản hồi', okLabel:'Xóa', danger:true}); }
+  else ok=confirm(msg);
+  if(!ok) return;
+  supa.rpc('fn_tn_admin_clear',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_mode:mode}).then(({data,error})=>{
+    if(error && /find the function|does not exist|schema cache/i.test(error.message||'')){ if(typeof showToast==='function')showToast('Hãy chạy SQL tn_v6_xoa.sql trước','warn'); return; }
+    if(data&&data.success){ if(typeof showToast==='function')showToast(mode==='all'?('✓ Đã xóa '+(data.so_phieu||0)+' phiếu'):('✓ Đã reset '+(data.so_phieu||0)+' phiếu'),'ok'); tnAdminLoad(ky); }
+    else if(typeof showToast==='function')showToast((data&&data.error)||'Không xóa được','warn');
+  }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi kết nối','warn'); });
+}
+try{ window.tnAdClearData=tnAdClearData; window.tnAdClearResponses=tnAdClearResponses; }catch(e){}
 // [Request 4] Vẽ RIÊNG phần bảng (lọc/tìm/sort chỉ vẽ lại đây → không mất focus ô tìm, không restart đồng hồ)
 function tnAdRenderTable(){
   const box=document.getElementById('tn-ad-tbl'); if(!box || !TN.adData) return;
