@@ -176,7 +176,7 @@ function tnToggleFb(){ const f=document.getElementById('tn-fb'); if(f){ f.style.
 function tnConfirm(){
   if(!TN.phieu) return;
   supa.rpc('fn_tn_confirm',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id}).then(({data})=>{
-    if(data&&data.success){ if(typeof showToast==='function')showToast('✓ Đã xác nhận','ok'); tnLoadKy(TN.ky); }
+    if(data&&data.success){ TN._acked=TN._acked||{}; if(TN.phieu)TN._acked[TN.phieu.id]=1; if(typeof showToast==='function')showToast('✓ Đã xác nhận','ok'); tnLoadKy(TN.ky); }
     else if(typeof showToast==='function') showToast((data&&data.error)||'Lỗi','warn');
   });
 }
@@ -184,7 +184,7 @@ function tnSendFb(){
   const i=document.getElementById('tn-fb-inp'); const txt=i?i.value.trim():'';
   if(!txt){ if(typeof showToast==='function')showToast('Nhập nội dung','warn'); return; }
   supa.rpc('fn_tn_feedback',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id,p_noi_dung:txt}).then(({data})=>{
-    if(data&&data.success){ TN._fbSent=TN._fbSent||{}; if(TN.phieu)TN._fbSent[TN.phieu.id]=1; if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến','ok'); tnLoadKy(TN.ky); }
+    if(data&&data.success){ TN._acked=TN._acked||{}; if(TN.phieu)TN._acked[TN.phieu.id]=1; if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến','ok'); tnLoadKy(TN.ky); }
     else if(typeof showToast==='function') showToast((data&&data.error)||'Lỗi','warn');
   });
 }
@@ -198,8 +198,9 @@ function tnLeaveGuard(pendingPage){
     if(TN._leaveOk){ TN._leaveOk=false; return false; }        // vừa được cho phép đi qua
     if(_tnLaCH()) return false;                                  // tài khoản cửa hàng: không áp
     if(!TN.pw || !TN.phieu || !TN.phieu.id) return false;       // chưa mở phiếu nào
-    if(TN.phieu.xacNhanLuc) return false;                       // đã xác nhận → cho đi tự do
-    if(TN._fbSent && TN._fbSent[TN.phieu.id]) return false;     // đã gửi ý kiến phiếu này → không nhắc lại
+    // [sửa] LUÔN buộc chọn khi rời phiếu — chỉ tha nếu NV vừa xác nhận/gửi ý kiến TRONG PHIÊN NÀY.
+    // (Không dựa vào xacNhanLuc trong DB vì có thể là trạng thái xác nhận cũ/tồn từ dữ liệu trước.)
+    if(TN._acked && TN._acked[TN.phieu.id]) return false;
     TN._pendingPage = pendingPage || 'home';
     tnLeaveModal();
     return true;                                                // chặn điều hướng
@@ -234,6 +235,7 @@ function tnLeaveConfirm(btn){
   if(btn){ btn.disabled=true; btn.textContent='Đang xác nhận...'; }
   supa.rpc('fn_tn_confirm',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id}).then(({data})=>{
     if(data&&data.success){
+      TN._acked=TN._acked||{}; if(TN.phieu)TN._acked[TN.phieu.id]=1;   // đã xác nhận phiên này → thôi nhắc
       try{ TN.phieu.xacNhanLuc=new Date().toISOString(); }catch(e){}
       if(typeof showToast==='function')showToast('✓ Đã xác nhận phiếu','ok');
       tnLeaveGo();
@@ -257,7 +259,7 @@ function tnLeaveFb(btn){
   if(btn){ btn.disabled=true; btn.textContent='Đang gửi...'; }
   supa.rpc('fn_tn_feedback',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id,p_noi_dung:txt}).then(({data})=>{
     if(data&&data.success){
-      TN._fbSent=TN._fbSent||{}; TN._fbSent[TN.phieu.id]=1;   // đã gửi → không nhắc lại phiếu này
+      TN._acked=TN._acked||{}; TN._acked[TN.phieu.id]=1;   // đã gửi ý kiến phiên này → thôi nhắc
       if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến đến quản trị','ok');
       tnLeaveGo();
     } else { if(btn){ btn.disabled=false; btn.textContent='Gửi'; } if(err)err.textContent=(data&&data.error)||'Gửi không thành công.'; }
