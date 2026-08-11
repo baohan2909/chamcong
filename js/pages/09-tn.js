@@ -481,8 +481,14 @@ function tnAdminViewPhieu(phieuId){
   const hoTen=row?(row.hoTen||row.maNV):'';
   supa.rpc('fn_tn_admin_thread',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:phieuId}).then(({data,error})=>{
     if(error||!data||!data.success){ if(typeof showToast==='function')showToast((data&&data.error)||'Không tải được phiếu','warn'); return; }
-    if(!data.duLieu){ if(typeof showToast==='function')showToast('Hãy chạy SQL tn_v5_adminphieu.sql để xem chi tiết phiếu','warn'); return; }
-    tnAdminPhieuModal(data, hoTen);
+    if(!data.duLieu){ if(typeof showToast==='function')showToast('Phiếu này chưa có dữ liệu chi tiết','warn'); return; }
+    // fn_tn_admin_thread đã trả duLieu+hoTen+phanHoi; bổ sung nhãn kỳ/ngày chi/xác nhận từ state admin (KHÔNG cần SQL)
+    const kyObj=(TN.adData&&TN.adData.kyList||[]).find(k=>k.ky===TN.adKy);
+    data.ky = data.ky || TN.adKy;
+    data.kyTen = data.kyTen || (kyObj?(kyObj.ten||kyObj.ky):TN.adKy);
+    data.ngayChi = data.ngayChi || (TN.adData&&TN.adData.ngayChi) || null;
+    data.xacNhanLuc = data.xacNhanLuc || (row?row.xacNhanLuc:null);
+    tnAdminPhieuModal(data, hoTen||data.hoTen);
   }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi kết nối','warn'); });
 }
 function tnAdminPhieuModal(p, hoTen){
