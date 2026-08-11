@@ -274,3 +274,7 @@
 #page-tn-admin.ns18 .tn-fb-open.on .tn-fb-caret{transform:rotate(90deg)}
 #page-tn-admin.ns18 .tn-thread-inline{margin:8px 0 4px; padding:11px 13px; background:#FBFCFB;
   border:1px solid var(--tn-line); border-radius:12px}
+/* ép khối trả lời: textarea full-width trên, nút xuống DƯỚI (chống bug nút "Gửi" lệch ra ngoài) */
+#page-tn-admin.ns18 .tn-thread-inline .tn-fb{display:flex!important; flex-direction:column; gap:8px}
+#page-tn-admin.ns18 .tn-thread-inline .tn-ta{width:100%!important; box-sizing:border-box; margin:0!important; min-height:60px}
+#page-tn-admin.ns18 .tn-thread-inline .tn-btn-teal{align-self:flex-end; width:auto!important; min-width:0; margin:0!important; white-space:nowrap}
