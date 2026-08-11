@@ -29,28 +29,28 @@
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/00-tokens.css?v=18.40">
-<link rel="stylesheet" href="css/01-base.css?v=18.40">
-<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=18.40">
-<link rel="stylesheet" href="css/03-banhang.css?v=18.40">
-<link rel="stylesheet" href="css/04-responsive.css?v=18.40">
-<link rel="stylesheet" href="css/05-admin.css?v=18.40">
-<link rel="stylesheet" href="css/06-modules.css?v=18.40">
-<link rel="stylesheet" href="css/08-redesign.css?v=18.40">
-<link rel="stylesheet" href="css/09-muanon.css?v=18.40">
-<link rel="stylesheet" href="css/10-muanon-admin.css?v=18.40">
-<link rel="stylesheet" href="css/11-face.css?v=18.40">
-<link rel="stylesheet" href="css/13-v18.css?v=18.40">
-<link rel="stylesheet" href="css/14-chamcong-v18.css?v=18.40">
-<link rel="stylesheet" href="css/15-pages-v18.css?v=18.40">
-<link rel="stylesheet" href="css/16-giocong-lichca-v18.css?v=18.40">
-<link rel="stylesheet" href="css/17-nhansu-v18.css?v=18.40">
-<link rel="stylesheet" href="css/18-bangiao-v18.css?v=18.40">
-<link rel="stylesheet" href="css/19-banhang-v18.css?v=18.40">
-<link rel="stylesheet" href="css/20-donhang-muanon-v18.css?v=18.40">
-<link rel="stylesheet" href="css/21-admin-home-v18.css?v=18.40">
-<link rel="stylesheet" href="css/22-v18-polish.css?v=18.40">
-<link rel="stylesheet" href="css/23-fix-v18.css?v=18.40">
+<link rel="stylesheet" href="css/00-tokens.css?v=18.41">
+<link rel="stylesheet" href="css/01-base.css?v=18.41">
+<link rel="stylesheet" href="css/02-giao-dien-dashboard.css?v=18.41">
+<link rel="stylesheet" href="css/03-banhang.css?v=18.41">
+<link rel="stylesheet" href="css/04-responsive.css?v=18.41">
+<link rel="stylesheet" href="css/05-admin.css?v=18.41">
+<link rel="stylesheet" href="css/06-modules.css?v=18.41">
+<link rel="stylesheet" href="css/08-redesign.css?v=18.41">
+<link rel="stylesheet" href="css/09-muanon.css?v=18.41">
+<link rel="stylesheet" href="css/10-muanon-admin.css?v=18.41">
+<link rel="stylesheet" href="css/11-face.css?v=18.41">
+<link rel="stylesheet" href="css/13-v18.css?v=18.41">
+<link rel="stylesheet" href="css/14-chamcong-v18.css?v=18.41">
+<link rel="stylesheet" href="css/15-pages-v18.css?v=18.41">
+<link rel="stylesheet" href="css/16-giocong-lichca-v18.css?v=18.41">
+<link rel="stylesheet" href="css/17-nhansu-v18.css?v=18.41">
+<link rel="stylesheet" href="css/18-bangiao-v18.css?v=18.41">
+<link rel="stylesheet" href="css/19-banhang-v18.css?v=18.41">
+<link rel="stylesheet" href="css/20-donhang-muanon-v18.css?v=18.41">
+<link rel="stylesheet" href="css/21-admin-home-v18.css?v=18.41">
+<link rel="stylesheet" href="css/22-v18-polish.css?v=18.41">
+<link rel="stylesheet" href="css/23-fix-v18.css?v=18.41">
 </head>
 <body class="cc-redesign-active">
 
@@ -59,7 +59,7 @@
   <div class="login-logo-wrap">
     <div class="login-logo-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
     <div class="login-title">QUẢN LÝ HỆ THỐNG</div>
-    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v18.40</span></div>
+    <div class="login-sub">Chấm công · Nhân sự · Bán hàng <span style="opacity:0.5">· v18.41</span></div>
   </div>
   <div class="login-box">
     <div class="login-field">
@@ -1851,6 +1851,10 @@
           <option value="Đã duyệt">Đã duyệt</option>
           <option value="Từ chối">Từ chối</option>
         </select>
+        <select class="dnp-filter-sel" id="dnp-f-sort" onchange="dnpSetSort(this.value)" title="Sắp xếp theo ngày">
+          <option value="moi">Mới nhất trước</option>
+          <option value="cu">Cũ nhất trước</option>
+        </select>
       </div>
       <div style="margin:6px 14px 0;position:relative">
         <input type="search" id="dnp-f-search" class="ns-search"
@@ -2084,7 +2088,7 @@
       <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div style="min-width:0;flex:1">
           <div style="font-size:13px;font-weight:600;color:#0F172A">Phiên bản</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v18.40 · Bấm để kiểm tra cập nhật mới</div>
+          <div style="font-size:12px;color:#94A3B8;margin-top:2px">v18.41 · Bấm để kiểm tra cập nhật mới</div>
         </div>
         <button id="btn-check-update" onclick="pwaManualCheckUpdate()" style="flex-shrink:0;background:#F1F5F9;color:#0F172A;border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s">
           Kiểm tra
@@ -2300,14 +2304,18 @@
       </button>
     </div>
     <!-- [v12-FIX] Bộ lọc trạng thái -->
-    <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-      <select id="yc-filter-tt" onchange="taiDuyetYC()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:white">
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+      <select id="yc-filter-tt" onchange="taiDuyetYC()" style="flex:1;min-width:130px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:white">
         <option value="">Chờ duyệt</option>
         <option value="DA_DUYET">Đã duyệt</option>
         <option value="TU_CHOI">Đã từ chối</option>
         <option value="TAT_CA">Tất cả</option>
       </select>
-      <input type="text" id="yc-filter-q" placeholder="Tìm NV..." oninput="filterYCLocal()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      <select id="yc-filter-sort" onchange="setYCSort(this.value)" title="Sắp xếp theo ngày" style="flex:1;min-width:130px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:white">
+        <option value="moi">Mới nhất trước</option>
+        <option value="cu">Cũ nhất trước</option>
+      </select>
+      <input type="text" id="yc-filter-q" placeholder="Tìm NV..." oninput="filterYCLocal()" style="flex:1;min-width:130px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
     </div>
     <!-- [v10.85 Yc #1] Thanh hành động hàng loạt -->
     <div class="yc-bulk-bar" id="yc-bulk-bar" style="display:none">
@@ -3363,15 +3371,15 @@
   </div>
 </div>
 
-<script src="js/core/01-config.js?v=18.40"></script>
-<script src="js/core/02-system.js?v=18.40"></script>
+<script src="js/core/01-config.js?v=18.41"></script>
+<script src="js/core/02-system.js?v=18.41"></script>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  PWA SERVICE WORKER + UPDATE BANNER                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/07-extras.css?v=18.40">
-<link rel="stylesheet" href="css/24-overlays-v18.css?v=18.40">
-<link rel="stylesheet" href="css/25-tn-v18.css?v=18.40">
+<link rel="stylesheet" href="css/07-extras.css?v=18.41">
+<link rel="stylesheet" href="css/24-overlays-v18.css?v=18.41">
+<link rel="stylesheet" href="css/25-tn-v18.css?v=18.41">
 
 <!-- Update banner -->
 <div id="pwa-update-banner">
@@ -3406,31 +3414,31 @@
   <button class="pwa-close" onclick="pwaDismissInstall()">×</button>
 </div>
 
-<script src="js/core/03-router.js?v=18.40"></script>
-<script src="js/pages/01-lichca.js?v=18.40"></script>
-<script src="js/pages/02-nhansu.js?v=18.40"></script>
-<script src="js/pages/03-donnghi-bosung.js?v=18.40"></script>
-<script src="js/pages/04-misc.js?v=18.40"></script>
-<script src="js/pages/05-muanon.js?v=18.40"></script>
-<script src="js/lib/camscanner.js?v=18.40"></script>
-<script src="js/pages/06-bangiao.js?v=18.40"></script>
-<script src="js/pages/07-lichhd.js?v=18.40"></script>
-<script src="js/pages/08-truongca.js?v=18.40"></script>
-<script src="js/pages/09-tn.js?v=18.40"></script>
-<script src="js/admin/05-bangiao-ql.js?v=18.40"></script>
-<script src="js/admin/06-nvai.js?v=18.40"></script>
-<script src="js/admin/07-phanquyen.js?v=18.40"></script>
-<script src="js/admin/08-xoakhancap.js?v=18.40"></script>
-<script src="js/ai/face-recognition.js?v=18.40"></script>
-<script src="js/admin/01-banhang.js?v=18.40"></script>
-<script src="js/admin/02-khuyenmai-checklist-suco.js?v=18.40"></script>
-<script src="js/admin/03-dashboard-settings-canhbao.js?v=18.40"></script>
-<script src="js/admin/04-muanon-admin.js?v=18.40"></script>
-<script src="js/admin/09-diem-hethong.js?v=18.40"></script>
-<script src="js/admin/10-mucbangiao.js?v=18.40"></script>
-<script src="js/donhang/01-dieuphoi.js?v=18.40"></script>
-<script src="js/donhang/02-nhandon.js?v=18.40"></script>
-<script src="js/donhang/03-quanly.js?v=18.40"></script>
-<script src="js/core/12-shell-v18.js?v=18.40"></script>
+<script src="js/core/03-router.js?v=18.41"></script>
+<script src="js/pages/01-lichca.js?v=18.41"></script>
+<script src="js/pages/02-nhansu.js?v=18.41"></script>
+<script src="js/pages/03-donnghi-bosung.js?v=18.41"></script>
+<script src="js/pages/04-misc.js?v=18.41"></script>
+<script src="js/pages/05-muanon.js?v=18.41"></script>
+<script src="js/lib/camscanner.js?v=18.41"></script>
+<script src="js/pages/06-bangiao.js?v=18.41"></script>
+<script src="js/pages/07-lichhd.js?v=18.41"></script>
+<script src="js/pages/08-truongca.js?v=18.41"></script>
+<script src="js/pages/09-tn.js?v=18.41"></script>
+<script src="js/admin/05-bangiao-ql.js?v=18.41"></script>
+<script src="js/admin/06-nvai.js?v=18.41"></script>
+<script src="js/admin/07-phanquyen.js?v=18.41"></script>
+<script src="js/admin/08-xoakhancap.js?v=18.41"></script>
+<script src="js/ai/face-recognition.js?v=18.41"></script>
+<script src="js/admin/01-banhang.js?v=18.41"></script>
+<script src="js/admin/02-khuyenmai-checklist-suco.js?v=18.41"></script>
+<script src="js/admin/03-dashboard-settings-canhbao.js?v=18.41"></script>
+<script src="js/admin/04-muanon-admin.js?v=18.41"></script>
+<script src="js/admin/09-diem-hethong.js?v=18.41"></script>
+<script src="js/admin/10-mucbangiao.js?v=18.41"></script>
+<script src="js/donhang/01-dieuphoi.js?v=18.41"></script>
+<script src="js/donhang/02-nhandon.js?v=18.41"></script>
+<script src="js/donhang/03-quanly.js?v=18.41"></script>
+<script src="js/core/12-shell-v18.js?v=18.41"></script>
 </body>
 </html>

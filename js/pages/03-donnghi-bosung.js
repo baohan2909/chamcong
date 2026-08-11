@@ -1171,7 +1171,9 @@ function _updateYCDayCounts(){
 // ═══════════════════════════════════════════════════════════
 // [v10 Yc #5] PAGE DUYỆT YÊU CẦU (QLNS/ADMIN)
 // ═══════════════════════════════════════════════════════════
-let _ycRange='tatca', _ycTab='donnghi', _ycData=null;
+let _ycRange='tatca', _ycTab='donnghi', _ycData=null, _ycSort='moi';
+// [req4b] Sort theo ngày cho Duyệt yêu cầu (giữ nguyên search hiện tại khi đổi)
+function setYCSort(v){ _ycSort=v||'moi'; if(typeof filterYCLocal==='function') filterYCLocal(); }
 
 function _getYCRange(){
   if(_ycRange==='thangnay')  return _thangNay();
@@ -1371,7 +1373,9 @@ function _renderYC(filterQ){
     if (!grouped[k]) grouped[k] = [];
     grouped[k].push(d);
   });
-  const ngayList = Object.keys(grouped).sort().reverse(); // mới nhất trước
+  const ngayList = (_ycSort==='cu')
+    ? Object.keys(grouped).sort()          // [req4b] cũ nhất trước
+    : Object.keys(grouped).sort().reverse(); // mặc định: mới nhất trước
   ngayList.forEach(k => grouped[k].sort((a, b) => (a.tenNV || '').localeCompare(b.tenNV || '', 'vi')));
 
   // Format ngày VN

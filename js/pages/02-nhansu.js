@@ -1842,6 +1842,9 @@ function taiDonNghiPhep(keepScroll){
   }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi: '+(e.message||e)+'</div>';});
 }
 
+// [req4a] Hướng sắp xếp danh sách đơn nghỉ theo NGÀY (mới/cũ). Đổi chỉ vẽ lại (không tải lại → không nhảy đầu).
+let _dnpSort='moi';
+function dnpSetSort(v){ _dnpSort=v||'moi'; if(_dnpData) renderDonNghiPhep(); }
 function renderDonNghiPhep(){
   const listEl=document.getElementById('dnp-list');
   if(!_dnpData||!listEl)return;
@@ -1903,7 +1906,9 @@ function renderDonNghiPhep(){
     if (!byDay[g.ngayBatDau]) byDay[g.ngayBatDau] = [];
     byDay[g.ngayBatDau].push(g);
   });
-  const dayKeys = Object.keys(byDay).sort().reverse();
+  const dayKeys = (typeof _dnpSort!=='undefined' && _dnpSort==='cu')
+    ? Object.keys(byDay).sort()            // [req4a] cũ nhất trước
+    : Object.keys(byDay).sort().reverse(); // mặc định: mới nhất trước
   listEl.innerHTML = dayKeys.map(ngay => {
     const d = new Date(ngay + 'T00:00:00');
     const ngayHeader = dow2[d.getDay()] + ', ' + pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
