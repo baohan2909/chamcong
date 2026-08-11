@@ -237,3 +237,12 @@
   background:rgba(255,255,255,.16); color:#fff; font-size:15px; line-height:1;
   backdrop-filter:blur(6px); transition:background .12s}
 .tn-apv-x:hover{background:rgba(255,255,255,.30)}
+
+/* ── [Request 4] Thanh lọc bảng Quản lý TN: tìm tên/mã + lọc cửa hàng ── */
+#page-tn-admin.ns18 .tn-ad-tools{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 10px}
+#page-tn-admin.ns18 .tn-ad-search{flex:1; min-width:210px; display:flex; align-items:center; gap:8px;
+  background:#fff; border:1.5px solid var(--tn-line); border-radius:11px; padding:0 12px; height:40px; color:var(--tn-ink3)}
+#page-tn-admin.ns18 .tn-ad-search:focus-within{border-color:var(--tn-teal2); box-shadow:0 0 0 3px rgba(63,182,168,.14); color:var(--tn-teal2)}
+#page-tn-admin.ns18 .tn-ad-search input{flex:1; min-width:0; border:none; outline:none; background:none;
+  font:inherit; font-size:13.5px; color:var(--tn-ink); height:100%}
+#page-tn-admin.ns18 .tn-ad-tools .tn-sel{min-width:180px; height:40px}

@@ -373,9 +373,27 @@ function tnAdminRenderMain(){
      tnOpenAllStatus(hienAllEff,den)+
      '<label class="tn-tgl-lbl tn-paydate-fld"><span class="tn-gold-dot"></span>Ngày chi lương <input type="date" id="tn-ngaychi" class="tn-inp sm" value="'+_tnEsc((TN.adData.ngayChi||'').slice(0,10))+'" onchange="tnAdSetNgayChi(this.value)"></label>'+
      '</div>';
-  // bảng: lọc + sort
+  // [Request 4] Thanh lọc: tìm tên/mã NV + lọc theo cửa hàng
+  const chSet=[...new Set(list.map(p=>p.maCH).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+  h+='<div class="tn-ad-tools">'+
+     '<div class="tn-ad-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>'+
+       '<input id="tn-ad-search" type="search" placeholder="Tìm tên hoặc mã nhân viên…" value="'+_tnEsc(TN.adSearch||'')+'" oninput="tnAdApplyFilter()"></div>'+
+     '<select id="tn-ad-ch" class="tn-sel sm" onchange="tnAdApplyFilter()"><option value="">Tất cả cửa hàng ('+chSet.length+')</option>'+
+       chSet.map(ch=>'<option value="'+_tnEsc(ch)+'"'+(TN.adCH===ch?' selected':'')+'>'+_tnEsc(ch)+'</option>').join('')+'</select>'+
+     '</div>';
+  h+='<div class="tn-tbl-wrap"><div id="tn-ad-tbl"></div></div><div id="tn-ad-thread"></div>';
+  root.innerHTML=h;
+  tnAdRenderTable();
+  tnStartCountdown();
+}
+// [Request 4] Vẽ RIÊNG phần bảng (lọc/tìm/sort chỉ vẽ lại đây → không mất focus ô tìm, không restart đồng hồ)
+function tnAdRenderTable(){
+  const box=document.getElementById('tn-ad-tbl'); if(!box || !TN.adData) return;
+  const list=TN.adData.danhSach||[];
+  const den=TN.adData.hienAllDen? new Date(TN.adData.hienAllDen):null;
+  const hienAllEff=!!TN.adData.hienAll && (!den || den.getTime()>Date.now());
   const rows=tnAdFilterSort(list);
-  h+='<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr>'+
+  let h='<table class="tn-tbl"><thead><tr>'+
      tnTh('hoTen','Nhân viên')+tnTh('maCH','Cửa hàng')+tnTh('thucLanh','Thực lãnh','r')+tnTh('trangThai','Trạng thái')+'<th>Hiện</th></tr></thead><tbody>';
   rows.forEach(p=>{
     h+='<tr><td><button class="tn-nv-open" onclick="tnAdminViewPhieu(\''+p.id+'\')" title="Xem bảng lương chi tiết"><b>'+_tnEsc(p.hoTen||p.maNV)+'</b><small>'+_tnEsc(p.maNV)+'</small></button></td><td>'+_tnEsc(p.maCH||'—')+'</td>'+
@@ -383,9 +401,13 @@ function tnAdminRenderMain(){
        '<td><button class="tn-tgl sm'+((p.hien||hienAllEff)?' on':'')+'" '+(hienAllEff?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
     if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5"><button class="tn-fb-open" onclick="tnAdminOpenThread(\''+p.id+'\',\''+_tnEsc(p.hoTen||p.maNV)+'\')">💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button></td></tr>'; }
   });
-  h+='</tbody></table></div>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">Không có phiếu khớp bộ lọc</div>')+'</div><div id="tn-ad-thread"></div>';
-  root.innerHTML=h;
-  tnStartCountdown();
+  h+='</tbody></table>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">Không có phiếu khớp bộ lọc</div>');
+  box.innerHTML=h;
+}
+function tnAdApplyFilter(){
+  TN.adSearch=(document.getElementById('tn-ad-search')||{}).value||'';
+  TN.adCH=(document.getElementById('tn-ad-ch')||{}).value||'';
+  tnAdRenderTable();
 }
 // [v18.38] Đồng hồ đếm ngược tới lúc "Mở tất cả" tự tắt (nhảy giờ:phút:giây)
 function tnStartCountdown(){
@@ -408,10 +430,14 @@ function tnStartCountdown(){
 function _tnStatF(f,n,l,warn){ return '<button type="button" class="tn-stat'+(warn?' warn':'')+(TN.adFilter===f?' active':'')+'" onclick="tnAdSetFilter(\''+f+'\')"><div class="n">'+n+'</div><div class="l">'+_tnEsc(l)+'</div></button>'; }
 function tnAdSetFilter(f){ TN.adFilter=(TN.adFilter===f && f!=='all')?'all':f; tnAdminRenderMain(); }
 function tnTh(col,label,cls){ const s=TN.adSort; const arr=(s.col===col)?(s.dir>0?' ↑':' ↓'):''; return '<th class="'+(cls||'')+' tn-th-sort" onclick="tnAdSort(\''+col+'\')">'+_tnEsc(label)+arr+'</th>'; }
-function tnAdSort(col){ const s=TN.adSort; if(s.col===col)s.dir=-s.dir; else {s.col=col;s.dir=1;} tnAdminRenderMain(); }
+function tnAdSort(col){ const s=TN.adSort; if(s.col===col)s.dir=-s.dir; else {s.col=col;s.dir=1;} tnAdRenderTable(); }
 function tnAdFilterSort(list){
   let r=list.slice(); const f=TN.adFilter;
   if(f==='xem')r=r.filter(p=>p.xemLuc); else if(f==='xacnhan')r=r.filter(p=>p.xacNhanLuc); else if(f==='ykien')r=r.filter(p=>p.coYkien&&p.chuaTraLoi);
+  // [Request 4] tìm tên/mã + lọc cửa hàng
+  const q=(TN.adSearch||'').trim().toLowerCase();
+  if(q) r=r.filter(p=>(String(p.hoTen||'')+' '+String(p.maNV||'')).toLowerCase().includes(q));
+  if(TN.adCH) r=r.filter(p=>p.maCH===TN.adCH);
   const s=TN.adSort;
   r.sort((a,b)=>{ let va,vb; if(s.col==='thucLanh'){va=_tnNum(a.thucLanh);vb=_tnNum(b.thucLanh);} else {va=(a[s.col]||'').toString().toLowerCase();vb=(b[s.col]||'').toString().toLowerCase();} return (va<vb?-1:va>vb?1:0)*s.dir; });
   return r;
