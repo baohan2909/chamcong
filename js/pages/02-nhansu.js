@@ -1786,9 +1786,11 @@ function lsdExportExcel(){
 }
 
 // Nạp danh sách đơn nghỉ phép
-function taiDonNghiPhep(){
+function taiDonNghiPhep(keepScroll){
   const listEl=document.getElementById('dnp-list');
   if(!listEl)return;
+  // [fix request 3] giữ vị trí cuộn khi reload sau khi duyệt → KHÔNG nhảy lên đầu
+  const _sy = keepScroll ? window.scrollY : null;
   listEl.innerHTML='<div class="dnp-empty">⏳ Đang tải đơn...</div>';
   const tt=document.getElementById('dnp-f-tt')?.value||'';
   const q=document.getElementById('dnp-f-search')?.value?.trim()||'';
@@ -1836,6 +1838,7 @@ function taiDonNghiPhep(){
     const tongCanXuLy=(nsCBList?nsCBList.length:0)+cho;
     _capNhatBadgeNS(tongCanXuLy);
     renderDonNghiPhep();
+    if(_sy!=null){ requestAnimationFrame(()=>{ try{window.scrollTo(0,_sy);}catch(e){} }); }
   }).catch((e)=>{listEl.innerHTML='<div class="dnp-empty">❌ Lỗi: '+(e.message||e)+'</div>';});
 }
 
@@ -2108,7 +2111,7 @@ async function duyetTatCaDonNghiNS(action){
         toastType = 'err';
       }
       showToast(msg, toastType);
-      taiDonNghiPhep();
+      taiDonNghiPhep(true);   // [fix request 3] giữ vị trí cuộn
       _silentUpdateAccBadges();
     } else {
       document.querySelectorAll('#dnp-list .dnp-item').forEach(el=>el.classList.remove('duyet-processing'));
@@ -2155,7 +2158,7 @@ async function duyetGopDonNghi(idsStr, quyetDinh){
     showToast('⚠ ' + okCnt + ' OK, ' + errCnt + ' lỗi', 'warn');
   }
   _silentUpdateAccBadges();
-  taiDonNghiPhep();
+  taiDonNghiPhep(true);   // [fix request 3] giữ vị trí cuộn
 }
 
 function duyetDonNP(maNV, ngay, tuan, quyetDinh){
