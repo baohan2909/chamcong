@@ -267,3 +267,10 @@
   font-size:12.5px; color:var(--tn-ink2); cursor:pointer; line-height:1.4}
 #page-tn-admin.ns18 .tn-sync-replace input{width:16px; height:16px; accent-color:var(--tn-teal); flex:none; cursor:pointer}
 #page-tn-admin.ns18 .tn-sync-replace b{color:var(--tn-ink)}
+
+/* [inline] Thread ý kiến xổ ngay tại dòng (toggle) */
+#page-tn-admin.ns18 .tn-fb-open{display:inline-flex; align-items:center; gap:6px}
+#page-tn-admin.ns18 .tn-fb-caret{display:inline-block; transition:transform .15s; font-size:11px; color:var(--tn-teal2)}
+#page-tn-admin.ns18 .tn-fb-open.on .tn-fb-caret{transform:rotate(90deg)}
+#page-tn-admin.ns18 .tn-thread-inline{margin:8px 0 4px; padding:11px 13px; background:#FBFCFB;
+  border:1px solid var(--tn-line); border-radius:12px}

@@ -460,7 +460,10 @@ function tnAdRenderTable(){
     h+='<tr><td><button class="tn-nv-open" onclick="tnAdminViewPhieu(\''+p.id+'\')" title="Xem bảng lương chi tiết"><b>'+_tnEsc(p.hoTen||p.maNV)+'</b><small>'+_tnEsc(p.maNV)+'</small></button></td><td>'+_tnEsc(p.maCH||'—')+'</td>'+
        '<td class="r">'+_tnMoney(p.thucLanh)+'</td><td>'+tnPill(p)+'</td>'+
        '<td><button class="tn-tgl sm'+((p.hien||hienAllEff)?' on':'')+'" '+(hienAllEff?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
-    if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5"><button class="tn-fb-open" onclick="tnAdminOpenThread(\''+p.id+'\',\''+_tnEsc(p.hoTen||p.maNV)+'\')">💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button></td></tr>'; }
+    if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5">'+
+       '<button class="tn-fb-open" onclick="tnAdminToggleThread(\''+p.id+'\',this)"><span class="tn-fb-caret">▸</span> 💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button>'+
+       '<div class="tn-thread-inline" id="tn-thr-'+p.id+'" style="display:none"></div>'+
+       '</td></tr>'; }
   });
   h+='</tbody></table>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">'+
      (list.length ? 'Không có phiếu khớp bộ lọc'
@@ -543,24 +546,33 @@ function tnPill(p){
 }
 function tnAdminToggleAll(v){ supa.rpc('fn_tn_admin_toggle',{p_ma:TN.ma,p_password:TN.pw,p_ky:TN.adKy,p_ma_nv:null,p_hien:v}).then(()=>tnAdminLoad(TN.adKy)); }
 function tnAdminToggleOne(ma,v){ supa.rpc('fn_tn_admin_toggle',{p_ma:TN.ma,p_password:TN.pw,p_ky:TN.adKy,p_ma_nv:ma,p_hien:v}).then(()=>tnAdminLoad(TN.adKy)); }
-function tnAdminOpenThread(id,ten){
+// [inline] Xổ thread ý kiến NGAY tại dòng đó; bấm lần nữa = thu lại (không nhảy xuống cuối)
+function tnAdminToggleThread(id, btn){
+  const box=document.getElementById('tn-thr-'+id); if(!box) return;
+  if(box.style.display==='block'){ box.style.display='none'; box.innerHTML=''; if(btn)btn.classList.remove('on'); return; }
+  if(btn)btn.classList.add('on');
   TN.adThreadId=id;
+  box.style.display='block';
+  box.innerHTML='<div class="tn-loading" style="padding:10px 2px">Đang tải ý kiến...</div>';
   supa.rpc('fn_tn_admin_thread',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:id}).then(({data})=>{
-    if(!data||!data.success) return;
-    const box=document.getElementById('tn-ad-thread'); if(!box) return;
-    box.innerHTML='<div class="tn-card"><div class="tn-ad-title" style="font-size:14px;margin-bottom:8px">Ý kiến · '+_tnEsc(ten)+'</div>'+
-      tnThreadHtml(data.phanHoi)+
-      '<div class="tn-fb" style="display:block;margin-top:10px"><textarea id="tn-ad-reply" class="tn-ta" placeholder="Trả lời nhân viên..."></textarea><button class="tn-btn-teal" onclick="tnAdminReply()">Gửi trả lời</button></div></div>';
-    box.scrollIntoView({behavior:'smooth',block:'nearest'});
-  });
+    if(!data||!data.success){ box.innerHTML='<div class="tn-empty">Không tải được ý kiến</div>'; return; }
+    box.innerHTML=tnThreadHtml(data.phanHoi)+
+      '<div class="tn-fb" style="display:block;margin-top:8px"><textarea id="tn-reply-'+id+'" class="tn-ta" placeholder="Trả lời nhân viên..."></textarea><button class="tn-btn-teal" onclick="tnAdminReplyInline(\''+id+'\')">Gửi trả lời</button></div>';
+  }).catch(()=>{ box.innerHTML='<div class="tn-empty">Lỗi kết nối</div>'; });
 }
-function tnAdminReply(){
-  let t=(document.getElementById('tn-ad-reply')||{}).value; t=(t||'').trim();
+function tnAdminReplyInline(id){
+  let t=((document.getElementById('tn-reply-'+id)||{}).value||'').trim();
   if(!t){ if(typeof showToast==='function')showToast('Nhập nội dung','warn'); return; }
-  supa.rpc('fn_tn_admin_reply',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.adThreadId,p_noi_dung:t}).then(({data})=>{
-    if(data&&data.success){ if(typeof showToast==='function')showToast('✓ Đã gửi','ok'); tnAdminOpenThread(TN.adThreadId,''); tnAdminLoad(TN.adKy); }
+  supa.rpc('fn_tn_admin_reply',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:id,p_noi_dung:t}).then(({data})=>{
+    if(data&&data.success){
+      if(typeof showToast==='function')showToast('✓ Đã gửi trả lời','ok');
+      // nạp lại thread NGAY tại chỗ (hiện câu trả lời mới), không cuộn/không reload cả bảng
+      const box=document.getElementById('tn-thr-'+id);
+      if(box){ box.style.display='none'; tnAdminToggleThread(id, box.previousElementSibling); }
+    } else if(typeof showToast==='function')showToast((data&&data.error)||'Lỗi','warn');
   });
 }
+try{ window.tnAdminToggleThread=tnAdminToggleThread; window.tnAdminReplyInline=tnAdminReplyInline; }catch(e){}
 // ═══ [Request 1] ADMIN BẤM 1 NV → XEM BẢNG LƯƠNG CHI TIẾT (chỉ-đọc, như NV tự xem) ═══
 // Dùng lại fn_tn_admin_thread (đã xác thực ADMIN). SQL tn_v5_adminphieu.sql bổ sung
 // cho RPC này trả THÊM duLieu/ky/kyTen/ngayChi/xacNhanLuc (tương thích ngược).
