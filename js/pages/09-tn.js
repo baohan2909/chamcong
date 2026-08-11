@@ -297,7 +297,7 @@ function tnAdminShell(){
     return;
   }
   root.innerHTML=tnAdminSyncCardHtml()+'<div id="tn-ad-main"></div>';
-  tnAdminLoad(TN.adKy);
+  tnAdminLoad(TN.adKy, true);   // mở console: cho tự nhảy sang kỳ có dữ liệu nếu kỳ mặc định trống
 }
 function tnAdminSyncCardHtml(){
   const kySel=(TN.adData&&TN.adData.kyList||[]).map(k=>'<option value="'+k.ky+'"'+(k.ky===TN.adKy?' selected':'')+'>'+_tnEsc(k.ten||k.ky)+'</option>').join('');
@@ -366,11 +366,27 @@ function tnAdminDoSync(ky,ten,rows){
       .then(()=>_write()).catch(()=>_write());   // xóa lỗi/chưa có RPC → vẫn ghi (fn_tn_sync tự upsert)
   } else _write();
 }
-function tnAdminLoad(ky){
+function tnAdminLoad(ky, allowAuto){
   TN.adKy=ky;
   supa.rpc('fn_tn_admin_list',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky}).then(({data,error})=>{
     if(error||!data||!data.success){ if(typeof showToast==='function')showToast('Lỗi tải','err'); return; }
-    TN.adData=data; tnAdminRenderMain();
+    TN.adData=data;
+    // [auto] Mở console mà kỳ đang chọn TRỐNG nhưng còn kỳ khác → tự tìm kỳ CÓ dữ liệu (tránh tưởng "mất")
+    if(allowAuto && (!data.danhSach||!data.danhSach.length) && (data.kyList||[]).length>1){
+      tnAdminAutoFindKy((data.kyList||[]).filter(k=>k.ky!==ky).map(k=>k.ky)); return;
+    }
+    tnAdminRenderMain();
+  });
+}
+function tnAdminAutoFindKy(kyArr){
+  if(!kyArr.length){ tnAdminRenderMain(); return; }   // không kỳ nào có data → hiện kỳ hiện tại (trống)
+  const k=kyArr[0];
+  supa.rpc('fn_tn_admin_list',{p_ma:TN.ma,p_password:TN.pw,p_ky:k}).then(({data})=>{
+    if(data&&data.success&&data.danhSach&&data.danhSach.length){
+      TN.adKy=k; TN.adData=data;
+      if(typeof showToast==='function')showToast('Đã mở kỳ có dữ liệu: '+k,'ok');
+      tnAdminShell();   // vẽ lại để dropdown + bảng đúng kỳ mới
+    } else tnAdminAutoFindKy(kyArr.slice(1));
   });
 }
 function tnAdminRenderMain(){
@@ -446,7 +462,9 @@ function tnAdRenderTable(){
        '<td><button class="tn-tgl sm'+((p.hien||hienAllEff)?' on':'')+'" '+(hienAllEff?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
     if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5"><button class="tn-fb-open" onclick="tnAdminOpenThread(\''+p.id+'\',\''+_tnEsc(p.hoTen||p.maNV)+'\')">💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button></td></tr>'; }
   });
-  h+='</tbody></table>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">Không có phiếu khớp bộ lọc</div>');
+  h+='</tbody></table>'+(rows.length?'':'<div class="tn-empty" style="margin-top:8px">'+
+     (list.length ? 'Không có phiếu khớp bộ lọc'
+      : '📭 Kỳ này (<b>'+_tnEsc(TN.adKy||'')+'</b>) chưa có phiếu. Nếu dữ liệu ở tháng khác → chọn lại kỳ ở ô "Xem kỳ đã có" (góc trên bên phải).')+'</div>');
   box.innerHTML=h;
 }
 function tnAdApplyFilter(){
