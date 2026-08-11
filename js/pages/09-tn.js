@@ -20,8 +20,10 @@ const TN_GROUPS = [
   { name:'Công & giờ làm', accent:'#1E5F63', rows:[
     ['tong_gio_cong','Tổng giờ công','gio'], ['gio_chuan','Giờ công chuẩn','gio'],
     ['gio_12','Giờ tăng ca ×1.2','gio'], ['gio_x2','Giờ tăng ca ×2.0','gio'], ['gio_x3','Giờ tăng ca ×3.0 (lễ)','gio'],
-    ['nghi_phep','Nghỉ phép','txt'], ['tong_ngay_nghi','Ngày nghỉ trong tháng','txt'],
-    ['phep_su_dung','Phép đã dùng','txt'], ['phep_con_lai','Phép năm còn lại','txt'] ] },
+    ['nghi_phep','Nghỉ phép','txt'],
+    ['phep_su_dung','Phép sử dụng/tháng','txt'], ['phep_con_lai','Phép năm còn lại','txt'] ] },
+    // [fix cột] Bỏ "Ngày nghỉ trong tháng" (BO = tong_ngay_nghi, gồm cả CN → gây hiểu nhầm là phép).
+    // "Phép sử dụng/tháng" lấy đúng cột BP (phep_su_dung). "Phép năm còn lại" = BQ (giữ nguyên).
   { name:'Các khoản thu nhập', accent:'#2E8B57', total:'tong_thu_nhap', rows:[
     ['luong_cb','Lương căn bản','money'], ['thanh_tien','Thành tiền công','money'],
     ['tangca_12','Thành tiền tăng ca ×1.2','money'], ['tangca_20','Thành tiền tăng ca ×2.0','money'], ['tangca_30','Thành tiền tăng ca ×3.0','money'],
@@ -175,11 +177,86 @@ function tnSendFb(){
   const i=document.getElementById('tn-fb-inp'); const txt=i?i.value.trim():'';
   if(!txt){ if(typeof showToast==='function')showToast('Nhập nội dung','warn'); return; }
   supa.rpc('fn_tn_feedback',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id,p_noi_dung:txt}).then(({data})=>{
-    if(data&&data.success){ if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến','ok'); tnLoadKy(TN.ky); }
+    if(data&&data.success){ TN._fbSent=TN._fbSent||{}; if(TN.phieu)TN._fbSent[TN.phieu.id]=1; if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến','ok'); tnLoadKy(TN.ky); }
     else if(typeof showToast==='function') showToast((data&&data.error)||'Lỗi','warn');
   });
 }
 function tnLeavePage(){ /* giữ pw trong phiên; xóa khi logout (móc doLogout) */ }
+
+// ═══ [2A] BUỘC XÁC NHẬN / GỬI Ý KIẾN KHI RỜI PHIẾU CHƯA XÁC NHẬN ═══════════
+// Móc trong goToPage (02-system): rời trang 'tn' mà đang mở 1 phiếu CHƯA xác nhận
+// → chặn điều hướng, bật modal 2 nút. Bấm ra ngoài = ở lại xem tiếp (không thoát lén).
+function tnLeaveGuard(pendingPage){
+  try{
+    if(TN._leaveOk){ TN._leaveOk=false; return false; }        // vừa được cho phép đi qua
+    if(_tnLaCH()) return false;                                  // tài khoản cửa hàng: không áp
+    if(!TN.pw || !TN.phieu || !TN.phieu.id) return false;       // chưa mở phiếu nào
+    if(TN.phieu.xacNhanLuc) return false;                       // đã xác nhận → cho đi tự do
+    if(TN._fbSent && TN._fbSent[TN.phieu.id]) return false;     // đã gửi ý kiến phiếu này → không nhắc lại
+    TN._pendingPage = pendingPage || 'home';
+    tnLeaveModal();
+    return true;                                                // chặn điều hướng
+  }catch(e){ return false; }                                    // lỗi bất ngờ → KHÔNG nhốt người dùng
+}
+function tnLeaveModal(){
+  let ov=document.getElementById('tn-leave-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='tn-leave-ov'; ov.className='tn-leave-ov'; document.body.appendChild(ov); }
+  const p=TN.phieu||{}, d=p.duLieu||{};
+  ov.innerHTML=
+    '<div class="tn-leave-bd" onclick="tnLeaveStay()"></div>'+
+    '<div class="tn-leave-box" role="dialog" aria-modal="true" aria-labelledby="tn-leave-t">'+
+      '<div class="tn-leave-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>'+
+      '<div class="tn-leave-t" id="tn-leave-t">Xác nhận trước khi thoát</div>'+
+      '<div class="tn-leave-s">Bạn vừa xem phiếu <b>'+_tnEsc(p.kyTen||p.ky||'')+'</b>'+
+        (_tnHasVal(d.tong_thuc_lanh)?' — thực lãnh <b>'+_tnMoney(d.tong_thuc_lanh)+' ₫</b>':'')+'.'+
+        '<br>Vui lòng xác nhận đã xem, hoặc gửi ý kiến nếu có sai sót.</div>'+
+      '<div id="tn-leave-fb" class="tn-leave-fb" style="display:none"><textarea id="tn-leave-fb-inp" class="tn-ta" placeholder="Nhập ý kiến/thắc mắc về phiếu này gửi quản trị..."></textarea><div id="tn-leave-fb-err" class="tn-err"></div></div>'+
+      '<div class="tn-leave-acts">'+
+        '<button class="tn-btn-ok wide" onclick="tnLeaveConfirm(this)">Đã xem &amp; xác nhận</button>'+
+        '<button class="tn-btn-ghost" id="tn-leave-fbbtn" onclick="tnLeaveFb(this)">Gửi ý kiến</button>'+
+      '</div>'+
+      '<div class="tn-leave-hint">Chạm ra ngoài để xem lại phiếu</div>'+
+    '</div>';
+  ov.classList.add('show');
+}
+function _tnLeaveClose(){ const ov=document.getElementById('tn-leave-ov'); if(ov){ ov.classList.remove('show'); ov.innerHTML=''; } }
+function tnLeaveStay(){ _tnLeaveClose(); TN._pendingPage=null; }
+function tnLeaveGo(){ TN._leaveOk=true; _tnLeaveClose(); const pg=TN._pendingPage||'home'; TN._pendingPage=null; try{ goToPage(pg); }catch(e){} }
+function tnLeaveConfirm(btn){
+  if(!TN.phieu){ tnLeaveGo(); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Đang xác nhận...'; }
+  supa.rpc('fn_tn_confirm',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id}).then(({data})=>{
+    if(data&&data.success){
+      try{ TN.phieu.xacNhanLuc=new Date().toISOString(); }catch(e){}
+      if(typeof showToast==='function')showToast('✓ Đã xác nhận phiếu','ok');
+      tnLeaveGo();
+    } else {
+      if(btn){ btn.disabled=false; btn.textContent='Đã xem & xác nhận'; }
+      if(typeof showToast==='function')showToast((data&&data.error)||'Không xác nhận được','warn');
+    }
+  }).catch(()=>{ if(btn){ btn.disabled=false; btn.textContent='Đã xem & xác nhận'; } if(typeof showToast==='function')showToast('Lỗi kết nối','warn'); });
+}
+function tnLeaveFb(btn){
+  const box=document.getElementById('tn-leave-fb');
+  if(box && box.style.display==='none'){        // lần bấm đầu: mở ô nhập, nút thành "Gửi"
+    box.style.display='block';
+    if(btn){ btn.textContent='Gửi'; btn.classList.remove('tn-btn-ghost'); btn.classList.add('tn-btn-teal'); }
+    const i=document.getElementById('tn-leave-fb-inp'); if(i)i.focus();
+    return;
+  }
+  const i=document.getElementById('tn-leave-fb-inp'); const txt=i?i.value.trim():'';
+  const err=document.getElementById('tn-leave-fb-err');
+  if(!txt){ if(err)err.textContent='Vui lòng nhập nội dung ý kiến.'; if(i)i.focus(); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Đang gửi...'; }
+  supa.rpc('fn_tn_feedback',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:TN.phieu.id,p_noi_dung:txt}).then(({data})=>{
+    if(data&&data.success){
+      TN._fbSent=TN._fbSent||{}; TN._fbSent[TN.phieu.id]=1;   // đã gửi → không nhắc lại phiếu này
+      if(typeof showToast==='function')showToast('✓ Đã gửi ý kiến đến quản trị','ok');
+      tnLeaveGo();
+    } else { if(btn){ btn.disabled=false; btn.textContent='Gửi'; } if(err)err.textContent=(data&&data.error)||'Gửi không thành công.'; }
+  }).catch(()=>{ if(btn){ btn.disabled=false; btn.textContent='Gửi'; } if(err)err.textContent='Lỗi kết nối.'; });
+}
+try{ window.tnLeaveGuard=tnLeaveGuard; window.tnLeaveStay=tnLeaveStay; window.tnLeaveConfirm=tnLeaveConfirm; window.tnLeaveFb=tnLeaveFb; }catch(e){}
 
 // ═══ ADMIN CONSOLE ═══════════════════════════════════════════════════════
 function tnAdminInitPage(){

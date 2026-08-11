@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.39',
+  'sys.cache_version': 'v18.40',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -298,6 +298,7 @@ function _hienThongBaoNative(tb){
     n.onclick=()=>{
       window.focus();
       if(tb.loai==='DON_DUYET'||tb.loai==='DON_TUCHOI') goToPage('donnghi-acc');
+      else if(tb.loai==='TN_TRALOI') goToPage('tn');   // [2B] BQL trả lời ý kiến TN → mở trang TN
       n.close();
     };
     setTimeout(()=>n.close(), 8000);
@@ -423,6 +424,9 @@ function _laCuaHang(){ return (typeof SESSION!=='undefined' && SESSION && SESSIO
 try{ window._canXemNS=_canXemNS; window._chanXemNS=_chanXemNS; window._laCuaHang=_laCuaHang; }catch(e){}
 
 function goToPage(page){
+  // [TN-2A] Buộc xác nhận/gửi ý kiến trước khi rời phiếu lương CHƯA xác nhận (chỉ NV).
+  // tnLeaveGuard trả true = đang chặn (đã bật modal) → hoãn điều hướng.
+  if(currentPage==='tn' && page!=='tn' && typeof tnLeaveGuard==='function' && tnLeaveGuard(page)) return;
   // [v18.34] Rời phân hệ TN → xóa mật khẩu đã xác thực (bảo mật lương: buộc nhập lại mỗi lần mở)
   if(page!=='tn' && page!=='tn-admin' && typeof TN!=='undefined' && TN){ try{ TN.pw=null; if(TN.cdTimer){clearInterval(TN.cdTimer);TN.cdTimer=null;} }catch(e){} }
   currentPage=page;

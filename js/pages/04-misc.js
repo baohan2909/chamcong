@@ -316,6 +316,7 @@ function _notifIcon(loai) {
     'SV_ESCALATE': '⚠',
     'BG_XAC_NHAN': '✅',
     'AI_DIGEST': '🗒',
+    'TN_TRALOI': '💬',
     'INFO': '🔔',
   };
   return map[loai] || '🔔';

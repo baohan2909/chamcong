@@ -178,3 +178,34 @@
 .tn-new{background:#C6373C;color:#fff;font-size:9.5px;padding:1px 6px;border-radius:999px;margin-left:4px}
 
 @media(max-width:560px){.tn-who{grid-template-columns:1fr}.tn-hero-num{font-size:31px}}
+
+/* ── [2A] Modal buộc xác nhận khi rời phiếu chưa xác nhận ──
+   BODY-LEVEL (ngoài scope #page-tn.ns18) → PHẢI tự cấp token --tn-* tại đây,
+   nếu không var() rơi về undefined và nút mất gradient/màu. */
+.tn-leave-ov{
+  --tn-grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 55%,#3FB6A8 100%);
+  --tn-teal:#1E5F63; --tn-teal2:#3FB6A8; --tn-mag:#D6006C;
+  --tn-ink:#14213A; --tn-ink2:#4A5670; --tn-ink3:#8894A0; --tn-line:#E6E2D8; --tn-surf:#FFFFFF;
+  --tn-glow:0 0 16px rgba(63,182,168,.42);
+  position:fixed; inset:0; z-index:100000; display:none;
+  align-items:center; justify-content:center; padding:18px;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+}
+.tn-leave-ov.show{display:flex}
+.tn-leave-bd{position:absolute; inset:0; background:rgba(15,23,32,.55);
+  backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px)}
+.tn-leave-box{position:relative; z-index:1; width:100%; max-width:404px;
+  background:var(--tn-surf); border-radius:20px; padding:26px 24px; text-align:center;
+  box-shadow:0 20px 60px rgba(20,33,58,.35); animation:tnLeaveIn .22s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes tnLeaveIn{from{opacity:0; transform:translateY(14px) scale(.96)}to{opacity:1; transform:none}}
+.tn-leave-ic{width:56px; height:56px; margin:0 auto 14px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center; color:var(--tn-teal);
+  background:linear-gradient(135deg,rgba(30,95,99,.12),rgba(63,182,168,.16))}
+.tn-leave-ic svg{width:28px; height:28px}
+.tn-leave-t{font-size:18px; font-weight:800; letter-spacing:-.01em; color:var(--tn-ink)}
+.tn-leave-s{font-size:12.7px; color:var(--tn-ink2); margin:6px 0 16px; line-height:1.55}
+.tn-leave-s b{color:var(--tn-ink); font-weight:700}
+.tn-leave-fb{margin:0 0 12px; text-align:left}
+.tn-leave-acts{display:flex; gap:9px; flex-wrap:wrap}
+.tn-leave-acts .tn-btn-teal{flex:1; min-width:120px}
+.tn-leave-hint{margin-top:13px; font-size:11.5px; color:var(--tn-ink3)}
