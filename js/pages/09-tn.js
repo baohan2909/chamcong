@@ -102,11 +102,11 @@ function tnLoadKy(ky){
     TN.phieu=data; tnRenderPhieu();
   }).catch(()=>{ if(wrap)wrap.innerHTML='<div class="tn-empty">Lỗi kết nối.</div>'; });
 }
-function tnRenderPhieu(){
-  const wrap=document.getElementById('tn-slip-wrap'); if(!wrap) return;
-  const p=TN.phieu, d=p.duLieu||{};
+// [refactor] Thân phiếu (head+who+hero+nhóm) — DÙNG CHUNG cho NV (tnRenderPhieu) và
+// modal admin xem phiếu NV (tnAdminPhieuModal). Chỉ-đọc, không gồm nút hành động.
+function _tnSlipCore(p, d){
   const daXN = !!p.xacNhanLuc;
-  let h='<div class="tn-slip">';
+  let h='';
   // head
   h+='<div class="tn-slip-head"><div><div class="tn-kicker">TN · Kỳ '+_tnEsc((p.ky||'').replace('-','/'))+'</div>'+
      '<div class="tn-slip-title">Phiếu kỳ '+_tnEsc(p.kyTen||p.ky)+'</div>'+
@@ -141,6 +141,13 @@ function tnRenderPhieu(){
     });
     h+='</div></div>';
   });
+  return h;
+}
+function tnRenderPhieu(){
+  const wrap=document.getElementById('tn-slip-wrap'); if(!wrap) return;
+  const p=TN.phieu, d=p.duLieu||{};
+  const daXN = !!p.xacNhanLuc;
+  let h='<div class="tn-slip">'+_tnSlipCore(p,d);
   // foot: actions + thread
   h+='<div class="tn-slip-foot">';
   if(!daXN){
@@ -371,7 +378,7 @@ function tnAdminRenderMain(){
   h+='<div class="tn-tbl-wrap"><table class="tn-tbl"><thead><tr>'+
      tnTh('hoTen','Nhân viên')+tnTh('maCH','Cửa hàng')+tnTh('thucLanh','Thực lãnh','r')+tnTh('trangThai','Trạng thái')+'<th>Hiện</th></tr></thead><tbody>';
   rows.forEach(p=>{
-    h+='<tr><td><b>'+_tnEsc(p.hoTen||p.maNV)+'</b><small>'+_tnEsc(p.maNV)+'</small></td><td>'+_tnEsc(p.maCH||'—')+'</td>'+
+    h+='<tr><td><button class="tn-nv-open" onclick="tnAdminViewPhieu(\''+p.id+'\')" title="Xem bảng lương chi tiết"><b>'+_tnEsc(p.hoTen||p.maNV)+'</b><small>'+_tnEsc(p.maNV)+'</small></button></td><td>'+_tnEsc(p.maCH||'—')+'</td>'+
        '<td class="r">'+_tnMoney(p.thucLanh)+'</td><td>'+tnPill(p)+'</td>'+
        '<td><button class="tn-tgl sm'+((p.hien||hienAllEff)?' on':'')+'" '+(hienAllEff?'disabled title="Đang mở tất cả"':'onclick="tnAdminToggleOne(\''+p.maNV+'\','+(!p.hien)+')"')+'></button></td></tr>';
     if(p.coYkien){ h+='<tr class="tn-fb-row"><td colspan="5"><button class="tn-fb-open" onclick="tnAdminOpenThread(\''+p.id+'\',\''+_tnEsc(p.hoTen||p.maNV)+'\')">💬 Xem &amp; trả lời ý kiến của '+_tnEsc(p.hoTen||p.maNV)+(p.chuaTraLoi?' <span class="tn-new">mới</span>':'')+'</button></td></tr>'; }
@@ -465,4 +472,34 @@ function tnAdminReply(){
     if(data&&data.success){ if(typeof showToast==='function')showToast('✓ Đã gửi','ok'); tnAdminOpenThread(TN.adThreadId,''); tnAdminLoad(TN.adKy); }
   });
 }
+// ═══ [Request 1] ADMIN BẤM 1 NV → XEM BẢNG LƯƠNG CHI TIẾT (chỉ-đọc, như NV tự xem) ═══
+// Dùng lại fn_tn_admin_thread (đã xác thực ADMIN). SQL tn_v5_adminphieu.sql bổ sung
+// cho RPC này trả THÊM duLieu/ky/kyTen/ngayChi/xacNhanLuc (tương thích ngược).
+function tnAdminViewPhieu(phieuId){
+  if(!phieuId) return;
+  const row=(TN.adData&&TN.adData.danhSach||[]).find(x=>String(x.id)===String(phieuId));
+  const hoTen=row?(row.hoTen||row.maNV):'';
+  supa.rpc('fn_tn_admin_thread',{p_ma:TN.ma,p_password:TN.pw,p_phieu_id:phieuId}).then(({data,error})=>{
+    if(error||!data||!data.success){ if(typeof showToast==='function')showToast((data&&data.error)||'Không tải được phiếu','warn'); return; }
+    if(!data.duLieu){ if(typeof showToast==='function')showToast('Hãy chạy SQL tn_v5_adminphieu.sql để xem chi tiết phiếu','warn'); return; }
+    tnAdminPhieuModal(data, hoTen);
+  }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi kết nối','warn'); });
+}
+function tnAdminPhieuModal(p, hoTen){
+  let ov=document.getElementById('tn-apv-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='tn-apv-ov'; ov.className='tn-apv-ov'; document.body.appendChild(ov); }
+  const d=p.duLieu||{};
+  const thread=(p.phanHoi&&p.phanHoi.length)?('<div class="tn-slip-foot">'+tnThreadHtml(p.phanHoi)+'</div>'):'';
+  ov.innerHTML=
+    '<div class="tn-apv-bd" onclick="tnAdminPhieuClose()"></div>'+
+    '<div class="tn-apv-box">'+
+      '<div class="tn-apv-bar"><span class="tn-apv-ttl">Bảng lương · '+_tnEsc(hoTen||d.ho_ten||'')+'</span>'+
+        '<button class="tn-apv-x" onclick="tnAdminPhieuClose()" aria-label="Đóng">✕</button></div>'+
+      '<div class="tn-apv-scroll"><div class="tn-slip">'+_tnSlipCore(p,d)+thread+'</div></div>'+
+    '</div>';
+  ov.classList.add('show');
+}
+function tnAdminPhieuClose(){ const ov=document.getElementById('tn-apv-ov'); if(ov){ ov.classList.remove('show'); ov.innerHTML=''; } }
+try{ window.tnAdminViewPhieu=tnAdminViewPhieu; window.tnAdminPhieuClose=tnAdminPhieuClose; }catch(e){}
+
 try{ window.tnInitPage=tnInitPage; window.tnAdminInitPage=tnAdminInitPage; }catch(e){}

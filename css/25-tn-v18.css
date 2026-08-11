@@ -209,3 +209,31 @@
 .tn-leave-acts{display:flex; gap:9px; flex-wrap:wrap}
 .tn-leave-acts .tn-btn-teal{flex:1; min-width:120px}
 .tn-leave-hint{margin-top:13px; font-size:11.5px; color:var(--tn-ink3)}
+
+/* ── [Request 1] Nhân sự trong bảng Quản lý TN bấm được → mở bảng lương chi tiết ── */
+#page-tn-admin.ns18 .tn-nv-open{display:block; width:100%; text-align:left; background:none; border:none;
+  padding:3px 4px; margin:-3px -4px; font:inherit; cursor:pointer; border-radius:7px; transition:background .12s}
+#page-tn-admin.ns18 .tn-nv-open:hover{background:#EEF6F5}
+#page-tn-admin.ns18 .tn-nv-open b{display:block; color:var(--tn-teal2); font-size:13.5px; font-weight:700}
+#page-tn-admin.ns18 .tn-nv-open small{display:block; color:var(--tn-ink3); font-size:11px; margin-top:1px}
+#page-tn-admin.ns18 .tn-nv-open:hover b{text-decoration:underline}
+
+/* ── [Request 1] Modal bảng lương chi tiết (admin xem NV) — BODY-LEVEL, tự cấp token ── */
+.tn-apv-ov{
+  --tn-grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 55%,#3FB6A8 100%);
+  --tn-teal:#1E5F63; --tn-teal2:#3FB6A8; --tn-gold:#CBA45A;
+  --tn-ink:#14213A; --tn-ink2:#4A5670; --tn-ink3:#8894A0; --tn-line:#E6E2D8; --tn-surf:#FFFFFF;
+  --tn-sh:0 1px 2px rgba(20,33,58,.05),0 10px 30px rgba(20,33,58,.07);
+  position:fixed; inset:0; z-index:100000; display:none; overflow:auto;
+  align-items:flex-start; justify-content:center; padding:24px 16px;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+}
+.tn-apv-ov.show{display:flex}
+.tn-apv-bd{position:fixed; inset:0; background:rgba(15,23,32,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px)}
+.tn-apv-box{position:relative; z-index:1; width:100%; max-width:560px; margin:auto; animation:tnLeaveIn .22s cubic-bezier(.2,.9,.3,1.2)}
+.tn-apv-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+.tn-apv-ttl{color:#fff; font-size:14px; font-weight:700; text-shadow:0 1px 5px rgba(0,0,0,.35); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tn-apv-x{flex:none; width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.16); color:#fff; font-size:15px; line-height:1;
+  backdrop-filter:blur(6px); transition:background .12s}
+.tn-apv-x:hover{background:rgba(255,255,255,.30)}
