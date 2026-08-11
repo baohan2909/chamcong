@@ -345,7 +345,13 @@ function tnParseCsv(text){
 }
 function tnCsvLine(line){ const r=[]; let cur='',q=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(q){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; } else { if(ch==='"')q=true; else if(ch===','){r.push(cur);cur='';} else cur+=ch; } } r.push(cur); return r; }
 function tnAdminDoSync(ky,ten,rows){
-  // [Request 2] "Thay dữ liệu cũ": xóa sạch phiếu kỳ này TRƯỚC khi nạp (best-effort — chưa có RPC xóa thì bỏ qua)
+  // [AN TOÀN — chống mất dữ liệu] Nếu Sheet/CSV trả 0 dòng → HỦY, KHÔNG xóa gì.
+  // (Trước đây: "Thay dữ liệu cũ" xóa trước rồi ghi — gặp 0 dòng là mất sạch. Nay chặn.)
+  if(!rows || !rows.length){
+    if(typeof showToast==='function')showToast('⚠ Không nhận được dòng nào từ Sheet/CSV — ĐÃ HỦY để tránh mất dữ liệu. Kiểm tra secret / tab "TN" / CSV rồi thử lại.','err');
+    return;
+  }
+  // [Request 2] "Thay dữ liệu cũ": xóa sạch phiếu kỳ này TRƯỚC khi nạp (chỉ khi CÓ dữ liệu mới)
   const replace = !!(document.getElementById('tn-sync-replace')||{}).checked;
   const _write=()=>{
     supa.rpc('fn_tn_sync',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
