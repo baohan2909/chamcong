@@ -10,16 +10,16 @@
  *  ──────────────────────────────────────────────────────────────────────── */
 
 const NS_FACE = {
-  // [Phần B] Thống nhất script+model vladmandic 1.7.15 (bản duy trì tốt, hết lệch phiên bản, cache CDN 1 lần).
-  // ĐỔI pipeline (224 + landmark Tiny) → Aroma ĐÃ reset enroll toàn bộ → mọi NV đăng ký lại khuôn mặt.
-  FACEAPI_SCRIPT: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.min.js',
-  MODELS_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/',
+  // [ỔN ĐỊNH v18.49] SELF-HOST script + model NGAY TRONG APP (không còn phụ thuộc CDN jsdelivr lúc chạy —
+  //   gốc lỗi "sáng sớm mạng cửa hàng chậm tải model treo/timeout"). File nằm ở /chamcong/face-models/.
+  FACEAPI_SCRIPT: 'face-models/face-api.min.js',
+  MODELS_URL: 'face-models/',
   MIN_FACE_SIZE: 80,
   STABLE_FRAMES_NEEDED: 3,
   STABLE_PX: 30,
   SCAN_DURATION_MS: 2500,   // smooth fill 2.5s
-  INPUT_SIZE: 224,          // [Phần B] TinyFaceDetector 320→224: nhẹ, đủ cho 1 mặt/lần, CPU đỡ tải
-  DETECT_INTERVAL_MS: 110,  // ~9 khung/giây — nhạy mà không nghẽn (Tiny + WebGL GPU)
+  INPUT_SIZE: 224,          // TinyFaceDetector — nhẹ, đủ cho 1 mặt/lần
+  DETECT_INTERVAL_MS: 160,  // [ỔN ĐỊNH] 110→160 (~6 khung/giây): giảm tải GPU/CPU, đỡ nóng máy yếu → bớt OOM
   LOAD_TIMEOUT_MS: 22000
 };
 
@@ -291,7 +291,15 @@ async function _detectFace(videoEl) {
   if (!_faceLoaded) return null;
   const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: NS_FACE.INPUT_SIZE, scoreThreshold: 0.45 });
   // [Phần B] withFaceLandmarks(true) = dùng landmark TINY (khớp model đã nạp)
-  const result = await faceapi.detectSingleFace(videoEl, opts).withFaceLandmarks(true).withFaceDescriptor();
+  let result;
+  try {
+    result = await faceapi.detectSingleFace(videoEl, opts).withFaceLandmarks(true).withFaceDescriptor();
+  } catch (e) {
+    // [ỔN ĐỊNH] Lỗi inference/WebGL (iOS thiếu RAM hiccup GPU) → coi như "chưa thấy mặt",
+    // KHÔNG để throw phá vòng quét (chống đứng cứng). Khung sau thử lại — thường tự khỏi nếu chỉ chớp nhoáng.
+    console.warn('[face] detect error:', e && e.message);
+    return null;
+  }
   if (!result) return null;
   const box = result.detection.box;
   if (box.width < NS_FACE.MIN_FACE_SIZE) return { tooSmall: true };
@@ -326,7 +334,7 @@ function _buildStage(containerEl, prefix) {
     <div class="ns-face-stage" id="${prefix}-stage">
       <div class="ns-face-cam">
         <video id="${prefix}-video" autoplay muted playsinline webkit-playsinline></video>
-        <canvas id="${prefix}-preview" class="ns-face-preview" width="480" height="480"></canvas>
+        <canvas id="${prefix}-preview" class="ns-face-preview" width="320" height="320"></canvas>
       </div>
       <div class="ns-face-cam-overlay">
         <div class="ns-face-cam-check" id="${prefix}-check">

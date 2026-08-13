@@ -12,8 +12,11 @@
  *   4. User bấm → skipWaiting + reload
  */
 
-const CACHE_VERSION = 'nonson-v18.48';
+const CACHE_VERSION = 'nonson-v18.49';
 const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
+// [ỔN ĐỊNH v18.49] Cache RIÊNG cho model khuôn mặt (self-host ~7.8MB) — BỀN qua mọi lần deploy
+// (KHÔNG bị xoá khi đổi CACHE_VERSION). Chỉ đổi khi CHÍNH model đổi → khỏi tải lại 7.8MB mỗi deploy.
+const MODEL_CACHE = 'nonson-face-models-v1';
 
 // Files cần precache cho offline (chỉ static assets quan trọng)
 // CSS/JS không cần precache vì đã có cache-busting qua query string ?v=X.X
@@ -45,7 +48,8 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME && k.startsWith('nonson-cache-'))
+        keys.filter(k => (k !== CACHE_NAME && k.startsWith('nonson-cache-')) ||
+                         (k !== MODEL_CACHE && k.startsWith('nonson-face-models-')))
             .map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
@@ -78,6 +82,13 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // [ỔN ĐỊNH v18.49] Model khuôn mặt self-host (/face-models/) → CACHE-FIRST BỀN
+  // Tải 1 lần lưu mãi (cache riêng, không xoá theo deploy) → quét mặt bật tức thì, hết phụ thuộc mạng.
+  if (url.pathname.includes('/face-models/')) {
+    event.respondWith(cacheFirstModels(req));
+    return;
+  }
+
   // Static assets → STALE-WHILE-REVALIDATE
   if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|ttf|json)$/i)) {
     event.respondWith(staleWhileRevalidate(req));
@@ -121,6 +132,17 @@ async function staleWhileRevalidate(req) {
     return resp;
   }).catch(() => cached);
   return cached || fetchPromise;
+}
+
+// [ỔN ĐỊNH] Model khuôn mặt: CACHE-FIRST vào cache RIÊNG bền (MODEL_CACHE) — tải 1 lần dùng mãi,
+// không phụ thuộc mạng cửa hàng, không bị xoá khi deploy. File model bất biến nên cache-first là chuẩn.
+async function cacheFirstModels(req) {
+  const cache = await caches.open(MODEL_CACHE);
+  const cached = await cache.match(req);
+  if (cached) return cached;
+  const fresh = await fetch(req);
+  if (fresh && fresh.status === 200) cache.put(req, fresh.clone());
+  return fresh;
 }
 
 // ─── Message handler — cho phép app ra lệnh skipWaiting ────────────────
