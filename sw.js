@@ -84,7 +84,8 @@ self.addEventListener('fetch', event => {
   
   // [ỔN ĐỊNH v18.49] Model khuôn mặt self-host (/face-models/) → CACHE-FIRST BỀN
   // Tải 1 lần lưu mãi (cache riêng, không xoá theo deploy) → quét mặt bật tức thì, hết phụ thuộc mạng.
-  if (url.pathname.includes('/face-models/')) {
+  if (url.pathname.includes('/face-models/') || url.pathname.includes('/face2/')) {
+    // [face v2] /face2/ (ort wasm + yunet + mobilefacenet) dùng CHUNG cache bền — tải 1 lần dùng mãi
     event.respondWith(cacheFirstModels(req));
     return;
   }
