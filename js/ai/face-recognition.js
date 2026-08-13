@@ -69,19 +69,66 @@ function _loadScript(src, ms) {
   });
 }
 
-async function nsFaceEnsureLoaded() {
-  if (_faceLoaded) return true;
-  if (_faceLoading) { while (_faceLoading) await new Promise(r => setTimeout(r, 100)); return _faceLoaded; }
+// [REDO v18.50] Tải model CÓ TIẾN ĐỘ (%) + CHỐNG TREO — thay timeout cứng 22s (gốc lỗi:
+//   mạng cửa hàng chậm, 7.8MB chưa xong đã hết 22s → fail → thử lại vô ích = "tải lâu bị treo").
+//   Tải tuần tự từng file, xong file nào CACHE file đó → "Thử lại" = tiếp tục, không tải lại.
+const _MODEL_FILES = [
+  'face-models/face-api.min.js',
+  'face-models/tiny_face_detector_model-weights_manifest.json',
+  'face-models/tiny_face_detector_model.bin',
+  'face-models/face_landmark_68_tiny_model-weights_manifest.json',
+  'face-models/face_landmark_68_tiny_model.bin',
+  'face-models/face_recognition_model-weights_manifest.json',
+  'face-models/face_recognition_model.bin'
+];
+const _MODEL_TOTAL = 8069591;   // tổng byte để tính %
+const _STALL_MS = 30000;        // chỉ coi là "chết mạng" khi KHÔNG nhận byte nào trong 30s (KHÔNG phải tổng thời gian)
+
+// Tải 1 file, theo dõi byte, chỉ reject khi ĐỨNG (stall) — mạng chậm-nhưng-chạy vẫn tải tới cùng.
+function _fetchFileWithProgress(url, onChunk) {
+  return new Promise(async (resolve, reject) => {
+    let reader = null, stallTimer = null;
+    const arm = () => { clearTimeout(stallTimer); stallTimer = setTimeout(() => { try { if (reader) reader.cancel(); } catch(_){} reject(new Error('stall:' + url)); }, _STALL_MS); };
+    try {
+      arm();
+      const resp = await fetch(url);
+      if (!resp.ok) { clearTimeout(stallTimer); reject(new Error('http ' + resp.status + ':' + url)); return; }
+      if (!resp.body || !resp.body.getReader) { await resp.arrayBuffer(); clearTimeout(stallTimer); resolve(); return; }
+      reader = resp.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        arm();
+        if (value && onChunk) onChunk(value.length);
+      }
+      clearTimeout(stallTimer); resolve();
+    } catch (e) { clearTimeout(stallTimer); reject(e); }
+  });
+}
+let _faceLoadPct = 0;   // % chung — để lần mở máy quét thấy tiến độ dù đang tải NỀN (preload)
+async function _prefetchModels(onProgress) {
+  let loaded = 0;
+  const emit = (p) => { _faceLoadPct = p; if (onProgress) onProgress(p); };
+  for (const url of _MODEL_FILES) {
+    await _fetchFileWithProgress(url, (n) => { loaded += n; emit(Math.min(99, Math.floor(loaded / _MODEL_TOTAL * 100))); });
+  }
+  emit(100);
+}
+
+async function nsFaceEnsureLoaded(onProgress) {
+  if (_faceLoaded) { if (onProgress) onProgress(100); return true; }
+  if (_faceLoading) { while (_faceLoading) { if (onProgress) onProgress(_faceLoadPct); await new Promise(r => setTimeout(r, 200)); } if (onProgress) onProgress(_faceLoaded ? 100 : _faceLoadPct); return _faceLoaded; }
   _faceLoading = true;
   try {
-    if (typeof faceapi === 'undefined') {
-      await _loadScript(NS_FACE.FACEAPI_SCRIPT, NS_FACE.LOAD_TIMEOUT_MS);
-    }
-    await _withTimeout(Promise.all([
+    // Bước 1: tải file CÓ TIẾN ĐỘ + chống treo (không còn timeout cứng làm fail giữa chừng).
+    await _prefetchModels(onProgress);
+    // Bước 2: nạp từ cache đã tải → NHANH (không tải lại).
+    if (typeof faceapi === 'undefined') await _loadScript(NS_FACE.FACEAPI_SCRIPT, NS_FACE.LOAD_TIMEOUT_MS);
+    await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(NS_FACE.MODELS_URL),
-      faceapi.nets.faceLandmark68TinyNet.loadFromUri(NS_FACE.MODELS_URL),  // [Phần B] landmark Tiny (nhẹ hơn)
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri(NS_FACE.MODELS_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(NS_FACE.MODELS_URL)
-    ]), NS_FACE.LOAD_TIMEOUT_MS, 'models');
+    ]);
     _faceLoaded = true;
     return true;
   } catch (e) {
@@ -535,8 +582,8 @@ async function _startEnrollmentFlow() {
 
   // [fix-cam] Tải model SAU khi camera đã hiện; có timeout + nút Thử lại thật (trước đây gọi hàm không tồn tại)
   _setInstruction('fe', 'Chuẩn bị máy quét…');
-  _setSubstatus('fe', 'Đang tải bộ nhận diện…', 'ok');
-  const ok = await nsFaceEnsureLoaded();
+  _setSubstatus('fe', 'Đang tải bộ nhận diện (lần đầu)… 0%', 'ok');
+  const ok = await nsFaceEnsureLoaded(function(pct){ _setSubstatus('fe', 'Đang tải bộ nhận diện (lần đầu)… ' + pct + '%', 'ok'); });
   if (_enrollAbort.aborted) return;
   if (!ok) {
     _setInstruction('fe', 'Không tải được máy quét');
@@ -693,8 +740,8 @@ async function nsFaceStartChamCong(onSuccess, onFail) {
 
   // [fix-cam] Tải model có timeout; lỗi → Thử lại chạy thật (trước gọi nsFaceVerify không tồn tại) + fallback ảnh tay
   _setInstruction('fv', 'Chuẩn bị máy quét…');
-  _setSubstatus('fv', 'Đang tải bộ nhận diện…', 'ok');
-  const ok = await nsFaceEnsureLoaded();
+  _setSubstatus('fv', 'Đang tải bộ nhận diện (lần đầu)… 0%', 'ok');
+  const ok = await nsFaceEnsureLoaded(function(pct){ _setSubstatus('fv', 'Đang tải bộ nhận diện (lần đầu)… ' + pct + '%', 'ok'); });
   if (_verifyAbort.aborted) return;
   if (!ok) {
     _setInstruction('fv', 'Không tải được máy quét');
