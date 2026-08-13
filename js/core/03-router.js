@@ -61,11 +61,19 @@
       .catch(err => console.warn('[PWA] SW register failed:', err));
     
     let refreshing = false;
+    function _nsReloadNow() { if (refreshing) return; refreshing = true; window.location.reload(); }
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
+      // [FIX GỐC] KHÔNG reload khi NV đang quét khuôn mặt / mở camera (window._nsBusy)
+      // → chống "văng về màn hình chính" giữa lúc chấm công. Chờ camera đóng
+      //   (_faceStopStreams gọi window.nsReloadIfPending) rồi mới reload — lúc đó an toàn.
+      if (window._nsBusy) { window._nsReloadPending = true; return; }
+      _nsReloadNow();
     });
+    // Camera đóng / hết bận → nếu có bản mới đang chờ thì reload NGAY (không còn phá scan)
+    window.nsReloadIfPending = function () {
+      if (window._nsReloadPending && !window._nsBusy) _nsReloadNow();
+    };
   });
   
   window.pwaApplyUpdate = function() {

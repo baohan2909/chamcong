@@ -212,6 +212,7 @@ async function _openCam(videoEl) {
     }
   }
   videoEl.srcObject = stream;
+  try { window._nsBusy = true; } catch(_) {}   // [fix reload] đang mở camera/quét mặt → HOÃN auto-reload khi có bản mới (chống văng ra màn hình chính)
 
   // [v4-cam] KHÔNG applyConstraints sau khi mở nữa: gọi giữa lúc stream chạy có thể khiến camera CẤU HÌNH LẠI
   //          → giật/đổi khung (một nguồn "thỉnh thoảng bị"). Chỉ dựa vào độ phân giải cố định 640x480 ở trên
@@ -252,13 +253,19 @@ async function _openCam(videoEl) {
 
   return stream;
 }
-function _stopCam(stream) { if (stream) stream.getTracks().forEach(t => t.stop()); }
+function _stopCam(stream) {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  // [fix reload] mọi lần dừng camera → hết "bận" → cho phép reload bản mới nếu đang chờ (chống kẹt cờ)
+  try { window._nsBusy = false; if (typeof window.nsReloadIfPending === 'function') window.nsReloadIfPending(); } catch(_) {}
+}
 
 // [fix-cam] Dừng mọi camera stream còn sót → chống rò khiến camera "bận" ở lần mở sau (phải kill app)
 function _faceStopStreams() {
   if (_camDbgIv) { clearInterval(_camDbgIv); _camDbgIv = null; }
   if (typeof _verifyStream !== 'undefined' && _verifyStream) { _stopCam(_verifyStream); _verifyStream = null; }
   if (typeof _enrollStream !== 'undefined' && _enrollStream) { _stopCam(_enrollStream); _enrollStream = null; }
+  // [fix reload] hết camera → hết "bận" → nếu có bản mới đang chờ thì reload NGAY BÂY GIỜ (không còn phá lúc quét mặt)
+  try { window._nsBusy = false; if (typeof window.nsReloadIfPending === 'function') window.nsReloadIfPending(); } catch(_) {}
 }
 // App đóng / điều hướng đi → nhả camera (pagehide chỉ fire khi thoát thật, không phá scan lúc chuyển nền chớp nhoáng)
 window.addEventListener('pagehide', _faceStopStreams);
