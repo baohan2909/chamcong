@@ -50,7 +50,8 @@ var CFG = {
   MIN_FACE_DET: 32,    // mặt < 32px @192 (~17% khung) → "đưa gần hơn" (tương đương 80px bản cũ)
   STABLE_PX: 12,       // độ xê dịch cho phép giữa 2 khung @192 (bản cũ 30px @480)
   STABLE_FRAMES: 3,
-  SCAN_MS: 2500,       // thời gian vòng ring (giữ UX cũ)
+  SCAN_MS: 700,        // [ào 1 phát] vòng ring fill NHANH ~0.7s — chỉ phản hồi thị giác, KHÔNG chặn logic (bản cũ 2.5s)
+  SUCCESS_MS: 600,     // [ào 1 phát] màn "thành công" trước khi qua chấm công (bản cũ 1.4s)
   TRACK_MS: 150,       // nhịp dò lúc canh mặt (~6-7 khung/giây, model bé nên rẻ)
   DET_THR: 0.6,
   REFINE_THR: 0.5,
@@ -557,50 +558,53 @@ async function _waitStable(video, prefix, abortRef) {
   return null;
 }
 
-/* ─── Vòng quét ring 2.5s: chụp 2 embedding (đầu + giữa) rồi trung bình ─── */
+/* ─── Quét NHANH "ào 1 phát": ring fill ~0.7s (CHỈ phản hồi thị giác, không chặn logic),
+ *     chụp 2 embedding LIỀN NHAU rồi trung bình → thấy mặt là xong luôn.
+ *     Bản cũ chờ nửa vòng + hết vòng + nháy 0.8s = ~3.3s NGHI THỨC; nay ~1s.
+ *     Ring ép transition-duration INLINE nên v1 (dùng chung CSS 2.5s) KHÔNG bị đụng. ─── */
 async function _smoothScan(video, prefix, abortRef) {
   var box = await _waitStable(video, prefix, abortRef);
   if (!box || abortRef.aborted) return null;
 
   var stage = document.getElementById(prefix + '-stage');
   var ringFg = document.getElementById(prefix + '-ring-fg');
+  if (stage) stage.classList.add('scanning');
+  _setSubstatus(prefix, 'Đang quét...', 'ok');
+
+  var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
   if (ringFg) {
     ringFg.classList.remove('animating', 'flash-complete');
     ringFg.style.strokeDashoffset = '597';
-  }
-  if (stage) stage.classList.add('scanning');
-  _setSubstatus(prefix, 'Đang quét...', 'ok');
-  if (ringFg) {
     void ringFg.offsetWidth;
-    ringFg.classList.add('animating');
+    ringFg.style.transition = 'stroke-dashoffset ' + (CFG.SCAN_MS / 1000) + 's cubic-bezier(0.4,0,0.2,1)';
     ringFg.style.strokeDashoffset = '0';
   }
 
+  // Chụp 2 embedding liền nhau (~150ms) — KHÔNG chờ nửa/hết vòng như bản cũ
   var embs = [];
   var e1 = await _refineAndEmbed(video, box);
   if (e1) embs.push(e1);
-
-  // đợi ~nửa vòng ring rồi chụp lần 2 (mặt vẫn trong khung — có track lại cho chắc)
-  var half = Math.max(400, CFG.SCAN_MS / 2 - (_dbg.det + _dbg.emb));
-  await new Promise(function (r) { setTimeout(r, half); });
+  await new Promise(function (r) { setTimeout(r, 150); });
   if (abortRef.aborted) return null;
   var d2 = await _trackOnce(video);
   var box2 = (!d2.none && !d2.tooSmall) ? d2 : box;
   var e2 = await _refineAndEmbed(video, box2);
   if (e2) embs.push(e2);
-
-  // chờ ring chạy hết cho tròn trải nghiệm
-  var rest = CFG.SCAN_MS - half;
-  if (rest > 0) await new Promise(function (r) { setTimeout(r, rest); });
-  if (abortRef.aborted) return null;
   _dbgShow(prefix);
 
+  // Để ring chạy cho tròn (nhưng TỐI ĐA SCAN_MS — nếu chụp lâu hơn thì flash ngay)
+  var now = (window.performance && performance.now) ? performance.now() : Date.now();
+  var remain = CFG.SCAN_MS - (now - t0);
+  if (remain > 0) await new Promise(function (r) { setTimeout(r, remain); });
+  if (abortRef.aborted) return null;
+
+  // Nháy dấu ✓ NGẮN (300ms thay vì 800ms)
   if (stage) stage.classList.remove('scanning');
-  if (ringFg) ringFg.classList.add('flash-complete');
+  if (ringFg) { ringFg.style.strokeDashoffset = '0'; ringFg.classList.add('flash-complete'); }
   var check = document.getElementById(prefix + '-check');
   if (check) check.classList.add('show');
   _haptic([40, 60, 40]);
-  await new Promise(function (r) { setTimeout(r, 800); });
+  await new Promise(function (r) { setTimeout(r, 300); });
   if (check) check.classList.remove('show');
   if (ringFg) ringFg.classList.remove('flash-complete');
 
@@ -875,7 +879,7 @@ async function _runVerifyAttempt(video, attempt) {
     setTimeout(function () {
       v2CloseVerify();
       if (cb) cb({ match_pct: matchPct, distance: result.cosine, faceImage: faceImageB64 });
-    }, 1400);
+    }, CFG.SUCCESS_MS);
   } else {
     var matchPct2 = result && result.match_pct !== undefined ? result.match_pct : '?';
     var needPct = result && result.threshold_pct ? result.threshold_pct : 70;
@@ -1005,6 +1009,9 @@ window.NSFACE2 = {
   detectOnCanvas: _detectOnCanvas,
   refineAndEmbed: _refineAndEmbed,
   trackOnce: _trackOnce,
+  smoothScan: _smoothScan,
+  buildStage: _buildStage,
+  cfg: CFG,
   dbg: _dbg
 };
 })();
