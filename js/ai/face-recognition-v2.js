@@ -346,6 +346,41 @@ function _avgEmb(list) {
   return out;
 }
 
+/* ════════════════ TỰ PHÁT HIỆN CAMERA ĐEN (máy cũ / iOS PWA lỗi) ════════════════
+ * getUserMedia có thể "thành công" nhưng trả KHUNG ĐEN trên vài máy (iOS PWA standalone).
+ * Đọc pixel: khung thật (kể cả tối) có biến thiên/nhiễu; khung đen-hỏng thì phẳng lì ~0.
+ * → thấy 1 khung có nội dung THẬT = camera OK; toàn đen suốt ~1.8s = hỏng → tự chuyển ảnh tay.
+ * Ngưỡng để LỎNG (dễ báo OK) để KHÔNG đẩy nhầm camera đang chạy sang ảnh tay; nếu lỡ sai thì
+ * vẫn còn nút "Chấm công bằng ảnh tay" luôn hiện. */
+var _probeCanvas = null;
+function _frameLooksReal(video) {
+  try {
+    var vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return false;
+    if (!_probeCanvas) { _probeCanvas = document.createElement('canvas'); _probeCanvas.width = 32; _probeCanvas.height = 32; }
+    var ctx = _probeCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, 0, 0, 32, 32);
+    var d = ctx.getImageData(0, 0, 32, 32).data;
+    var min = 255, max = 0, sum = 0, n = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      var lum = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
+      if (lum < min) min = lum;
+      if (lum > max) max = lum;
+      sum += lum; n++;
+    }
+    return (max - min) > 8 || (sum / n) > 12;   // có tương phản HOẶC không tối đen tuyệt đối → thật
+  } catch (e) { return true; }   // đọc pixel lỗi (CORS/hiếm) → cho qua, đừng chặn nhầm
+}
+// Trả true NGAY khi thấy khung thật; false nếu ~1.8s toàn đen/không có khung → camera hỏng
+async function _cameraProducesVideo(video, abortRef) {
+  for (var i = 0; i < 12; i++) {
+    if (abortRef && abortRef.aborted) return true;
+    if (video.videoWidth && _frameLooksReal(video)) return true;
+    await new Promise(function (r) { setTimeout(r, 150); });
+  }
+  return false;
+}
+
 /* ════════════════ CAMERA (kế thừa nguyên bài học v17.68→v18.50) ════════════════ */
 
 function _gumWithTimeout(constraints, ms) {
@@ -676,6 +711,17 @@ async function _startEnrollFlow() {
   }
   if (_enrollAbort.aborted) return;
 
+  // [FIX máy đen] Camera không ra hình (máy cũ / iOS PWA lỗi) → không ép đăng ký, báo dùng ảnh tay
+  var feCamReal = await _cameraProducesVideo(video, _enrollAbort);
+  if (_enrollAbort.aborted) return;
+  if (!feCamReal) {
+    window._nsFaceCamBroken = true;
+    _setInstruction('fe', 'Máy này chưa mở được camera trong ứng dụng');
+    _setSubstatus('fe', 'Bạn vẫn chấm công bình thường bằng ảnh chụp. Hãy đóng cửa sổ này và bấm chấm công lại.', 'err');
+    if (_enrollStream) { _stopCam(_enrollStream); _enrollStream = null; }
+    return;
+  }
+
   _setInstruction('fe', 'Chuẩn bị máy quét…');
   _setSubstatus('fe', 'Đang tải bộ nhận diện… ' + _loadPct + '%', 'ok');
   var ok = await _ensureLoaded(function (pct) { _setSubstatus('fe', 'Đang tải bộ nhận diện… ' + pct + '%', 'ok'); });
@@ -768,6 +814,9 @@ var _verifyCallback = { onSuccess: null, onFail: null };
 
 async function v2StartChamCong(onSuccess, onFail) {
   _verifyCallback = { onSuccess: onSuccess, onFail: onFail };
+  // [FIX máy đen] Máy này (phiên này) đã xác định KHÔNG ra hình camera trong app → đi thẳng ảnh tay,
+  //   không mở modal, không tải model. Không ai kẹt màn đen.
+  if (window._nsFaceCamBroken) { if (onFail) onFail({ reason: 'camera_black', fallback: true }); return; }
   _stopAllStreams();
 
   var enrolled = false;
@@ -830,6 +879,17 @@ async function v2StartChamCong(onSuccess, onFail) {
     return;
   }
   if (_verifyAbort.aborted) return;
+
+  // [FIX máy đen] Kiểm camera có RA HÌNH thật không TRƯỚC khi tải model 5.9MB — đen thì tự chuyển ảnh tay ngay
+  var camReal = await _cameraProducesVideo(video, _verifyAbort);
+  if (_verifyAbort.aborted) return;
+  if (!camReal) {
+    window._nsFaceCamBroken = true;   // nhớ trong phiên → lần sau đi thẳng ảnh tay
+    var cbBlack = _verifyCallback.onFail;
+    v2CloseVerify();
+    if (cbBlack) cbBlack({ reason: 'camera_black', fallback: true });
+    return;
+  }
 
   _setInstruction('fv', 'Chuẩn bị máy quét…');
   _setSubstatus('fv', 'Đang tải bộ nhận diện… ' + _loadPct + '%', 'ok');
