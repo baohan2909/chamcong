@@ -422,9 +422,8 @@ async function _openCam(videoEl) {
     tapTarget.addEventListener('touchstart', tapPlay, { passive: true });
   }
 
-  var prefix = String(videoEl.id || '').replace(/-video$/, '');
-  var previewEl = document.getElementById(prefix + '-preview');
-  if (previewEl) _startPreview(videoEl, previewEl);
+  // [FIX iOS PWA] KHÔNG dùng canvas preview nữa — hiện <video> trực tiếp (CSS .nsface2).
+  //   Canvas ẩn không render được trong iOS standalone PWA → đen. Video hiện thẳng thì decode + vẽ OK.
   return stream;
 }
 
@@ -486,7 +485,8 @@ function _haptic(p) { try { if (navigator.vibrate) navigator.vibrate(p || 30); }
 function _buildStage(containerEl, prefix) {
   containerEl.innerHTML =
     '<div class="ns-face-stage" id="' + prefix + '-stage">' +
-      '<div class="ns-face-cam">' +
+      // [FIX iOS PWA] class nsface2 → CSS hiện <video> trực tiếp (canvas ẩn không render được trong PWA standalone)
+      '<div class="ns-face-cam nsface2">' +
         '<video id="' + prefix + '-video" autoplay muted playsinline webkit-playsinline></video>' +
         '<canvas id="' + prefix + '-preview" class="ns-face-preview" width="320" height="320"></canvas>' +
       '</div>' +
@@ -844,6 +844,10 @@ async function v2StartChamCong(onSuccess, onFail) {
   }
   _setSubstatus('fv', '', '');
   _setInstruction('fv', 'Đặt khuôn mặt vào khung');
+
+  // [FIX kẹt đen] Nút "Chấm công bằng ảnh tay" LUÔN hiện sẵn — lỡ camera trục trặc thì bấm là chấm được ngay,
+  //   không bao giờ bị kẹt màn đen như sự cố 14/08.
+  _addFallbackBtn();
 
   _runVerifyAttempt(video, 0);
 }

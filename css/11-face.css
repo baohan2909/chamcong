@@ -164,6 +164,20 @@
   display: block; /* canvas 480x480 vuông trong khung vuông (aspect-ratio 1/1) → không cần object-fit */
 }
 
+/* [FACE v2 — FIX iOS PWA đen camera 14/08/2026]
+   iOS standalone PWA KHÔNG decode/vẽ <video> bị ẩn (2px/opacity:0) → canvas preview đen
+   (web/Safari tab thì vẫn vẽ được nên chạy bình thường). Bản v2 khóa độ phân giải exact 640x480
+   nên KHÔNG còn bug "re-layout nửa khung lộ nền đen" của v6-cam → hiện <video> TRỰC TIẾP là an toàn
+   và render được trong PWA. Scope .nsface2 → KHÔNG đụng engine v1. */
+.ns-face-cam.nsface2 video {
+  width: 100%; height: 100%;
+  left: 0; top: 0;
+  opacity: 1;
+  object-fit: cover;
+  transform: scaleX(-1);   /* lật gương selfie */
+}
+.ns-face-cam.nsface2 .ns-face-preview { display: none; }
+
 .ns-face-ring {
   position: absolute;
   inset: -8px;
