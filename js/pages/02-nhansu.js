@@ -185,7 +185,7 @@ function onLCQLSearch(){
 }
 
 let _lcqlAllData = [];
-function taiLichCaQL(){
+async function taiLichCaQL(){
   if(typeof _chanXemNS==='function' && _chanXemNS()) return;   // [v18.29] ADMIN/QLNS + CH (xem, lọc client theo cửa hàng); roster read-only không có nút
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
   document.getElementById('lcql-tuan-lbl').textContent=_tuanLabel(lcqlTuan);
@@ -201,13 +201,34 @@ function taiLichCaQL(){
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
+  // [FIX #1] CỬA HÀNG: lọc lịch ca THEO CỬA HÀNG NGAY TRÊN SERVER.
+  //   Trước đây kéo TOÀN CHUỖI 220 CH rồi lọc client → vượt trần 1000 dòng của Supabase (Max rows)
+  //   → dữ liệu bị CẮT NGẦM → roster thiếu ngày NV đăng ký. Scope server đưa kết quả xuống dưới trần.
+  const _isCH = (typeof _laCuaHang==='function' && _laCuaHang() && SESSION.cuaHangMa);
+  const _maCH = _isCH ? SESSION.cuaHangMa : null;
+  let _homeNVList = [];
+  if (_isCH) {
+    // Lấy TRỌN NV thuộc CH mình (nhỏ, không dính trần) — để scope + đảm bảo có trong nvMap
+    const hvRes = await supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc').eq('ma_ch_mac_dinh', _maCH);
+    _homeNVList = hvRes.data || [];
+  }
+  let _lcQ = supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr);
+  let _dnQ = supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr);
+  if (_isCH) {
+    const _ids = _homeNVList.length ? _homeNVList.map(x => '"'+x.ma_nv+'"').join(',') : '"__none__"';
+    // ca/đơn TẠI cửa hàng mình  HOẶC  của NV thuộc cửa hàng mình (kể cả đi hỗ trợ CH khác / ma_ch trống)
+    _lcQ = _lcQ.or(`ma_ch.eq.${_maCH},ma_nv.in.(${_ids})`);
+    _dnQ = _dnQ.or(`ma_ch.eq.${_maCH},ma_nv.in.(${_ids})`);
+  }
   Promise.all([
-    supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr),
-    supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr),
+    _lcQ,
+    _dnQ,
     supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc'),
     supa.from('cua_hang').select('ma_ch, ten_ch, khu_vuc')
   ]).then(([lcRes, dnRes, nvRes, chRes]) => {
     const nvMap = {}; (nvRes.data||[]).forEach(nv => { nvMap[nv.ma_nv] = nv; });
+    // [FIX #1] NV nhà LUÔN có trong map (query nhan_vien toàn chuỗi có thể bị cắt 1000 dòng)
+    _homeNVList.forEach(nv => { nvMap[nv.ma_nv] = nv; });
     const chMap = {}; (chRes.data||[]).forEach(ch => { chMap[ch.ma_ch] = ch; });
     _lcqlAllData = [];
     (lcRes.data||[]).forEach(r => {

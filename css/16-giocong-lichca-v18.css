@@ -657,3 +657,7 @@ body.ns18-shell #gcql-detail-modal [style*="color:var(--green)"]{color:var(--tea
   #page-lichhd-ch.ns18 #lhd-subtabs,
   #page-lichhd-ch.ns18 #lhd-content{max-width:720px}
 }
+
+/* [FIX #3] Cột "Cửa hàng" (ô cuối) bảng Giờ công cá nhân: cho XUỐNG DÒNG, hiện đủ tên.
+   Đè rule v18 toàn cục 15-pages-v18.css:36 (.ns18 .gc-table td{white-space:nowrap}) vốn cắt tên dài. */
+#page-giocong.ns18 .gc-table td:last-child{white-space:normal;word-break:break-word}

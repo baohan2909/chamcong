@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.55',
+  'sys.cache_version': 'v18.56',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2564,7 +2564,8 @@ function _renderGioCongTable(){
         chHtml = `<div style="line-height:1.4">${tenVao} →</div><div style="line-height:1.4">${tenRa}</div>`;
       } else {
         const ten = tenVao || tenRa || '--';
-        chHtml = `<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ten}</div>`;
+        // [FIX #3] Bỏ cắt cụt (ellipsis/nowrap) → cho tên cửa hàng xuống dòng, hiện ĐẦY ĐỦ trên điện thoại
+        chHtml = `<div style="line-height:1.4;word-break:break-word">${ten}</div>`;
       }
 
       let gioCongStr = '--';
@@ -2704,7 +2705,14 @@ function taiGioCongQLRange(){
   }
   Promise.all(fetches).then(results=>{
     const all=results.flat();
-    gcDataQL=all.filter(r=>r.ngay>=tu&&r.ngay<=den);
+    let _rows=all.filter(r=>r.ngay>=tu&&r.ngay<=den);
+    // [FIX #2] CUA_HANG: khoảng ngày phải lọc theo cửa hàng mình (giống taiGioCongQL theo tháng).
+    //   Trước đây hàm range KHÔNG lọc → cửa hàng chọn khoảng ngày thấy giờ công TOÀN HỆ THỐNG (lộ dữ liệu).
+    if (SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
+      const _maCH = SESSION.cuaHangMa;
+      _rows = _rows.filter(r => (r.maCH || r.ma_ch || '') === _maCH);
+    }
+    gcDataQL=_rows;
     renderGioCongQL();
   }).catch(()=>{
     document.getElementById('gcql-content').innerHTML='<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
