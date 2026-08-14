@@ -876,10 +876,12 @@ async function _runVerifyAttempt(video, attempt) {
     _showVerifySuccess(matchPct);
     _haptic([30, 50, 30, 50, 60]);
     var cb = _verifyCallback.onSuccess;
+    // NS00490 giữ màn thành công 2.5s để ĐỌC dòng số đo; NV thường 0.6s nhanh gọn
+    var okMs = (window.SESSION && SESSION.ma === 'NS00490') ? 2500 : CFG.SUCCESS_MS;
     setTimeout(function () {
       v2CloseVerify();
       if (cb) cb({ match_pct: matchPct, distance: result.cosine, faceImage: faceImageB64 });
-    }, CFG.SUCCESS_MS);
+    }, okMs);
   } else {
     var matchPct2 = result && result.match_pct !== undefined ? result.match_pct : '?';
     var needPct = result && result.threshold_pct ? result.threshold_pct : 70;
@@ -894,6 +896,10 @@ async function _runVerifyAttempt(video, attempt) {
 function _showVerifySuccess(matchPct) {
   var body = document.getElementById('ns-face-verify-modal-body');
   if (!body) return;
+  // Dòng số đo — CHỈ NS00490 thấy, HIỆN LUÔN trên màn thành công (đọc được, không chớp mất như lúc quét)
+  var dbg = (window.SESSION && SESSION.ma === 'NS00490')
+    ? '<p style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:10px;font-family:ui-monospace,monospace">v2 ' + (_simdOk() ? 'simd' : 'no-simd') + ' · dò ' + _dbg.det.toFixed(0) + 'ms · nhận diện ' + _dbg.emb.toFixed(0) + 'ms</p>'
+    : '';
   body.innerHTML =
     '<div class="ns-face-step active">' +
       '<div class="ns-face-success-stage">' +
@@ -903,6 +909,7 @@ function _showVerifySuccess(matchPct) {
         '<h3>Xác thực thành công</h3>' +
         '<p style="font-size:15px;margin-top:4px">Độ tương đồng <b style="color:#2BC084;font-size:18px">' + matchPct + '%</b></p>' +
         '<p style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:8px">Đang chuyển sang chấm công...</p>' +
+        dbg +
       '</div>' +
     '</div>';
 }
