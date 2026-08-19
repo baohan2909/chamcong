@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.56',
+  'sys.cache_version': 'v18.57',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -336,6 +336,7 @@ setInterval(()=>{
 // ─── NAVIGATION ─────────────────────────────────────────────
 const PAGE_TITLES={
   'home':      '',
+  'livestream':'LIVESTREAM',   // [v18.57]
   'donhang':   '',
   'donhang-nhan': '',
   'donhang-ql': '',
@@ -498,6 +499,7 @@ function goToPage(page){
   if(page==='bangiao-ql')   bgqlInitPage();  // [v13.19] QL bàn giao
   if(page==='nvai')         { if(typeof nvaiPageInit==='function') nvaiPageInit(); }  // [v13.41] Nhân viên AI
   else { if(typeof nvaiPageLeave==='function') nvaiPageLeave(); }
+  if(page==='livestream')   { if(typeof lsInitPage==='function') lsInitPage(); }      // [v18.57] Livestream
   if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='donhang-nhan') { if(typeof dhNhanInit==='function') dhNhanInit(); }  // [v13.45] CH nhận đơn
   else { if(typeof dhNhanLeave==='function') dhNhanLeave(); }
@@ -594,6 +596,8 @@ const HUB_GROUPS = {
     items: [
       { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.phien',     act:()=>goToPage('banhang') },
       // [v18.32] "Dashboard bán hàng" cũ = thực chất báo cáo NHÂN SỰ → đã chuyển sang nhóm Chấm công & Nhân sự (đổi nhãn "Tổng quan nhân sự")
+      // [v18.57] LIVESTREAM — gate ls.bat (off→ẩn tất cả kể cả ADMIN; ns00490→chỉ Aroma; all→mọi người)
+      { label:'Livestream',         desc:'Xem live · điểm danh xem', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
     ]
   },
   bangiao: {
@@ -615,6 +619,7 @@ const HUB_GROUPS = {
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
   if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.67] tắt theo công tắc tính năng
+  if(typeof it.hien==='function'){ try{ if(!it.hien()) return false; }catch(e){ return false; } } // [v18.57] gate động (ẩn cả ADMIN khi phân hệ off)
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [A2] chức danh ĐÃ cấu hình rõ ràng có thể MỞ THÊM tile (cộng thêm, không gỡ của ai)

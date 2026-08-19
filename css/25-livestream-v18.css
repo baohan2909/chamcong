@@ -1,0 +1,134 @@
+/* ═══════════════════════════════════════════════════════════════
+   25 — PHÂN HỆ LIVESTREAM (GĐ1 · 19/08/2026)
+   Scope #page-livestream (trang mới, chỉ hiện khi ls.bat bật)
+   Token v18: teal #3FB6A8 / teal-deep #1E5F63 / magenta #D6006C / grad
+   ═══════════════════════════════════════════════════════════════ */
+
+#page-livestream #ls-root { max-width: 760px; margin: 0 auto; padding: 10px; }
+@media (min-width: 900px) { #page-livestream #ls-root { padding: 24px 26px; } }
+
+.ls-empty { text-align: center; padding: 48px 16px; color: #64748B; font-size: 14px; }
+.ls-empty-sm { text-align: center; padding: 14px; color: #94A3B8; font-size: 12px; }
+
+/* ── Hero ── */
+.ls-hero {
+  background: var(--grad, linear-gradient(135deg, #182D3D 0%, #1E5F63 50%, #3FB6A8 100%));
+  border-radius: 16px; padding: 14px 16px; color: #fff; margin-bottom: 10px;
+  position: relative; overflow: hidden;
+}
+.ls-hero::after {
+  content: ''; position: absolute; right: -34px; top: -34px; width: 128px; height: 128px;
+  border-radius: 50%; background: rgba(255,255,255,0.09);
+}
+.ls-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ls-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 800; letter-spacing: .06em;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.85);
+}
+.ls-badge.on { background: #E1173F; color: #fff; box-shadow: 0 0 14px rgba(225,23,63,0.55); }
+.ls-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #fff; display: inline-block;
+  animation: lsPulse 1.2s ease-in-out infinite;
+}
+@keyframes lsPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.75); } }
+.ls-viewers { font-size: 11.5px; color: rgba(255,255,255,0.85); white-space: nowrap; }
+.ls-title { font-size: 17px; font-weight: 800; margin-top: 8px; line-height: 1.35; }
+
+/* ── Player ── */
+.ls-player-wrap {
+  position: relative; background: #0A0F14; border-radius: 16px; overflow: hidden;
+  height: min(58vh, 520px);
+  box-shadow: 0 8px 24px rgba(20,33,58,0.18);
+}
+#ls-player, #ls-player iframe, #ls-player video {
+  width: 100%; height: 100%; display: block; border: 0; background: #0A0F14;
+  object-fit: contain;
+}
+.ls-player-bar {
+  display: flex; align-items: center; gap: 10px; padding: 8px 2px 0; min-height: 34px;
+}
+.ls-src-note { font-size: 11px; color: #94A3B8; }
+
+/* Thẻ tầng C */
+.ls-card-c { position: relative; width: 100%; height: 100%; cursor: pointer; }
+.ls-card-cover { width: 100%; height: 100%; object-fit: cover; opacity: .92; }
+.ls-card-cover.ph { background: linear-gradient(135deg, #16242E, #1E3A44); }
+.ls-card-overlay {
+  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(180deg, transparent 45%, rgba(6,10,14,0.86));
+  padding: 18px;
+}
+.ls-card-live {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #E1173F; color: #fff; font-weight: 800; font-size: 13px;
+  padding: 9px 16px; border-radius: 22px; box-shadow: 0 0 18px rgba(225,23,63,0.6);
+}
+.ls-card-off { color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600; padding: 9px 4px; }
+
+/* Overlay "chạm để tiếp tục xem" */
+.ls-attn {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(6,10,14,0.82); backdrop-filter: blur(3px); z-index: 5;
+}
+.ls-attn-box { text-align: center; color: #fff; font-size: 14px; }
+.ls-attn-btn {
+  margin-top: 12px; padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+  background: var(--grad, linear-gradient(135deg, #182D3D, #1E5F63, #3FB6A8)); color: #fff;
+  font-weight: 800; font-size: 14px; box-shadow: 0 0 16px rgba(63,182,168,0.45);
+}
+
+/* ── Thẻ "của tôi" ── */
+#page-livestream .ls-me { margin-top: 12px; padding: 14px; }
+.ls-me-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ls-me-kpi { text-align: center; }
+.ls-me-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 24px; font-weight: 800; color: var(--magenta, #D6006C); letter-spacing: -0.5px;
+}
+.ls-me-lbl { font-size: 10.5px; color: #64748B; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+.ls-progress {
+  height: 12px; border-radius: 8px; background: #EAEEF0; overflow: hidden; margin-top: 12px;
+  box-shadow: inset 0 1px 2px rgba(20,33,58,0.08);
+}
+.ls-progress-fill {
+  height: 100%; width: 0; border-radius: 8px;
+  background: var(--grad, linear-gradient(135deg, #182D3D, #1E5F63, #3FB6A8));
+  box-shadow: 0 0 12px rgba(63,182,168,0.5); transition: width .5s ease;
+}
+.ls-khung {
+  margin-top: 10px; font-size: 12.5px; color: var(--teal-deep, #1E5F63);
+  background: #EEF6F5; border-radius: 10px; padding: 8px 12px;
+}
+
+/* ── Nút TikTok ── */
+.ls-tiktok-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 12px; padding: 13px 16px; border: none; border-radius: 12px;
+  background: #0F1214; color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15,18,20,0.35);
+}
+.ls-tiktok-btn:active { transform: scale(.985); }
+
+/* ── Dashboard ── */
+#page-livestream .ls-dash { margin-top: 14px; padding: 14px; }
+.ls-dash-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.ls-dash-head b { font-size: 13.5px; color: var(--ink, #14213A); }
+.ls-mini-btn {
+  border: 1px solid rgba(63,182,168,0.5); background: #fff; color: var(--teal-deep, #1E5F63);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 6px;
+}
+.ls-dash-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.ls-dash-kpis > div { background: #F8FAF9; border: 1px solid var(--line, #E6E2D8); border-radius: 10px; padding: 8px 6px; text-align: center; }
+.ls-dash-kpis b { display: block; font-size: 18px; color: var(--magenta, #D6006C); font-family: ui-monospace, Menlo, monospace; }
+.ls-dash-kpis span { font-size: 10px; color: #64748B; }
+.ls-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ls-tbl th { text-align: center; font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; color: #64748B; padding: 7px 6px; border-bottom: 1px solid var(--line, #E6E2D8); background: #FBFAF7; }
+.ls-tbl td { text-align: center; padding: 8px 6px; border-bottom: 1px solid #F0EEE6; }
+.ls-tbl .ls-td-ch { text-align: left; font-weight: 600; color: var(--ink, #14213A); word-break: break-word; }
+
+@media (max-width: 480px) {
+  .ls-player-wrap { height: min(52vh, 430px); }
+  .ls-dash-kpis { grid-template-columns: repeat(2, 1fr); }
+}
