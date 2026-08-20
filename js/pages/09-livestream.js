@@ -41,6 +41,7 @@ let _lsInviteShown = false;         // bảng mời vào TikTok: 1 lần/lượt
 let _lsPhLoai = 'UU_DIEM';
 let _lsPhAnh = null;                // {blob, dataUrl}
 let _lsDangChot = false;
+let _lsKenhDirty = false;           // admin vừa đổi kênh → refresh tab khi đóng panel
 
 function _lsPageActive() {
   var p = document.getElementById('page-livestream');
@@ -121,6 +122,7 @@ function _lsRender() {
   var isLive = !!k.is_live && !k.cu;
   var laQL = SESSION && (SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'QLNS');
   var laCH = typeof _laCuaHang === 'function' && _laCuaHang();
+  var laAdmin = SESSION && SESSION.vaiTro === 'ADMIN';
   var soLan = cfg.so_lan_ngay || 10;
 
   var tabsHtml = kenhs.map(function (x) {
@@ -171,13 +173,13 @@ function _lsRender() {
 
     ((laQL || laCH) ? ('<div class="ls-dash card" id="ls-dash"><div class="ls-dash-head">' +
       '<b>' + (laCH ? 'Cửa hàng của bạn hôm nay' : 'Toàn hệ thống hôm nay') + '</b>' +
-      '<span>' + (laQL ? '<button class="ls-mini-btn" onclick="lsChiaKhung()">⚡ Chia khung</button>' : '') +
+      '<span>' +
+      (laAdmin ? '<button class="ls-mini-btn" onclick="lsOpenAdminKenh()">⚙ Kênh</button>' : '') +
+      (laQL ? '<button class="ls-mini-btn" onclick="lsChiaKhung()">⚡ Chia khung</button>' : '') +
       '<button class="ls-mini-btn" onclick="lsTaiPhanHoiList()">💬 Phản hồi</button>' +
       '<button class="ls-mini-btn" onclick="lsTaiDash()">↻</button></span>' +
       '</div><div id="ls-dash-body" class="ls-dash-body">⏳</div>' +
-      '<div id="ls-ph-list" style="display:none"></div></div>') : '') +
-
-    '<div id="ls-modal-holder"></div>';
+      '<div id="ls-ph-list" style="display:none"></div></div>') : '');
 
   _lsCapNhatTienDo();
   if (laQL || laCH) lsTaiDash();
@@ -388,10 +390,14 @@ function _lsMoiVaoTikTok() {
   );
 }
 
-/* ════════════════ MODAL DÙNG CHUNG ════════════════ */
+/* ════════════════ MODAL DÙNG CHUNG (BODY-LEVEL — sống sót khi trang vẽ lại) ════════════════ */
+function _lsModalHolder() {
+  var h = document.getElementById('ls-modal-holder');
+  if (!h) { h = document.createElement('div'); h.id = 'ls-modal-holder'; document.body.appendChild(h); }
+  return h;
+}
 function _lsModal(innerHtml, btns) {
-  var holder = document.getElementById('ls-modal-holder');
-  if (!holder) return;
+  var holder = _lsModalHolder();
   holder.innerHTML =
     '<div class="ls-modal-ov" onclick="if(event.target===this)_lsDongModal()">' +
       '<div class="ls-modal-box">' + innerHtml +
@@ -406,6 +412,8 @@ function _lsModal(innerHtml, btns) {
 function _lsDongModal() {
   var holder = document.getElementById('ls-modal-holder');
   if (holder) holder.innerHTML = '';
+  // Admin vừa đổi kênh/KPI → giờ mới refresh tab (không wipe modal lúc đang mở)
+  if (_lsKenhDirty) { _lsKenhDirty = false; try { taiLivestream(true); } catch (e) {} }
 }
 
 /* ════════════════ PHẢN HỒI (ưu/khuyết/cải thiện + ảnh) ════════════════ */
@@ -628,8 +636,111 @@ async function lsChiaKhung() {
   }
 }
 
+/* ════════════════ ADMIN: QUẢN LÝ KÊNH + KPI (thêm kênh không cần sửa code) ════════════════ */
+async function lsOpenAdminKenh() {
+  _lsModal('<div class="ls-adm"><div class="ls-adm-title">⚙ Quản lý kênh Livestream</div><div id="ls-adm-body">⏳ Đang tải...</div></div>',
+    [{ txt: 'Đóng', cls: 'pri', fn: '_lsDongModal()' }]);
+  _lsRenderAdminKenh();
+}
+async function _lsRenderAdminKenh() {
+  var body = document.getElementById('ls-adm-body');
+  if (!body) return;
+  try {
+    var res = await supa.rpc('fn_ls_admin_kenh_list', { p_ma_admin: SESSION.ma });
+    if (res.error) throw res.error;
+    if (!res.data || !res.data.ok) throw new Error((res.data || {}).message || 'Không có quyền');
+    var ks = res.data.kenhs || [];
+    var cfg = res.data.cau_hinh || {};
+    var rows = ks.map(function (k) {
+      var liveTag = (k.is_live && !k.cu) ? '<span class="ls-adm-live">● LIVE</span>' : '';
+      return '<div class="ls-adm-row">' +
+        '<div class="ls-adm-info"><b>' + escHtml(k.ten) + '</b> ' + liveTag +
+          '<small>@' + escHtml(k.unique_id) + '</small></div>' +
+        '<div class="ls-adm-act">' +
+          '<button class="ls-adm-tg ' + (k.bat ? 'on' : '') + '" onclick="lsKenhToggle(\'' + k.kenh + '\',' + (!k.bat) + ')">' + (k.bat ? 'BẬT' : 'TẮT') + '</button>' +
+          '<button class="ls-adm-x" onclick="lsKenhXoa(\'' + k.kenh + '\',\'' + escHtml(k.ten).replace(/'/g, "\\'") + '\')">🗑</button>' +
+        '</div></div>';
+    }).join('');
+    body.innerHTML =
+      '<div class="ls-adm-list">' + (rows || '<div class="ls-empty-sm">Chưa có kênh nào.</div>') + '</div>' +
+      '<div class="ls-adm-add">' +
+        '<div class="ls-adm-sub">➕ Thêm kênh mới</div>' +
+        '<input id="ls-adm-ten" placeholder="Tên hiển thị (VD: Nón vải thời trang)">' +
+        '<input id="ls-adm-link" placeholder="Link hoặc @tài_khoản TikTok">' +
+        '<button class="ls-modal-btn pri" style="margin-top:8px" onclick="lsKenhThem()">Thêm kênh</button>' +
+      '</div>' +
+      '<div class="ls-adm-cfg">' +
+        '<div class="ls-adm-sub">🎯 Quy định KPI</div>' +
+        '<div class="ls-adm-cfg-row">' +
+          '<label>Số lượt/ngày<input id="ls-adm-solan" type="number" min="1" max="100" value="' + (cfg.so_lan_ngay || 10) + '"></label>' +
+          '<label>Phút tối thiểu/lượt<input id="ls-adm-phut" type="number" min="1" max="120" value="' + (cfg.phut_toi_thieu || 5) + '"></label>' +
+        '</div>' +
+        '<button class="ls-modal-btn" style="margin-top:8px" onclick="lsLuuConfig()">Lưu KPI</button>' +
+      '</div>' +
+      '<div id="ls-adm-msg" class="ls-ph-loi"></div>';
+  } catch (e) {
+    body.innerHTML = '<div class="ls-empty-sm">Lỗi: ' + escHtml((e && e.message) || '') + '</div>';
+  }
+}
+function _lsAdmMsg(m, ok) {
+  var el = document.getElementById('ls-adm-msg');
+  if (el) { el.textContent = m || ''; el.style.color = ok ? '#148A5C' : '#C6373C'; }
+}
+async function lsKenhThem() {
+  var ten = (document.getElementById('ls-adm-ten') || {}).value || '';
+  var link = (document.getElementById('ls-adm-link') || {}).value || '';
+  if (ten.trim().length < 2) { _lsAdmMsg('Nhập tên kênh'); return; }
+  if (!link.trim()) { _lsAdmMsg('Nhập link/@tài khoản TikTok'); return; }
+  _lsAdmMsg('Đang thêm...', true);
+  try {
+    var res = await supa.rpc('fn_ls_admin_kenh_upsert', {
+      p_ma_admin: SESSION.ma, p_kenh: null, p_ten: ten.trim(), p_link_or_handle: link.trim(), p_bat: true
+    });
+    if (res.error) throw res.error;
+    if (!res.data || !res.data.ok) throw new Error((res.data || {}).message || 'Lỗi');
+    _lsAdmMsg('✓ Đã thêm @' + res.data.handle, true);
+    _lsKenhDirty = true;   // refresh tab khi đóng panel (không wipe modal đang mở)
+    _lsRenderAdminKenh();
+  } catch (e) { _lsAdmMsg('Lỗi: ' + ((e && e.message) || '')); }
+}
+async function lsKenhToggle(kenh, bat) {
+  try {
+    var res = await supa.rpc('fn_ls_admin_kenh_bat', { p_ma_admin: SESSION.ma, p_kenh: kenh, p_bat: bat });
+    if (res.error) throw res.error;
+    _lsKenhDirty = true;
+    _lsRenderAdminKenh();
+  } catch (e) { _lsAdmMsg('Lỗi: ' + ((e && e.message) || '')); }
+}
+async function lsKenhXoa(kenh, ten) {
+  if (!window.confirm('Xóa kênh "' + ten + '"?\n(Lịch sử phiên/phản hồi vẫn giữ)')) return;
+  try {
+    var res = await supa.rpc('fn_ls_admin_kenh_xoa', { p_ma_admin: SESSION.ma, p_kenh: kenh });
+    if (res.error) throw res.error;
+    if (_lsKenh === kenh) _lsKenh = null;
+    _lsKenhDirty = true;
+    _lsRenderAdminKenh();
+  } catch (e) { _lsAdmMsg('Lỗi: ' + ((e && e.message) || '')); }
+}
+async function lsLuuConfig() {
+  var soLan = parseInt((document.getElementById('ls-adm-solan') || {}).value, 10);
+  var phut = parseInt((document.getElementById('ls-adm-phut') || {}).value, 10);
+  _lsAdmMsg('Đang lưu...', true);
+  try {
+    var res = await supa.rpc('fn_ls_admin_set_config', { p_ma_admin: SESSION.ma, p_so_lan: soLan || null, p_phut: phut || null });
+    if (res.error) throw res.error;
+    if (!res.data || !res.data.ok) throw new Error((res.data || {}).message || 'Lỗi');
+    _lsAdmMsg('✓ Đã lưu: ' + res.data.so_lan_ngay + ' lượt × ' + res.data.phut_toi_thieu + ' phút', true);
+    _lsKenhDirty = true;
+  } catch (e) { _lsAdmMsg('Lỗi: ' + ((e && e.message) || '')); }
+}
+
 /* Globals */
 window.lsInitPage = lsInitPage;
+window.lsOpenAdminKenh = lsOpenAdminKenh;
+window.lsKenhThem = lsKenhThem;
+window.lsKenhToggle = lsKenhToggle;
+window.lsKenhXoa = lsKenhXoa;
+window.lsLuuConfig = lsLuuConfig;
 window.lsChonKenh = lsChonKenh;
 window.lsMoTikTok = lsMoTikTok;
 window.lsBatTieng = lsBatTieng;

@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.58',
+  'sys.cache_version': 'v18.59',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -545,6 +545,11 @@ function hubRenderHeader(){
     const show=(cheDo==='live')||(SESSION.ma==='NS00490');
     dhCard.style.display = show ? '' : 'none';
   }
+  // [v18.59] Thẻ Livestream: hiện theo gate ls.bat (off→ẩn; ns00490→chỉ Aroma; all→tất cả)
+  const lsCard=document.getElementById('hub-card-livestream');
+  if(lsCard){
+    lsCard.style.display = (typeof _lsOn==='function' && _lsOn()) ? '' : 'none';
+  }
 }
 
 // ═══ [v13.51] HUB SUBMENU — gom chức năng con theo phân hệ ═══════════════
@@ -596,8 +601,14 @@ const HUB_GROUPS = {
     items: [
       { label:'Phiên bán hàng',     desc:'Mở/đóng phiên bán',     ic:_hubIc.cart,  roles:['QLNS','QLBH','CUA_HANG'], quyen:'banhang.phien',     act:()=>goToPage('banhang') },
       // [v18.32] "Dashboard bán hàng" cũ = thực chất báo cáo NHÂN SỰ → đã chuyển sang nhóm Chấm công & Nhân sự (đổi nhãn "Tổng quan nhân sự")
-      // [v18.57] LIVESTREAM — gate ls.bat (off→ẩn tất cả kể cả ADMIN; ns00490→chỉ Aroma; all→mọi người)
-      { label:'Livestream',         desc:'Xem live · điểm danh xem', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
+    ]
+  },
+  // [v18.59] LIVESTREAM = HUB RIÊNG cho MỌI vai trò. Gate động it.hien → _lsOn()
+  //   (ls.bat: off→ẩn cả ADMIN; ns00490→chỉ Aroma; all→toàn hệ thống). Quản lý kênh nằm TRONG trang (nút ⚙, chỉ ADMIN).
+  livestream: {
+    title: 'Livestream',
+    items: [
+      { label:'Livestream',         desc:'Xem live · điểm danh lượt', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
     ]
   },
   bangiao: {
