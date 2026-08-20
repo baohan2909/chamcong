@@ -364,7 +364,7 @@ function _craRenderBody(bodyEl){
         ${_renderAvatar(r.ma_nv, r.ten_nv_snapshot || r.ma_nv, 32)}
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600;color:#0F172A">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} <span style="font-size:11px;font-weight:400;color:#94A3B8">${r.ma_nv}</span></div>
-          <div style="font-size:11.5px;color:#64748B">${r.ten_ch_snapshot ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay) : adm2Esc(r.ma_ch || '')} · Vào ${gioVao}</div>
+          <div style="font-size:11.5px;color:#64748B">${r.ten_ch_snapshot ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay, r.ma_ch) : adm2Esc(r.ma_ch || '')} · Vào ${gioVao}</div>
         </div>
         ${badge}
       </div>`;
@@ -1153,7 +1153,7 @@ async function adm2DetailCCHomNay(bodyEl) {
       <div class="adm2-row">
         <div class="adm2-row-main">
           <div class="adm2-row-title">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} <span class="adm2-row-sub" style="font-weight:400">· ${adm2Esc(loaiMap[r.loai] || r.loai)}</span></div>
-          <div class="adm2-row-sub">${adm2FmtTime(r.thoi_gian)} · ${r.ten_ch_snapshot ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay) : adm2Esc(r.ma_ch || '')}</div>
+          <div class="adm2-row-sub">${adm2FmtTime(r.thoi_gian)} · ${r.ten_ch_snapshot ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay, r.ma_ch) : adm2Esc(r.ma_ch || '')}</div>
         </div>
       </div>
     `).join('');
@@ -1238,7 +1238,7 @@ async function adm2LoadCBList(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:#0F172A">${adm2Esc(r.ten_nv_snapshot || r.ma_nv)} · <strong>${adm2Esc(r.loai_canh_bao || '')}</strong>${badge}</div>
-            <div style="font-size:11px;color:#6B7280;margin-top:2px">${adm2Esc(r.ngay)}${r.gio_chamcong ? ' · '+String(r.gio_chamcong).substring(0,5) : ''}${r.ten_ch_snapshot ? ' · ' + (typeof _fmtChVoiDoiSale === 'function' ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay) : adm2Esc(r.ten_ch_snapshot)) : ''}</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px">${adm2Esc(r.ngay)}${r.gio_chamcong ? ' · '+String(r.gio_chamcong).substring(0,5) : ''}${r.ten_ch_snapshot ? ' · ' + (typeof _fmtChVoiDoiSale === 'function' ? _fmtChVoiDoiSale(r.ma_nv, r.ten_ch_snapshot, r.ngay, r.ma_ch) : adm2Esc(r.ten_ch_snapshot)) : ''}</div>
             ${noiDung}
             ${giaiTrinh}
             ${ghiChu}

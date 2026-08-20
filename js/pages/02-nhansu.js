@@ -1497,19 +1497,26 @@ function _getDoiSaleNV(maNV) {
 }
 
 // [v10.85] Format hiển thị CH với prefix đội sale
-// Ưu tiên window._doiSaleMap (build từ data thực) → fallback _getDoiSaleNV (NV cố định)
-function _fmtChVoiDoiSale(maNV, tenCH, ngay) {
+// [FIX 20/08] Ưu tiên map THEO MÃ CH TỪNG CA (window._doiSaleMapByCH) — chỉ ca CÓ chấm đội sale
+//   mới gắn nhãn; ca làm CHÍNH cùng ngày ở CH khác KHÔNG bị lây. (Trước gom cả ngày → sai.)
+//   Truyền maCH (mã CH thực của ca) để tra chính xác. Không có maCH → giữ hành vi cũ (day-level).
+function _fmtChVoiDoiSale(maNV, tenCH, ngay, maCH) {
   if (!tenCH) return '';
-  // Bản ghi này TẠI Đội SALE → tô tím nguyên tên
+  // Bản ghi này TẠI Đội SALE → tô nguyên tên
   if (/đội\s*sale/i.test(tenCH)) {
     return `<span style="color:#0F766E;font-weight:600">${escHtml(tenCH)}</span>`;
   }
-  // Có map từ data thực + ngày → check cùng ngày NV có chấm tại đội nào không
+  // [FIX] Có mã CH + map theo CH → chỉ ca CH này thực sự chấm đội sale mới gắn nhãn
+  if (maCH && ngay && window._doiSaleMapByCH) {
+    const doi = window._doiSaleMapByCH[maNV + ':' + ngay + ':' + maCH];
+    if (doi) return `<span style="color:#0F766E;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
+    return escHtml(tenCH);   // ca này KHÔNG phải đội sale → tên thường (không lây cả ngày)
+  }
+  // (Call site cũ không truyền mã CH) — map cả ngày, rồi fallback NV cố định
   if (ngay && window._doiSaleMap) {
     const doi = window._doiSaleMap[maNV + ':' + ngay];
     if (doi) return `<span style="color:#0F766E;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
   }
-  // Fallback: NV có CH mặc định là đội sale (case NV cố định)
   const doi = _getDoiSaleNV(maNV);
   if (doi) return `<span style="color:#0F766E;font-weight:600">${escHtml(doi)}</span> - ${escHtml(tenCH)}`;
   return escHtml(tenCH);
@@ -1521,38 +1528,42 @@ function _fmtChVoiDoiSale(maNV, tenCH, ngay) {
 //   2) device_info match "[SALE_ORIGIN:ma|ten]" hoặc "[SALE_TARGET:ma|ten]" (data v9.57+, format CŨ)
 //   3) ghi_chu match "[Đội SALE XX] hỗ trợ..." (data v10.78+, format MỚI)
 function _buildDoiSaleMap(records) {
-  const map = {};
-  if (!Array.isArray(records)) return map;
+  const map = {};      // day-level (tương thích ngược): maNV:ngay -> nhãn
+  const byCH = {};     // [FIX 20/08] per-ca: maNV:ngay:maCHthực -> nhãn (đúng từng ca)
+  if (!Array.isArray(records)) { window._doiSaleMapByCH = byCH; return map; }
+  // Nhận diện nhãn đội sale/cơ động của 1 bản ghi (3 nguồn)
+  const _nhan = (r) => {
+    const ten = r.ten_ch_snapshot || r.tenCH || '';
+    if (/đội\s*sale/i.test(ten)) { const m = ten.match(/(đội\s*sale\s*\d+)/i); return m ? m[1].trim() : ten.trim(); }
+    const di = r.device_info || r.deviceInfo || '';
+    if (di) {
+      const mNew = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i);
+      const mOld = di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
+      if (mNew) return mNew[1].trim();
+      if (mOld) return mOld[1].trim();
+    }
+    const ghi = r.ghi_chu || r.ghiChu || '';
+    if (ghi) {
+      // [v16.2] Bắt cả "[Cơ Động]" (không chỉ Đội SALE)
+      const m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
+      if (m) return m[1].trim();
+    }
+    return null;
+  };
   records.forEach(r => {
     if (!r) return;
     const maNV = r.ma_nv || r.maNV || '';
     const ngay = r.ngay || '';
     if (!maNV || !ngay) return;
+    const nhan = _nhan(r);
+    if (!nhan) return;
     const key = maNV + ':' + ngay;
-    if (map[key]) return;
-    // 1) ten_ch_snapshot
-    const ten = r.ten_ch_snapshot || r.tenCH || '';
-    if (/đội\s*sale/i.test(ten)) {
-      const m = ten.match(/(đội\s*sale\s*\d+)/i);
-      map[key] = m ? m[1].trim() : ten.trim();
-      return;
-    }
-    // 2) device_info format cũ
-    const di = r.device_info || r.deviceInfo || '';
-    if (di) {
-      const mNew = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i);
-      const mOld = di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
-      if (mNew) { map[key] = mNew[1].trim(); return; }
-      if (mOld) { map[key] = mOld[1].trim(); return; }
-    }
-    // 3) ghi_chu format mới
-    const ghi = r.ghi_chu || r.ghiChu || '';
-    if (ghi) {
-      // [v16.2] Bắt cả "[Cơ Động]" (không chỉ Đội SALE) → hiển thị ghép "Cơ Động - CH"
-      const m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
-      if (m) map[key] = m[1].trim();
-    }
+    if (!map[key]) map[key] = nhan;                       // day-level: nhãn đầu tiên trong ngày
+    // [FIX] per-ca: gắn vào MÃ CH THỰC (ưu tiên ma_ch_dieu_chinh) — đúng cửa hàng đã chấm đội sale
+    const effCH = r.ma_ch_dieu_chinh || r.maCHDieuChinh || r.ma_ch || r.maCH || '';
+    if (effCH) byCH[key + ':' + effCH] = nhan;
   });
+  window._doiSaleMapByCH = byCH;
   return map;
 }
 
@@ -1567,12 +1578,12 @@ async function _loadDoiSaleMapForRecords(records) {
   const maxNgay = ngayList[ngayList.length - 1];
   try {
     const { data } = await supa.from('cham_cong')
-      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info')
+      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
       .in('ma_nv', uniqueNV)
       .gte('ngay', minNgay)
       .lte('ngay', maxNgay)
       .limit(5000);
-    return _buildDoiSaleMap(data || []);
+    return _buildDoiSaleMap(data || []);   // [FIX 20/08] có ma_ch → build byCH cho tra đội sale THEO CA
   } catch (e) {
     return _buildDoiSaleMap(records);
   }

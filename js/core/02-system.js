@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.59',
+  'sys.cache_version': 'v18.60',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2461,7 +2461,7 @@ function taiGioCong(){
   Promise.all([
     supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang }),
     supa.from('cham_cong')
-      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info')
+      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
       .eq('ma_nv', SESSION.ma)
       .gte('ngay', ngayDau)
       .lte('ngay', ngayCuoi)
@@ -2571,8 +2571,9 @@ function _renderGioCongTable(){
     caps.forEach((p, idx) => {
       // [v10.85] Prefix Đội SALE nếu cùng ngày NV có chấm tại Đội SALE
       const _maNV = SESSION && SESSION.ma;
-      const tenVao = p.tenCHVao ? _fmtChVoiDoiSale(_maNV, p.tenCHVao, ngay) : (p.maCHVao || '');
-      const tenRa  = p.tenCHRa  ? _fmtChVoiDoiSale(_maNV, p.tenCHRa,  ngay) : (p.maCHRa  || '');
+      // [FIX 20/08] truyền MÃ CH từng ca → nhận diện đội sale THEO CA (ca làm chính không bị lây nhãn)
+      const tenVao = p.tenCHVao ? _fmtChVoiDoiSale(_maNV, p.tenCHVao, ngay, p.maCHVao) : (p.maCHVao || '');
+      const tenRa  = p.tenCHRa  ? _fmtChVoiDoiSale(_maNV, p.tenCHRa,  ngay, p.maCHRa)  : (p.maCHRa  || '');
       // [v8.2 - hotfix] Hiện cả 2 CH nếu khác nhau, xuống dòng cho dễ đọc, KHÔNG cắt cụt
       const khacCH = (p.tenCHVao && p.tenCHRa && p.maCHVao !== p.maCHRa);
       let chHtml;
@@ -3016,12 +3017,21 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
   document.getElementById('gcql-detail-tong-gio').textContent = '--';
   modal.style.display = 'flex';
 
-  supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: maNV, p_thang: thang })
-  .then(({ data: d, error }) => {
+  // [FIX 20/08] Build doiMap RIÊNG cho NV này (theo mã CH từng ca) — modal trước đây dùng map cũ (sai NV)
+  const _lastD = new Date(Number(thang.substring(0,4)), Number(thang.substring(5,7)), 0).getDate();
+  Promise.all([
+    supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: maNV, p_thang: thang }),
+    supa.from('cham_cong')
+      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
+      .eq('ma_nv', maNV).gte('ngay', thang + '-01').lte('ngay', thang + '-' + String(_lastD).padStart(2,'0'))
+  ])
+  .then(([gcRes, ccRes]) => {
+    let d = gcRes.data; const error = gcRes.error;
     if (error || !d) {
       document.getElementById('gcql-detail-content').innerHTML = '<div class="gc-empty" style="color:var(--red)">Lỗi tải dữ liệu.</div>';
       return;
     }
+    window._doiSaleMap = _buildDoiSaleMap(ccRes.data || []);
     // [v8.2] Parse string nếu cần
     if (typeof d === 'string') {
       try { d = JSON.parse(d); } catch(e) {
