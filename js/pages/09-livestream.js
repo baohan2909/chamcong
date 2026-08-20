@@ -42,6 +42,7 @@ let _lsPhLoai = 'UU_DIEM';
 let _lsPhAnh = null;                // {blob, dataUrl}
 let _lsDangChot = false;
 let _lsKenhDirty = false;           // admin vừa đổi kênh → refresh tab khi đóng panel
+let _lsChoSettings = false;         // [v18.61] đang chờ app_settings về để quyết định gate
 
 function _lsPageActive() {
   var p = document.getElementById('page-livestream');
@@ -67,6 +68,20 @@ function lsInitPage() {
   var root = document.getElementById('ls-root');
   if (!root) return;
   if (!_lsOn()) {
+    // [v18.61 — FIX "trang lúc hiển thị lúc không"] Cold start: app_settings có thể CHƯA về
+    //   → ĐỪNG vội kết luận "chưa được bật". Hiện Đang tải + chờ _settingsReady (resolve cả khi
+    //   RPC lỗi) rồi chạy lại 1 lần; lúc đó vẫn off thật → mới báo "chưa được bật".
+    if (!window._settingsLoaded && window._settingsReady) {
+      root.innerHTML = '<div class="ls-empty">⏳ Đang tải...</div>';
+      if (!_lsChoSettings) {
+        _lsChoSettings = true;
+        window._settingsReady.then(function () {
+          _lsChoSettings = false;
+          if (_lsPageActive()) lsInitPage();
+        });
+      }
+      return;
+    }
     root.innerHTML = '<div class="ls-empty">Phân hệ Livestream chưa được bật.</div>';
     return;
   }

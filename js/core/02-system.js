@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.60',
+  'sys.cache_version': 'v18.61',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -53,19 +53,42 @@ function _getSetting(key, defaultValue){
   return v;
 }
 
+// [v18.61] Cờ + promise "settings đã về" — UI gate động (ls.bat, donhang.che_do...) chờ cái này
+//   thay vì kết luận sai lúc cold start (RPC chưa về → _getSetting trả default 'off').
+window._settingsLoaded = false;
+let _settingsReadyResolve = null;
+window._settingsReady = new Promise(function(res){ _settingsReadyResolve = res; });
+
 async function _loadAllSettings(){
-  if (!supa) return;
+  if (!supa) { _settingsDone(false); return; }
+  let ok = false;
   try {
     const { data, error } = await supa.rpc('fn_get_all_settings');
     if (!error && data) {
       // data là jsonb object { key: value }
       window.APP_SETTINGS = data;
-      // Cache vào sessionStorage để khởi động nhanh
-      try { sessionStorage.setItem('_app_settings', JSON.stringify(data)); } catch(e){}
+      // [v18.61] Cache localStorage (BỀN qua PWA bị kill/relaunch) — trước là sessionStorage
+      //   nên mỗi cold start mất sạch → gate đọc 'off' ở frame đầu → hub "lúc hiển thị lúc không"
+      try { localStorage.setItem('_app_settings', JSON.stringify(data)); } catch(e){}
       console.log('[settings] loaded', Object.keys(data).length, 'keys');
       _applySettingsToRuntime();
+      ok = true;
     }
   } catch(e){ console.warn('[loadSettings]', e.message); }
+  _settingsDone(ok);
+}
+
+// [v18.61 — FIX "hub Livestream lúc hiển thị lúc không"] Settings đã về (hoặc fail):
+//   1) mở khóa mọi chỗ đang chờ (_settingsReady) — trang Livestream đang "Đang tải" sẽ tự init lại;
+//   2) nếu OK → VẼ LẠI các UI phụ thuộc gate động: thẻ hub Trang chủ + sidebar/drawer/bottom-nav v18.
+//   GỐC BUG: khoiDongApp render hub+sidebar NGAY khi khởi động, còn _loadAllSettings chạy async về
+//   sau vài trăm ms mà KHÔNG ai vẽ lại → gate ls.bat bị chốt theo giá trị lúc chưa load.
+function _settingsDone(ok){
+  window._settingsLoaded = true;
+  try { if (_settingsReadyResolve) { _settingsReadyResolve(ok); _settingsReadyResolve = null; } } catch(e){}
+  if (!ok) return;
+  try { if (currentPage === 'home' && typeof hubRenderHeader === 'function') hubRenderHeader(); } catch(e){}
+  try { if (typeof ns18InitShell === 'function') ns18InitShell(); } catch(e){}
 }
 
 // Áp settings ngay sau khi load (cho biến runtime cần đổi)
@@ -111,8 +134,9 @@ function _hideMaintenanceBanner(){
 }
 
 // Load cached settings sớm (trước khi RPC về) để có gì áp ngay
+// [v18.61] Đọc localStorage (bền) trước; sessionStorage cũ chỉ còn là fallback migration 1 lần
 try {
-  const cached = sessionStorage.getItem('_app_settings');
+  const cached = localStorage.getItem('_app_settings') || sessionStorage.getItem('_app_settings');
   if (cached) window.APP_SETTINGS = JSON.parse(cached);
 } catch(e){}
 

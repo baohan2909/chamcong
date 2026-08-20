@@ -697,7 +697,7 @@ async function _setSave(key){
       return;
     }
     window.APP_SETTINGS[key] = value;
-    try { sessionStorage.setItem('_app_settings', JSON.stringify(window.APP_SETTINGS)); } catch(e){}
+    try { localStorage.setItem('_app_settings', JSON.stringify(window.APP_SETTINGS)); } catch(e){}   // [v18.61] localStorage đồng bộ cache boot
     _applySettingsToRuntime();
     showToast('✓ Đã kích hoạt: ' + key, 'ok');
     if (btn) { btn.textContent = 'Kích hoạt'; btn.classList.remove('is-dirty'); }
@@ -789,7 +789,7 @@ async function settingsSaveItem(key, rawValue, type){
     }
     // Update local cache
     window.APP_SETTINGS[key] = value;
-    try { sessionStorage.setItem('_app_settings', JSON.stringify(window.APP_SETTINGS)); } catch(e){}
+    try { localStorage.setItem('_app_settings', JSON.stringify(window.APP_SETTINGS)); } catch(e){}   // [v18.61] localStorage đồng bộ cache boot
     _applySettingsToRuntime();
     showToast('✓ Đã lưu', 'ok');
   } catch(e) { showToast('⚠ ' + e.message, 'warn'); }
