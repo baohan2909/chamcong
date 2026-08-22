@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.62',
+  'sys.cache_version': 'v18.63',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -362,6 +362,7 @@ const PAGE_TITLES={
   'home':      '',
   'livestream':'LIVESTREAM',   // [v18.57]
   'ls-control':'KIỂM SOÁT LIVESTREAM',   // [v18.62]
+  'ls-feedback':'CHI TIẾT PHẢN HỒI',   // [v18.63]
   'donhang':   '',
   'donhang-nhan': '',
   'donhang-ql': '',
@@ -526,6 +527,7 @@ function goToPage(page){
   else { if(typeof nvaiPageLeave==='function') nvaiPageLeave(); }
   if(page==='livestream')   { if(typeof lsInitPage==='function') lsInitPage(); }      // [v18.57] Livestream
   if(page==='ls-control')   { if(typeof lscInitPage==='function') lscInitPage(); }    // [v18.62] Trung tâm kiểm soát LS
+  if(page==='ls-feedback')  { if(typeof lsfInitPage==='function') lsfInitPage(); }    // [v18.63] Chi tiết phản hồi
   if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='donhang-nhan') { if(typeof dhNhanInit==='function') dhNhanInit(); }  // [v13.45] CH nhận đơn
   else { if(typeof dhNhanLeave==='function') dhNhanLeave(); }
@@ -636,6 +638,7 @@ const HUB_GROUPS = {
     items: [
       { label:'Livestream',         desc:'Xem live · điểm danh lượt', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
       { label:'Kiểm soát Livestream', desc:'Tần suất · phản hồi · toàn cảnh', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>', roles:['QLNS','ADMIN'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-control') },   // [v18.62] Admin+QLNS
+      { label:'Chi tiết phản hồi', desc:'Soi phản hồi + ảnh · ai đã xem', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', roles:['QLNS','ADMIN'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-feedback') },   // [v18.63] Admin+QLNS
     ]
   },
   bangiao: {

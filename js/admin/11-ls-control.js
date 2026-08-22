@@ -100,6 +100,7 @@ function _lscShellHTML() {
       '<div class="lsc-card"><div class="lsc-card-h"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span><h2>Xếp hạng cửa hàng</h2></div>' +
         '<div id="lsc-ch" class="lsc-rank"></div></div>' +
     '</div>' +
+    '<div class="lsc-modal-ov" id="lsc-modal-ov"></div>' +
     '<div class="lsc-lightbox" id="lsc-lightbox"><button class="x" onclick="lscCloseAnh()">×</button><img id="lsc-lightbox-img" src="" alt=""></div>';
 }
 
@@ -192,8 +193,8 @@ function _lscRenderKPI() {
     _lscKpi('', 'NV tham gia', _lscNum(soNV), (t.so_ngay_ky || 0) + ' ngày') +
     _lscKpi('k-green', 'Đạt KPI ' + (t.so_lan_ngay || 10) + ' lượt', _lscNum(soDat), pctDat + '% tổng NV') +
     _lscKpi('k-mag', 'Tổng lượt xem', _lscNum(t.tong_luot || 0), 'TB ' + String(tbLuot).replace('.', ',') + ' lượt/NV') +
-    _lscKpi('k-blue', 'Phút TikTok', _lscNum(t.tong_phut || 0), '≈ ' + _lscNum(Math.round((t.tong_phut || 0) / 60)) + ' giờ') +
-    _lscKpi('k-amber', 'Phản hồi', _lscNum(t.tong_phan_hoi || 0), (t.ph_co_anh || 0) + ' kèm ảnh') +
+    _lscKpi('', 'Phút TikTok', _lscNum(t.tong_phut || 0), '≈ ' + _lscNum(Math.round((t.tong_phut || 0) / 60)) + ' giờ') +
+    _lscKpi('k-mag', 'Phản hồi', _lscNum(t.tong_phan_hoi || 0), (t.ph_co_anh || 0) + ' kèm ảnh') +
     _lscKpi('k-red', 'Tỉ lệ có phản hồi', pctPh + '%', (t.so_nv_co_ph || 0) + ' NV');
 }
 function _lscKpi(cls, lbl, val, sub) {
@@ -253,25 +254,29 @@ function _lscRenderTS() {
   });
   thead += '</tr></thead>';
   var sngay = (_lscTQ && _lscTQ.so_ngay_ky) || 7;
+  var caret = '<svg class="lsc-caret" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>';
   var body = '<tbody>';
   _lscTS.forEach(function (n) {
     var md = n.muc_do === 'TICH_CUC' ? ['ok', 'Tích cực'] : n.muc_do === 'IT' ? ['low', 'Ít tham gia'] : ['mid', 'Trung bình'];
-    body += '<tr>' +
+    body += '<tr class="clk" data-nv="' + _lscEsc(n.ma_nv) + '" title="Xem chi tiết ' + _lscEsc(n.ten_nv || n.ma_nv) + '">' +
       '<td><div class="lsc-nv"><span class="lsc-av" style="background:' + _lscAvColor(n.ma_nv) + '">' + _lscEsc(_lscInitials(n.ten_nv, n.ma_nv)) + '</span>' +
         '<div><div class="nm">' + _lscEsc(n.ten_nv || n.ma_nv) + '</div><div class="mc">' + _lscEsc(n.ma_nv) + '</div></div></div></td>' +
       '<td class="lsc-td-ch">' + _lscEsc(n.ten_ch || '—') + '</td>' +
-      '<td class="r"><span class="lsc-big">' + (n.so_ngay_tham_gia || 0) + '</span><span style="color:var(--text-lt)">/' + sngay + '</span></td>' +
+      '<td class="r"><span class="lsc-big">' + (n.so_ngay_tham_gia || 0) + '</span><span style="color:var(--ink-3)">/' + sngay + '</span></td>' +
       '<td class="r lsc-big">' + _lscNum(n.tong_luot || 0) + '</td>' +
       '<td class="r lsc-num">' + String(n.tb_luot || 0).replace('.', ',') + '</td>' +
       '<td class="r lsc-num">' + _lscNum(n.tong_phut || 0) + '′</td>' +
-      '<td class="r ' + ((n.so_phan_hoi || 0) === 0 ? '' : 'lsc-big') + '"' + ((n.so_phan_hoi || 0) === 0 ? ' style="color:var(--red)"' : '') + '>' + (n.so_phan_hoi || 0) + '</td>' +
-      '<td><span class="lsc-chip ' + md[0] + '">' + md[1] + '</span></td>' +
+      '<td class="r ' + ((n.so_phan_hoi || 0) === 0 ? '' : 'lsc-big') + '"' + ((n.so_phan_hoi || 0) === 0 ? ' style="color:#C6373C"' : '') + '>' + (n.so_phan_hoi || 0) + '</td>' +
+      '<td><span style="display:inline-flex;align-items:center;gap:6px"><span class="lsc-chip ' + md[0] + '">' + md[1] + '</span>' + caret + '</span></td>' +
       '</tr>';
   });
   body += '</tbody>';
   el.innerHTML = '<table class="lsc-tbl">' + thead + body + '</table>';
   el.querySelectorAll('th[data-col]').forEach(function (th) {
     th.addEventListener('click', function () { lscSortTS(th.getAttribute('data-col')); });
+  });
+  el.querySelectorAll('tr.clk').forEach(function (tr) {
+    tr.addEventListener('click', function () { lscOpenNV(tr.getAttribute('data-nv')); });
   });
 }
 function _lscSortTSData() {
@@ -387,8 +392,65 @@ function lscExportCsv() {
   if (typeof showToast === 'function') showToast('✓ Đã xuất ' + _lscTS.length + ' NV ra CSV', 'ok');
 }
 
+/* ─── Chi tiết 1 nhân viên (bấm dòng bảng tần suất) ─── */
+async function lscOpenNV(maNV) {
+  var ov = document.getElementById('lsc-modal-ov');
+  if (!ov || !maNV) return;
+  ov.innerHTML = '<div class="lsc-modal"><div class="lsc-loading">⏳ Đang tải hồ sơ…</div></div>';
+  ov.classList.add('show');
+  ov.onclick = function (e) { if (e.target === ov) lscCloseNV(); };
+  try {
+    var r = await supa.rpc('fn_ls_control_nv', { p_ma_admin: SESSION.ma, p_ma_nv: maNV, p_tu: _lscTu, p_den: _lscDen });
+    if (r.error) throw r.error;
+    var d = r.data || {};
+    if (d.ok === false) { ov.querySelector('.lsc-modal').innerHTML = '<div class="lsc-err">' + _lscEsc(d.error || 'Lỗi') + '</div>'; return; }
+    _lscRenderNVModal(ov, d);
+  } catch (e) {
+    var m = ov.querySelector('.lsc-modal'); if (m) m.innerHTML = '<div class="lsc-err">Lỗi tải: ' + _lscEsc((e && e.message) || '') + '</div>';
+  }
+}
+function lscCloseNV() { var ov = document.getElementById('lsc-modal-ov'); if (ov) { ov.classList.remove('show'); ov.innerHTML = ''; } }
+function _lscMStat(v, l) { return '<div><b>' + _lscEsc(v) + '</b><span>' + _lscEsc(l) + '</span></div>'; }
+function _lscRenderNVModal(ov, d) {
+  var nv = d.nv || {}, ngay = d.theo_ngay || [], ph = d.phan_hoi || [];
+  var TAG = { UU_DIEM: ['uu', 'Ưu điểm'], KHUYET_DIEM: ['khuyet', 'Khuyết điểm'], CAI_THIEN: ['cai', 'Cải thiện'] };
+  var h = '<div class="lsc-modal">' +
+    '<div class="lsc-modal-hero"><button class="lsc-modal-x" onclick="lscCloseNV()">×</button>' +
+      '<div class="lsc-modal-prof"><span class="av">' + _lscEsc(_lscInitials(nv.ten_nv, nv.ma_nv)) + '</span>' +
+        '<div><div class="nm">' + _lscEsc(nv.ten_nv || nv.ma_nv) + '</div>' +
+        '<div class="mt">' + _lscEsc(nv.ma_nv) + (nv.chuc_vu ? ' · ' + _lscEsc(nv.chuc_vu) : '') + (nv.khu_vuc ? ' · ' + _lscEsc(nv.khu_vuc) : '') + '</div></div></div>' +
+    '</div>' +
+    '<div class="lsc-modal-stat">' +
+      _lscMStat(nv.so_ngay_tham_gia || 0, 'Ngày TG') + _lscMStat(_lscNum(nv.tong_luot || 0), 'Tổng lượt') +
+      _lscMStat(_lscNum(nv.tong_phut || 0) + '′', 'Phút TT') + _lscMStat(nv.so_ngay_dat || 0, 'Ngày đạt') +
+    '</div>';
+  h += '<div class="lsc-modal-sec"><h3>Theo ngày</h3>';
+  if (!ngay.length) h += '<div class="lsc-empty" style="padding:12px">Không có ngày tham gia trong kỳ.</div>';
+  ngay.forEach(function (g) {
+    h += '<div class="lsc-day"><span class="dd">' + _lscEsc(g.ngay) + '</span>' +
+      '<span class="mt">' + (g.luot || 0) + ' lượt · ' + (g.phut || 0) + '′ · ' + (g.phan_hoi || 0) + ' PH</span>' +
+      '<span class="dt ' + (g.dat ? 'ok' : 'no') + '">' + (g.dat ? 'Đạt' : 'Chưa') + '</span></div>';
+  });
+  h += '</div><div class="lsc-modal-sec"><h3>Phản hồi (' + ph.length + ')</h3>';
+  if (!ph.length) h += '<div class="lsc-empty" style="padding:12px">Chưa có phản hồi trong kỳ.</div>';
+  ph.forEach(function (p) {
+    var tg = TAG[p.loai] || ['khac', 'Khác'];
+    h += '<div class="lsc-fb" style="background:#fff;margin-bottom:8px">';
+    if (p.anh_url) h += '<div class="lsc-fb-thumb" onclick="lscOpenAnh(\'' + _lscEsc(p.anh_url).replace(/'/g, "\\'") + '\')"><img loading="lazy" src="' + _lscEsc(p.anh_url) + '"></div>';
+    h += '<div class="lsc-fb-body"><div class="lsc-fb-top"><span class="lsc-fb-tag ' + tg[0] + '">' + tg[1] + '</span>' +
+      '<span class="lsc-fb-meta">' + _lscEsc(p.khi || '') + '</span></div>' +
+      '<div class="lsc-fb-txt">' + _lscEsc(p.noi_dung || '') + '</div>' +
+      '<div class="lsc-fb-ch">' + _lscEsc(p.ten_ch || '—') + '</div></div></div>';
+  });
+  h += '</div></div>';
+  ov.innerHTML = h;
+  ov.onclick = function (e) { if (e.target === ov) lscCloseNV(); };
+}
+
 /* Globals */
 window.lscInitPage = lscInitPage;
+window.lscOpenNV = lscOpenNV;
+window.lscCloseNV = lscCloseNV;
 window.lscSetRange = lscSetRange;
 window.lscApplyCustom = lscApplyCustom;
 window.lscReload = lscReload;
