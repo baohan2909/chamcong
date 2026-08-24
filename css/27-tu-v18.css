@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════
    [v18.65] PHÂN HỆ TẠM ỨNG — TÁI DÙNG class .tn-* (css/25-tn-v18.css).
    File này chỉ: cấp token --tn-* cho #page-tu/#page-tu-admin + re-scope các
-   rule admin vốn khóa #page-tn-admin. Mọi class global (.tn-slip/.tn-hero/
-   .tn-who/.tn-grp/.tn-btn-*/.tn-apv-* body-level…) dùng lại nguyên.
+   rule admin von khoa #page-tn-admin. Moi class global (.tn-slip .tn-hero
+   .tn-who .tn-grp .tn-btn .tn-apv body-level) dung lai nguyen.
    ═══════════════════════════════════════════════════════════════════════ */
 #page-tu, #page-tu-admin{
   --tn-grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 55%,#3FB6A8 100%);
