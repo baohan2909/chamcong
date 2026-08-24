@@ -227,6 +227,12 @@ function tuParseCsv(text){
 function tuCsvLine(line){ const r=[]; let cur='',q=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(q){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; } else { if(ch==='"')q=true; else if(ch===','){r.push(cur);cur='';} else cur+=ch; } } r.push(cur); return r; }
 function tuAdminDoSync(ky,ten,rows){
   if(!rows||!rows.length){ if(typeof showToast==='function')showToast('⚠ Không nhận được dòng nào — ĐÃ HỦY để tránh mất dữ liệu.','err'); return; }
+  // [v18.66] Chặn nạp bậy: rows phải có shape TU (muc_ung / ma_bh). GAS chưa hỗ trợ ?sheet=TU
+  //   sẽ trả về data sheet TN (thiếu 2 key này) → báo rõ thay vì lưu sai.
+  if(rows[0] && rows[0].muc_ung===undefined && rows[0].ma_bh===undefined){
+    if(typeof showToast==='function')showToast('⚠ Nguồn trả SAI sheet (không phải TU). GAS chưa nhận ?sheet=TU — hãy dùng "Tải CSV", hoặc deploy lại GAS (đảm bảo CHỈ 1 hàm doGet).','err');
+    return;
+  }
   const replace=!!(document.getElementById('tu-sync-replace')||{}).checked;
   const _write=()=>{
     supa.rpc('fn_tu_sync',{p_ma:TU.ma,p_password:TU.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
