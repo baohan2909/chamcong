@@ -1,0 +1,72 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   [v18.65] PHÂN HỆ TẠM ỨNG — TÁI DÙNG class .tn-* (css/25-tn-v18.css).
+   File này chỉ: cấp token --tn-* cho #page-tu/#page-tu-admin + re-scope các
+   rule admin vốn khóa #page-tn-admin. Mọi class global (.tn-slip/.tn-hero/
+   .tn-who/.tn-grp/.tn-btn-*/.tn-apv-* body-level…) dùng lại nguyên.
+   ═══════════════════════════════════════════════════════════════════════ */
+#page-tu.ns18, #page-tu-admin.ns18{
+  --tn-grad:linear-gradient(135deg,#182D3D 0%,#1E5F63 55%,#3FB6A8 100%);
+  --tn-teal:#1E5F63; --tn-teal2:#3FB6A8; --tn-mag:#D6006C; --tn-gold:#CBA45A;
+  --tn-ink:#14213A; --tn-ink2:#4A5670; --tn-ink3:#8894A0; --tn-line:#E6E2D8;
+  --tn-surf:#FFFFFF; --tn-bg:#F5F6F4; --tn-glow:0 0 16px rgba(63,182,168,.42);
+  --tn-sh:0 1px 2px rgba(20,33,58,.05),0 10px 30px rgba(20,33,58,.07);
+  background:var(--tn-bg)!important; color:var(--tn-ink);
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+}
+#page-tu.ns18 *,#page-tu-admin.ns18 *{box-sizing:border-box}
+#page-tu.ns18 #tu-body, #page-tu-admin.ns18 #tu-ad-body{max-width:760px;margin:0 auto;padding:0 2px}
+#page-tu-admin.ns18 #tu-ad-body{max-width:1040px}
+#page-tu.ns18 .tn-gate,#page-tu-admin.ns18 .tn-gate{
+  max-width:400px;margin:24px auto;background:var(--tn-surf);border:1px solid var(--tn-line);
+  border-radius:18px;box-shadow:var(--tn-sh);padding:30px 26px;text-align:center}
+
+/* ── Ghi chú cuối phiếu tạm ứng (Phòng NS · Zalo · ngày nhận) ── */
+.tu-note{margin-top:14px;padding:15px 17px;background:#FBFCFB;border:1px solid var(--tn-line);border-radius:14px;
+  font-size:12.7px;color:var(--tn-ink2);line-height:1.65}
+.tu-note .hd{font-weight:800;color:var(--tn-ink);margin-bottom:7px}
+.tu-note ul{margin:0;padding-left:17px}
+.tu-note li{margin:3px 0}
+.tu-note b{color:var(--tn-ink);font-weight:700}
+.tu-note .zalo{color:var(--tn-teal);font-weight:800}
+.tu-note .hl{background:#FEF3C7;padding:1px 5px;border-radius:4px;font-weight:700;color:#7A5A00}
+.tu-note .thanks{margin-top:9px;font-weight:700;color:var(--tn-ink)}
+
+/* ── Admin re-scope (copy TN, đổi #page-tn-admin → #page-tu-admin) ── */
+#page-tu-admin.ns18 .tn-nv-open{display:block; width:100%; text-align:left; background:none; border:none;
+  padding:3px 4px; margin:-3px -4px; font:inherit; cursor:pointer; border-radius:7px; transition:background .12s}
+#page-tu-admin.ns18 .tn-nv-open:hover{background:#EEF6F5}
+#page-tu-admin.ns18 .tn-nv-open b{display:block; color:var(--tn-teal2); font-size:13.5px; font-weight:700}
+#page-tu-admin.ns18 .tn-nv-open small{display:block; color:var(--tn-ink3); font-size:11px; margin-top:1px}
+#page-tu-admin.ns18 .tn-nv-open:hover b{text-decoration:underline}
+#page-tu-admin.ns18 .tn-ad-tools{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 10px}
+#page-tu-admin.ns18 .tn-ad-search{flex:1; min-width:210px; display:flex; align-items:center; gap:8px;
+  background:#fff; border:1.5px solid var(--tn-line); border-radius:11px; padding:0 12px; height:40px; color:var(--tn-ink3)}
+#page-tu-admin.ns18 .tn-ad-search:focus-within{border-color:var(--tn-teal2); box-shadow:0 0 0 3px rgba(63,182,168,.14); color:var(--tn-teal2)}
+#page-tu-admin.ns18 .tn-ad-search input{flex:1; min-width:0; border:none; outline:none; background:none;
+  font:inherit; font-size:13.5px; color:var(--tn-ink); height:100%}
+#page-tu-admin.ns18 .tn-ad-tools .tn-sel{min-width:180px; height:40px}
+#page-tu-admin.ns18 .tn-danger{margin-top:14px; border:1.5px solid #F3D2D2; background:#FEF6F6}
+#page-tu-admin.ns18 .tn-danger-t{font-size:13px; font-weight:800; color:#B4322F; margin-bottom:10px}
+#page-tu-admin.ns18 .tn-danger-row{display:flex; gap:10px; flex-wrap:wrap}
+#page-tu-admin.ns18 .tn-btn-danger{flex:1; min-width:210px; display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  padding:11px 14px; border-radius:11px; border:1.5px solid #D9534F; background:#fff; color:#C6373C;
+  font:inherit; font-weight:700; font-size:13px; cursor:pointer; text-align:left; transition:background .12s,transform .12s}
+#page-tu-admin.ns18 .tn-btn-danger small{font-weight:500; font-size:11px; color:#9A5B5B}
+#page-tu-admin.ns18 .tn-btn-danger:hover{background:#FBEDED}
+#page-tu-admin.ns18 .tn-btn-danger:active{transform:translateY(1px)}
+#page-tu-admin.ns18 .tn-btn-danger.solid{background:#C6373C; color:#fff; border-color:#C6373C}
+#page-tu-admin.ns18 .tn-btn-danger.solid small{color:rgba(255,255,255,.85)}
+#page-tu-admin.ns18 .tn-btn-danger.solid:hover{background:#AC2E33}
+#page-tu-admin.ns18 .tn-danger-note{margin-top:9px; font-size:11.5px; color:var(--tn-ink3)}
+#page-tu-admin.ns18 .tn-sync-replace{display:flex; align-items:center; gap:8px; margin-top:11px;
+  font-size:12.5px; color:var(--tn-ink2); cursor:pointer; line-height:1.4}
+#page-tu-admin.ns18 .tn-sync-replace input{width:16px; height:16px; accent-color:var(--tn-teal); flex:none; cursor:pointer}
+#page-tu-admin.ns18 .tn-sync-replace b{color:var(--tn-ink)}
+#page-tu-admin.ns18 .tn-fb-open{display:inline-flex; align-items:center; gap:6px}
+#page-tu-admin.ns18 .tn-fb-caret{display:inline-block; transition:transform .15s; font-size:11px; color:var(--tn-teal2)}
+#page-tu-admin.ns18 .tn-fb-open.on .tn-fb-caret{transform:rotate(90deg)}
+#page-tu-admin.ns18 .tn-thread-inline{margin:8px 0 4px; padding:11px 13px; background:#FBFCFB;
+  border:1px solid var(--tn-line); border-radius:12px}
+#page-tu-admin.ns18 .tn-thread-inline .tn-fb{display:flex!important; flex-direction:column; gap:8px}
+#page-tu-admin.ns18 .tn-thread-inline .tn-ta{width:100%!important; box-sizing:border-box; margin:0!important; min-height:60px}
+#page-tu-admin.ns18 .tn-thread-inline .tn-btn-teal{align-self:flex-end; width:auto!important; min-width:0; margin:0!important; white-space:nowrap}
