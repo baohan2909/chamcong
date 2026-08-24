@@ -155,7 +155,9 @@ function tuSendFb(){
 
 // ═══ ADMIN ═══════════════════════════════════════════════════════════════
 function tuAdminInitPage(){
-  if(!(typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN')){ try{goToPage('home');}catch(e){} return; }
+  // [v18.68] Console mở cho ADMIN + QLNS (server RPC cũng đã cho phép 2 vai trò này)
+  var _r=(typeof SESSION!=='undefined'&&SESSION)?String(SESSION.vaiTro||'').toUpperCase():'';
+  if(_r!=='ADMIN' && _r!=='QLNS'){ try{goToPage('home');}catch(e){} return; }
   TU.ma=SESSION.ma;
   if(TU.pw) tuAdminShell(); else tuAdminGate();
 }
