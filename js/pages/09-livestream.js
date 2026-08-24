@@ -22,6 +22,11 @@ function _lsOn() {
     if (typeof SESSION === 'undefined' || !SESSION || !SESSION.ma) return false;
     var v = (typeof _getSetting === 'function') ? _getSetting('ls.bat', 'off') : 'off';
     if (v === true || v === 'true' || v === 'all') return true;
+    // [v18.64] 'ql' = CHỈ tài khoản quản lý (ADMIN + QLNS) — ẩn với NV/CTV/QLBH/Cửa hàng
+    if (v === 'ql' || v === 'quanly') {
+      var r = String(SESSION.vaiTro || '').toUpperCase();
+      return r === 'ADMIN' || r === 'QLNS' || SESSION.ma === 'NS00490';
+    }
     if (v === 'ns00490' || v === 'test') return SESSION.ma === 'NS00490';
     return false;
   } catch (e) { return false; }
