@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.70',
+  'sys.cache_version': 'v18.71',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -363,6 +363,7 @@ const PAGE_TITLES={
   'livestream':'LIVESTREAM',   // [v18.57]
   'ls-control':'KIỂM SOÁT LIVESTREAM',   // [v18.62]
   'ls-feedback':'CHI TIẾT PHẢN HỒI',   // [v18.63]
+  'bs-kiemsoat':'KIỂM SOÁT BỔ SUNG',   // [v18.71]
   'donhang':   '',
   'donhang-nhan': '',
   'donhang-ql': '',
@@ -529,6 +530,7 @@ function goToPage(page){
   if(page==='livestream')   { if(typeof lsInitPage==='function') lsInitPage(); }      // [v18.57] Livestream
   if(page==='ls-control')   { if(typeof lscInitPage==='function') lscInitPage(); }    // [v18.62] Trung tâm kiểm soát LS
   if(page==='ls-feedback')  { if(typeof lsfInitPage==='function') lsfInitPage(); }    // [v18.63] Chi tiết phản hồi
+  if(page==='bs-kiemsoat')  { if(typeof bskInitPage==='function') bskInitPage(); }    // [v18.71] Kiểm soát bổ sung
   if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='donhang-nhan') { if(typeof dhNhanInit==='function') dhNhanInit(); }  // [v13.45] CH nhận đơn
   else { if(typeof dhNhanLeave==='function') dhNhanLeave(); }
@@ -620,6 +622,7 @@ const HUB_GROUPS = {
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
       { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.giamsat', act:()=>tcOpenGiamSat() },
       { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS','CUA_HANG'], quyen:'diem.xem', act:()=>diemHubOpen() },
+      { label:'Kiểm soát bổ sung',  desc:'Tường trình · biên bản · kỷ luật', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', roles:['QLNS'], act:()=>goToPage('bs-kiemsoat') },   // [v18.71] ADMIN(auto)+QLNS
       // [v18.32] Chuyển từ nhóm Bán hàng: "Dashboard bán hàng" thực chất là báo cáo nhân sự (chấm công/giờ công/cảnh báo)
       { label:'Tổng quan nhân sự',  desc:'Chấm công · giờ công · cảnh báo', ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.xem', act:()=>goToPage('dashboard') },
       // [v18.34] TN — bảng thu nhập cá nhân. Mọi vai trò TRỪ CUA_HANG. ADMIN thấy thêm console.
