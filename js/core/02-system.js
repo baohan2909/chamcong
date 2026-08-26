@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.69',
+  'sys.cache_version': 'v18.70',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1530,6 +1530,9 @@ function hideSaleTargetSuggest(){
 const TYPE_MAP={vao:{cls:'tb-vao'},ra:{cls:'tb-ra'},'ra-g':{cls:'tb-ra-g'},'vao-g':{cls:'tb-vao-g'}};
 function selType(loai,btnId){
   if(state.submitted)return;
+  // [v18.69 Pha 2] Cổng biên bản cho "Vào ca" khi điểm ≤6 (fail-soft: lỗi/không cần/đã nộp → tự qua)
+  if(btnId==='vao' && !window._bscGateOK && typeof _bscGateVaoCa==='function'){ _bscGateVaoCa(loai,btnId); return; }
+  window._bscGateOK=false;
   state.loai=loai;state.btnId=btnId;
   Object.keys(TYPE_MAP).forEach(k=>{document.getElementById('btn-'+k).className='type-btn '+TYPE_MAP[k].cls+(k===btnId?' sel':'');});
   updateSubmitBtn();
