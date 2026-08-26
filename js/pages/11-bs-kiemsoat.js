@@ -243,40 +243,65 @@ async function bskOpenNV(maNV){
 function bskCloseNV(){ var ov=document.getElementById('bsk-modal'); if(ov)ov.innerHTML=''; }
 function _bskRenderDetail(ov,d){
   var LOAI={TUONG_TRINH:['#FEF3C7','#92400E','Tường trình'],BIEN_BAN:['#E1F5EE','#0F6E56','Biên bản'],KY_LUAT:['#FEE2E2','#991B1B','Kỷ luật']};
-  var dColor=(d.diem!=null&&d.diem<=5)?'#DC2626':(d.diem!=null&&d.diem<=6)?'#D97706':'#059669';
-  var h='<div onclick="if(event.target===this)bskCloseNV()" style="position:fixed;inset:0;z-index:11000;background:rgba(10,15,20,.55);display:flex;align-items:flex-end;justify-content:center;padding:0">'+
-    '<div style="background:var(--bg,#F5F6F4);border-radius:18px 18px 0 0;max-width:560px;width:100%;max-height:92vh;overflow-y:auto">'+
-      '<div style="background:var(--grad);color:#fff;padding:18px 18px 16px;position:relative;border-radius:18px 18px 0 0">'+
-        '<button onclick="bskCloseNV()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;border:none;font-size:18px;cursor:pointer">×</button>'+
-        '<div style="font-size:17px;font-weight:800">'+_bscEsc(d.ten_nv||d.ma_nv)+'</div>'+
-        '<div style="font-size:12px;opacity:.9;margin-top:2px">'+_bscEsc(d.ma_nv)+' · '+_bscEsc(d.thang||'')+'</div>'+
-        '<div style="display:flex;gap:16px;margin-top:12px">'+
-          '<div><div style="font-size:22px;font-weight:800;line-height:1">'+(d.diem!=null?d.diem:'—')+'<span style="font-size:12px;opacity:.8">/10</span></div><div style="font-size:10.5px;opacity:.85">điểm</div></div>'+
-          '<div><div style="font-size:22px;font-weight:800;line-height:1">'+(d.so_lan_bs||0)+'</div><div style="font-size:10.5px;opacity:.85">lần bổ sung</div></div>'+
-        '</div></div>';
+  var LOAI_SK={QUEN_RA:'Quên ra ca',QUEN_VAO:'Quên vào ca',THIEU_LICH:'Thiếu lịch',THIEU_ANH:'Thiếu ảnh',THIEU_BANGIAO:'Thiếu bàn giao',BO_SUNG:'Bổ sung ca'};
+  var h=''+
+    '<div onclick="if(event.target===this)bskCloseNV()" style="position:fixed;inset:0;z-index:12000;background:rgba(20,33,58,.72);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:inherit">'+
+      '<div style="background:var(--bg,#F7F5F1);border-radius:16px;max-width:640px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 60px -12px rgba(20,33,58,.55);overflow:hidden">'+
+        // ─── HEADER (sticky) ───
+        '<div style="background:var(--grad);color:#fff;padding:18px 22px 16px;position:relative;flex-shrink:0">'+
+          '<button onclick="bskCloseNV()" aria-label="Đóng" style="position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;border:none;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;font-family:inherit">×</button>'+
+          '<div style="font-size:18px;font-weight:800;letter-spacing:-.01em;padding-right:40px">'+_bscEsc(d.ten_nv||d.ma_nv)+'</div>'+
+          '<div style="font-size:12.5px;opacity:.9;margin-top:3px">'+_bscEsc(d.ma_nv)+' · Tháng '+_bscEsc(d.thang||'')+'</div>'+
+          '<div style="display:flex;gap:20px;margin-top:14px">'+
+            '<div><div style="font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums">'+(d.diem!=null?d.diem:'—')+'<span style="font-size:13px;opacity:.75;font-weight:600">/10</span></div><div style="font-size:11px;opacity:.85;margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600">Điểm</div></div>'+
+            '<div><div style="font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums">'+(d.so_lan_bs||0)+'</div><div style="font-size:11px;opacity:.85;margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600">Lần BS</div></div>'+
+          '</div>'+
+        '</div>'+
+        // ─── BODY (scroll) ───
+        '<div style="flex:1;overflow-y:auto;padding:16px 20px 20px;-webkit-overflow-scrolling:touch">';
   // sự kiện trừ điểm
   var sk=d.su_kien||[];
-  h+='<div style="padding:14px 16px 4px"><div style="font-size:12px;font-weight:800;color:#4B5563;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Sự kiện trừ điểm ('+sk.length+')</div>';
-  if(!sk.length)h+='<div style="color:#9CA3AF;font-size:12.5px;padding:6px 0">Chưa bị trừ điểm.</div>';
-  sk.forEach(function(e){ var lo={QUEN_RA:'Quên ra ca',QUEN_VAO:'Quên vào ca',THIEU_LICH:'Thiếu lịch',THIEU_ANH:'Thiếu ảnh',THIEU_BANGIAO:'Thiếu bàn giao',BO_SUNG:'Bổ sung ca'}[e.loai]||e.loai;
-    h+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #E5E7EB;border-radius:9px;margin-bottom:5px;font-size:12px"><span style="font-weight:700;color:#111827;min-width:90px">'+_bscEsc(lo)+'</span><span style="color:#6B7280;flex:1">'+_bscEsc(e.mo_ta||'')+'</span>'+(e.da_mien?'<span style="font-size:10px;color:#059669">đã miễn</span>':'')+'</div>'; });
-  h+='</div>';
+  h+='<div style="font-size:11.5px;font-weight:800;color:var(--ink-2,#4A5670);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px">Sự kiện trừ điểm ('+sk.length+')</div>';
+  if(!sk.length){
+    h+='<div style="color:var(--ink-3,#8A93A5);font-size:13px;padding:10px 12px;background:#fff;border:1px dashed var(--line,#E6E2D8);border-radius:10px;margin-bottom:16px">Chưa bị trừ điểm.</div>';
+  } else {
+    sk.forEach(function(e){ var lo=LOAI_SK[e.loai]||e.loai;
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff;border:1px solid var(--line,#E6E2D8);border-radius:10px;margin-bottom:6px;font-size:13px">'+
+        '<span style="font-weight:700;color:var(--ink,#14213A);min-width:100px">'+_bscEsc(lo)+'</span>'+
+        '<span style="color:var(--ink-2,#4A5670);flex:1;line-height:1.45">'+_bscEsc(e.mo_ta||'')+'</span>'+
+        (e.da_mien?'<span style="font-size:10.5px;color:#059669;font-weight:700;padding:2px 8px;background:#DCFCE7;border-radius:5px;white-space:nowrap">đã miễn</span>':'')+
+        '</div>';
+    });
+    h+='<div style="height:16px"></div>';
+  }
   // biên bản / tường trình
   var bb=d.bien_ban||[];
-  h+='<div style="padding:8px 16px 18px"><div style="font-size:12px;font-weight:800;color:#4B5563;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Tường trình · Biên bản ('+bb.length+')</div>';
-  if(!bb.length)h+='<div style="color:#9CA3AF;font-size:12.5px;padding:6px 0">Chưa nộp tường trình/biên bản nào.</div>';
+  h+='<div style="font-size:11.5px;font-weight:800;color:var(--ink-2,#4A5670);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px">Tường trình · Biên bản ('+bb.length+')</div>';
+  if(!bb.length){
+    h+='<div style="color:var(--ink-3,#8A93A5);font-size:13px;padding:10px 12px;background:#fff;border:1px dashed var(--line,#E6E2D8);border-radius:10px">Chưa nộp tường trình/biên bản nào.</div>';
+  }
   bb.forEach(function(b){ var lo=LOAI[b.loai]||['#F3F4F6','#6B7280',b.loai];
-    h+='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:12px;margin-bottom:9px">'+
-      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;background:'+lo[0]+';color:'+lo[1]+'">'+lo[2]+'</span>'+_bskChip(b.trang_thai)+'<span style="font-size:11px;color:#9CA3AF;margin-left:auto">'+_bscEsc(b.khi||'')+'</span></div>'+
-      '<div style="font-size:13px;color:#111827;line-height:1.5">'+_bscEsc(b.noi_dung||'')+'</div>'+
-      (b.anh_url?'<a href="'+_bscEsc(b.anh_url)+'" target="_blank"><img src="'+_bscEsc(b.anh_url)+'" style="max-width:120px;max-height:120px;border-radius:9px;margin-top:8px;border:1px solid #E5E7EB;object-fit:cover"></a>':'')+
-      (b.ghi_chu_ql?'<div style="font-size:11.5px;color:#6B7280;margin-top:7px;padding:7px 9px;background:#F9FAFB;border-radius:7px">QL: '+_bscEsc(b.ghi_chu_ql)+(b.nguoi_xu_ly?' · '+_bscEsc(b.nguoi_xu_ly):'')+'</div>':'')+
-      '<div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">'+
-        '<button onclick="bskXuLy('+b.id+',\'DA_DUYET\')" style="flex:1;min-width:80px;padding:8px;background:#DCFCE7;color:#166534;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">✓ Duyệt</button>'+
-        '<button onclick="bskXuLy('+b.id+',\'KY_LUAT\')" style="flex:1;min-width:80px;padding:8px;background:#FEE2E2;color:#991B1B;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Kỷ luật</button>'+
-        '<button onclick="bskXuLy('+b.id+',\'MIEN\')" style="flex:1;min-width:80px;padding:8px;background:#F3F4F6;color:#4B5563;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Miễn</button>'+
-      '</div></div>'; });
-  h+='</div></div></div>';
+    h+='<div style="background:#fff;border:1px solid var(--line,#E6E2D8);border-radius:12px;padding:14px;margin-bottom:10px">'+
+      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px">'+
+        '<span style="font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:5px;background:'+lo[0]+';color:'+lo[1]+';letter-spacing:.02em">'+lo[2]+'</span>'+
+        _bskChip(b.trang_thai)+
+        '<span style="font-size:11.5px;color:var(--ink-3,#8A93A5);margin-left:auto;font-variant-numeric:tabular-nums">'+_bscEsc(b.khi||'')+'</span>'+
+      '</div>'+
+      '<div style="font-size:13.5px;color:var(--ink,#14213A);line-height:1.55;white-space:pre-wrap;word-break:break-word">'+_bscEsc(b.noi_dung||'')+'</div>'+
+      (b.anh_url?'<a href="'+_bscEsc(b.anh_url)+'" target="_blank" rel="noopener"><img src="'+_bscEsc(b.anh_url)+'" style="max-width:140px;max-height:140px;border-radius:10px;margin-top:10px;border:1px solid var(--line,#E6E2D8);object-fit:cover;display:block"></a>':'')+
+      (b.ghi_chu_ql?'<div style="font-size:12px;color:var(--ink-2,#4A5670);margin-top:9px;padding:8px 11px;background:#F7F5F1;border-left:3px solid var(--teal,#3FB6A8);border-radius:6px;line-height:1.5"><b style="color:var(--teal-deep,#1E5F63)">QL:</b> '+_bscEsc(b.ghi_chu_ql)+(b.nguoi_xu_ly?' · '+_bscEsc(b.nguoi_xu_ly):'')+'</div>':'')+
+      (b.trang_thai==='CHO_XU_LY'?
+        '<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">'+
+          '<button onclick="bskXuLy('+b.id+',\'DA_DUYET\')" style="flex:1;min-width:90px;padding:9px 10px;background:#DCFCE7;color:#166534;border:1px solid #86EFAC;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">✓ Duyệt</button>'+
+          '<button onclick="bskXuLy('+b.id+',\'KY_LUAT\')" style="flex:1;min-width:90px;padding:9px 10px;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Kỷ luật</button>'+
+          '<button onclick="bskXuLy('+b.id+',\'MIEN\')" style="flex:1;min-width:90px;padding:9px 10px;background:#F3F4F6;color:#4B5563;border:1px solid #D1D5DB;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Miễn</button>'+
+        '</div>'
+      :'')+
+      '</div>';
+  });
+  h+='</div>'+   // /body
+    '</div>'+    // /modal
+    '</div>';    // /overlay
   ov.innerHTML=h;
 }
 async function bskXuLy(id, tt){
