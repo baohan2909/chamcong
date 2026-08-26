@@ -601,6 +601,50 @@ async function moModalBoSungCa(){
   }
 
   m.style.display = 'flex';
+  // [v18.69] reset + tải trạng thái kiểm soát (Lần N · Điểm · tường trình gate)
+  const _tt=document.getElementById('bsc-tt'); if(_tt)_tt.value='';
+  const _ttw=document.getElementById('bsc-tt-wrap'); if(_ttw)_ttw.style.display='none';
+  const _st0=document.getElementById('bsc-status'); if(_st0)_st0.innerHTML='';
+  _bscLoadTrangThai();
+}
+
+// [v18.69] Tải trạng thái kiểm soát bổ sung của NV (số lần, điểm, cần tường trình, chặn)
+window._bscTT = null;
+async function _bscLoadTrangThai(){
+  const st=document.getElementById('bsc-status'); if(st)st.innerHTML='<div style="font-size:12px;color:#9CA3AF">Đang tải trạng thái…</div>';
+  window._bscTT=null;
+  try{
+    const { data } = await supa.rpc('fn_bs_trang_thai_nv',{ p_ma_nv: SESSION.ma });
+    window._bscTT=data||{};
+    _bscRenderTrangThai(data||{});
+  }catch(e){ if(st)st.innerHTML=''; }
+}
+function _bscRenderTrangThai(d){
+  const st=document.getElementById('bsc-status'), ttWrap=document.getElementById('bsc-tt-wrap'), btn=document.getElementById('bsc-btn-gui');
+  if(!st) return;
+  if(!d || !d.ok || d.co_dong){ st.innerHTML=''; if(ttWrap)ttWrap.style.display='none'; if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent='Gửi yêu cầu';} return; }
+  const lan=d.lan_ke||1, diem=(d.diem!=null)?d.diem:'—';
+  const ng=d.nguong||{};
+  const dColor=(d.diem!=null&&d.diem<=(ng.diem_kl||5))?'#DC2626':(d.diem!=null&&d.diem<=(ng.diem_tt||6))?'#D97706':'#059669';
+  let h='<div style="display:flex;gap:8px">'+
+    '<div style="flex:1;text-align:center;padding:8px 6px;background:#F3F4F6;border-radius:8px"><div style="font-size:18px;font-weight:800;color:#111827;line-height:1">Lần '+lan+'</div><div style="font-size:10px;color:#6B7280;margin-top:2px">bổ sung tháng này</div></div>'+
+    '<div style="flex:1;text-align:center;padding:8px 6px;background:#F3F4F6;border-radius:8px"><div style="font-size:18px;font-weight:800;color:'+dColor+';line-height:1">'+diem+'<span style="font-size:11px;color:#9CA3AF">/10</span></div><div style="font-size:10px;color:#6B7280;margin-top:2px">điểm phong độ</div></div>'+
+    '</div>';
+  if(d.chan_bo_sung){
+    h+='<div style="margin-top:8px;padding:9px 11px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;font-size:12px;color:#991B1B;line-height:1.5"><b>⛔ Hết lượt bổ sung tháng này (lần '+lan+').</b> Liên hệ QLNS để xử lý — không thể tự gửi thêm.</div>';
+    if(ttWrap)ttWrap.style.display='none';
+    if(btn){btn.disabled=true;btn.style.opacity='.5';btn.textContent='Đã hết lượt';}
+    st.innerHTML=h; return;
+  }
+  if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent='Gửi yêu cầu';}
+  if(d.can_tuong_trinh){
+    const why=(lan>=(ng.lan_tt||3))?('bổ sung lần '+lan):('điểm còn '+d.diem);
+    h+='<div style="margin-top:8px;padding:8px 11px;background:#FEF3C7;border:1px solid #FBBF24;border-radius:8px;font-size:11.5px;color:#92400E"><b>⚠ Bắt buộc tường trình</b> — '+why+'.</div>';
+    if(ttWrap)ttWrap.style.display='';
+    const w=document.getElementById('bsc-tt-why'); if(w)w.textContent='· '+why;
+  } else if(ttWrap){ ttWrap.style.display='none'; }
+  if(d.ky_luat) h+='<div style="margin-top:6px;font-size:11px;color:#B91C1C;font-weight:600">🚨 Điểm ≤'+(ng.diem_kl||5)+' — thuộc diện xử lý kỷ luật.</div>';
+  st.innerHTML=h;
 }
 
 // [v10.85] Bổ sung ca — custom dropdown (search-on-type) cho CH + Đội SALE
@@ -729,6 +773,15 @@ async function guiBoSungCa(){
   if (!maCH) { errEl.textContent = 'Vui lòng chọn cửa hàng.'; errEl.style.display='block'; return; }
   if (lyDo.length < 10) { errEl.textContent = 'Lý do tối thiểu 10 ký tự.'; errEl.style.display='block'; return; }
 
+  // [v18.69] Kiểm soát bổ sung: chặn lần 4+, bắt buộc tường trình khi chạm ngưỡng
+  const _bsTT = window._bscTT || {};
+  let _ttNoiDung = '';
+  if (_bsTT.chan_bo_sung) { errEl.textContent = 'Đã hết lượt bổ sung tháng này — vui lòng liên hệ QLNS.'; errEl.style.display='block'; return; }
+  if (_bsTT.can_tuong_trinh) {
+    _ttNoiDung = ((document.getElementById('bsc-tt')||{}).value || '').trim();
+    if (_ttNoiDung.length < 15) { errEl.textContent = 'Bắt buộc viết tường trình (tối thiểu 15 ký tự).'; errEl.style.display='block'; const _t=document.getElementById('bsc-tt'); if(_t)_t.focus(); return; }
+  }
+
   // [v16.2] Nếu chọn vị trí di động (Đội SALE/Cơ Động) → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
   let maChFinal = maCH;
   const isDoi = _bscLaDiDong(tenCHChon, maCH);
@@ -770,8 +823,10 @@ async function guiBoSungCa(){
       errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
       errEl.style.display = 'block';
     } else {
+      // [v18.69] Nếu chạm ngưỡng → lưu tường trình kèm (loai TUONG_TRINH) cho QLNS xem
+      if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null }); } catch(e){} }
       dongModalBoSungCa();
-      showToast('✓ Đã gửi yêu cầu bổ sung. QLNS sẽ xem xét.', 'ok');
+      showToast('✓ Đã gửi yêu cầu bổ sung' + (_ttNoiDung ? ' kèm tường trình' : '') + '. QLNS sẽ xem xét.', 'ok');
       taiLichSu();
     }
   } catch (e) {
