@@ -166,14 +166,15 @@ function bskInitPage(){
   if(!_bskThang) _bskThang=_bskThangDefault();
   root.innerHTML=
     '<div style="max-width:1100px;margin:0 auto;padding:14px">'+
-      '<div style="background:linear-gradient(135deg,#06382f,#0F6E56 55%,#1D9E75);color:#fff;border-radius:16px;padding:18px 20px;margin-bottom:14px">'+
-        '<div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85">Nhân sự · Kiểm soát</div>'+
-        '<div style="font-size:20px;font-weight:800;margin-top:4px">Kiểm soát bổ sung &amp; kỷ luật</div>'+
-        '<div style="font-size:12.5px;opacity:.9;margin-top:3px">Tường trình · biên bản · điểm · trạng thái xử lý</div>'+
+      '<div style="position:relative;overflow:hidden;background:var(--grad);color:#fff;border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:0 12px 30px -12px rgba(20,33,58,.5)">'+
+        '<div style="position:absolute;right:-40px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)"></div>'+
+        '<div style="position:relative;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85">Nhân sự · Kiểm soát</div>'+
+        '<div style="position:relative;font-size:20px;font-weight:800;margin-top:4px;letter-spacing:-.01em">Kiểm soát bổ sung &amp; kỷ luật</div>'+
+        '<div style="position:relative;font-size:12.5px;opacity:.9;margin-top:3px">Tường trình · biên bản · điểm · trạng thái xử lý</div>'+
       '</div>'+
       '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">'+
-        '<label style="font-size:12.5px;color:#374151;font-weight:600">Tháng <input type="month" id="bsk-thang" value="'+_bskThang+'" onchange="bskDoiThang(this.value)" style="padding:7px 9px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;margin-left:4px"></label>'+
-        '<button onclick="bskReload()" style="padding:8px 13px;background:#fff;border:1px solid #D1D5DB;border-radius:8px;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">↻ Làm mới</button>'+
+        '<label style="font-size:12.5px;color:var(--ink-2);font-weight:600">Tháng <input type="month" id="bsk-thang" value="'+_bskThang+'" onchange="bskDoiThang(this.value)" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;margin-left:4px;background:#fff;color:var(--ink)"></label>'+
+        '<button onclick="bskReload()" style="padding:8px 13px;background:#fff;border:1.5px solid rgba(63,182,168,.5);border-radius:8px;font-size:12.5px;font-weight:700;color:var(--teal-deep);cursor:pointer">↻ Làm mới</button>'+
       '</div>'+
       '<div id="bsk-tq" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px"></div>'+
       '<div id="bsk-filter" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>'+
@@ -194,13 +195,13 @@ async function bskReload(){
   }catch(e){ if(list)list.innerHTML='<div style="padding:24px;text-align:center;color:#DC2626">Lỗi tải: '+_bscEsc((e&&e.message)||'')+'</div>'; }
   _bskBusy=false;
 }
-function _bskTile(n,l,c){ return '<div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:11px 10px;text-align:center"><div style="font-size:22px;font-weight:800;color:'+c+';font-variant-numeric:tabular-nums;line-height:1">'+n+'</div><div style="font-size:10.5px;color:#6B7280;margin-top:3px">'+l+'</div></div>'; }
+function _bskTile(n,l,c){ return '<div style="background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 10px;text-align:center;box-shadow:0 1px 2px rgba(20,33,58,.04)"><div style="font-size:22px;font-weight:800;color:'+c+';font-variant-numeric:tabular-nums;line-height:1;font-family:ui-monospace,Menlo,monospace">'+n+'</div><div style="font-size:10.5px;color:var(--ink-2);margin-top:3px">'+l+'</div></div>'; }
 function _bskRenderTQ(t){ var el=document.getElementById('bsk-tq'); if(!el)return;
-  el.innerHTML=_bskTile(t.so_nv||0,'NV có case','#111827')+_bskTile(t.cho_xu_ly||0,'Chờ xử lý','#D97706')+_bskTile(t.so_bien_ban||0,'Biên bản','#0F6E56')+_bskTile(t.so_tuong_trinh||0,'Tường trình','#B45309')+_bskTile(t.so_ky_luat||0,'Kỷ luật','#DC2626'); }
+  el.innerHTML=_bskTile(t.so_nv||0,'NV có case','var(--magenta)')+_bskTile(t.cho_xu_ly||0,'Chờ xử lý','#B45309')+_bskTile(t.so_bien_ban||0,'Biên bản','var(--teal-deep)')+_bskTile(t.so_tuong_trinh||0,'Tường trình','#B45309')+_bskTile(t.so_ky_luat||0,'Kỷ luật','var(--red)'); }
 function _bskRenderFilter(){ var el=document.getElementById('bsk-filter'); if(!el)return;
   var chips=[['all','Tất cả'],['CHO_XU_LY','Chờ xử lý'],['KY_LUAT','Kỷ luật'],['DA_XU_LY','Đã xử lý']];
   el.innerHTML=chips.map(function(c){ var on=_bskFilter===c[0];
-    return '<button onclick="bskLoc(\''+c[0]+'\')" style="padding:6px 12px;border-radius:100px;border:1.5px solid '+(on?'#0F6E56':'#E5E7EB')+';background:'+(on?'#0F6E56':'#fff')+';color:'+(on?'#fff':'#4B5563')+';font-size:12px;font-weight:600;cursor:pointer">'+c[1]+'</button>';
+    return '<button onclick="bskLoc(\''+c[0]+'\')" style="padding:6px 13px;border-radius:100px;border:1.5px solid '+(on?'transparent':'var(--line)')+';background:'+(on?'var(--teal-deep)':'#fff')+';color:'+(on?'#fff':'var(--ink-2)')+';font-size:12px;font-weight:700;cursor:pointer'+(on?';box-shadow:0 0 12px rgba(63,182,168,.35)':'')+'">'+c[1]+'</button>';
   }).join(''); }
 function bskLoc(f){ _bskFilter=f; _bskRenderFilter(); _bskRenderList(); }
 function _bskChip(tt){ var m={CHO_XU_LY:['#FEF3C7','#92400E','Chờ xử lý'],KY_LUAT:['#FEE2E2','#991B1B','Kỷ luật'],DA_XU_LY:['#DCFCE7','#166534','Đã xử lý'],MIEN:['#F3F4F6','#6B7280','Miễn']}[tt]||['#F3F4F6','#6B7280',tt];
@@ -244,8 +245,8 @@ function _bskRenderDetail(ov,d){
   var LOAI={TUONG_TRINH:['#FEF3C7','#92400E','Tường trình'],BIEN_BAN:['#E1F5EE','#0F6E56','Biên bản'],KY_LUAT:['#FEE2E2','#991B1B','Kỷ luật']};
   var dColor=(d.diem!=null&&d.diem<=5)?'#DC2626':(d.diem!=null&&d.diem<=6)?'#D97706':'#059669';
   var h='<div onclick="if(event.target===this)bskCloseNV()" style="position:fixed;inset:0;z-index:11000;background:rgba(10,15,20,.55);display:flex;align-items:flex-end;justify-content:center;padding:0">'+
-    '<div style="background:#F5F6F4;border-radius:18px 18px 0 0;max-width:560px;width:100%;max-height:92vh;overflow-y:auto">'+
-      '<div style="background:linear-gradient(135deg,#06382f,#0F6E56 60%,#1D9E75);color:#fff;padding:18px 18px 16px;position:relative;border-radius:18px 18px 0 0">'+
+    '<div style="background:var(--bg,#F5F6F4);border-radius:18px 18px 0 0;max-width:560px;width:100%;max-height:92vh;overflow-y:auto">'+
+      '<div style="background:var(--grad);color:#fff;padding:18px 18px 16px;position:relative;border-radius:18px 18px 0 0">'+
         '<button onclick="bskCloseNV()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;border:none;font-size:18px;cursor:pointer">×</button>'+
         '<div style="font-size:17px;font-weight:800">'+_bscEsc(d.ten_nv||d.ma_nv)+'</div>'+
         '<div style="font-size:12px;opacity:.9;margin-top:2px">'+_bscEsc(d.ma_nv)+' · '+_bscEsc(d.thang||'')+'</div>'+
