@@ -8,9 +8,11 @@
 let _bscPending = null;      // {loai, btnId} đang chờ qua cổng
 let _bscCountIv = null;
 
+// Bọc .ns18 để token màu + font 'Be Vietnam Pro' resolve (root nằm ngoài .page nên
+// không tự thừa kế được — thiếu class này chữ rơi về font hệ thống).
 function _bscGateRoot(){
   let r = document.getElementById('bsg-root');
-  if (!r){ r = document.createElement('div'); r.id = 'bsg-root'; document.body.appendChild(r); }
+  if (!r){ r = document.createElement('div'); r.id = 'bsg-root'; r.className = 'ns18'; document.body.appendChild(r); }
   return r;
 }
 function _bscEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -162,77 +164,82 @@ function _bskThangDefault(){ var d=new Date(); return d.getFullYear()+'-'+String
 
 function bskInitPage(){
   var root=document.getElementById('bsk-root'); if(!root) return;
-  if(!_bskCoQuyen()){ root.innerHTML='<div style="padding:40px;text-align:center;color:#9CA3AF">Chức năng dành cho Quản trị &amp; QLNS.</div>'; return; }
+  if(!_bskCoQuyen()){ root.innerHTML='<div class="bsk-card"><div class="bsk-empty">Chức năng dành cho Quản trị &amp; QLNS.</div></div>'; return; }
   if(!_bskThang) _bskThang=_bskThangDefault();
+  // Hero đã nằm sẵn trong index.html (.cc-hero-page dùng chung v18) — ở đây chỉ dựng thân trang.
   root.innerHTML=
-    '<div style="max-width:1100px;margin:0 auto;padding:14px">'+
-      '<div style="position:relative;overflow:hidden;background:var(--grad);color:#fff;border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:0 12px 30px -12px rgba(20,33,58,.5)">'+
-        '<div style="position:absolute;right:-40px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)"></div>'+
-        '<div style="position:relative;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85">Nhân sự · Kiểm soát</div>'+
-        '<div style="position:relative;font-size:20px;font-weight:800;margin-top:4px;letter-spacing:-.01em">Kiểm soát bổ sung &amp; kỷ luật</div>'+
-        '<div style="position:relative;font-size:12.5px;opacity:.9;margin-top:3px">Tường trình · biên bản · điểm · trạng thái xử lý</div>'+
-      '</div>'+
-      '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">'+
-        '<label style="font-size:12.5px;color:var(--ink-2);font-weight:600">Tháng <input type="month" id="bsk-thang" value="'+_bskThang+'" onchange="bskDoiThang(this.value)" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;margin-left:4px;background:#fff;color:var(--ink)"></label>'+
-        '<button onclick="bskReload()" style="padding:8px 13px;background:#fff;border:1.5px solid rgba(63,182,168,.5);border-radius:8px;font-size:12.5px;font-weight:700;color:var(--teal-deep);cursor:pointer">↻ Làm mới</button>'+
-      '</div>'+
-      '<div id="bsk-tq" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px"></div>'+
-      '<div id="bsk-filter" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>'+
-      '<div id="bsk-list"></div>'+
+    '<div class="bsk-bar">'+
+      '<label>Tháng <input type="month" id="bsk-thang" value="'+_bskThang+'" onchange="bskDoiThang(this.value)"></label>'+
+      '<button type="button" class="bsk-refresh" onclick="bskReload()">↻ Làm mới</button>'+
     '</div>'+
-    '<div id="bsk-modal"></div>';
+    '<div id="bsk-tq" class="bsk-tiles"></div>'+
+    '<div id="bsk-filter" class="bsk-chips"></div>'+
+    '<div id="bsk-list"></div>';
   bskReload();
 }
 function bskDoiThang(v){ _bskThang=v||_bskThangDefault(); bskReload(); }
 async function bskReload(){
   if(_bskBusy) return; _bskBusy=true;
-  var list=document.getElementById('bsk-list'); if(list)list.innerHTML='<div style="padding:30px;text-align:center;color:#9CA3AF">⏳ Đang tải…</div>';
+  var list=document.getElementById('bsk-list'); if(list)list.innerHTML='<div class="bsk-card"><div class="bsk-empty">⏳ Đang tải…</div></div>';
   try{
     var r=await supa.rpc('fn_bs_ks_list',{p_ma_admin:SESSION.ma,p_thang:_bskThang,p_trang_thai:null});
     var d=r.data||{};
-    if(d.ok===false){ if(list)list.innerHTML='<div style="padding:24px;text-align:center;color:#DC2626">'+_bscEsc(d.error||'Không có quyền')+'</div>'; _bskBusy=false; return; }
-    _bskData=d; _bskRenderTQ(d.tong_quan||{}); _bskRenderFilter(d.tong_quan||{}); _bskRenderList();
-  }catch(e){ if(list)list.innerHTML='<div style="padding:24px;text-align:center;color:#DC2626">Lỗi tải: '+_bscEsc((e&&e.message)||'')+'</div>'; }
+    if(d.ok===false){ if(list)list.innerHTML='<div class="bsk-card"><div class="bsk-empty">'+_bscEsc(d.error||'Không có quyền')+'</div></div>'; _bskBusy=false; return; }
+    _bskData=d; _bskRenderTQ(d.tong_quan||{}); _bskRenderFilter(); _bskRenderList();
+  }catch(e){ if(list)list.innerHTML='<div class="bsk-card"><div class="bsk-empty">Lỗi tải: '+_bscEsc((e&&e.message)||'')+'</div></div>'; }
   _bskBusy=false;
 }
-function _bskTile(n,l,c){ return '<div style="background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 10px;text-align:center;box-shadow:0 1px 2px rgba(20,33,58,.04)"><div style="font-size:22px;font-weight:800;color:'+c+';font-variant-numeric:tabular-nums;line-height:1;font-family:ui-monospace,Menlo,monospace">'+n+'</div><div style="font-size:10.5px;color:var(--ink-2);margin-top:3px">'+l+'</div></div>'; }
+function _bskTile(n,l,c){ return '<div class="bsk-tile"><b style="color:'+c+'">'+n+'</b><span>'+l+'</span></div>'; }
 function _bskRenderTQ(t){ var el=document.getElementById('bsk-tq'); if(!el)return;
-  el.innerHTML=_bskTile(t.so_nv||0,'NV có case','var(--magenta)')+_bskTile(t.cho_xu_ly||0,'Chờ xử lý','#B45309')+_bskTile(t.so_bien_ban||0,'Biên bản','var(--teal-deep)')+_bskTile(t.so_tuong_trinh||0,'Tường trình','#B45309')+_bskTile(t.so_ky_luat||0,'Kỷ luật','var(--red)'); }
+  el.innerHTML=_bskTile(t.so_nv||0,'NV có case','var(--magenta)')+_bskTile(t.cho_xu_ly||0,'Chờ xử lý','var(--amber)')+_bskTile(t.so_bien_ban||0,'Biên bản','var(--teal-deep)')+_bskTile(t.so_tuong_trinh||0,'Tường trình','var(--amber)')+_bskTile(t.so_ky_luat||0,'Kỷ luật','var(--red)'); }
 function _bskRenderFilter(){ var el=document.getElementById('bsk-filter'); if(!el)return;
   var chips=[['all','Tất cả'],['CHO_XU_LY','Chờ xử lý'],['KY_LUAT','Kỷ luật'],['DA_XU_LY','Đã xử lý']];
-  el.innerHTML=chips.map(function(c){ var on=_bskFilter===c[0];
-    return '<button onclick="bskLoc(\''+c[0]+'\')" style="padding:6px 13px;border-radius:100px;border:1.5px solid '+(on?'transparent':'var(--line)')+';background:'+(on?'var(--teal-deep)':'#fff')+';color:'+(on?'#fff':'var(--ink-2)')+';font-size:12px;font-weight:700;cursor:pointer'+(on?';box-shadow:0 0 12px rgba(63,182,168,.35)':'')+'">'+c[1]+'</button>';
+  el.innerHTML=chips.map(function(c){
+    return '<button type="button" class="'+(_bskFilter===c[0]?'on':'')+'" onclick="bskLoc(\''+c[0]+'\')">'+c[1]+'</button>';
   }).join(''); }
 function bskLoc(f){ _bskFilter=f; _bskRenderFilter(); _bskRenderList(); }
-function _bskChip(tt){ var m={CHO_XU_LY:['#FEF3C7','#92400E','Chờ xử lý'],KY_LUAT:['#FEE2E2','#991B1B','Kỷ luật'],DA_XU_LY:['#DCFCE7','#166534','Đã xử lý'],MIEN:['#F3F4F6','#6B7280','Miễn']}[tt]||['#F3F4F6','#6B7280',tt];
-  return '<span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;background:'+m[0]+';color:'+m[1]+'">'+m[2]+'</span>'; }
+function _bskChip(tt){ var m={CHO_XU_LY:['cho','Chờ xử lý'],KY_LUAT:['kl','Kỷ luật'],DA_XU_LY:['ok','Đã xử lý'],DA_DUYET:['ok','Đã duyệt'],MIEN:['mien','Miễn']}[tt]||['mien',tt];
+  return '<span class="bsk-st '+m[0]+'">'+_bscEsc(m[1])+'</span>'; }
+// Màu điểm theo ngưỡng luật: ≤5 đỏ · 6 vàng · ≥7 xanh
+function _bskDiemColor(v){ return (v!=null&&v<=5)?'var(--red)':(v!=null&&v<=6)?'var(--amber)':'var(--green-m)'; }
 function _bskRenderList(){
   var el=document.getElementById('bsk-list'); if(!el||!_bskData)return;
   var ds=(_bskData.ds||[]).filter(function(x){ return _bskFilter==='all' || x.trang_thai===_bskFilter; });
-  if(!ds.length){ el.innerHTML='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:30px;text-align:center;color:#9CA3AF">Không có case '+(_bskFilter==='all'?'':'khớp lọc')+' trong tháng.</div>'; return; }
+  if(!ds.length){ el.innerHTML='<div class="bsk-card"><div class="bsk-empty">Không có case '+(_bskFilter==='all'?'':'khớp lọc')+' trong tháng.</div></div>'; return; }
   var rows=ds.map(function(x){
-    var dColor=(x.diem_min!=null&&x.diem_min<=5)?'#DC2626':(x.diem_min!=null&&x.diem_min<=6)?'#D97706':'#059669';
     var tags='';
-    if(x.so_tt)tags+='<span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:5px;margin-right:3px">TT '+x.so_tt+'</span>';
-    if(x.so_bb)tags+='<span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1px 6px;border-radius:5px;margin-right:3px">BB '+x.so_bb+'</span>';
-    if(x.so_kl)tags+='<span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:5px">KL '+x.so_kl+'</span>';
-    return '<tr onclick="bskOpenNV(\''+_bscEsc(x.ma_nv)+'\')" style="cursor:pointer;border-bottom:1px solid #F3F4F6">'+
-      '<td style="padding:10px 11px"><div style="font-weight:700;color:#111827;font-size:13px">'+_bscEsc(x.ten_nv||x.ma_nv)+'</div><div style="font-size:11px;color:#9CA3AF">'+_bscEsc(x.ma_nv)+'</div></td>'+
-      '<td style="padding:10px 11px;font-size:12px;color:#4B5563">'+_bscEsc(x.ten_ch||'—')+'</td>'+
-      '<td style="padding:10px 11px;text-align:center;font-weight:800;color:'+dColor+'">'+(x.diem_min!=null?x.diem_min:'—')+'</td>'+
-      '<td style="padding:10px 11px;text-align:center;font-weight:700;color:#111827">'+(x.so_lan_bs||0)+'</td>'+
-      '<td style="padding:10px 11px">'+tags+'</td>'+
-      '<td style="padding:10px 11px">'+_bskChip(x.trang_thai)+'</td>'+
-      '<td style="padding:10px 6px;color:#D1D5DB">›</td></tr>';
+    if(x.so_tt)tags+='<span class="bsk-tag tt">TT '+x.so_tt+'</span>';
+    if(x.so_bb)tags+='<span class="bsk-tag bb">BB '+x.so_bb+'</span>';
+    if(x.so_kl)tags+='<span class="bsk-tag kl">KL '+x.so_kl+'</span>';
+    return '<tr onclick="bskOpenNV(\''+_bscEsc(x.ma_nv)+'\')">'+
+      '<td class="l"><div class="bsk-nv">'+_bscEsc(x.ten_nv||x.ma_nv)+'<small>'+_bscEsc(x.ma_nv)+'</small></div></td>'+
+      '<td class="l">'+_bscEsc(x.ten_ch||'—')+'</td>'+
+      '<td><span class="bsk-diem" style="color:'+_bskDiemColor(x.diem_min)+'">'+(x.diem_min!=null?x.diem_min:'—')+'</span></td>'+
+      '<td>'+(x.so_lan_bs||0)+'</td>'+
+      '<td>'+(tags||'—')+'</td>'+
+      '<td>'+_bskChip(x.trang_thai)+'</td>'+
+      '<td class="bsk-go">›</td></tr>';
   }).join('');
-  el.innerHTML='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:640px">'+
-    '<thead><tr style="background:#FAFAF8">'+['Nhân viên','Cửa hàng','Điểm','Lần BS','Loại','Trạng thái',''].map(function(h,i){return '<th style="text-align:'+(i>=2&&i<=3?'center':'left')+';font-size:10.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.03em;padding:9px 11px;white-space:nowrap">'+h+'</th>';}).join('')+'</tr></thead>'+
+  var heads=[['Nhân viên','l'],['Cửa hàng','l'],['Điểm',''],['Lần BS',''],['Loại',''],['Trạng thái',''],['','']];
+  el.innerHTML='<div class="bsk-card"><div class="bsk-scroll"><table class="bsk-table">'+
+    '<thead><tr>'+heads.map(function(h){return '<th class="'+h[1]+'">'+h[0]+'</th>';}).join('')+'</tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div></div>';
 }
-// Chi tiết NV
+// ─── Chi tiết NV ───
+// PORTAL ra document.body: #bsk-root nằm sâu trong .page nên position:fixed có thể bị
+// một ancestor (transform/filter/contain) biến thành containing-block → modal bị "nhốt"
+// trong khung nội dung, cao hơn khung thì CỤT ĐẦU (bug v18.73/74). Gắn thẳng vào body,
+// bọc class .ns18 để token màu + font 'Be Vietnam Pro' luôn resolve.
+function _bskModalRoot(){
+  var r=document.getElementById('bsk-modal-root');
+  if(!r){ r=document.createElement('div'); r.id='bsk-modal-root'; r.className='ns18'; document.body.appendChild(r); }
+  return r;
+}
+function _bskKeyEsc(e){ if(e.key==='Escape') bskCloseNV(); }
 async function bskOpenNV(maNV){
-  var ov=document.getElementById('bsk-modal'); if(!ov)return;
-  ov.innerHTML='<div style="position:fixed;inset:0;z-index:11000;background:rgba(10,15,20,.55);display:flex;align-items:center;justify-content:center;padding:16px"><div style="background:#fff;border-radius:16px;max-width:560px;width:100%;padding:24px;text-align:center;color:#9CA3AF">⏳ Đang tải hồ sơ…</div></div>';
+  var ov=_bskModalRoot();
+  ov.innerHTML='<div class="bsk-ov"><div class="bsk-modal"><div class="bsk-mbody"><div class="bsk-empty">⏳ Đang tải hồ sơ…</div></div></div></div>';
+  document.addEventListener('keydown',_bskKeyEsc);
   try{
     var r=await supa.rpc('fn_bs_ks_detail',{p_ma_admin:SESSION.ma,p_ma_nv:maNV,p_thang:_bskThang});
     var d=r.data||{};
@@ -240,68 +247,60 @@ async function bskOpenNV(maNV){
     _bskRenderDetail(ov,d);
   }catch(e){ bskCloseNV(); if(typeof showToast==='function')showToast('Lỗi tải','warn'); }
 }
-function bskCloseNV(){ var ov=document.getElementById('bsk-modal'); if(ov)ov.innerHTML=''; }
+function bskCloseNV(){
+  var ov=document.getElementById('bsk-modal-root'); if(ov)ov.innerHTML='';
+  document.removeEventListener('keydown',_bskKeyEsc);
+}
 function _bskRenderDetail(ov,d){
-  var LOAI={TUONG_TRINH:['#FEF3C7','#92400E','Tường trình'],BIEN_BAN:['#E1F5EE','#0F6E56','Biên bản'],KY_LUAT:['#FEE2E2','#991B1B','Kỷ luật']};
+  var LOAI={TUONG_TRINH:['tt','Tường trình'],BIEN_BAN:['bb','Biên bản'],KY_LUAT:['kl','Kỷ luật']};
   var LOAI_SK={QUEN_RA:'Quên ra ca',QUEN_VAO:'Quên vào ca',THIEU_LICH:'Thiếu lịch',THIEU_ANH:'Thiếu ảnh',THIEU_BANGIAO:'Thiếu bàn giao',BO_SUNG:'Bổ sung ca'};
-  var h=''+
-    '<div onclick="if(event.target===this)bskCloseNV()" style="position:fixed;inset:0;z-index:12000;background:rgba(20,33,58,.72);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:inherit">'+
-      '<div style="background:var(--bg,#F7F5F1);border-radius:16px;max-width:640px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 60px -12px rgba(20,33,58,.55);overflow:hidden">'+
-        // ─── HEADER (sticky) ───
-        '<div style="background:var(--grad);color:#fff;padding:18px 22px 16px;position:relative;flex-shrink:0">'+
-          '<button onclick="bskCloseNV()" aria-label="Đóng" style="position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;border:none;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;font-family:inherit">×</button>'+
-          '<div style="font-size:18px;font-weight:800;letter-spacing:-.01em;padding-right:40px">'+_bscEsc(d.ten_nv||d.ma_nv)+'</div>'+
-          '<div style="font-size:12.5px;opacity:.9;margin-top:3px">'+_bscEsc(d.ma_nv)+' · Tháng '+_bscEsc(d.thang||'')+'</div>'+
-          '<div style="display:flex;gap:20px;margin-top:14px">'+
-            '<div><div style="font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums">'+(d.diem!=null?d.diem:'—')+'<span style="font-size:13px;opacity:.75;font-weight:600">/10</span></div><div style="font-size:11px;opacity:.85;margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600">Điểm</div></div>'+
-            '<div><div style="font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums">'+(d.so_lan_bs||0)+'</div><div style="font-size:11px;opacity:.85;margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600">Lần BS</div></div>'+
-          '</div>'+
+  var h='<div class="bsk-ov" onclick="if(event.target===this)bskCloseNV()">'+
+    '<div class="bsk-modal">'+
+      '<div class="bsk-mhead">'+
+        '<button type="button" class="bsk-mx" aria-label="Đóng" onclick="bskCloseNV()">×</button>'+
+        '<div class="nm">'+_bscEsc(d.ten_nv||d.ma_nv)+'</div>'+
+        '<div class="mt">'+_bscEsc(d.ma_nv)+' · Tháng '+_bscEsc(d.thang||'')+'</div>'+
+        '<div class="bsk-mstat">'+
+          '<div><b>'+(d.diem!=null?d.diem:'—')+'<i>/10</i></b><span>Điểm</span></div>'+
+          '<div><b>'+(d.so_lan_bs||0)+'</b><span>Lần bổ sung</span></div>'+
         '</div>'+
-        // ─── BODY (scroll) ───
-        '<div style="flex:1;overflow-y:auto;padding:16px 20px 20px;-webkit-overflow-scrolling:touch">';
+      '</div>'+
+      '<div class="bsk-mbody">';
   // sự kiện trừ điểm
   var sk=d.su_kien||[];
-  h+='<div style="font-size:11.5px;font-weight:800;color:var(--ink-2,#4A5670);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px">Sự kiện trừ điểm ('+sk.length+')</div>';
-  if(!sk.length){
-    h+='<div style="color:var(--ink-3,#8A93A5);font-size:13px;padding:10px 12px;background:#fff;border:1px dashed var(--line,#E6E2D8);border-radius:10px;margin-bottom:16px">Chưa bị trừ điểm.</div>';
-  } else {
-    sk.forEach(function(e){ var lo=LOAI_SK[e.loai]||e.loai;
-      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff;border:1px solid var(--line,#E6E2D8);border-radius:10px;margin-bottom:6px;font-size:13px">'+
-        '<span style="font-weight:700;color:var(--ink,#14213A);min-width:100px">'+_bscEsc(lo)+'</span>'+
-        '<span style="color:var(--ink-2,#4A5670);flex:1;line-height:1.45">'+_bscEsc(e.mo_ta||'')+'</span>'+
-        (e.da_mien?'<span style="font-size:10.5px;color:#059669;font-weight:700;padding:2px 8px;background:#DCFCE7;border-radius:5px;white-space:nowrap">đã miễn</span>':'')+
-        '</div>';
-    });
-    h+='<div style="height:16px"></div>';
-  }
+  h+='<div class="bsk-sec"><div class="bsk-h3">Sự kiện trừ điểm ('+sk.length+')</div>';
+  if(!sk.length){ h+='<div class="bsk-none">Chưa bị trừ điểm.</div>'; }
+  sk.forEach(function(e){
+    h+='<div class="bsk-sk"><b>'+_bscEsc(LOAI_SK[e.loai]||e.loai)+'</b>'+
+      '<span>'+_bscEsc(e.mo_ta||'')+'</span>'+
+      (e.da_mien?'<em>đã miễn</em>':'')+'</div>';
+  });
+  h+='</div>';
   // biên bản / tường trình
   var bb=d.bien_ban||[];
-  h+='<div style="font-size:11.5px;font-weight:800;color:var(--ink-2,#4A5670);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px">Tường trình · Biên bản ('+bb.length+')</div>';
-  if(!bb.length){
-    h+='<div style="color:var(--ink-3,#8A93A5);font-size:13px;padding:10px 12px;background:#fff;border:1px dashed var(--line,#E6E2D8);border-radius:10px">Chưa nộp tường trình/biên bản nào.</div>';
-  }
-  bb.forEach(function(b){ var lo=LOAI[b.loai]||['#F3F4F6','#6B7280',b.loai];
-    h+='<div style="background:#fff;border:1px solid var(--line,#E6E2D8);border-radius:12px;padding:14px;margin-bottom:10px">'+
-      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px">'+
-        '<span style="font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:5px;background:'+lo[0]+';color:'+lo[1]+';letter-spacing:.02em">'+lo[2]+'</span>'+
+  h+='<div class="bsk-sec"><div class="bsk-h3">Tường trình · Biên bản ('+bb.length+')</div>';
+  if(!bb.length){ h+='<div class="bsk-none">Chưa nộp tường trình/biên bản nào.</div>'; }
+  bb.forEach(function(b){ var lo=LOAI[b.loai]||['mien',b.loai];
+    h+='<div class="bsk-bb">'+
+      '<div class="bsk-bb-top">'+
+        '<span class="bsk-tag '+lo[0]+'">'+_bscEsc(lo[1])+'</span>'+
         _bskChip(b.trang_thai)+
-        '<span style="font-size:11.5px;color:var(--ink-3,#8A93A5);margin-left:auto;font-variant-numeric:tabular-nums">'+_bscEsc(b.khi||'')+'</span>'+
+        '<span class="bsk-bb-khi">'+_bscEsc(b.khi||'')+'</span>'+
       '</div>'+
-      '<div style="font-size:13.5px;color:var(--ink,#14213A);line-height:1.55;white-space:pre-wrap;word-break:break-word">'+_bscEsc(b.noi_dung||'')+'</div>'+
-      (b.anh_url?'<a href="'+_bscEsc(b.anh_url)+'" target="_blank" rel="noopener"><img src="'+_bscEsc(b.anh_url)+'" style="max-width:140px;max-height:140px;border-radius:10px;margin-top:10px;border:1px solid var(--line,#E6E2D8);object-fit:cover;display:block"></a>':'')+
-      (b.ghi_chu_ql?'<div style="font-size:12px;color:var(--ink-2,#4A5670);margin-top:9px;padding:8px 11px;background:#F7F5F1;border-left:3px solid var(--teal,#3FB6A8);border-radius:6px;line-height:1.5"><b style="color:var(--teal-deep,#1E5F63)">QL:</b> '+_bscEsc(b.ghi_chu_ql)+(b.nguoi_xu_ly?' · '+_bscEsc(b.nguoi_xu_ly):'')+'</div>':'')+
+      '<div class="bsk-bb-nd">'+_bscEsc(b.noi_dung||'')+'</div>'+
+      (b.anh_url?'<a href="'+_bscEsc(b.anh_url)+'" target="_blank" rel="noopener"><img class="bsk-bb-anh" src="'+_bscEsc(b.anh_url)+'" alt="Ảnh tường trình"></a>':'')+
+      (b.ghi_chu_ql?'<div class="bsk-bb-ql"><b>QL:</b> '+_bscEsc(b.ghi_chu_ql)+(b.nguoi_xu_ly?' · '+_bscEsc(b.nguoi_xu_ly):'')+'</div>':'')+
+      // Chỉ case CHỜ XỬ LÝ mới cho thao tác — đã xử lý rồi thì không hiện nút gây hiểu lầm
       (b.trang_thai==='CHO_XU_LY'?
-        '<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">'+
-          '<button onclick="bskXuLy('+b.id+',\'DA_DUYET\')" style="flex:1;min-width:90px;padding:9px 10px;background:#DCFCE7;color:#166534;border:1px solid #86EFAC;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">✓ Duyệt</button>'+
-          '<button onclick="bskXuLy('+b.id+',\'KY_LUAT\')" style="flex:1;min-width:90px;padding:9px 10px;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Kỷ luật</button>'+
-          '<button onclick="bskXuLy('+b.id+',\'MIEN\')" style="flex:1;min-width:90px;padding:9px 10px;background:#F3F4F6;color:#4B5563;border:1px solid #D1D5DB;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Miễn</button>'+
+        '<div class="bsk-act">'+
+          '<button type="button" class="ok" onclick="bskXuLy('+b.id+',\'DA_DUYET\')">✓ Duyệt</button>'+
+          '<button type="button" class="kl" onclick="bskXuLy('+b.id+',\'KY_LUAT\')">Kỷ luật</button>'+
+          '<button type="button" class="mien" onclick="bskXuLy('+b.id+',\'MIEN\')">Miễn</button>'+
         '</div>'
       :'')+
       '</div>';
   });
-  h+='</div>'+   // /body
-    '</div>'+    // /modal
-    '</div>';    // /overlay
+  h+='</div></div></div></div>';
   ov.innerHTML=h;
 }
 async function bskXuLy(id, tt){

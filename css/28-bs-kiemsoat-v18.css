@@ -1,0 +1,135 @@
+/* ============================================================
+   28-bs-kiemsoat-v18.css — KIỂM SOÁT BỔ SUNG & KỶ LUẬT (v18)
+   Chuẩn hoá trang + modal chi tiết theo token v18 (13-v18.css).
+   LƯU Ý: modal render PORTAL ra document.body trong 1 thẻ .ns18
+   (#bsk-modal-root) → position:fixed luôn neo theo VIEWPORT, không bị
+   ancestor của .page "nhốt" làm cụt đầu modal (bug v18.73/74).
+   ============================================================ */
+
+/* ===== THANH CÔNG CỤ ===== */
+.ns18 .bsk-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.ns18 .bsk-bar label{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.ns18 .bsk-bar input[type="month"]{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:#fff;
+  border:1.5px solid var(--line);border-radius:10px;height:40px;padding:0 12px}
+.ns18 .bsk-bar input[type="month"]:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.18)}
+.ns18 .bsk-refresh{font-family:inherit;height:40px;padding:0 16px;background:#fff;border:1.5px solid rgba(63,182,168,.5);
+  border-radius:10px;font-size:13px;font-weight:700;color:var(--teal-deep);cursor:pointer;transition:.15s}
+.ns18 .bsk-refresh:hover{background:var(--teal-tint);border-color:var(--teal)}
+
+/* ===== THẺ TỔNG QUAN ===== */
+.ns18 .bsk-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.ns18 .bsk-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+.ns18 .bsk-tile b{display:block;font-size:26px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ns18 .bsk-tile span{display:block;font-size:11.5px;font-weight:600;color:var(--ink-2);margin-top:6px}
+@media (max-width:900px){ .ns18 .bsk-tiles{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:560px){ .ns18 .bsk-tiles{grid-template-columns:repeat(2,1fr)} }
+
+/* ===== CHIP LỌC ===== */
+.ns18 .bsk-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ns18 .bsk-chips button{font-family:inherit;padding:7px 15px;border-radius:100px;border:1.5px solid var(--line);
+  background:#fff;color:var(--ink-2);font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
+.ns18 .bsk-chips button:hover{border-color:var(--teal)}
+.ns18 .bsk-chips button.on{background:var(--teal-deep);border-color:transparent;color:#fff;box-shadow:var(--glow)}
+
+/* ===== BẢNG ===== */
+.ns18 .bsk-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden}
+.ns18 .bsk-scroll{overflow-x:auto}
+.ns18 .bsk-table{min-width:700px}
+.ns18 .bsk-table tbody tr{cursor:pointer;transition:background .12s}
+.ns18 .bsk-table tbody tr:hover{background:var(--teal-tint)}
+.ns18 .bsk-table tbody tr:last-child td{border-bottom:none}
+.ns18 .bsk-table td.l,.ns18 .bsk-table th.l{text-align:left}
+.ns18 .bsk-nv{font-weight:700;color:var(--ink);font-size:13.5px}
+.ns18 .bsk-nv small{display:block;font-weight:500;color:var(--ink-3);font-size:11.5px;margin-top:2px}
+.ns18 .bsk-diem{font-weight:800;font-variant-numeric:tabular-nums;font-size:15px}
+.ns18 .bsk-go{color:var(--ink-3);font-size:17px;padding-left:0;padding-right:12px}
+.ns18 .bsk-empty{padding:34px 20px;text-align:center;color:var(--ink-3);font-size:13.5px}
+
+/* ===== NHÃN / CHIP TRẠNG THÁI ===== */
+.ns18 .bsk-tag{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:6px;
+  margin-right:4px;letter-spacing:.02em;white-space:nowrap}
+.ns18 .bsk-tag.tt{background:#FCF6E9;color:var(--amber)}
+.ns18 .bsk-tag.bb{background:var(--teal-tint);color:var(--teal-deep)}
+.ns18 .bsk-tag.kl{background:#FBEAEA;color:var(--red)}
+.ns18 .bsk-st{display:inline-block;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:100px;white-space:nowrap}
+.ns18 .bsk-st.cho{background:#FCF6E9;color:var(--amber)}
+.ns18 .bsk-st.kl{background:#FBEAEA;color:var(--red)}
+.ns18 .bsk-st.ok{background:var(--green-lt);color:var(--green-m)}
+.ns18 .bsk-st.mien{background:#F2F1ED;color:var(--ink-3)}
+
+/* ============================================================
+   MODAL CHI TIẾT (portal → body, thẻ bọc #bsk-modal-root.ns18)
+   ============================================================ */
+/* align-items:flex-start + margin:auto = CĂN GIỮA AN TOÀN:
+   khi modal cao hơn viewport thì tràn xuống dưới và cuộn được,
+   KHÔNG bao giờ cụt phần đầu (lỗi kinh điển của align-items:center). */
+.ns18 .bsk-ov{position:fixed;inset:0;z-index:12000;background:rgba(20,33,58,.62);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:24px 20px;overflow-y:auto;overscroll-behavior:contain}
+.ns18 .bsk-modal{margin:auto;width:100%;max-width:620px;background:var(--bg);border-radius:16px;
+  box-shadow:var(--shadow-lg);display:flex;flex-direction:column;max-height:calc(100vh - 48px);overflow:hidden}
+
+/* Đầu modal — LUÔN hiện (flex:none), không cuộn mất */
+.ns18 .bsk-mhead{flex:none;position:relative;background:var(--grad);color:#fff;padding:18px 22px 16px}
+.ns18 .bsk-mhead .nm{font-size:18px;font-weight:800;letter-spacing:-.01em;padding-right:44px;line-height:1.25}
+.ns18 .bsk-mhead .mt{font-size:12.5px;opacity:.9;margin-top:4px}
+.ns18 .bsk-mx{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:#fff;border:none;font-size:20px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;font-family:inherit;transition:.15s}
+.ns18 .bsk-mx:hover{background:rgba(255,255,255,.3)}
+.ns18 .bsk-mstat{display:flex;gap:24px;margin-top:14px}
+.ns18 .bsk-mstat b{display:block;font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.ns18 .bsk-mstat b i{font-style:normal;font-size:13px;font-weight:600;opacity:.75}
+.ns18 .bsk-mstat span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;opacity:.85;margin-top:4px}
+
+/* Thân modal — vùng cuộn duy nhất */
+.ns18 .bsk-mbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:16px 20px 20px;-webkit-overflow-scrolling:touch}
+.ns18 .bsk-h3{font-size:11.5px;font-weight:800;color:var(--ink-2);text-transform:uppercase;
+  letter-spacing:.05em;margin:0 0 9px}
+.ns18 .bsk-h3+.bsk-h3,.ns18 .bsk-sec+.bsk-sec{margin-top:18px}
+.ns18 .bsk-sec{margin-bottom:18px}
+.ns18 .bsk-sec:last-child{margin-bottom:0}
+.ns18 .bsk-none{color:var(--ink-3);font-size:13px;padding:12px 14px;background:var(--surface);
+  border:1px dashed var(--line);border-radius:10px}
+
+/* Sự kiện trừ điểm */
+.ns18 .bsk-sk{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;margin-bottom:7px;font-size:13px}
+.ns18 .bsk-sk:last-child{margin-bottom:0}
+.ns18 .bsk-sk b{flex:none;min-width:104px;font-weight:700;color:var(--ink)}
+.ns18 .bsk-sk span{flex:1;color:var(--ink-2);line-height:1.45}
+.ns18 .bsk-sk em{flex:none;font-style:normal;font-size:10.5px;font-weight:700;color:var(--green-m);
+  background:var(--green-lt);padding:3px 8px;border-radius:6px;white-space:nowrap}
+
+/* Thẻ tường trình / biên bản */
+.ns18 .bsk-bb{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.ns18 .bsk-bb:last-child{margin-bottom:0}
+.ns18 .bsk-bb-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.ns18 .bsk-bb-khi{margin-left:auto;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ns18 .bsk-bb-nd{font-size:13.5px;color:var(--ink);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.ns18 .bsk-bb-anh{display:block;max-width:150px;max-height:150px;border-radius:10px;margin-top:10px;
+  border:1px solid var(--line);object-fit:cover}
+.ns18 .bsk-bb-ql{font-size:12px;color:var(--ink-2);margin-top:10px;padding:9px 12px;background:var(--surface-2);
+  border-left:3px solid var(--teal);border-radius:0 8px 8px 0;line-height:1.5}
+.ns18 .bsk-bb-ql b{color:var(--teal-deep)}
+.ns18 .bsk-act{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ns18 .bsk-act button{flex:1;min-width:92px;font-family:inherit;padding:10px;border-radius:9px;
+  font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid;transition:.15s}
+.ns18 .bsk-act .ok{background:var(--green-lt);color:var(--green-m);border-color:var(--green-bd)}
+.ns18 .bsk-act .kl{background:#FBEAEA;color:var(--red);border-color:rgba(198,55,60,.35)}
+.ns18 .bsk-act .mien{background:var(--surface-2);color:var(--ink-2);border-color:var(--line)}
+.ns18 .bsk-act button:hover{filter:brightness(.97)}
+
+/* ===== ĐIỆN THOẠI: modal thành bottom-sheet ===== */
+@media (max-width:639px){
+  .ns18 .bsk-ov{padding:0;align-items:flex-end}
+  .ns18 .bsk-modal{margin:0;max-width:none;border-radius:18px 18px 0 0;max-height:92vh}
+  .ns18 .bsk-mhead{padding:16px 18px 14px}
+  .ns18 .bsk-mbody{padding:14px 16px 18px}
+  .ns18 .bsk-sk{flex-wrap:wrap;gap:4px 10px}
+  .ns18 .bsk-sk b{min-width:0}
+}
