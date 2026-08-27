@@ -124,6 +124,54 @@
 .ns18 .bsk-act .mien{background:var(--surface-2);color:var(--ink-2);border-color:var(--line)}
 .ns18 .bsk-act button:hover{filter:brightness(.97)}
 
+/* ===== [v18.76] TAG HÌNH THỨC XỬ LÝ Ở BẢNG NGOÀI ===== */
+.ns18 .bsk-hf-tag{display:inline-block;font-size:11px;font-weight:800;padding:4px 10px;border-radius:100px;white-space:nowrap}
+.ns18 .bsk-hf-tag.nn{background:var(--teal-tint);color:var(--teal-deep)}
+.ns18 .bsk-hf-tag.bb{background:#FCF6E9;color:var(--amber)}
+.ns18 .bsk-hf-tag.kl{background:#FBEAEA;color:var(--red)}
+.ns18 .bsk-hf-none{color:var(--ink-3);font-weight:600}
+
+/* ===== [v18.76] MỖI LỖI 1 THẺ + HÌNH THỨC XỬ LÝ ===== */
+.ns18 .bsk-ev{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px}
+.ns18 .bsk-ev:last-child{margin-bottom:0}
+.ns18 .bsk-ev.mien{opacity:.6}
+.ns18 .bsk-ev-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.ns18 .bsk-ev-top b{font-size:13.5px;font-weight:800;color:var(--ink)}
+.ns18 .bsk-ev-ngay{font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ns18 .bsk-ev-top em{margin-left:auto;font-style:normal;font-size:10.5px;font-weight:700;color:var(--green-m);
+  background:var(--green-lt);padding:3px 8px;border-radius:6px}
+.ns18 .bsk-ev-mota{font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:10px}
+
+/* pill 3 hình thức */
+.ns18 .bsk-hf{display:flex;gap:7px;flex-wrap:wrap}
+.ns18 .bsk-hf-pill{font-family:inherit;padding:7px 12px;border-radius:100px;border:1.5px solid var(--line);
+  background:#fff;color:var(--ink-2);font-size:12px;font-weight:700;cursor:pointer;transition:.14s}
+.ns18 .bsk-hf-pill:hover{border-color:var(--teal)}
+.ns18 .bsk-hf-pill.on.nn{background:var(--teal-deep);border-color:transparent;color:#fff}
+.ns18 .bsk-hf-pill.on.bb{background:var(--amber);border-color:transparent;color:#fff}
+.ns18 .bsk-hf-pill.on.kl{background:var(--red);border-color:transparent;color:#fff}
+
+/* ô phản hồi/ghi chú */
+.ns18 .bsk-ev-note,.ns18 #bsk-final-note{font-family:inherit;width:100%;box-sizing:border-box;margin-top:9px;
+  padding:8px 11px;border:1.5px solid var(--line);border-radius:9px;font-size:12.5px;color:var(--ink);background:#fff}
+.ns18 .bsk-ev-note:focus,.ns18 #bsk-final-note:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,182,168,.16)}
+.ns18 #bsk-final-note{resize:vertical;min-height:44px}
+
+/* section chốt cuối */
+.ns18 .bsk-final{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.ns18 .bsk-final-hint{font-size:12px;color:var(--ink-2);line-height:1.5;margin-bottom:10px}
+.ns18 .bsk-final-act{display:flex;gap:8px;justify-content:flex-end;margin-top:11px}
+.ns18 .bsk-chot{font-family:inherit;padding:11px 20px;border:none;border-radius:10px;background:var(--grad);
+  color:#fff;font-size:13.5px;font-weight:800;cursor:pointer;box-shadow:var(--glow)}
+.ns18 .bsk-chot:hover{filter:brightness(1.03)}
+.ns18 .bsk-bochot{font-family:inherit;padding:11px 16px;border:1.5px solid var(--line);border-radius:10px;
+  background:#fff;color:var(--ink-2);font-size:13px;font-weight:700;cursor:pointer}
+.ns18 .bsk-chot-info{margin-top:10px;font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+/* nhiều ảnh biên bản */
+.ns18 .bsk-bb-anhs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ns18 .bsk-bb-anhs .bsk-bb-anh{margin-top:0}
+
 /* ===== ĐIỆN THOẠI: modal thành bottom-sheet ===== */
 @media (max-width:639px){
   .ns18 .bsk-ov{padding:0;align-items:flex-end}

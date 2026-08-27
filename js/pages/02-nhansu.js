@@ -1354,7 +1354,22 @@ async function taiLichSuDuyet(){
     }
 
     const _isPendCB = (r) => (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH');
+    // [v18.76 C1] Đánh số "Bổ sung ca lần N" theo thứ tự trong tháng cho mỗi NV
+    const _bosungLan = {};
+    (function(){
+      const grp = {};
+      list.forEach(r => {
+        if (r.loaiCB !== 'BỔ SUNG CA') return;
+        const mk = (r.maNV||r.ma_nv||'?') + '|' + String(r.ngay||'').slice(0,7);
+        (grp[mk] = grp[mk] || []).push(r);
+      });
+      Object.keys(grp).forEach(mk => {
+        grp[mk].sort((a,b) => String(a.ngay||'').localeCompare(String(b.ngay||'')) || String(a.id||'').localeCompare(String(b.id||'')));
+        grp[mk].forEach((r,i) => { if (r.id!=null) _bosungLan[r.id] = i+1; });
+      });
+    })();
     const _renderCBItem = (r) => {
+      const _loaiTxt = (r.loaiCB === 'BỔ SUNG CA' && _bosungLan[r.id]) ? ('BỔ SUNG CA · Lần ' + _bosungLan[r.id]) : (r.loaiCB||'');
       const ngayParts = (r.ngay||'').split('-');
       const ngayFmt = ngayParts.length===3 ? ngayParts[2]+'/'+ngayParts[1]+'/'+ngayParts[0] : r.ngay;
       const dtDuyet = r.thoiGianDuyet ? new Date(r.thoiGianDuyet) : null;
@@ -1400,7 +1415,7 @@ async function taiLichSuDuyet(){
           <div style="flex:1;min-width:0">
             <div class="lsd-card-name">${escHtml(r.tenNV||r.maNV)}</div>
             <div class="lsd-card-meta">
-              <strong>${escHtml(r.loaiCB||'')}</strong>${badgeFix} · ${ngayFmt} ${r.gioCham||''} · ${_fmtChVoiDoiSale(r.maNV||r.ma_nv, r.tenCH, r.ngay)}
+              <strong>${escHtml(_loaiTxt)}</strong>${badgeFix} · ${ngayFmt} ${r.gioCham||''} · ${_fmtChVoiDoiSale(r.maNV||r.ma_nv, r.tenCH, r.ngay)}
             </div>
             ${noiDung}
           </div>
