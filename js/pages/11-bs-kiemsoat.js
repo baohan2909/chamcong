@@ -46,11 +46,11 @@ function _bscShowGrace(d){
       '<div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">'+
         '<div style="width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:#FEF3C7;display:grid;place-items:center;font-size:30px">⚠️</div>'+
         '<div style="font-size:18px;font-weight:800;color:#92400E">Cảnh báo kiểm soát</div>'+
-        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 4px">Điểm <b>'+diem+'/10</b> — bạn còn <b>'+owed+' tường trình</b> chưa nộp. Quy định: <b>mỗi điểm dưới 7 = 1 tường trình</b>, bắt buộc nộp.</div>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 4px">Điểm <b>'+diem+'/10</b> — bạn còn <b>'+owed+' biên bản</b> chưa nộp. Quy định: <b>mỗi điểm dưới 7 = 1 biên bản giấy</b> (chụp ảnh), bắt buộc nộp.</div>'+
         '<div style="font-size:12.5px;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:10px 12px;margin:12px 0;line-height:1.55">'+
           'Lần này bạn được chấm công sau <b id="bsg-count">30</b> giây — <b>CHỈ 1 LẦN DUY NHẤT</b>.<br>'+
-          'Nếu chưa nộp đủ tường trình, <b>lần chấm công sau sẽ bị CHẶN HOÀN TOÀN</b>.</div>'+
-        '<button onclick="bscbbMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📝 Nộp tường trình ngay</button>'+
+          'Nếu chưa nộp đủ biên bản, <b>lần chấm công sau sẽ bị CHẶN HOÀN TOÀN</b>.</div>'+
+        '<button onclick="bsBienBanMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp biên bản giấy (kèm ảnh)</button>'+
         '<button id="bsg-proceed" disabled onclick="_bscQuaAnHan()" style="width:100%;padding:12px;background:#E5E7EB;color:#9CA3AF;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:not-allowed">Chờ 30 giây…</button>'+
       '</div></div>';
   let n = 30;
@@ -74,8 +74,8 @@ function _bscShowBlock(d){
       '<div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">'+
         '<div style="width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:#FEE2E2;display:grid;place-items:center;font-size:30px">⛔</div>'+
         '<div style="font-size:18px;font-weight:800;color:#991B1B">Không thể chấm công</div>'+
-        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 14px">Bạn đã dùng lần ân hạn nhưng còn <b>'+owed+' tường trình</b> chưa nộp (điểm '+diem+'/10). Vui lòng nộp đủ tường trình để tiếp tục chấm công — nếu không sẽ bị <b>xử lý kỷ luật</b>.</div>'+
-        '<button onclick="bscbbMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📝 Nộp tường trình ngay</button>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 14px">Bạn đã dùng lần ân hạn nhưng còn <b>'+owed+' biên bản</b> chưa nộp (điểm '+diem+'/10). Vui lòng nộp đủ biên bản giấy (kèm ảnh) để tiếp tục chấm công — nếu không sẽ bị <b>xử lý kỷ luật</b>.</div>'+
+        '<button onclick="bsBienBanMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp biên bản giấy (kèm ảnh)</button>'+
         '<button onclick="_bscDongCong()" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:11px;font-weight:600;font-size:13.5px;cursor:pointer">Đóng</button>'+
       '</div></div>';
 }
@@ -85,7 +85,7 @@ function _bscDongCong(){ const r=document.getElementById('bsg-root'); if(r)r.inn
 async function _bscQuaAnHan(){
   try { await supa.rpc('fn_bs_dung_grace', { p_ma_nv: SESSION.ma }); } catch(e){}
   const p = _bscPending; _bscDongCong();
-  if (typeof showToast==='function') showToast('Đã dùng lần ân hạn — nhớ nộp tường trình, lần sau sẽ bị chặn.', 'warn');
+  if (typeof showToast==='function') showToast('Đã dùng lần ân hạn — nhớ nộp biên bản giấy, lần sau sẽ bị chặn.', 'warn');
   if (p){ window._bscGateOK = true; try{ selType(p.loai, p.btnId); }catch(e){} }
 }
 

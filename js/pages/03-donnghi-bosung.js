@@ -747,7 +747,16 @@ function dongModalBoSungCa(){
   document.getElementById('bsc-modal').style.display = 'none';
 }
 
-// [v17.67] Thiết lập ô chọn ngày bổ sung: mặc định hôm nay, min = đầu tháng, max = hôm nay
+// [v18.77 #7] Ngày sớm nhất được bổ sung: trước ngày 10 → về đầu THÁNG TRƯỚC;
+// từ ngày 10 → đầu THÁNG NÀY. (Điểm + lượt bổ sung sẽ trừ vào tháng của ca.)
+function _bscMinBoSung(){
+  const d = new Date();
+  let y = d.getFullYear(), m = d.getMonth();   // m: 0-based
+  if (d.getDate() <= 9){ m -= 1; if (m < 0){ m = 11; y -= 1; } }
+  return y + '-' + pad(m+1) + '-01';
+}
+
+// [v17.67] Thiết lập ô chọn ngày bổ sung: mặc định hôm nay, min = _bscMinBoSung(), max = hôm nay
 function bscSetupNgay(){
   const el = document.getElementById('bsc-ngay');
   if (!el) return;
@@ -755,7 +764,7 @@ function bscSetupNgay(){
   const y = d.getFullYear(), mo = pad(d.getMonth()+1), da = pad(d.getDate());
   const today = y + '-' + mo + '-' + da;
   el.value = today;
-  el.min = y + '-' + mo + '-01';
+  el.min = _bscMinBoSung();
   el.max = today;
 }
 
@@ -804,11 +813,11 @@ async function guiBoSungCa(){
   try {
     const ngayBSC = document.getElementById('bsc-ngay').value;
     if (!ngayBSC){ errEl.textContent = 'Chọn ngày cần bổ sung.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
-    // [v17.67] Chỉ cho phép ngày TRONG THÁNG này, không quá hôm nay
+    // [v18.77 #7] Cửa sổ ngày theo luật mốc-10 (trước ngày 10 = về tháng trước), không quá hôm nay
     const _n = new Date();
-    const _minM = _n.getFullYear() + '-' + pad(_n.getMonth()+1) + '-01';
+    const _minM = _bscMinBoSung();
     const _maxM = _n.getFullYear() + '-' + pad(_n.getMonth()+1) + '-' + pad(_n.getDate());
-    if (ngayBSC < _minM || ngayBSC > _maxM){ errEl.textContent = 'Chỉ được bổ sung ngày trong tháng này (không quá hôm nay).'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
+    if (ngayBSC < _minM || ngayBSC > _maxM){ errEl.textContent = 'Ngày bổ sung ngoài phạm vi cho phép (không quá hôm nay).'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
       p_ma_nv: SESSION.ma,
       p_ngay: ngayBSC,
