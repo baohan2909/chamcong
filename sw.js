@@ -12,7 +12,7 @@
  *   4. User bấm → skipWaiting + reload
  */
 
-const CACHE_VERSION = 'nonson-v18.77';
+const CACHE_VERSION = 'nonson-v18.81';
 const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
 // [ỔN ĐỊNH v18.49] Cache RIÊNG cho model khuôn mặt (self-host ~7.8MB) — BỀN qua mọi lần deploy
 // (KHÔNG bị xoá khi đổi CACHE_VERSION). Chỉ đổi khi CHÍNH model đổi → khỏi tải lại 7.8MB mỗi deploy.

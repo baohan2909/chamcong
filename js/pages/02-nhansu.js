@@ -1355,10 +1355,23 @@ async function taiLichSuDuyet(){
 
     const _isPendCB = (r) => (r.trangThai === 'CHO_DUYET' || r.trangThai === 'CHUA_GIAI_TRINH' || r.trangThai === 'DA_GIAI_TRINH');
     // [v18.76 C1] Đánh số "Bổ sung ca lần N" theo thứ tự trong tháng cho mỗi NV
+    // [v18.81] Nguồn đánh số = dữ liệu ĐẦY ĐỦ mọi trạng thái → số Lần GIỮ NGUYÊN dù lọc
+    //   trạng thái (chờ duyệt / đã duyệt...). Chỉ nạp thêm khi đang lọc trạng thái.
+    let _lanSource = list;
+    if (tt) {
+      try {
+        const _r2 = await supa.rpc('fn_get_lich_su_duyet', {
+          p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV,
+          p_nguoi_duyet: null, p_loai_cb: 'BỔ SUNG CA', p_trang_thai: null,
+          p_q: null, p_limit: 1000, p_ma_ch: maCH
+        });
+        if (_r2 && _r2.data && Array.isArray(_r2.data.list)) _lanSource = _r2.data.list;
+      } catch(e){}
+    }
     const _bosungLan = {};
     (function(){
       const grp = {};
-      list.forEach(r => {
+      _lanSource.forEach(r => {
         if (r.loaiCB !== 'BỔ SUNG CA') return;
         const mk = (r.maNV||r.ma_nv||'?') + '|' + String(r.ngay||'').slice(0,7);
         (grp[mk] = grp[mk] || []).push(r);
