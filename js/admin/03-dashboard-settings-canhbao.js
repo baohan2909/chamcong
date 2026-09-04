@@ -1256,13 +1256,13 @@ async function adm2LoadCBList(){
 async function adm2RevertCanhBao(id){
   if(!confirm('Đặt lại cảnh báo này về trạng thái Chờ duyệt?')) return;
   try {
-    const { error } = await supa.from('canh_bao').update({
-      trang_thai: 'DA_GIAI_TRINH',
-      ghi_chu_duyet: '[Đã đặt lại bởi Admin lúc ' + new Date().toLocaleString('vi-VN') + ']'
-    }).eq('id', id);
-    if(error) throw error;
-    const _recR = (window._lsdCachedList || []).find(r => r.id === id);
-    if (_recR) await _rebuildCong(_recR.maNV || _recR.ma_nv, _recR.ngay);   // [fix] dựng lại giờ công (đổi trạng thái CB ảnh hưởng cộng giờ)
+    // [v18.82] Hoàn tác ĐỐI XỨNG với duyệt: RPC đảo cả cham_cong.xac_nhan về đúng
+    //   trạng thái chờ (không kẹt ở DUYET) → giờ công NV về đúng, hết cộng oan.
+    const data = await adm2Rpc('fn_admin_revert_cb', { p_admin: SESSION.ma, p_cb_id: id });
+    if (data && data.success === false) { adm2Toast(data.error || 'Lỗi', 'error'); return; }
+    const _mn = (data && data.ma_nv) || null, _ng = (data && data.ngay) || null;
+    if (_mn && _ng) await _rebuildCong(_mn, _ng);   // [fix] dựng lại giờ công theo xac_nhan mới
+    else { const _recR = (window._lsdCachedList || []).find(r => r.id === id); if (_recR) await _rebuildCong(_recR.maNV || _recR.ma_nv, _recR.ngay); }
     adm2Toast('Đã đặt lại', 'success');
     adm2LoadCBList();
   } catch(e) { adm2Toast(e.message, 'error'); }
