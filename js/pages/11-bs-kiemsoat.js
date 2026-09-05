@@ -79,7 +79,7 @@ function _bscShowBlock(d){
         '<button onclick="_bscDongCong()" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:11px;font-weight:600;font-size:13.5px;cursor:pointer">Đóng</button>'+
       '</div></div>';
 }
-function _bscDongCong(){ const r=document.getElementById('bsg-root'); if(r)r.innerHTML=''; if(_bscCountIv){clearInterval(_bscCountIv);_bscCountIv=null;} _bscPending=null; }
+function _bscDongCong(){ const r=document.getElementById('bsg-root'); if(r)r.innerHTML=''; if(_bscCountIv){clearInterval(_bscCountIv);_bscCountIv=null;} _bscPending=null; _bscbbEventKey=null; }
 
 // Bấm "Chấm công lần này" sau 30s → đánh dấu grace + cho qua chấm công
 async function _bscQuaAnHan(){
@@ -94,9 +94,11 @@ async function _bscQuaAnHan(){
 //   Chọn được nhiều ảnh một lúc (C3).
 let _bscbbAnhs = [];          // [{blob, dataUrl}]
 let _bscbbLoai = 'TUONG_TRINH';
-function bsBienBanMo(){ bscbbMo('BIEN_BAN'); }        // entry point cho biên bản giấy
-function bscbbMo(loai){
+let _bscbbEventKey = null;    // [v18.88] nộp giải trình gắn ĐÚNG 1 lỗi (Theo dõi phong độ); NULL = biên bản tháng
+function bsBienBanMo(eventKey){ bscbbMo('BIEN_BAN', eventKey); }   // entry point cho biên bản giấy
+function bscbbMo(loai, eventKey){
   _bscbbAnhs = [];
+  _bscbbEventKey = eventKey || null;
   _bscbbLoai = (loai==='BIEN_BAN') ? 'BIEN_BAN' : 'TUONG_TRINH';
   const laBB = _bscbbLoai==='BIEN_BAN';
   const tieu = laBB ? '📄 Nộp biên bản giấy' : '📝 Nộp tường trình';
@@ -172,11 +174,13 @@ async function bscbbGui(){
     for (const a of _bscbbAnhs){ const u = await _bscUploadAnh(a.blob); if (u) urls.push(u); }
     if (laBB && !urls.length){ show('Tải ảnh thất bại — thử lại.'); if(btn){btn.disabled=false;btn.textContent='Nộp biên bản';} return; }
     const { data, error } = await supa.rpc('fn_bs_nop_bien_ban', {
-      p_ma_nv: SESSION.ma, p_loai: _bscbbLoai, p_noi_dung: nd, p_anh_urls: urls });
+      p_ma_nv: SESSION.ma, p_loai: _bscbbLoai, p_noi_dung: nd, p_anh_urls: urls, p_event_key: _bscbbEventKey });
     if (error) throw error;
     if (data && data.ok === false){ show(data.error || 'Lỗi nộp'); if(btn){btn.disabled=false;btn.textContent=laBB?'Nộp biên bản':'Nộp tường trình';} return; }
+    const _evk = _bscbbEventKey;       // [v18.88] nhớ trước khi đóng để refresh đúng trang
     _bscDongCong();
     if (typeof showToast==='function') showToast(laBB?'✓ Đã nộp biên bản. QLNS sẽ xem xét.':'✓ Đã nộp tường trình. Bạn có thể chấm công. QLNS sẽ xem xét.', 'ok');
+    if (_evk && typeof tddLoad==='function'){ try{ tddLoad(); }catch(e){} }   // [v18.88] refresh Theo dõi phong độ sau khi nộp giải trình cho 1 lỗi
   } catch(e){
     show((e && e.message) || 'Lỗi kết nối'); if(btn){btn.disabled=false;btn.textContent=laBB?'Nộp biên bản':'Nộp tường trình';}
   }
@@ -293,14 +297,29 @@ function _bskSyncNotes(){
   });
   var fn=document.getElementById('bsk-final-note'); if(fn) _bskCurD._finalNote=fn.value;
 }
-// [v18.86] NV nhẹ (số lỗi ≤3 · bổ sung công ≤2) → mặc định 'Nhắc nhở' cho lỗi chưa xử lý
-function _bskDefaultNN(){ return !!(_bskCurD && (_bskCurD.so_loi||0) <= 3 && (_bskCurD.so_lan_bs||0) <= 2); }
+// [v18.87] Mặc định 'Nhắc nhở' theo LẦN: bổ sung ca lần 1-2 → NN; lỗi khác → NN. Cờ per-lỗi 'mac_dinh_nn' từ RPC.
 function _bskEvPills(e){
-  var dnn = (!e.hinh_thuc && !e.da_mien && _bskDefaultNN());
+  var dnn = (!e.hinh_thuc && !e.da_mien && !!e.mac_dinh_nn);
+  var lbl = (e.loai==='BO_SUNG') ? ('Mặc định: Nhắc nhở (bổ sung ca lần '+(e.bs_lan||'')+')') : 'Mặc định: Nhắc nhở';
   return '<div class="bsk-hf">'+BSK_HF_LIST.map(function(hf){
     var on=((e.hinh_thuc===hf[0]) || (dnn && hf[0]==='NHAC_NHO'))?(' on '+BSK_HF[hf[0]][1]):'';
     return '<button type="button" class="bsk-hf-pill'+on+'" onclick="bskSetEvent(\''+_bscEsc(e.event_key)+'\',\''+hf[0]+'\')">'+hf[1]+'</button>';
-  }).join('')+'</div>'+(dnn?'<div style="font-size:10.5px;color:#0F766E;margin-top:3px">Mặc định: Nhắc nhở (NV số lỗi ≤3 · bổ sung ≤2)</div>':'');
+  }).join('')+'</div>'+(dnn?'<div style="font-size:10.5px;color:#0F766E;margin-top:3px">'+lbl+'</div>':'');
+}
+// [v18.88] Giải trình/biên bản gắn ĐÚNG 1 lỗi (admin xem, chỉ đọc). Chỉ hiện ở lỗi cần giải trình.
+function _bskEvGiaiTrinh(e){
+  if(!e.can_giai_trinh) return '';
+  var gt = e.giai_trinh || [];
+  var head = '<div style="margin-top:9px;font-size:11px;font-weight:800;color:#B45309">Giải trình / biên bản NV'+(gt.length?'':' — <span style="color:#DC2626">chưa nộp</span>')+'</div>';
+  var body = gt.map(function(b){
+    var anhs=(b.anh_urls&&b.anh_urls.length)?b.anh_urls:(b.anh_url?[b.anh_url]:[]);
+    return '<div class="bsk-bb" style="margin-top:6px">'+
+      '<div class="bsk-bb-top"><span class="bsk-tag bb">Biên bản</span><span class="bsk-bb-khi">'+_bscEsc(b.khi||'')+'</span></div>'+
+      '<div class="bsk-bb-nd">'+_bscEsc(b.noi_dung||'')+'</div>'+
+      (anhs.length?'<div class="bsk-bb-anhs">'+anhs.map(function(u){return '<a href="'+_bscEsc(u)+'" target="_blank" rel="noopener"><img class="bsk-bb-anh" src="'+_bscEsc(u)+'" alt="Ảnh"></a>';}).join('')+'</div>':'')+
+      '</div>';
+  }).join('');
+  return head + body;
 }
 function _bskFinalPills(){
   return '<div class="bsk-hf">'+BSK_HF_LIST.map(function(hf){
@@ -341,6 +360,7 @@ function _bskRenderDetail(){
       '<span class="bsk-ev-ngay">'+_bscEsc(e.ngay||'')+'</span></div>'+
       '<div class="bsk-ev-mota">'+_bscEsc(e.mo_ta||'')+'</div>'+
       _bskEvPills(e)+
+      _bskEvGiaiTrinh(e)+
       '<input class="bsk-ev-note" data-key="'+_bscEsc(e.event_key)+'" placeholder="Phản hồi cho nhân viên (nếu có)…" value="'+_bscEsc(e.phan_hoi||'')+'" onchange="bskEventNote(\''+_bscEsc(e.event_key)+'\',this)">'+
       '</div>';
   });

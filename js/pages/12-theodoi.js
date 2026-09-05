@@ -25,6 +25,36 @@ const _TDD_HF = {
   KY_LUAT:      ['Xử lý kỷ luật',        '#991B1B', '#FEE2E2', '#FCA5A5']
 };
 
+function _tddJs(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+// [v18.88] Giải trình + biên bản gắn ĐÚNG 1 lỗi. Chỉ hiện ở lỗi cần giải trình (Chờ quản lý xử lý).
+function _tddGiaiTrinh(e){
+  if(!e.can_giai_trinh) return '';
+  const gt = e.giai_trinh || [];
+  const stMap = { DA_NOP:['Chờ QLNS duyệt','#B45309','#FEF3C7'], DA_DUYET:['Đã duyệt','#0F6E56','#E1F5EE'], MIEN:['Đã miễn','#6B7280','#F3F4F6'] };
+  if(gt.length){
+    return '<div style="margin-top:9px;border-top:1px dashed #E5E7EB;padding-top:9px">'+
+      '<div style="font-size:10.5px;font-weight:800;color:#B45309;margin-bottom:6px">GIẢI TRÌNH / BIÊN BẢN ĐÃ NỘP</div>'+
+      gt.map(function(b){
+        const anhs=(b.anh_urls&&b.anh_urls.length)?b.anh_urls:[];
+        const st=stMap[b.trang_thai]||[b.trang_thai||'',' #6B7280','#F3F4F6'];
+        return '<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:8px 10px;margin-bottom:6px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+            '<span style="font-size:9.5px;font-weight:700;color:'+st[1]+';background:'+st[2]+';padding:2px 8px;border-radius:12px">'+_tddEsc(st[0])+'</span>'+
+            '<span style="font-size:10px;color:#9CA3AF">'+_tddEsc(b.khi||'')+'</span>'+
+          '</div>'+
+          '<div style="font-size:11.5px;color:#374151;line-height:1.5;margin-top:5px">'+_tddEsc(b.noi_dung||'')+'</div>'+
+          (anhs.length?'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+anhs.map(function(u){return '<a href="'+_tddEsc(u)+'" target="_blank" rel="noopener"><img src="'+_tddEsc(u)+'" style="width:58px;height:58px;object-fit:cover;border-radius:7px;border:1px solid #E5E7EB"></a>';}).join('')+'</div>':'')+
+          (b.ghi_chu_ql?'<div style="margin-top:6px;font-size:11px;color:#0F6E56"><b>QLNS:</b> '+_tddEsc(b.ghi_chu_ql)+'</div>':'')+
+        '</div>';
+      }).join('')+
+    '</div>';
+  }
+  // chưa nộp → yêu cầu + nút nộp
+  return '<div style="margin-top:9px;border-top:1px dashed #E5E7EB;padding-top:9px">'+
+    '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:9px;padding:8px 10px;font-size:11px;color:#991B1B;line-height:1.45;margin-bottom:8px"><b>Cần nộp giải trình + biên bản giấy (có ảnh)</b> cho lỗi này.</div>'+
+    '<button type="button" onclick="bsBienBanMo(\''+_tddJs(e.event_key)+'\')" style="width:100%;padding:10px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:12.5px;cursor:pointer">📄 Nộp giải trình + biên bản</button>'+
+  '</div>';
+}
 function tddInitPage(){
   const root=document.getElementById('tdd-root'); if(!root) return;
   if(!_tddThang) _tddThang=_tddThangMax();
@@ -96,6 +126,7 @@ function _tddRender(d){
         (e.phan_hoi
           ? '<div style="margin-top:7px;background:#F9FAFB;border:1px solid #EEF0F2;border-radius:8px;padding:7px 10px;font-size:11.5px;color:#374151;line-height:1.5"><b style="color:'+(hf?hf[1]:'#0F6E56')+'">Phản hồi:</b> '+_tddEsc(e.phan_hoi)+'</div>'
           : '')+
+        _tddGiaiTrinh(e)+
       '</div>';
     });
     // chốt cuối

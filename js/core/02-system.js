@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.86',
+  'sys.cache_version': 'v18.88',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -613,6 +613,7 @@ const HUB_GROUPS = {
       { label:'Bản đồ cửa hàng',    desc:'Chỉ đường đến cửa hàng', ic:_hubIc.map,   roles:['NV','CTV'],               quyen:'bando.xem',        act:()=>goToPage('bandochidung') },
       { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
       { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
+      { label:'Theo dõi phong độ',  desc:'Điểm & xử lý lỗi của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['NV','CTV'], act:()=>goToPage('theodoi') },   // [v18.86]
       { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV','QLNS','QLBH','ADMIN'], act:()=>nsFaceOpenEnrollment() },  // [v18.15] mọi vai trò trừ CUA_HANG (Aroma)
       { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS','CUA_HANG'],         quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
       // [v18.28] Tài khoản CỬA HÀNG — mục CHỈ XEM, phạm vi cửa hàng mình (nút hành động đã gate riêng)
