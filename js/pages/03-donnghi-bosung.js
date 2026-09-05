@@ -604,9 +604,50 @@ async function moModalBoSungCa(){
   // [v18.69] reset + tải trạng thái kiểm soát (Lần N · Điểm · tường trình gate)
   const _tt=document.getElementById('bsc-tt'); if(_tt)_tt.value='';
   const _ttw=document.getElementById('bsc-tt-wrap'); if(_ttw)_ttw.style.display='none';
+  // [v18.83] reset ảnh biên bản
+  _bscBBAnhs=[]; const _bbw=document.getElementById('bsc-bb-wrap'); if(_bbw)_bbw.style.display='none';
+  const _bbg=document.getElementById('bsc-bb-grid'); if(_bbg)_bbg.innerHTML='';
+  const _bbt=document.getElementById('bsc-bb-ten'); if(_bbt)_bbt.textContent='';
   const _st0=document.getElementById('bsc-status'); if(_st0)_st0.innerHTML='';
   _bscLoadTrangThai();
 }
+
+// [v18.83] Điều kiện BẮT BUỘC biên bản giấy (có ảnh) ở bước bổ sung: điểm ≤6 + lần ≥3
+function _bscCanBienBan(d){
+  if(!d || !d.ok || d.co_dong) return false;
+  const ng = d.nguong || {};
+  const diemLow = (d.diem != null) && (d.diem <= (ng.diem_tt || 6));
+  const lanCao  = (d.lan_ke || 1) >= (ng.lan_tt || 3);
+  return diemLow && lanCao;
+}
+// [v18.83] Ảnh biên bản đính kèm ở modal bổ sung ca
+let _bscBBAnhs = [];   // [{blob, dataUrl}]
+async function bscBBChonAnh(inp){
+  const files = Array.prototype.slice.call(inp.files||[]); if(!files.length) return;
+  const ten=document.getElementById('bsc-bb-ten'); if(ten)ten.textContent='⏳ Đang xử lý ảnh…';
+  for(const f of files){
+    try{ let out={blob:f,dataUrl:null}; if(typeof muanonCompressAnh==='function') out=await muanonCompressAnh(f); _bscBBAnhs.push({blob:out.blob||f,dataUrl:out.dataUrl}); }catch(e){}
+  }
+  inp.value=''; _bscBBRender();
+}
+function bscBBXoaAnh(i){ _bscBBAnhs.splice(i,1); _bscBBRender(); }
+function _bscBBRender(){
+  const g=document.getElementById('bsc-bb-grid'); if(!g) return;
+  g.innerHTML=_bscBBAnhs.map(function(a,i){
+    return '<div style="position:relative;width:70px;height:70px"><img src="'+(a.dataUrl||'')+'" style="width:70px;height:70px;border-radius:8px;border:1px solid #E5E7EB;object-fit:cover"><button type="button" onclick="bscBBXoaAnh('+i+')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#DC2626;color:#fff;border:2px solid #fff;font-size:12px;line-height:1;cursor:pointer">×</button></div>';
+  }).join('');
+  const ten=document.getElementById('bsc-bb-ten'); if(ten)ten.textContent=_bscBBAnhs.length?('✓ '+_bscBBAnhs.length+' ảnh'):'';
+}
+async function _bscBBUpload(blob){
+  try{
+    const path='bb/'+(SESSION.ma||'KHAC')+'_'+Date.now()+'_'+Math.floor(Math.random()*1e4)+'.jpg';
+    const { error } = await supa.storage.from('bs-bien-ban').upload(path, blob, { contentType:'image/jpeg' });
+    if(error) return null;
+    const { data } = supa.storage.from('bs-bien-ban').getPublicUrl(path);
+    return data?data.publicUrl:null;
+  }catch(e){ return null; }
+}
+window.bscBBChonAnh=bscBBChonAnh; window.bscBBXoaAnh=bscBBXoaAnh;
 
 // [v18.69] Tải trạng thái kiểm soát bổ sung của NV (số lần, điểm, cần tường trình, chặn)
 window._bscTT = null;
@@ -643,6 +684,13 @@ function _bscRenderTrangThai(d){
     if(ttWrap)ttWrap.style.display='';
     const w=document.getElementById('bsc-tt-why'); if(w)w.textContent='· '+why;
   } else if(ttWrap){ ttWrap.style.display='none'; }
+  // [v18.83] điểm ≤6 + lần ≥3 → BẮT BUỘC thêm biên bản giấy (có ảnh)
+  const bbWrap=document.getElementById('bsc-bb-wrap');
+  if(_bscCanBienBan(d)){
+    if(bbWrap)bbWrap.style.display='';
+    const bw=document.getElementById('bsc-bb-why'); if(bw)bw.textContent='· điểm '+d.diem+' ≤'+(ng.diem_tt||6)+' + lần '+lan;
+    h+='<div style="margin-top:6px;padding:8px 11px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;font-size:11.5px;color:#991B1B"><b>📄 Phải nộp BIÊN BẢN GIẤY (chụp ảnh) kèm giải trình</b> — điểm ≤'+(ng.diem_tt||6)+' và bổ sung lần '+lan+'.</div>';
+  } else if(bbWrap){ bbWrap.style.display='none'; }
   if(d.ky_luat) h+='<div style="margin-top:6px;font-size:11px;color:#B91C1C;font-weight:600">🚨 Điểm ≤'+(ng.diem_kl||5)+' — thuộc diện xử lý kỷ luật.</div>';
   st.innerHTML=h;
 }
@@ -790,6 +838,9 @@ async function guiBoSungCa(){
     _ttNoiDung = ((document.getElementById('bsc-tt')||{}).value || '').trim();
     if (_ttNoiDung.length < 15) { errEl.textContent = 'Bắt buộc viết tường trình (tối thiểu 15 ký tự).'; errEl.style.display='block'; const _t=document.getElementById('bsc-tt'); if(_t)_t.focus(); return; }
   }
+  // [v18.83] điểm ≤6 + lần ≥3 → BẮT BUỘC biên bản giấy có ảnh (kèm giải trình ở trên)
+  const _laBB = _bscCanBienBan(_bsTT);
+  if (_laBB && !_bscBBAnhs.length) { errEl.textContent = 'Điểm ≤6 và bổ sung lần ≥3 — BẮT BUỘC đính kèm ảnh biên bản giấy.'; errEl.style.display='block'; return; }
 
   // [v16.2] Nếu chọn vị trí di động (Đội SALE/Cơ Động) → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
   let maChFinal = maCH;
@@ -818,6 +869,13 @@ async function guiBoSungCa(){
     const _minM = _bscMinBoSung();
     const _maxM = _n.getFullYear() + '-' + pad(_n.getMonth()+1) + '-' + pad(_n.getDate());
     if (ngayBSC < _minM || ngayBSC > _maxM){ errEl.textContent = 'Ngày bổ sung ngoài phạm vi cho phép (không quá hôm nay).'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
+    // [v18.83] Tải ảnh biên bản TRƯỚC khi tạo bổ sung (bắt buộc khi điểm ≤6 + lần ≥3)
+    let _bbUrls = null;
+    if (_laBB) {
+      _bbUrls = [];
+      for (const a of _bscBBAnhs) { const u = await _bscBBUpload(a.blob); if (u) _bbUrls.push(u); }
+      if (!_bbUrls.length) { errEl.textContent='Tải ảnh biên bản thất bại — thử lại.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
+    }
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
       p_ma_nv: SESSION.ma,
       p_ngay: ngayBSC,
@@ -832,10 +890,11 @@ async function guiBoSungCa(){
       errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
       errEl.style.display = 'block';
     } else {
-      // [v18.69] Nếu chạm ngưỡng → lưu tường trình kèm (loai TUONG_TRINH) cho QLNS xem
-      if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null }); } catch(e){} }
+      // [v18.83] điểm ≤6 + lần ≥3 → nộp BIÊN BẢN (ảnh + giải trình); nếu chỉ lần ≥3 → tường trình
+      if (_laBB) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'BIEN_BAN', p_noi_dung: (_ttNoiDung || lyDo), p_anh_urls: _bbUrls }); } catch(e){} }
+      else if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null }); } catch(e){} }
       dongModalBoSungCa();
-      showToast('✓ Đã gửi yêu cầu bổ sung' + (_ttNoiDung ? ' kèm tường trình' : '') + '. QLNS sẽ xem xét.', 'ok');
+      showToast('✓ Đã gửi yêu cầu bổ sung' + (_laBB ? ' kèm biên bản giấy' : (_ttNoiDung ? ' kèm tường trình' : '')) + '. QLNS sẽ xem xét.', 'ok');
       taiLichSu();
     }
   } catch (e) {
