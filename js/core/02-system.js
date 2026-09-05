@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.85',
+  'sys.cache_version': 'v18.86',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -364,6 +364,7 @@ const PAGE_TITLES={
   'ls-control':'KIỂM SOÁT LIVESTREAM',   // [v18.62]
   'ls-feedback':'CHI TIẾT PHẢN HỒI',   // [v18.63]
   'bs-kiemsoat':'KIỂM SOÁT BỔ SUNG',   // [v18.71]
+  'theodoi':'THEO DÕI PHONG ĐỘ',       // [v18.86]
   'donhang':   '',
   'donhang-nhan': '',
   'donhang-ql': '',
@@ -531,6 +532,7 @@ function goToPage(page){
   if(page==='ls-control')   { if(typeof lscInitPage==='function') lscInitPage(); }    // [v18.62] Trung tâm kiểm soát LS
   if(page==='ls-feedback')  { if(typeof lsfInitPage==='function') lsfInitPage(); }    // [v18.63] Chi tiết phản hồi
   if(page==='bs-kiemsoat')  { if(typeof bskInitPage==='function') bskInitPage(); }    // [v18.71] Kiểm soát bổ sung
+  if(page==='theodoi')      { if(typeof tddInitPage==='function') tddInitPage(); }    // [v18.86] Theo dõi phong độ (NV)
   if(page==='donhang')      { if(typeof dhDieuPhoiInit==='function') dhDieuPhoiInit(); }  // [v13.44] Đơn hàng Online
   if(page==='donhang-nhan') { if(typeof dhNhanInit==='function') dhNhanInit(); }  // [v13.45] CH nhận đơn
   else { if(typeof dhNhanLeave==='function') dhNhanLeave(); }

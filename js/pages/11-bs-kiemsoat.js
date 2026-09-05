@@ -293,11 +293,14 @@ function _bskSyncNotes(){
   });
   var fn=document.getElementById('bsk-final-note'); if(fn) _bskCurD._finalNote=fn.value;
 }
+// [v18.86] NV nhẹ (số lỗi ≤3 · bổ sung công ≤2) → mặc định 'Nhắc nhở' cho lỗi chưa xử lý
+function _bskDefaultNN(){ return !!(_bskCurD && (_bskCurD.so_loi||0) <= 3 && (_bskCurD.so_lan_bs||0) <= 2); }
 function _bskEvPills(e){
+  var dnn = (!e.hinh_thuc && !e.da_mien && _bskDefaultNN());
   return '<div class="bsk-hf">'+BSK_HF_LIST.map(function(hf){
-    var on=(e.hinh_thuc===hf[0])?(' on '+BSK_HF[hf[0]][1]):'';
+    var on=((e.hinh_thuc===hf[0]) || (dnn && hf[0]==='NHAC_NHO'))?(' on '+BSK_HF[hf[0]][1]):'';
     return '<button type="button" class="bsk-hf-pill'+on+'" onclick="bskSetEvent(\''+_bscEsc(e.event_key)+'\',\''+hf[0]+'\')">'+hf[1]+'</button>';
-  }).join('')+'</div>';
+  }).join('')+'</div>'+(dnn?'<div style="font-size:10.5px;color:#0F766E;margin-top:3px">Mặc định: Nhắc nhở (NV số lỗi ≤3 · bổ sung ≤2)</div>':'');
 }
 function _bskFinalPills(){
   return '<div class="bsk-hf">'+BSK_HF_LIST.map(function(hf){
