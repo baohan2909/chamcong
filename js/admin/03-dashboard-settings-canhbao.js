@@ -1384,7 +1384,7 @@ async function adm2OpenSuaLog(maNV, ngay, cbId) {
   // [v10.85] Build doiMap cho NV+ngày này để sub title row log hiển thị "Đội SALE XX - CH thực"
   try {
     const { data: ccData } = await supa.from('cham_cong')
-      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info')
+      .select('ma_nv, ngay, ma_ch, ten_ch_snapshot, ghi_chu, device_info')
       .eq('ma_nv', maNV).eq('ngay', ngay);
     window._doiSaleMap = _buildDoiSaleMap(ccData || []);
   } catch (e) {}
@@ -1403,15 +1403,15 @@ async function adm2LoadSuaLogBody() {
     const d = await adm2Rpc('fn_admin_get_logs_ngay', { p_ma_nv: _suaLogState.maNV, p_ngay: _suaLogState.ngay });
     const logs = (d && d.logs) || [];
     const cbs  = (d && d.cb)   || [];
-    // [v14.0] Lấy cảnh báo kèm giờ chấm → gắn lỗi vào từng lần chấm (map theo giờ HH:MM)
-    let cbByGio = {};
+    // [v18.84] Gắn cảnh báo vào ĐÚNG log theo cham_cong_id (KHÔNG theo giờ HH:MM) —
+    //   trước đây map theo giờ nên nhiều log cùng giờ đều bị hiện cảnh báo (lây chéo cả CH khác).
+    let cbByCC = {};
     try {
       const { data: cbRows } = await supa.from('canh_bao')
-        .select('id, gio_chamcong, loai_canh_bao, trang_thai')
+        .select('id, cham_cong_id, loai_canh_bao, trang_thai')
         .eq('ma_nv', _suaLogState.maNV).eq('ngay', _suaLogState.ngay);
       (cbRows || []).forEach(cb => {
-        const g = cb.gio_chamcong ? String(cb.gio_chamcong).substring(0,5) : '';
-        if (g) { (cbByGio[g] = cbByGio[g] || []).push(cb); }
+        if (cb.cham_cong_id) { (cbByCC[cb.cham_cong_id] = cbByCC[cb.cham_cong_id] || []).push(cb); }
       });
     } catch (e) {}
     // [#6] Lấy truong_ca hiện tại của từng log → default checkbox TC
@@ -1431,28 +1431,16 @@ async function adm2LoadSuaLogBody() {
         // [v10.85] Hiển thị value ban đầu: nếu là Đội SALE → tag tím
         const initVal = l.maCH ? ((l.tenCH || l.maCH) + ' (' + l.maCH + ')') : '';
         const initIsDoi = _slLaDiDong(l.tenCH || '', l.maCH || '');
-        // [v13.11] Tag Đội SALE PER-RECORD (không lây từ log khác trong ngày):
-        //  - tenCH là đội SALE → tô tím nguyên tên
-        //  - ghiChu chứa "[Đội SALE X] hỗ trợ..." (format mới) → tag đội + tên CH thực
-        //  - [v13.12] deviceInfo chứa "[SALE_ORIGIN:ma|ten]" / "[SALE_TARGET:ma|ten]" (format CŨ) → tag đội + tên CH thực
-        //  - còn lại → chỉ tên CH, KHÔNG tag
+        // [v18.84] Nhãn CH DÙNG CHUNG _fmtChVoiDoiSale (map cả ngày, có device_info) —
+        //   GIỐNG list ngoài → hiện đủ "Đội SALE XX - CH thực" / "Cơ Động - CH" kể cả khi
+        //   ghi_chu bản ghi không có dạng ngoặc [Đội SALE X].
         let chHtml = '';
         if (l.tenCH) {
-          const mGhi = (l.ghiChu || '').match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
-          const di = l.deviceInfo || '';
-          const mDi = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
-          if (initIsDoi) {
-            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(l.tenCH)}</span>`;
-          } else if (mGhi) {
-            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(mGhi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
-          } else if (mDi) {
-            chHtml = `<span style="color:#0F766E;font-weight:600">${adm2Esc(mDi[1].trim())}</span> - ${adm2Esc(l.tenCH)}`;
-          } else {
-            chHtml = adm2Esc(l.tenCH);
-          }
+          chHtml = (typeof _fmtChVoiDoiSale === 'function')
+            ? _fmtChVoiDoiSale(_suaLogState.maNV, l.tenCH, _suaLogState.ngay, l.maCH)
+            : adm2Esc(l.tenCH);
         }
-        const _gioKey = (l.gio || '').toString().substring(0,5);
-        const _logCbs = cbByGio[_gioKey] || [];
+        const _logCbs = cbByCC[l.id] || [];
         const cbBadges = _logCbs.map(cb => {
           const tt = cb.trang_thai;
           const c  = tt==='DA_DUYET' ? '#15803D' : tt==='TU_CHOI' ? '#B91C1C' : '#B45309';
