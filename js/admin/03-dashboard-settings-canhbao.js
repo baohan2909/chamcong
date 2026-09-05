@@ -1414,6 +1414,20 @@ async function adm2LoadSuaLogBody() {
         if (cb.cham_cong_id) { (cbByCC[cb.cham_cong_id] = cbByCC[cb.cham_cong_id] || []).push(cb); }
       });
     } catch (e) {}
+    // [v18.85] Số "Bổ sung ca lần N" trong THÁNG (rank theo ngày+id) → gắn lên badge BỔ SUNG CA
+    let bsLanById = {};
+    try {
+      const _ym = String(_suaLogState.ngay || '').slice(0,7);
+      const _yy = parseInt(_ym.slice(0,4),10), _mm = parseInt(_ym.slice(5,7),10);
+      const _mStart = _ym + '-01';
+      const _mNext = (_mm===12) ? ((_yy+1)+'-01-01') : (_yy+'-'+String(_mm+1).padStart(2,'0')+'-01');
+      const { data: _bsRows } = await supa.from('canh_bao')
+        .select('id, ngay')
+        .eq('ma_nv', _suaLogState.maNV).eq('loai_canh_bao', 'BỔ SUNG CA')
+        .gte('ngay', _mStart).lt('ngay', _mNext);
+      (_bsRows || []).sort((a,b) => String(a.ngay||'').localeCompare(String(b.ngay||'')) || String(a.id||'').localeCompare(String(b.id||'')))
+        .forEach((r,i) => { bsLanById[r.id] = i+1; });
+    } catch (e) {}
     // [#6] Lấy truong_ca hiện tại của từng log → default checkbox TC
     let _tcMap = {};
     try {
@@ -1445,7 +1459,8 @@ async function adm2LoadSuaLogBody() {
           const tt = cb.trang_thai;
           const c  = tt==='DA_DUYET' ? '#15803D' : tt==='TU_CHOI' ? '#B91C1C' : '#B45309';
           const bg = tt==='DA_DUYET' ? '#DCFCE7' : tt==='TU_CHOI' ? '#FEE2E2' : '#FEF3C7';
-          return `<span style="display:inline-block;padding:2px 8px;border-radius:5px;background:${bg};color:${c};font-size:10.5px;font-weight:700;margin:3px 4px 0 0">${adm2Esc(cb.loai_canh_bao || '')}</span>`;
+          const _lan = (cb.loai_canh_bao === 'BỔ SUNG CA' && bsLanById[cb.id]) ? (' · Lần ' + bsLanById[cb.id]) : '';
+          return `<span style="display:inline-block;padding:2px 8px;border-radius:5px;background:${bg};color:${c};font-size:10.5px;font-weight:700;margin:3px 4px 0 0">${adm2Esc(cb.loai_canh_bao || '')}${_lan}</span>`;
         }).join('');
         return `
         <div class="adm2-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#F9FAFB;margin-bottom:8px;border-radius:8px;border:1px solid #E5E7EB">
