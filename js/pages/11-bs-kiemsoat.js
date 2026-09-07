@@ -367,7 +367,7 @@ function _bskRenderDetail(){
         '<div class="bsk-ev-mota">'+_bscEsc(e.mo_ta||'')+'</div></div>';
       return;
     }
-    h+='<div class="bsk-ev"><div class="bsk-ev-top"><b>'+_bscEsc(LOAI_SK[e.loai]||e.loai)+'</b>'+
+    h+='<div class="bsk-ev"><div class="bsk-ev-top"><b>'+_bscEsc(LOAI_SK[e.loai]||e.loai)+((e.loai==='BO_SUNG'&&e.bs_lan)?(' · Lần '+e.bs_lan):'')+'</b>'+
       '<span class="bsk-ev-ngay">'+_bscEsc(e.ngay||'')+'</span></div>'+
       '<div class="bsk-ev-mota">'+_bscEsc(e.mo_ta||'')+'</div>'+
       _bskEvPills(e)+

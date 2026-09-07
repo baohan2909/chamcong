@@ -115,7 +115,7 @@ function _tddRender(d){
       const hf=e.hinh_thuc?_TDD_HF[e.hinh_thuc]:null;
       h+='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:12px 13px;margin-bottom:9px">'+
         '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
-          '<div style="font-size:14px;font-weight:800;color:#111827">'+_tddEsc(_TDD_LOAI[e.loai]||e.loai)+'</div>'+
+          '<div style="font-size:14px;font-weight:800;color:#111827">'+_tddEsc(_TDD_LOAI[e.loai]||e.loai)+((e.loai==='BO_SUNG'&&e.bs_lan)?(' · Lần '+e.bs_lan):'')+'</div>'+
           '<div style="font-size:11px;color:#9CA3AF">'+_tddEsc(e.ngay||'')+'</div>'+
         '</div>'+
         '<div style="font-size:12px;color:#6B7280;margin-top:2px">'+_tddEsc(e.mo_ta||'')+'</div>'+
