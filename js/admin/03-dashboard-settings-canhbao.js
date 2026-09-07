@@ -1384,9 +1384,12 @@ async function adm2OpenSuaLog(maNV, ngay, cbId) {
   // [v10.85] Build doiMap cho NV+ngày này để sub title row log hiển thị "Đội SALE XX - CH thực"
   try {
     const { data: ccData } = await supa.from('cham_cong')
-      .select('ma_nv, ngay, ma_ch, ten_ch_snapshot, ghi_chu, device_info')
+      .select('id, ma_nv, ngay, ma_ch, ten_ch_snapshot, ghi_chu, device_info')
       .eq('ma_nv', maNV).eq('ngay', ngay);
     window._doiSaleMap = _buildDoiSaleMap(ccData || []);
+    // [v18.90] map raw theo id log → nhận cơ động/sale THEO TỪNG LOG (không lây theo ngày+CH)
+    window._suaLogRawById = {};
+    (ccData || []).forEach(r => { if (r.id != null) window._suaLogRawById[r.id] = r; });
   } catch (e) {}
   await adm2LoadSuaLogBody();
 }
@@ -1445,14 +1448,17 @@ async function adm2LoadSuaLogBody() {
         // [v10.85] Hiển thị value ban đầu: nếu là Đội SALE → tag tím
         const initVal = l.maCH ? ((l.tenCH || l.maCH) + ' (' + l.maCH + ')') : '';
         const initIsDoi = _slLaDiDong(l.tenCH || '', l.maCH || '');
-        // [v18.84] Nhãn CH DÙNG CHUNG _fmtChVoiDoiSale (map cả ngày, có device_info) —
-        //   GIỐNG list ngoài → hiện đủ "Đội SALE XX - CH thực" / "Cơ Động - CH" kể cả khi
-        //   ghi_chu bản ghi không có dạng ngoặc [Đội SALE X].
+        // [v18.90] Nhãn CH THEO TỪNG LOG: khớp log với ghi_chu/device_info của chính nó (theo id)
+        //   → chỉ ca thật sự cơ động/sale mới gắn nhãn; ca thường cùng CH cùng ngày chỉ hiện tên CH.
         let chHtml = '';
         if (l.tenCH) {
-          chHtml = (typeof _fmtChVoiDoiSale === 'function')
-            ? _fmtChVoiDoiSale(_suaLogState.maNV, l.tenCH, _suaLogState.ngay, l.maCH)
-            : adm2Esc(l.tenCH);
+          if (typeof _fmtChPerLog === 'function') {
+            const _raw = (window._suaLogRawById && window._suaLogRawById[l.id]) || null;
+            const _team = (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(_raw) : null;
+            chHtml = _fmtChPerLog(l.tenCH, _team);
+          } else {
+            chHtml = adm2Esc(l.tenCH);
+          }
         }
         const _logCbs = cbByCC[l.id] || [];
         const cbBadges = _logCbs.map(cb => {

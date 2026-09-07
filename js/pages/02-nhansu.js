@@ -1550,6 +1550,28 @@ function _fmtChVoiDoiSale(maNV, tenCH, ngay, maCH) {
   return escHtml(tenCH);
 }
 
+// [v18.90] Nhận nhãn Đội SALE / Cơ Động theo CHÍNH 1 log (device_info/ghi_chu của log đó) —
+//   KHÔNG gộp theo ngày+CH nên không "lây" nhãn sang ca thường cùng CH cùng ngày.
+//   (Trích từ _logSaleTeamName trong Lịch sử duyệt — nguồn chuẩn.)
+function _nhanDoiSaleLog(row){
+  if (!row) return null;
+  const di = row.device_info || '';
+  let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
+  if (m) return m[1].trim();
+  const ghi = row.ghi_chu || '';
+  m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
+  if (m) return m[1].trim();
+  return null;
+}
+// [v18.90] Dựng nhãn CH per-log: Đội SALE trực tiếp → xanh; cơ động/sale hỗ trợ → "Đội X - CH"; thường → chỉ CH
+function _fmtChPerLog(tenCH, teamName){
+  if (!tenCH) return '';
+  if (/đội\s*sale/i.test(tenCH)) return `<span style="color:#0F766E;font-weight:600">${escHtml(tenCH)}</span>`;
+  if (teamName) return `<span style="color:#0F766E;font-weight:600">${escHtml(teamName)}</span> - ${escHtml(tenCH)}`;
+  return escHtml(tenCH);
+}
+if (typeof window !== 'undefined') { window._nhanDoiSaleLog = _nhanDoiSaleLog; window._fmtChPerLog = _fmtChPerLog; }
+
 // [v10.85] Build map đội sale từ list — gọi sau khi load data và lưu vào window._doiSaleMap
 // Detect 3 nguồn:
 //   1) ten_ch_snapshot match "Đội SALE XX" (chấm trực tiếp tại đội)

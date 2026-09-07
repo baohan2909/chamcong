@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.88',
+  'sys.cache_version': 'v18.90',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2360,10 +2360,13 @@ function taiLichSu(){
     // [v10.85] Build doiMap từ cham_cong hôm nay (RPC này không trả device_info)
     try {
       const { data: ccData } = await supa.from('cham_cong')
-        .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info')
+        .select('id, ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info')
         .eq('ma_nv', SESSION.ma).eq('ngay', today);
       window._doiSaleMap = _buildDoiSaleMap(ccData || []);
-    } catch(e) { window._doiSaleMap = {}; }
+      // [v18.90] map raw theo id log → nhận cơ động/sale THEO TỪNG LOG (không lây theo ngày+CH)
+      window._nvLogRawById = {};
+      (ccData || []).forEach(r => { if (r.id != null) window._nvLogRawById[r.id] = r; });
+    } catch(e) { window._doiSaleMap = {}; window._nvLogRawById = {}; }
     logs.length=0;
     ls.slice().reverse().forEach(l=>{
       if (_ccHideAutoTc(l.ghiChu)) return;   // [v17.67] ẩn dòng auto chuyển TC khỏi nhật ký
@@ -2446,11 +2449,16 @@ function renderLog(){
       errRows='<div class="log-item-err"><span class="log-err-txt" style="color:var(--green-m)">✓ Đã được duyệt</span></div>';
     }
 
+    // [v18.90] Nhãn CH theo TỪNG LOG (khớp id → ghi_chu/device_info của chính log; fallback ghiChu)
+    const _teamLog = (typeof _nhanDoiSaleLog === 'function')
+      ? _nhanDoiSaleLog((window._nvLogRawById && window._nvLogRawById[l.ccId]) || { ghi_chu: l.ghiChu })
+      : null;
+    const _chLog = (typeof _fmtChPerLog === 'function') ? _fmtChPerLog(l.tenCH, _teamLog) : l.tenCH;
     return `<div class="log-item">
       <div class="log-item-top">
         <span class="log-badge ${l.lbcls}">${l.loai}</span>
         <span class="log-time">${l.time}</span>
-        ${l.tenCH?`<span class="log-ch">· ${_fmtChVoiDoiSale(SESSION&&SESSION.ma, l.tenCH, l.ngay)}</span>`:''}
+        ${l.tenCH?`<span class="log-ch">· ${_chLog}</span>`:''}
         ${isLoi?`<span class="log-st ${stCls}">⚠ ${stTxt}</span>`:`<span class="log-st ls-ok">✓ Hợp lệ</span>`}
       </div>
       ${errRows}
@@ -2505,7 +2513,7 @@ function taiGioCong(){
   Promise.all([
     supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang }),
     supa.from('cham_cong')
-      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
+      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
       .eq('ma_nv', SESSION.ma)
       .gte('ngay', ngayDau)
       .lte('ngay', ngayCuoi)
@@ -2525,6 +2533,16 @@ function taiGioCong(){
     gcData = d.cacCap || [];
     // [v10.85] Build doiMap từ cham_cong để hiển thị prefix Đội SALE
     window._doiSaleMap = _buildDoiSaleMap(ccRes.data || []);
+    // [v18.90] Nhận cơ động/sale THEO TỪNG CA (khớp ngày|giờ) → không lây nhãn sang ca thường cùng CH
+    window._gcTeamByTime = {};
+    (ccRes.data || []).forEach(r => {
+      const t = (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(r) : null;
+      if (!t) return;
+      const hhmm = r.thoi_gian
+        ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' })
+        : '';
+      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm] = t;
+    });
     document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
     const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
     const tgGio = Math.floor(tongGioGiay / 3600);
@@ -2615,9 +2633,12 @@ function _renderGioCongTable(){
     caps.forEach((p, idx) => {
       // [v10.85] Prefix Đội SALE nếu cùng ngày NV có chấm tại Đội SALE
       const _maNV = SESSION && SESSION.ma;
-      // [FIX 20/08] truyền MÃ CH từng ca → nhận diện đội sale THEO CA (ca làm chính không bị lây nhãn)
-      const tenVao = p.tenCHVao ? _fmtChVoiDoiSale(_maNV, p.tenCHVao, ngay, p.maCHVao) : (p.maCHVao || '');
-      const tenRa  = p.tenCHRa  ? _fmtChVoiDoiSale(_maNV, p.tenCHRa,  ngay, p.maCHRa)  : (p.maCHRa  || '');
+      // [v18.90] Nhãn cơ động/sale THEO TỪNG CA: khớp ngày|giờ với ghi_chu của log đó
+      //   → ca thường cùng CH cùng ngày với 1 ca cơ động KHÔNG còn bị lây nhãn "Cơ Động".
+      const _teamVao = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioVao || '')]) || null;
+      const _teamRa  = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioRa  || '')]) || null;
+      const tenVao = p.tenCHVao ? (typeof _fmtChPerLog === 'function' ? _fmtChPerLog(p.tenCHVao, _teamVao) : escHtml(p.tenCHVao)) : (p.maCHVao || '');
+      const tenRa  = p.tenCHRa  ? (typeof _fmtChPerLog === 'function' ? _fmtChPerLog(p.tenCHRa,  _teamRa ) : escHtml(p.tenCHRa )) : (p.maCHRa  || '');
       // [v8.2 - hotfix] Hiện cả 2 CH nếu khác nhau, xuống dòng cho dễ đọc, KHÔNG cắt cụt
       const khacCH = (p.tenCHVao && p.tenCHRa && p.maCHVao !== p.maCHRa);
       let chHtml;
@@ -3066,7 +3087,7 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
   Promise.all([
     supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: maNV, p_thang: thang }),
     supa.from('cham_cong')
-      .select('ma_nv, ngay, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
+      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
       .eq('ma_nv', maNV).gte('ngay', thang + '-01').lte('ngay', thang + '-' + String(_lastD).padStart(2,'0'))
   ])
   .then(([gcRes, ccRes]) => {
@@ -3076,6 +3097,16 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
       return;
     }
     window._doiSaleMap = _buildDoiSaleMap(ccRes.data || []);
+    // [v18.90] map cơ động THEO CA (ngày|giờ) cho NV drill-down
+    window._gcTeamByTime = {};
+    (ccRes.data || []).forEach(r => {
+      const t = (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(r) : null;
+      if (!t) return;
+      const hhmm = r.thoi_gian
+        ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' })
+        : '';
+      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm] = t;
+    });
     // [v8.2] Parse string nếu cần
     if (typeof d === 'string') {
       try { d = JSON.parse(d); } catch(e) {
