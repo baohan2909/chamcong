@@ -612,13 +612,11 @@ async function moModalBoSungCa(){
   _bscLoadTrangThai();
 }
 
-// [v18.83] Điều kiện BẮT BUỘC biên bản giấy (có ảnh) ở bước bổ sung: điểm ≤6 + lần ≥3
+// [v18.93] BẮT BUỘC biên bản giấy (có ảnh) đi kèm ĐÚNG LÚC bắt buộc tường trình
+//   (bổ sung lần ≥ ngưỡng, mặc định 3) — không còn phụ thuộc điểm.
 function _bscCanBienBan(d){
   if(!d || !d.ok || d.co_dong) return false;
-  const ng = d.nguong || {};
-  const diemLow = (d.diem != null) && (d.diem <= (ng.diem_tt || 6));
-  const lanCao  = (d.lan_ke || 1) >= (ng.lan_tt || 3);
-  return diemLow && lanCao;
+  return !!d.can_tuong_trinh;
 }
 // [v18.83] Ảnh biên bản đính kèm ở modal bổ sung ca
 let _bscBBAnhs = [];   // [{blob, dataUrl}]
@@ -684,12 +682,12 @@ function _bscRenderTrangThai(d){
     if(ttWrap)ttWrap.style.display='';
     const w=document.getElementById('bsc-tt-why'); if(w)w.textContent='· '+why;
   } else if(ttWrap){ ttWrap.style.display='none'; }
-  // [v18.83] điểm ≤6 + lần ≥3 → BẮT BUỘC thêm biên bản giấy (có ảnh)
+  // [v18.93] bổ sung lần ≥ ngưỡng → BẮT BUỘC biên bản giấy (có ảnh) kèm tường trình
   const bbWrap=document.getElementById('bsc-bb-wrap');
   if(_bscCanBienBan(d)){
     if(bbWrap)bbWrap.style.display='';
-    const bw=document.getElementById('bsc-bb-why'); if(bw)bw.textContent='· điểm '+d.diem+' ≤'+(ng.diem_tt||6)+' + lần '+lan;
-    h+='<div style="margin-top:6px;padding:8px 11px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;font-size:11.5px;color:#991B1B"><b>📄 Phải nộp BIÊN BẢN GIẤY (chụp ảnh) kèm giải trình</b> — điểm ≤'+(ng.diem_tt||6)+' và bổ sung lần '+lan+'.</div>';
+    const bw=document.getElementById('bsc-bb-why'); if(bw)bw.textContent='· bổ sung lần '+lan;
+    h+='<div style="margin-top:6px;padding:8px 11px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;font-size:11.5px;color:#991B1B"><b>📄 Phải nộp BIÊN BẢN GIẤY (chụp ảnh) kèm giải trình</b> — bổ sung lần '+lan+'.</div>';
   } else if(bbWrap){ bbWrap.style.display='none'; }
   if(d.ky_luat) h+='<div style="margin-top:6px;font-size:11px;color:#B91C1C;font-weight:600">🚨 Điểm ≤'+(ng.diem_kl||5)+' — thuộc diện xử lý kỷ luật.</div>';
   st.innerHTML=h;
@@ -840,7 +838,7 @@ async function guiBoSungCa(){
   }
   // [v18.83] điểm ≤6 + lần ≥3 → BẮT BUỘC biên bản giấy có ảnh (kèm giải trình ở trên)
   const _laBB = _bscCanBienBan(_bsTT);
-  if (_laBB && !_bscBBAnhs.length) { errEl.textContent = 'Điểm ≤6 và bổ sung lần ≥3 — BẮT BUỘC đính kèm ảnh biên bản giấy.'; errEl.style.display='block'; return; }
+  if (_laBB && !_bscBBAnhs.length) { errEl.textContent = 'Bổ sung lần ≥3 — BẮT BUỘC đính kèm ảnh biên bản giấy.'; errEl.style.display='block'; return; }
 
   // [v16.2] Nếu chọn vị trí di động (Đội SALE/Cơ Động) → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
   let maChFinal = maCH;
@@ -890,9 +888,11 @@ async function guiBoSungCa(){
       errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
       errEl.style.display = 'block';
     } else {
-      // [v18.83] điểm ≤6 + lần ≥3 → nộp BIÊN BẢN (ảnh + giải trình); nếu chỉ lần ≥3 → tường trình
-      if (_laBB) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'BIEN_BAN', p_noi_dung: (_ttNoiDung || lyDo), p_anh_urls: _bbUrls }); } catch(e){} }
-      else if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null }); } catch(e){} }
+      // [v18.93] Gắn giải trình/biên bản vào ĐÚNG lỗi bổ sung ngày này (event_key = ma_nv#BO_SUNG#ngày)
+      //   → hiện dưới đúng lỗi ở Kiểm soát bổ sung (admin) + Theo dõi phong độ (NV), không nằm list chung.
+      const _evk = SESSION.ma + '#BO_SUNG#' + ngayBSC;
+      if (_laBB) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'BIEN_BAN', p_noi_dung: (_ttNoiDung || lyDo), p_anh_urls: _bbUrls, p_event_key: _evk }); } catch(e){} }
+      else if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null, p_event_key: _evk }); } catch(e){} }
       dongModalBoSungCa();
       showToast('✓ Đã gửi yêu cầu bổ sung' + (_laBB ? ' kèm biên bản giấy' : (_ttNoiDung ? ' kèm tường trình' : '')) + '. QLNS sẽ xem xét.', 'ok');
       taiLichSu();

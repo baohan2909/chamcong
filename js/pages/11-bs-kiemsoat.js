@@ -46,11 +46,11 @@ function _bscShowGrace(d){
       '<div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">'+
         '<div style="width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:#FEF3C7;display:grid;place-items:center;font-size:30px">⚠️</div>'+
         '<div style="font-size:18px;font-weight:800;color:#92400E">Cảnh báo kiểm soát</div>'+
-        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 4px">Điểm <b>'+diem+'/10</b> — bạn còn <b>'+owed+' biên bản</b> chưa nộp. Quy định: <b>mỗi điểm dưới 7 = 1 biên bản giấy</b> (chụp ảnh), bắt buộc nộp.</div>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 4px">Điểm <b>'+diem+'/10</b> — bạn còn <b>'+owed+' lỗi</b> cần nộp <b>giải trình + biên bản giấy (có ảnh)</b>. Nộp cho từng lỗi ở mục Theo dõi phong độ.</div>'+
         '<div style="font-size:12.5px;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:10px 12px;margin:12px 0;line-height:1.55">'+
           'Lần này bạn được chấm công sau <b id="bsg-count">30</b> giây — <b>CHỈ 1 LẦN DUY NHẤT</b>.<br>'+
           'Nếu chưa nộp đủ biên bản, <b>lần chấm công sau sẽ bị CHẶN HOÀN TOÀN</b>.</div>'+
-        '<button onclick="bsBienBanMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp biên bản giấy (kèm ảnh)</button>'+
+        '<button onclick="_bscToiTheoDoi()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp giải trình + biên bản (theo từng lỗi)</button>'+
         '<button id="bsg-proceed" disabled onclick="_bscQuaAnHan()" style="width:100%;padding:12px;background:#E5E7EB;color:#9CA3AF;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:not-allowed">Chờ 30 giây…</button>'+
       '</div></div>';
   let n = 30;
@@ -74,12 +74,22 @@ function _bscShowBlock(d){
       '<div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">'+
         '<div style="width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:#FEE2E2;display:grid;place-items:center;font-size:30px">⛔</div>'+
         '<div style="font-size:18px;font-weight:800;color:#991B1B">Không thể chấm công</div>'+
-        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 14px">Bạn đã dùng lần ân hạn nhưng còn <b>'+owed+' biên bản</b> chưa nộp (điểm '+diem+'/10). Vui lòng nộp đủ biên bản giấy (kèm ảnh) để tiếp tục chấm công — nếu không sẽ bị <b>xử lý kỷ luật</b>.</div>'+
-        '<button onclick="bsBienBanMo()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp biên bản giấy (kèm ảnh)</button>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin:10px 0 14px">Bạn đã dùng lần ân hạn nhưng còn <b>'+owed+' lỗi</b> chưa nộp giải trình + biên bản (điểm '+diem+'/10). Vui lòng nộp cho từng lỗi ở mục Theo dõi phong độ để tiếp tục chấm công — nếu không sẽ bị <b>xử lý kỷ luật</b>.</div>'+
+        '<button onclick="_bscToiTheoDoi()" style="width:100%;padding:12px;margin-bottom:9px;background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer">📄 Nộp giải trình + biên bản (theo từng lỗi)</button>'+
         '<button onclick="_bscDongCong()" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:11px;font-weight:600;font-size:13.5px;cursor:pointer">Đóng</button>'+
       '</div></div>';
 }
 function _bscDongCong(){ const r=document.getElementById('bsg-root'); if(r)r.innerHTML=''; if(_bscCountIv){clearInterval(_bscCountIv);_bscCountIv=null;} _bscPending=null; _bscbbEventKey=null; }
+// [v18.93] Cổng chấm công → nộp giải trình + biên bản THEO TỪNG LỖI ở Theo dõi phong độ
+//   (gắn đúng event_key, hiện dưới lỗi ở NV + admin, và vẫn tính vào cổng để hết chặn).
+function _bscToiTheoDoi(){
+  _bscDongCong();
+  try {
+    if (typeof goToPage === 'function') goToPage('theodoi');
+    else if (typeof moTheoDoiPhongDo === 'function') moTheoDoiPhongDo();
+  } catch(e){}
+}
+window._bscToiTheoDoi = _bscToiTheoDoi;
 
 // Bấm "Chấm công lần này" sau 30s → đánh dấu grace + cho qua chấm công
 async function _bscQuaAnHan(){
