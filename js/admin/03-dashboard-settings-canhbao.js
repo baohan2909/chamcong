@@ -1417,18 +1417,33 @@ async function adm2LoadSuaLogBody() {
         if (cb.cham_cong_id) { (cbByCC[cb.cham_cong_id] = cbByCC[cb.cham_cong_id] || []).push(cb); }
       });
     } catch (e) {}
-    // [v18.85] Số "Bổ sung ca lần N" trong THÁNG (rank theo ngày+id) → gắn lên badge BỔ SUNG CA
+    // [v18.95] Số "Bổ sung ca lần N" trong THÁNG — rank theo THỜI ĐIỂM XIN (created_at log bổ sung),
+    //   khớp Theo dõi phong độ / Kiểm soát bổ sung (không theo ngày ca nữa).
     let bsLanById = {};
     try {
       const _ym = String(_suaLogState.ngay || '').slice(0,7);
       const _yy = parseInt(_ym.slice(0,4),10), _mm = parseInt(_ym.slice(5,7),10);
       const _mStart = _ym + '-01';
       const _mNext = (_mm===12) ? ((_yy+1)+'-01-01') : (_yy+'-'+String(_mm+1).padStart(2,'0')+'-01');
-      const { data: _bsRows } = await supa.from('canh_bao')
-        .select('id, ngay')
-        .eq('ma_nv', _suaLogState.maNV).eq('loai_canh_bao', 'BỔ SUNG CA')
-        .gte('ngay', _mStart).lt('ngay', _mNext);
-      (_bsRows || []).sort((a,b) => String(a.ngay||'').localeCompare(String(b.ngay||'')) || String(a.id||'').localeCompare(String(b.id||'')))
+      const [_cbRes, _logRes] = await Promise.all([
+        supa.from('canh_bao').select('id, ngay')
+          .eq('ma_nv', _suaLogState.maNV).eq('loai_canh_bao', 'BỔ SUNG CA')
+          .gte('ngay', _mStart).lt('ngay', _mNext),
+        supa.from('cham_cong').select('ngay, created_at')
+          .eq('ma_nv', _suaLogState.maNV).eq('nguon', 'BO_SUNG_NV')
+          .gte('ngay', _mStart).lt('ngay', _mNext)
+      ]);
+      // thời điểm xin sớm nhất theo NGÀY ca
+      const _timeByNgay = {};
+      (_logRes.data || []).forEach(r => {
+        const d = String(r.ngay||''), t = String(r.created_at||'');
+        if (!(d in _timeByNgay) || t < _timeByNgay[d]) _timeByNgay[d] = t;
+      });
+      const _ord = (d) => { const t = _timeByNgay[String(d||'')]; return t ? Date.parse(t) : Infinity; };
+      (_cbRes.data || []).sort((a,b) =>
+          (_ord(a.ngay) - _ord(b.ngay))
+          || String(a.ngay||'').localeCompare(String(b.ngay||''))
+          || String(a.id||'').localeCompare(String(b.id||'')))
         .forEach((r,i) => { bsLanById[r.id] = i+1; });
     } catch (e) {}
     // [#6] Lấy truong_ca hiện tại của từng log → default checkbox TC
