@@ -318,8 +318,9 @@ function _bskEvPills(e){
 }
 // [v18.88] Giải trình/biên bản gắn ĐÚNG 1 lỗi (admin xem, chỉ đọc). Chỉ hiện ở lỗi cần giải trình.
 function _bskEvGiaiTrinh(e){
-  if(!e.can_giai_trinh) return '';
   var gt = e.giai_trinh || [];
+  // [v18.93] ĐÃ nộp → luôn hiện (kể cả lỗi Nhắc nhở); chưa nộp → chỉ hiện "chưa nộp" với lỗi Chờ
+  if(!gt.length && !e.can_giai_trinh) return '';
   var head = '<div style="margin-top:9px;font-size:11px;font-weight:800;color:#B45309">Giải trình / biên bản NV'+(gt.length?'':' — <span style="color:#DC2626">chưa nộp</span>')+'</div>';
   var body = gt.map(function(b){
     var anhs=(b.anh_urls&&b.anh_urls.length)?b.anh_urls:(b.anh_url?[b.anh_url]:[]);

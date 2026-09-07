@@ -26,9 +26,9 @@ const _TDD_HF = {
 };
 
 function _tddJs(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-// [v18.88] Giải trình + biên bản gắn ĐÚNG 1 lỗi. Chỉ hiện ở lỗi cần giải trình (Chờ quản lý xử lý).
+// [v18.88/93] Giải trình + biên bản gắn ĐÚNG 1 lỗi. ĐÃ nộp → luôn hiện (kể cả lỗi Nhắc nhở);
+//   chưa nộp → chỉ hiện nút với lỗi "Chờ" (bắt buộc).
 function _tddGiaiTrinh(e){
-  if(!e.can_giai_trinh) return '';
   const gt = e.giai_trinh || [];
   const stMap = { DA_NOP:['Chờ QLNS duyệt','#B45309','#FEF3C7'], DA_DUYET:['Đã duyệt','#0F6E56','#E1F5EE'], MIEN:['Đã miễn','#6B7280','#F3F4F6'] };
   if(gt.length){
@@ -49,7 +49,8 @@ function _tddGiaiTrinh(e){
       }).join('')+
     '</div>';
   }
-  // chưa nộp → yêu cầu + nút nộp
+  // chưa nộp: chỉ hiện nút với lỗi BẮT BUỘC (Chờ); lỗi Nhắc nhở chưa nộp → không hiện gì
+  if(!e.can_giai_trinh) return '';
   return '<div style="margin-top:9px;border-top:1px dashed #E5E7EB;padding-top:9px">'+
     '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:9px;padding:8px 10px;font-size:11px;color:#991B1B;line-height:1.45;margin-bottom:8px"><b>Cần nộp giải trình + biên bản giấy (có ảnh)</b> cho lỗi này.</div>'+
     '<button type="button" onclick="bsBienBanMo(\''+_tddJs(e.event_key)+'\')" style="width:100%;padding:10px;background:linear-gradient(135deg,#B45309,#D97706);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:12.5px;cursor:pointer">📄 Nộp giải trình + biên bản</button>'+
