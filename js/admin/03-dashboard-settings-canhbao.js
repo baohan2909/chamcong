@@ -1384,7 +1384,7 @@ async function adm2OpenSuaLog(maNV, ngay, cbId) {
   // [v10.85] Build doiMap cho NV+ngày này để sub title row log hiển thị "Đội SALE XX - CH thực"
   try {
     const { data: ccData } = await supa.from('cham_cong')
-      .select('id, ma_nv, ngay, ma_ch, ten_ch_snapshot, ghi_chu, device_info')
+      .select('id, ma_nv, ngay, ma_ch, ten_ch_snapshot, ghi_chu, device_info, nguon')
       .eq('ma_nv', maNV).eq('ngay', ngay);
     window._doiSaleMap = _buildDoiSaleMap(ccData || []);
     // [v18.90] map raw theo id log → nhận cơ động/sale THEO TỪNG LOG (không lây theo ngày+CH)
@@ -1447,19 +1447,27 @@ async function adm2LoadSuaLogBody() {
         .forEach((r,i) => { bsLanById[r.id] = i+1; });
     } catch (e) {}
     // [#6] Lấy truong_ca hiện tại của từng log → default checkbox TC
-    let _tcMap = {};
+    // [v18.102] + ghi_chu/nguon → ẨN log tự chuyển khi đổi trưởng ca (AUTO_CHUYEN_TC)
+    let _tcMap = {}, _autoTcById = {};
     try {
       const { data: _tcRows } = await supa.from('cham_cong')
-        .select('id, truong_ca')
+        .select('id, truong_ca, ghi_chu, nguon')
         .eq('ma_nv', _suaLogState.maNV).eq('ngay', _suaLogState.ngay);
-      (_tcRows || []).forEach(r => { _tcMap[r.id] = !!r.truong_ca; });
+      (_tcRows || []).forEach(r => {
+        _tcMap[r.id] = !!r.truong_ca;
+        const _isAuto = (r.nguon === 'AUTO_CHUYEN_TC')
+          || (typeof _ccHideAutoTc === 'function' && _ccHideAutoTc(r.ghi_chu));
+        if (_isAuto) _autoTcById[r.id] = true;
+      });
     } catch (e) {}
     const LOAI_OPTIONS = ['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'];
     const LOAI_TEXT = {'VAO_CA':'Vào ca','RA_GIUA_CA':'Ra giữa ca','VAO_GIUA_CA':'Vào giữa ca','RA_CA':'Ra ca'};
 
-    const logsHtml = logs.length === 0
+    // [v18.102] Ẩn log tự chuyển khi đổi trưởng ca (không cho sửa/hiển thị trong modal Sửa lịch)
+    const _logsView = logs.filter(l => !_autoTcById[l.id]);
+    const logsHtml = _logsView.length === 0
       ? '<div class="adm2-empty">Chưa có log chấm công nào trong ngày</div>'
-      : logs.map(l => {
+      : _logsView.map(l => {
         // [v10.85] Hiển thị value ban đầu: nếu là Đội SALE → tag tím
         const initVal = l.maCH ? ((l.tenCH || l.maCH) + ' (' + l.maCH + ')') : '';
         const initIsDoi = _slLaDiDong(l.tenCH || '', l.maCH || '');
