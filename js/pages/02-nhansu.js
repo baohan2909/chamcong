@@ -1368,19 +1368,31 @@ async function taiLichSuDuyet(){
         if (_r2 && _r2.data && Array.isArray(_r2.data.list)) _lanSource = _r2.data.list;
       } catch(e){}
     }
+    // [v18.97] Đánh số bổ sung theo THỜI ĐIỂM XIN (created_at log BO_SUNG_NV) — khớp Sửa lịch / Theo dõi phong độ / Kiểm soát bổ sung.
     const _bosungLan = {};
-    (function(){
+    try {
+      const _bsCb = _lanSource.filter(r => r.loaiCB === 'BỔ SUNG CA' && (r.maNV||r.ma_nv) && r.ngay);
+      const _mas = Array.from(new Set(_bsCb.map(r => r.maNV||r.ma_nv)));
+      const _ngays = _bsCb.map(r => String(r.ngay).slice(0,10)).sort();
+      const _timeByKey = {};
+      if (_mas.length && _ngays.length) {
+        const { data: _logs } = await supa.from('cham_cong')
+          .select('ma_nv, ngay, created_at')
+          .in('ma_nv', _mas).eq('nguon', 'BO_SUNG_NV')
+          .gte('ngay', _ngays[0]).lte('ngay', _ngays[_ngays.length-1]);
+        (_logs||[]).forEach(r => {
+          const k = r.ma_nv + '|' + String(r.ngay).slice(0,10), t = String(r.created_at||'');
+          if (!(k in _timeByKey) || t < _timeByKey[k]) _timeByKey[k] = t;
+        });
+      }
+      const _ord = (r) => { const t = _timeByKey[(r.maNV||r.ma_nv) + '|' + String(r.ngay||'').slice(0,10)]; return t ? Date.parse(t) : Infinity; };
       const grp = {};
-      _lanSource.forEach(r => {
-        if (r.loaiCB !== 'BỔ SUNG CA') return;
-        const mk = (r.maNV||r.ma_nv||'?') + '|' + String(r.ngay||'').slice(0,7);
-        (grp[mk] = grp[mk] || []).push(r);
-      });
+      _bsCb.forEach(r => { const mk = (r.maNV||r.ma_nv) + '|' + String(r.ngay||'').slice(0,7); (grp[mk] = grp[mk] || []).push(r); });
       Object.keys(grp).forEach(mk => {
-        grp[mk].sort((a,b) => String(a.ngay||'').localeCompare(String(b.ngay||'')) || String(a.id||'').localeCompare(String(b.id||'')));
+        grp[mk].sort((a,b) => (_ord(a)-_ord(b)) || String(a.ngay||'').localeCompare(String(b.ngay||'')) || String(a.id||'').localeCompare(String(b.id||'')));
         grp[mk].forEach((r,i) => { if (r.id!=null) _bosungLan[r.id] = i+1; });
       });
-    })();
+    } catch(e) {}
     const _renderCBItem = (r) => {
       const _loaiTxt = (r.loaiCB === 'BỔ SUNG CA' && _bosungLan[r.id]) ? ('BỔ SUNG CA · Lần ' + _bosungLan[r.id]) : (r.loaiCB||'');
       const ngayParts = (r.ngay||'').split('-');
