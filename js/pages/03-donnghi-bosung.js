@@ -888,9 +888,10 @@ async function guiBoSungCa(){
       errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
       errEl.style.display = 'block';
     } else {
-      // [v18.93] Gắn giải trình/biên bản vào ĐÚNG lỗi bổ sung ngày này (event_key = ma_nv#BO_SUNG#ngày)
-      //   → hiện dưới đúng lỗi ở Kiểm soát bổ sung (admin) + Theo dõi phong độ (NV), không nằm list chung.
-      const _evk = SESSION.ma + '#BO_SUNG#' + ngayBSC;
+      // [v18.97] Gắn giải trình/biên bản vào ĐÚNG lượt bổ sung (event_key khớp máy dò):
+      //   từ 2026-09 = ma_nv#BO_SUNG#ngày#<id log>; trước đó = ma_nv#BO_SUNG#ngày (gộp ngày).
+      const _bsId = (data && data.id) ? String(data.id) : '';
+      const _evk = SESSION.ma + '#BO_SUNG#' + ngayBSC + ((ngayBSC >= '2026-09-01' && _bsId) ? ('#' + _bsId) : '');
       if (_laBB) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'BIEN_BAN', p_noi_dung: (_ttNoiDung || lyDo), p_anh_urls: _bbUrls, p_event_key: _evk }); } catch(e){} }
       else if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null, p_event_key: _evk }); } catch(e){} }
       dongModalBoSungCa();
