@@ -1980,6 +1980,7 @@ function renderDonNghiPhep(){
         anhUrl: d.anhUrl || '',
         ghiChuQLNS: d.ghiChuQLNS || '',
         nguoiDuyet: d.nguoiDuyet || '',
+        createdAt: d.createdAt || '',
         ngayBatDau: ngay,
         ngayKetThuc: ngay,
         soNgay: 1,
@@ -2013,6 +2014,8 @@ function renderDonNghiPhep(){
       const badgeCls = g.trangThai==='Đã duyệt'?'dnpb-da':g.trangThai==='Từ chối'?'dnpb-tc':'dnpb-cho';
       const lyDoTxt = g.lyDo || '';
       const linkAnh = g.anhUrl || '';
+      // [v18.100] Ngày NV tạo/gửi đơn lên hệ thống
+      const ngayTaoInfo = g.createdAt ? (function(){ try{ const _d=new Date(g.createdAt); if(isNaN(_d)) return ''; return '<div style="font-size:11px;color:var(--text-m);margin-top:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Gửi đơn: '+pad(_d.getDate())+'/'+pad(_d.getMonth()+1)+'/'+_d.getFullYear()+' '+pad(_d.getHours())+':'+pad(_d.getMinutes())+'</div>'; }catch(e){ return ''; } })() : '';
       const timeLabel = g.soNgay === 1
         ? fmtNgay2(g.ngayBatDau)
         : `<span style="color:#0F6E56;font-weight:700">${fmtNgay2(g.ngayBatDau)} → ${fmtNgay2(g.ngayKetThuc)}</span> <span style="background:#E0F2F1;color:#0F6E56;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px">${g.soNgay} ngày</span>`;
@@ -2036,6 +2039,7 @@ function renderDonNghiPhep(){
           <span class="dnp-badge ${badgeCls}">${g.trangThai}</span>
         </div>
         ${lyDoTxt?`<div class="dnp-lydo" style="margin-top:8px"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
+        ${ngayTaoInfo}
         ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Xem ảnh</div>`:''}
         ${nguoiDuyetInfo}
         ${qlnsNote}
