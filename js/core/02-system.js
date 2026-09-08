@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.102',
+  'sys.cache_version': 'v18.103',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2562,16 +2562,17 @@ function _gcBadgeTrangThai(p) {
   const cb = p.cb_trang_thai;
   const bs = p.bs_trang_thai;
   const isThieu = p.lyDo === 'THIEU_VAO' || p.lyDo === 'THIEU_RA';
-  const STYLE_BASE = 'display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;margin-top:3px;line-height:1.3;white-space:nowrap;';
+  const STYLE_BASE = 'display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;margin-top:3px;line-height:1.3;';
 
-  // Map trạng thái → style + text
-  const renderBadge = (text, type) => {
+  // Map trạng thái → style + text. [v18.103] wrap=true → cho xuống dòng (badge có lý do từ chối dài).
+  const renderBadge = (text, type, wrap) => {
     let bg, color;
     if (type === 'wait')      { bg = 'var(--amber-lt)';  color = 'var(--amber)'; }
     else if (type === 'ok')   { bg = 'var(--green-lt)';  color = 'var(--green)'; }
     else if (type === 'fail') { bg = 'var(--red-lt)';    color = 'var(--red)'; }
     else                      { bg = 'var(--gray-lt)';   color = 'var(--text-m)'; }
-    return `<div style="${STYLE_BASE}background:${bg};color:${color}">${text}</div>`;
+    const ws = wrap ? 'white-space:normal;word-break:break-word;' : 'white-space:nowrap;';
+    return `<div style="${STYLE_BASE}${ws}background:${bg};color:${color}">${text}</div>`;
   };
 
   // ─── Ưu tiên 1: Có CB → hiển thị trạng thái CB ───
@@ -2582,8 +2583,9 @@ function _gcBadgeTrangThai(p) {
       return renderBadge('✓ Đã duyệt', 'ok');
     }
     if (cb === 'TU_CHOI') {
-      const ly = p.cb_ly_do_tu_choi ? ` – ${p.cb_ly_do_tu_choi.substring(0, 30)}${p.cb_ly_do_tu_choi.length > 30 ? '…' : ''}` : '';
-      return renderBadge(`✕ Bị từ chối${ly}`, 'fail');
+      // [v18.103] Hiện ĐẦY ĐỦ lý do từ chối (bỏ cắt 30 ký tự) + cho xuống dòng
+      const ly = p.cb_ly_do_tu_choi ? ` – ${escHtml(p.cb_ly_do_tu_choi)}` : '';
+      return renderBadge(`✕ Bị từ chối${ly}`, 'fail', true);
     }
     if (cb === 'DA_GIAI_TRINH') return renderBadge('⏳ Chờ duyệt', 'wait');
     if (cb === 'CHUA_GIAI_TRINH') return renderBadge('• Chưa giải trình', 'none');
@@ -2599,8 +2601,9 @@ function _gcBadgeTrangThai(p) {
     }
     if (bs === 'DA_DUYET')      return renderBadge('✓ Đã duyệt bổ sung', 'ok');
     if (bs === 'TU_CHOI') {
-      const ly = p.bs_ly_do_tu_choi ? ` – ${p.bs_ly_do_tu_choi.substring(0, 30)}${p.bs_ly_do_tu_choi.length > 30 ? '…' : ''}` : '';
-      return renderBadge(`✕ Bị từ chối${ly}`, 'fail');
+      // [v18.103] Hiện ĐẦY ĐỦ lý do từ chối (bỏ cắt 30 ký tự) + cho xuống dòng
+      const ly = p.bs_ly_do_tu_choi ? ` – ${escHtml(p.bs_ly_do_tu_choi)}` : '';
+      return renderBadge(`✕ Bị từ chối${ly}`, 'fail', true);
     }
     if (bs === 'CHO_DUYET' || bs === 'DA_GIAI_TRINH') return renderBadge('⏳ Chờ duyệt bổ sung', 'wait');
     return renderBadge('• Chưa xin bổ sung', 'none');

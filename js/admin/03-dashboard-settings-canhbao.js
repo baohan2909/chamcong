@@ -1308,20 +1308,31 @@ async function adm2DuyetCanhBao(id, loaiCb) {
 }
 
 // [v9.45] Admin Từ chối cảnh báo (kèm modal nhập lý do)
+// [v18.103] Gọi RPC fn_admin_tu_choi_cb → update + GỬI THÔNG BÁO tới chuông NV.
+//   Fallback update thẳng nếu RPC chưa cài (không có thông báo, nhưng từ chối vẫn chạy).
 async function adm2TuChoiCanhBao(id) {
   const lyDo = prompt('Lý do từ chối (bắt buộc):');
   if (!lyDo || !lyDo.trim()) { adm2Toast('Cần nhập lý do từ chối', 'error'); return; }
   try {
-    const { data, error } = await supa.from('canh_bao').update({
-      trang_thai: 'TU_CHOI',
-      nguoi_duyet: SESSION.ma,
-      thoi_gian_duyet: new Date().toISOString(),
-      ghi_chu_duyet: lyDo.trim()
-    }).eq('id', id);
-    if (error) throw error;
+    let daBao = false;
+    const { data: r, error: eRpc } = await supa.rpc('fn_admin_tu_choi_cb', {
+      p_id: id, p_ly_do: lyDo.trim(), p_admin: SESSION.ma
+    });
+    if (!eRpc && r && r.ok) {
+      daBao = true;
+    } else {
+      // RPC chưa cài / lỗi → từ chối bằng update thẳng (chuông sẽ không báo)
+      const { error } = await supa.from('canh_bao').update({
+        trang_thai: 'TU_CHOI',
+        nguoi_duyet: SESSION.ma,
+        thoi_gian_duyet: new Date().toISOString(),
+        ghi_chu_duyet: lyDo.trim()
+      }).eq('id', id);
+      if (error) throw error;
+    }
     const _recT = (window._lsdCachedList || []).find(r => r.id === id);
     if (_recT) await _rebuildCong(_recT.maNV || _recT.ma_nv, _recT.ngay);   // [fix] dựng lại giờ công
-    adm2Toast('Đã từ chối', 'success');
+    adm2Toast(daBao ? 'Đã từ chối — đã thông báo NV' : 'Đã từ chối', 'success');
     // [v9.45] Reload
     if (typeof adm2LoadCBList === 'function' && document.getElementById('adm2-cb-listbody')) {
       adm2LoadCBList();

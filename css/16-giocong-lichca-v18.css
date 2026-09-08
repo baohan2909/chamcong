@@ -661,3 +661,7 @@ body.ns18-shell #gcql-detail-modal [style*="color:var(--green)"]{color:var(--tea
 /* [FIX #3] Cột "Cửa hàng" (ô cuối) bảng Giờ công cá nhân: cho XUỐNG DÒNG, hiện đủ tên.
    Đè rule v18 toàn cục 15-pages-v18.css:36 (.ns18 .gc-table td{white-space:nowrap}) vốn cắt tên dài. */
 #page-giocong.ns18 .gc-table td:last-child{white-space:normal;word-break:break-word}
+
+/* [v18.103] Ô "Giờ công" (chứa badge "Bị từ chối"): cho XUỐNG DÒNG để hiện ĐẦY ĐỦ lý do từ chối.
+   Cũng đè 15-pages-v18.css:36 (.ns18 .gc-table td{white-space:nowrap}). */
+#page-giocong.ns18 .gc-table td.gc-tong{white-space:normal;word-break:break-word}
