@@ -1051,6 +1051,7 @@ function _renderACCDnpNV(tu,den){
         </div>
         ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
         ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đính kèm</div>`:''}
+        ${_dnpNgayGui(don.createdAt)}
         ${qlnsNote}
       </div>`;
     }).join('');
@@ -1058,6 +1059,13 @@ function _renderACCDnpNV(tu,den){
   }).join('');
 }
 
+// [v18.100] HTML "Gửi đơn: ngày giờ" (thời điểm NV tạo/gửi đơn lên hệ thống)
+function _dnpNgayGui(createdAt){
+  if(!createdAt) return '';
+  try{ const _d=new Date(createdAt); if(isNaN(_d)) return '';
+    return '<div style="font-size:11px;color:var(--text-m);margin-top:4px">🕒 Gửi đơn: '+pad(_d.getDate())+'/'+pad(_d.getMonth()+1)+'/'+_d.getFullYear()+' '+pad(_d.getHours())+':'+pad(_d.getMinutes())+'</div>';
+  }catch(e){ return ''; }
+}
 function _renderACCDnpQL(){
   // Dùng lại logic renderDonNghiPhep nhưng đổi container
   const listEl=document.getElementById('accdnp-list');
@@ -1093,6 +1101,7 @@ function _renderACCDnpQL(){
         </div>
         ${lyDoTxt?`<div class="dnp-lydo"><div class="dnp-lydo-lbl">Lý do</div>${lyDoTxt}</div>`:''}
         ${linkAnh?`<div onclick="window.open('${linkAnh}','_blank')" class="dnp-anh-btn">📎 Xem ảnh đính kèm</div>`:''}
+        ${_dnpNgayGui(don.createdAt)}
         ${nguoiDuyetInfo}
         ${qlnsNote}${btns}
       </div>`;
