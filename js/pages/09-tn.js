@@ -40,8 +40,7 @@ const TN_GROUPS = [
     ['thue_tncn','Thuế TNCN','money'], ['tru_khac','Trừ khác','money'] ] },
   { name:'Thuế & bảo hiểm (chi tiết)', accent:'#4A5670', rows:[
     ['bhxh_8','BHXH 8%','money'], ['bhyt_15','BHYT 1,5%','money'], ['bhtn_1','BHTN 1%','money'],
-    ['nguoi_phu_thuoc','Người phụ thuộc','txt'],
-    ['so_nguoi_phu_thuoc','Số người phụ thuộc','txt', 1],  // [v18.113] cột SL NPT (BO) — ngay TRÊN Giảm trừ gia cảnh; cờ 1 = hiện cả khi =0
+    ['so_nguoi_phu_thuoc','Số người phụ thuộc','num0'],  // [v18.114] cột SL NPT (BO) — LUÔN hiện (=0 ghi "0"), ngay TRÊN Giảm trừ gia cảnh
     ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
     ['com_khong_thue','Tiền cơm không tính thuế','money'], ['tn_chiu_thue','Thu nhập chịu thuế','money'] ] },
   { name:'Tài khoản nhận', accent:'#CBA45A', rows:[
@@ -128,8 +127,8 @@ function _tnSlipCore(p, d){
      '</div></div>';
   // groups
   TN_GROUPS.forEach((g,gi)=>{
-    // [v18.113] Dòng có cờ r[3]=1 (vd Số người phụ thuộc): hiện cả khi =0, chỉ ẩn khi THỰC SỰ trống.
-    const rows=g.rows.filter(r=>_tnHasVal(d[r[0]]) || (r[3] && d[r[0]]!=null && String(d[r[0]]).trim()!==''));
+    // [v18.114] Dòng fmt='num0' (vd Số người phụ thuộc): LUÔN hiện; giá trị rỗng/0 → ghi "0".
+    const rows=g.rows.filter(r=>_tnHasVal(d[r[0]]) || r[2]==='num0');
     if(!rows.length) return;
     const open = gi<3;
     const totalTxt = g.total!=null ? ((g.neg?'−':'')+_tnMoney(d[g.total])) : '';
@@ -139,7 +138,7 @@ function _tnSlipCore(p, d){
        '<div class="tn-grp-rows">';
     rows.forEach(r=>{
       const key=r[0], lbl=r[1], fmt=r[2]; const raw=d[key];
-      let val = fmt==='money'?( (g.neg?'−':'')+_tnMoney(raw) ) : fmt==='gio'?_tnGio(raw) : fmt==='stk'?_tnMaskStk(raw) : _tnEsc(raw);
+      let val = fmt==='money'?( (g.neg?'−':'')+_tnMoney(raw) ) : fmt==='gio'?_tnGio(raw) : fmt==='stk'?_tnMaskStk(raw) : fmt==='num0'?String(Math.round(_tnNum(raw))) : _tnEsc(raw);
       h+='<div class="tn-row"><span class="k">'+_tnEsc(lbl)+'</span><span class="v'+(g.neg&&fmt==='money'?' neg':'')+'">'+val+'</span></div>';
     });
     h+='</div></div>';
