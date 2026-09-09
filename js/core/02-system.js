@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.104',
+  'sys.cache_version': 'v18.105',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4004,7 +4004,7 @@ function startNSPolling(){
       const newCount=newCBList.length;
       if(newCount!==_pollLastCount){
         _pollLastCount=newCount;
-        nsData=d.danhSach||[];
+        nsData=_locMaChuyen(d.danhSach);   // [v18.105] ẨN mã đã chuyển
         nsCBList=newCBList;
         document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
@@ -4141,6 +4141,28 @@ function escHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'
 // [v18.104] Mã NV đã CHUYỂN sang mã khác (CTV→NS...) → nhận diện qua ghi_chu (bền, KHÔNG theo trang_thai
 //   vì sync Sheet ghi đè DA_CHUYEN_MA→INACTIVE). Dùng để ẨN mã cũ khỏi các ô TÌM/CHỌN nhân viên.
 function _maDaChuyen(ghiChu){ return /Đã\s*chuyển\s*sang/i.test(ghiChu || ''); }
+
+// [v18.105] Tập mã đã chuyển (Set<ma_nv>) — nạp 1 lần, cache. Dùng để lọc danh sách NV
+//   khi nguồn KHÔNG trả ghi_chu (vd RPC fn_get_nhan_su_overview → nsData).
+let _maChuyenSet = null;         // Set các mã đã chuyển; null = chưa nạp
+let _maChuyenProm = null;
+function _loadMaChuyenSet(force){
+  if (_maChuyenSet && !force) return Promise.resolve(_maChuyenSet);
+  if (_maChuyenProm && !force) return _maChuyenProm;
+  _maChuyenProm = supa.from('nhan_vien').select('ma_nv, ghi_chu')
+    .ilike('ghi_chu', '%Đã chuyển sang %')
+    .then(({ data }) => {
+      _maChuyenSet = new Set((data || []).filter(r => _maDaChuyen(r.ghi_chu)).map(r => r.ma_nv));
+      return _maChuyenSet;
+    })
+    .catch(() => { _maChuyenSet = new Set(); return _maChuyenSet; });
+  return _maChuyenProm;
+}
+// Lọc bỏ NV có mã đã chuyển khỏi 1 danh sách (mỗi phần tử có .ma). Chưa nạp set → trả nguyên (an toàn).
+function _locMaChuyen(list){
+  if (!_maChuyenSet) return list || [];
+  return (list || []).filter(nv => nv && !_maChuyenSet.has(nv.ma));
+}
 
 // ════════════════════════════════════════════════════════════════════════
 // [v10.85 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
@@ -4334,13 +4356,16 @@ function taiNhanSu(forceRefresh){
   // [v10.85 FIX YC#5] CUA_HANG chỉ thấy NS của CH mình
   const _maCH = (SESSION && SESSION.vaiTro === 'CUA_HANG') ? SESSION.cuaHangMa : null;
   // [v12-P2] Supabase RPC thay nhansu
-  supa.rpc('fn_get_nhan_su_overview', {
-    p_q: nsSearchQ || null,
-    p_cua_hang: _maCH, p_khu_vuc: null,
-    p_tu_ngay: nsTu, p_den_ngay: nsDen
-  }).then(({ data: d, error }) => {
+  Promise.all([
+    supa.rpc('fn_get_nhan_su_overview', {
+      p_q: nsSearchQ || null,
+      p_cua_hang: _maCH, p_khu_vuc: null,
+      p_tu_ngay: nsTu, p_den_ngay: nsDen
+    }),
+    _loadMaChuyenSet()   // [v18.105] nạp tập mã đã chuyển để lọc
+  ]).then(([{ data: d, error }]) => {
     if(error || !d){list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';return;}
-    nsData=d.danhSach||[];
+    nsData=_locMaChuyen(d.danhSach);   // [v18.105] ẨN mã đã chuyển khỏi tab Nhân sự (card + search + số liệu)
     nsCBList=d.canhBaoChuaXuLy||[];
     nsNghiMaSet=new Set((d.stats && d.stats.dsNghiMa) || []);
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
