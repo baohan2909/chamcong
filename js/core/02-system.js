@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.103',
+  'sys.cache_version': 'v18.104',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4138,6 +4138,9 @@ function onNSSearch(){
   renderNhanSu();
 }
 function escHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// [v18.104] Mã NV đã CHUYỂN sang mã khác (CTV→NS...) → nhận diện qua ghi_chu (bền, KHÔNG theo trang_thai
+//   vì sync Sheet ghi đè DA_CHUYEN_MA→INACTIVE). Dùng để ẨN mã cũ khỏi các ô TÌM/CHỌN nhân viên.
+function _maDaChuyen(ghiChu){ return /Đã\s*chuyển\s*sang/i.test(ghiChu || ''); }
 
 // ════════════════════════════════════════════════════════════════════════
 // [v10.85 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện

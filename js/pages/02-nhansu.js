@@ -835,9 +835,10 @@ async function openAdminThemLog(opts) {
   if (!window._adminNVList || !window._adminNVList.length) {
     try {
       const { data } = await supa.from('nhan_vien')
-        .select('ma_nv, ho_ten, ma_ch_mac_dinh')
+        .select('ma_nv, ho_ten, ma_ch_mac_dinh, ghi_chu')
         .eq('trang_thai', 'ACTIVE').order('ma_nv');
-      window._adminNVList = data || [];
+      // [v18.104] Ẩn mã đã chuyển (CTV→NS) — data đã dồn hết sang mã mới
+      window._adminNVList = (data || []).filter(r => !_maDaChuyen(r.ghi_chu));
     } catch (e) { window._adminNVList = []; }
   }
   if (!window._bscChList || !window._bscChList.length) {
@@ -1661,15 +1662,16 @@ async function _lsdLoadNVList(){
   if (_lsdNVList) return _lsdNVList;
   try {
     // [v10.85] Thêm avatar_url để hiển thị ảnh đại diện trong các card
+    // [v18.104] + ghi_chu để ẨN mã đã chuyển (CTV→NS): data đã dồn hết sang mã mới
     const { data, error } = await supa.from('nhan_vien')
-      .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url')
+      .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url, ghi_chu')
       .order('ho_ten', { ascending: true });
     if (error || !data) {
       console.warn('[_lsdLoadNVList] Lỗi:', error?.message);
       return [];
     }
     // Normalize về { ma_nv, ten_nv, role, ma_ch, avatar } để code phía sau dùng nhất quán
-    _lsdNVList = data.map(r => ({
+    _lsdNVList = data.filter(r => !_maDaChuyen(r.ghi_chu)).map(r => ({
       ma_nv: r.ma_nv,
       ten_nv: r.ho_ten || r.ma_nv,
       role: r.role || 'NV',
