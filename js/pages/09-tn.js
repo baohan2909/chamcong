@@ -40,7 +40,7 @@ const TN_GROUPS = [
     ['thue_tncn','Thuế TNCN','money'], ['tru_khac','Trừ khác','money'] ] },
   { name:'Thuế & bảo hiểm (chi tiết)', accent:'#4A5670', rows:[
     ['bhxh_8','BHXH 8%','money'], ['bhyt_15','BHYT 1,5%','money'], ['bhtn_1','BHTN 1%','money'],
-    ['so_nguoi_phu_thuoc','Số người phụ thuộc','num0'],  // [v18.114] cột SL NPT (BO) — LUÔN hiện (=0 ghi "0"), ngay TRÊN Giảm trừ gia cảnh
+    ['so_nguoi_phu_thuoc','Người phụ thuộc','num0'],  // [v18.115] cột SL NPT (BO) — LUÔN hiện (=0 ghi "0"), ngay TRÊN Giảm trừ gia cảnh
     ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
     ['com_khong_thue','Tiền cơm không tính thuế','money'], ['tn_chiu_thue','Thu nhập chịu thuế','money'] ] },
   { name:'Tài khoản nhận', accent:'#CBA45A', rows:[
