@@ -3103,7 +3103,7 @@ function bhQlOpenDetail(idPhien) {
 
   // [v12-P1] Query trực tiếp 1 phiên theo id từ Supabase
   supa.from('phien_ban_hang')
-    .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ngay, stt_trong_ngay, trang_thai, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_quan_tam_text, sp_da_mua_text, ghi_chu, yeu_cau_xoa, ly_do_xoa, nguoi_yeu_cau_xoa, thoi_gian_yeu_cau_xoa')
+    .select('id, ma_ch, ten_ch_snapshot, khu_vuc, ma_nv, ten_nv_snapshot, gio_mo, gio_dong, ngay, stt_trong_ngay, trang_thai, ket_qua, ly_do_khong_mua, tong_gia_tri, thoi_luong_phut, sp_quan_tam_text, sp_da_mua_text, ghi_chu')
     .eq('id', idPhien)
     .maybeSingle()
     .then(({ data: r, error }) => {
@@ -3141,17 +3141,7 @@ function bhQlOpenDetail(idPhien) {
         ? '<div class="bh-chips">' + p.spDaMua.map(s => '<span class="bh-chip">' + bhEscHtml(s) + '</span>').join('') + '</div>'
         : '<div style="color:var(--text-lt);font-size:12px">—</div>';
 
-      // [v18.108] Log yêu cầu xóa (người gửi · thời gian · lý do) — hiện đầu modal khi phiên có YC xóa
-      const _fmtDT = ts => { if(!ts)return ''; try{const d=new Date(ts);return bhPad(d.getDate())+'/'+bhPad(d.getMonth()+1)+' '+bhPad(d.getHours())+':'+bhPad(d.getMinutes());}catch(e){return '';} };
-      const ycXoaHtml = r.yeu_cau_xoa ? `
-        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 12px;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px">🗑 Cửa hàng đã yêu cầu xóa phiên</div>
-          <div style="font-size:12.5px;color:#7F1D1D;line-height:1.5">
-            ${(r.nguoi_yeu_cau_xoa ? 'Người gửi: <strong>' + bhEscHtml(r.nguoi_yeu_cau_xoa) + '</strong>' : '')}${(r.thoi_gian_yeu_cau_xoa ? ' · Lúc ' + _fmtDT(r.thoi_gian_yeu_cau_xoa) : '')}
-            ${r.ly_do_xoa ? '<br>Lý do: ' + bhEscHtml(r.ly_do_xoa) : ''}
-          </div>
-        </div>` : '';
-      document.getElementById('bh-md-detail-body').innerHTML = ycXoaHtml + `
+      document.getElementById('bh-md-detail-body').innerHTML = `
         <div class="bh-field-label">Thời gian</div>
         <div style="font-size:13px;color:var(--text-m)">${p.ngay} · ${p.gioBD} → ${p.gioKT || 'đang bán'} · ${p.thoiLuong || '--'}</div>
         <div class="bh-field-label">Khu vực</div>
