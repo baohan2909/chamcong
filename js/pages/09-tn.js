@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 const TN = { pw:null, ma:null, kyList:[], ky:null, phieu:null,
              adKy:null, adData:null, adThreadId:null,
-             syncUrl:(localStorage.getItem('tn_sync_url')||'https://script.google.com/macros/s/AKfycbxKNNRjt0K3gM0k60bi3alHGEG-e6rFZwgicOXFXLjHtd9sNvuRSqVri8LAbRFvGzgLrQ/exec'),
+             syncUrl:(localStorage.getItem('tn_sync_url')||'https://script.google.com/macros/s/AKfycbzfADOEO_MzIMyWyzYyVgMHuLgYdX0Ks1Jh1QXY0dZxL_Edn1LxhKfFpaFnR4xikBW0Cg/exec'),
              syncSecret:'' };  // [v18.35] secret CHỈ giữ trong phiên (memory), KHÔNG lưu localStorage — Aroma: không lưu key trên máy
 
 function _tnLaCH(){ return typeof _laCuaHang==='function' && _laCuaHang(); }
