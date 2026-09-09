@@ -40,8 +40,9 @@ const TN_GROUPS = [
     ['thue_tncn','Thuế TNCN','money'], ['tru_khac','Trừ khác','money'] ] },
   { name:'Thuế & bảo hiểm (chi tiết)', accent:'#4A5670', rows:[
     ['bhxh_8','BHXH 8%','money'], ['bhyt_15','BHYT 1,5%','money'], ['bhtn_1','BHTN 1%','money'],
-    ['so_nguoi_phu_thuoc','Người phụ thuộc','txt'],  // [v18.112] cột SL NPT (BO) mới
-    ['nguoi_phu_thuoc','Người phụ thuộc','txt'], ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
+    ['nguoi_phu_thuoc','Người phụ thuộc','txt'],
+    ['so_nguoi_phu_thuoc','Số người phụ thuộc','txt', 1],  // [v18.113] cột SL NPT (BO) — ngay TRÊN Giảm trừ gia cảnh; cờ 1 = hiện cả khi =0
+    ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
     ['com_khong_thue','Tiền cơm không tính thuế','money'], ['tn_chiu_thue','Thu nhập chịu thuế','money'] ] },
   { name:'Tài khoản nhận', accent:'#CBA45A', rows:[
     ['tk_ten','Chủ tài khoản','txt'], ['tk_stk','Số tài khoản','stk'],
@@ -127,7 +128,8 @@ function _tnSlipCore(p, d){
      '</div></div>';
   // groups
   TN_GROUPS.forEach((g,gi)=>{
-    const rows=g.rows.filter(r=>_tnHasVal(d[r[0]]));
+    // [v18.113] Dòng có cờ r[3]=1 (vd Số người phụ thuộc): hiện cả khi =0, chỉ ẩn khi THỰC SỰ trống.
+    const rows=g.rows.filter(r=>_tnHasVal(d[r[0]]) || (r[3] && d[r[0]]!=null && String(d[r[0]]).trim()!==''));
     if(!rows.length) return;
     const open = gi<3;
     const totalTxt = g.total!=null ? ((g.neg?'−':'')+_tnMoney(d[g.total])) : '';
