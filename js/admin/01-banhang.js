@@ -2815,12 +2815,8 @@ function bhQlSetStatusFilter(filter) {
     const card = document.getElementById('bh-ql-stat-card-' + f);
     if (card) card.classList.toggle('active', f === filter);
   });
-  // [v11.8+] Filter 'yc' áp dụng cho Live (vì YC chỉ trên phiên đang bán)
-  // → tự động chuyển về tab Live nếu đang ở tab khác
-  if (filter === 'yc' && BH.qlTab !== 'live') {
-    bhQlSetTab('live');
-    return; // bhQlSetTab sẽ trigger reload + render
-  }
+  // [v18.110] Bỏ auto-chuyển tab Live cho 'yc' — nay ĐANG BÁN/YC XÓA hiện dạng thẻ log
+  //   ngay trên tab Lịch sử (bhQlRenderHistory) như Đã mua/Chưa mua.
   bhQlRenderLive();
   bhQlRenderHistory();
 }
@@ -3005,11 +3001,19 @@ async function bhQlLoadPhien() {
 function bhQlRenderHistory() {
   const histEl = document.getElementById('bh-ql-content-history');
   if (!histEl) return;
-  let fin = (BH.qlLastFinished || []).slice();
   // Apply status filter
   const sf = BH.qlStatusFilter || 'all';
-  if (sf === 'bought') fin = fin.filter(p => p.trangThai === 'Đã mua');
-  else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng');
+  let fin;
+  // [v18.110] ĐANG BÁN / YC XÓA: lấy từ phiên đang bán (live), hiện dạng thẻ log như Đã mua/Chưa mua
+  if (sf === 'live' || sf === 'yc') {
+    let src = (BH.qlLastLive || []).slice();
+    if (sf === 'yc') src = src.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+    fin = src.map(p => Object.assign({}, p, { trangThai: 'Đang bán' }));
+  } else {
+    fin = (BH.qlLastFinished || []).slice();
+    if (sf === 'bought') fin = fin.filter(p => p.trangThai === 'Đã mua');
+    else if (sf === 'notbought') fin = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng');
+  }
   // [v11.7+ fix] Filter q client-side - tìm theo CH/SP/NV
   const q = (BH.qlFilterQ || '').toLowerCase();
   if (q) {
