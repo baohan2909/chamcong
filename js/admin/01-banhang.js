@@ -2655,9 +2655,12 @@ function bhQlRenderLive() {
   if (!liveEl) return;
   let live = (BH.qlLastLive || []).slice();
   // [v11.8+] Filter chỉ phiên có YC xóa (khi user click thẻ "🗑 YC xóa")
+  // [v18.111] 'đang bán' KHÔNG hiện phiên đang YC xóa (tách riêng 2 nhóm)
   const sf = BH.qlStatusFilter || 'all';
   if (sf === 'yc') {
     live = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+  } else {
+    live = live.filter(p => !(p.yeuCauXoa && p.yeuCauXoa.co));
   }
   const q = (BH.qlFilterQ || '').toLowerCase();
   if (q) {
@@ -2704,7 +2707,8 @@ function bhQlRenderLive() {
   }).join('');
 
   // [v11.8] Hiển thị thanh xóa hàng loạt nếu có yêu cầu
-  bhQlUpdateBulkBar(live);
+  // [v18.111] Banner YC luôn theo TOÀN BỘ live (không phụ thuộc filter 'đang bán' đã loại YC)
+  bhQlUpdateBulkBar(BH.qlLastLive || []);
 }
 
 // [v11.8] Cập nhật thanh hiển thị số yêu cầu xóa + nút xóa hàng loạt
@@ -2974,7 +2978,9 @@ async function bhQlLoadPhien() {
     const fin = BH.qlLastFinished;
     const bought = fin.filter(p => p.trangThai === 'Đã mua').length;
     const nbought = fin.filter(p => p.trangThai === 'Chưa mua' || p.trangThai === 'Tự đóng' || p.trangThai === 'Admin đã đóng').length;
-    document.getElementById('bh-ql-stat-live').textContent = live.length;
+    // [v18.111] Số "đang bán" KHÔNG gồm phiên đang YC xóa (tách riêng thẻ YC xóa)
+    const ycCount = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co).length;
+    document.getElementById('bh-ql-stat-live').textContent = live.length - ycCount;
     document.getElementById('bh-ql-stat-bought').textContent = bought;
     document.getElementById('bh-ql-stat-notbought').textContent = nbought;
     const total = bought + nbought;
@@ -2982,8 +2988,7 @@ async function bhQlLoadPhien() {
     const totalCard = document.getElementById('bh-ql-stat-all');
     if (totalCard) totalCard.textContent = live.length + bought + nbought;
 
-    // [v11.8+] Update stat YC xóa
-    const ycCount = live.filter(p => p.yeuCauXoa && p.yeuCauXoa.co).length;
+    // [v11.8+] Update stat YC xóa (ycCount đã tính ở trên)
     const ycEl = document.getElementById('bh-ql-stat-yc');
     if (ycEl) ycEl.textContent = ycCount;
     const ycCard = document.getElementById('bh-ql-stat-card-yc');
@@ -3008,6 +3013,7 @@ function bhQlRenderHistory() {
   if (sf === 'live' || sf === 'yc') {
     let src = (BH.qlLastLive || []).slice();
     if (sf === 'yc') src = src.filter(p => p.yeuCauXoa && p.yeuCauXoa.co);
+    else src = src.filter(p => !(p.yeuCauXoa && p.yeuCauXoa.co));   // [v18.111] đang bán không gồm YC
     fin = src.map(p => Object.assign({}, p, { trangThai: 'Đang bán' }));
   } else {
     fin = (BH.qlLastFinished || []).slice();
