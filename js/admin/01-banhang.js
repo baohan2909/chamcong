@@ -2717,12 +2717,19 @@ function bhQlUpdateBulkBar(live) {
     return;
   }
   bar.classList.add('show');
-  // List CH có YC (unique)
+  // List CH có YC (unique) — [v18.107] hiện TÊN cửa hàng, không chỉ số lượng
   const chSet = {};
-  yc.forEach(p => { chSet[p.maCH] = (chSet[p.maCH] || 0) + 1; });
-  const chCount = Object.keys(chSet).length;
+  yc.forEach(p => {
+    if (!chSet[p.maCH]) chSet[p.maCH] = { ten: p.tenCH || p.maCH, count: 0 };
+    chSet[p.maCH].count++;
+  });
+  const chArr = Object.values(chSet);
+  const chCount = chArr.length;
+  const tenList = chArr
+    .map(c => bhEscHtml(c.ten) + (c.count > 1 ? ' (' + c.count + ' phiên)' : ''))
+    .join(', ');
   document.getElementById('bh-ql-bulk-text').innerHTML =
-    `<strong>${yc.length} phiên</strong> đã yêu cầu xóa từ <strong>${chCount} cửa hàng</strong>`;
+    `<strong>${yc.length} phiên</strong> đã yêu cầu xóa từ <strong>${chCount} cửa hàng</strong>: ${tenList}`;
 }
 
 // [v11.8] QLBH xóa hàng loạt phiên đã yêu cầu (theo KV được phép)
