@@ -40,6 +40,7 @@ const TN_GROUPS = [
     ['thue_tncn','Thuế TNCN','money'], ['tru_khac','Trừ khác','money'] ] },
   { name:'Thuế & bảo hiểm (chi tiết)', accent:'#4A5670', rows:[
     ['bhxh_8','BHXH 8%','money'], ['bhyt_15','BHYT 1,5%','money'], ['bhtn_1','BHTN 1%','money'],
+    ['so_nguoi_phu_thuoc','Người phụ thuộc','txt'],  // [v18.112] cột SL NPT (BO) mới
     ['nguoi_phu_thuoc','Người phụ thuộc','txt'], ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
     ['com_khong_thue','Tiền cơm không tính thuế','money'], ['tn_chiu_thue','Thu nhập chịu thuế','money'] ] },
   { name:'Tài khoản nhận', accent:'#CBA45A', rows:[
@@ -334,7 +335,9 @@ function tnAdminCsv(inp){
   rd.onload=()=>{ const rows=tnParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tnAdminDoSync(k.ky,k.ten,rows); };
   rd.readAsText(f,'utf-8');
 }
-const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_thi_dua','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
+const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_thi_dua','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','so_nguoi_phu_thuoc','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
+// [v18.112] CHÈN 'so_nguoi_phu_thuoc' tại cột BO (sau tk_gmail=BN) khi sheet TN thêm cột "SL NPT".
+//   → các cột BP..BS (tong_gio_cong2/tong_ngay_nghi/phep_su_dung/phep_con_lai) dịch phải 1, KHÔNG lệch. Phải khớp Apps Script.
 function tnParseCsv(text){
   const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length); const out=[];
   for(let i=1;i<lines.length;i++){
