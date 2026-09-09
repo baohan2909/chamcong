@@ -562,6 +562,7 @@ function setNSSubTab(tab){
 
 // ═══ [v10.85] LỊCH SỬ CHẤM CÔNG (ADMIN TỔNG KIỂM) ═══
 let _lscDeb;
+let _lscReqSeq = 0;   // [v18.106] số thứ tự lần tải — CHỈ lần tải mới nhất được ghi kết quả (chống race ghi đè)
 function _debLichSuCC(){
   clearTimeout(_lscDeb);
   _lscDeb = setTimeout(taiLichSuCC, 400);
@@ -590,11 +591,13 @@ function _ccIsAuto(r) {
 async function taiLichSuCC(){
   const el = document.getElementById('lscc-list');
   if (!el) return;
+  const _mySeq = ++_lscReqSeq;   // [v18.106] đánh dấu lần tải này; lần tải sau sẽ tăng _lscReqSeq
   el.innerHTML = '<div class="ns-empty">⏳ Đang tải...</div>';
 
   if (!_lsdNVList && typeof _lsdLoadNVList === 'function') {
     await _lsdLoadNVList().catch(()=>{});
   }
+  if (_mySeq !== _lscReqSeq) return;   // [v18.106] đã có lần tải mới hơn → bỏ, không ghi đè
 
   let tu = document.getElementById('lscc-tu').value;
   let den = document.getElementById('lscc-den').value;
@@ -618,6 +621,7 @@ async function taiLichSuCC(){
     let all = [];
     let from = 0;
     while (all.length < MAX) {
+      if (_mySeq !== _lscReqSeq) return;   // [v18.106] bị thay bởi lần tải mới → dừng sớm, khỏi tốn query
       let q = supa.from('cham_cong').select('id, ma_nv, ten_nv_snapshot, ma_ch, ten_ch_snapshot, loai, thoi_gian, ngay, xac_nhan, trang_thai_o, ghi_chu, device_info, nguon');
       if (tu) q = q.gte('ngay', tu);
       if (den) q = q.lte('ngay', den);
@@ -644,6 +648,7 @@ async function taiLichSuCC(){
     if (window._lscNguonFilter === 'AUTO') list = list.filter(_ccIsAuto);
     else if (window._lscNguonFilter) list = list.filter(r => r.nguon === window._lscNguonFilter);
 
+    if (_mySeq !== _lscReqSeq) return;   // [v18.106] CHỐT: chỉ lần tải mới nhất mới được ghi kết quả (số liệu + danh sách)
     // Stats luôn count trên `all` (full data theo ngày), không count trên list (đã filter xn/nguon)
     document.getElementById('lscc-stat-tong').textContent = all.length + (all.length >= MAX ? '+' : '');
     document.getElementById('lscc-stat-hl').textContent  = all.filter(r => _ccIsHopLe(r.xac_nhan)).length;
@@ -774,6 +779,7 @@ async function taiLichSuCC(){
     }).join('');
     if (typeof _lscUpdateActiveCard === 'function') _lscUpdateActiveCard();
   } catch (e) {
+    if (_mySeq !== _lscReqSeq) return;   // [v18.106] lỗi của lần tải cũ → không ghi đè kết quả mới
     el.innerHTML = `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message)}</div>`;
   }
 }
