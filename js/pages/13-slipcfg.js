@@ -173,8 +173,11 @@ function resolveGroups(subsys){
 }
 function _availKeys(def){
   const seen={}, out=[];
-  const add=(k)=>{ k=_slug(k); if(!k||seen[k])return; seen[k]=1; out.push({key:k,label:_labelFor(def,k)}); };
-  resolveKeys(def.key).forEach(add);
+  // Cột nguồn (A·B·C…) theo THỨ TỰ cấu hình cột hiện hành → cho biết mỗi dòng "lấy dữ liệu từ cột nào".
+  const keys=resolveKeys(def.key); const colOf={};
+  keys.forEach((k,i)=>{ const s=_slug(k); if(colOf[s]===undefined) colOf[s]=_colLetter(i); });
+  const add=(k)=>{ k=_slug(k); if(!k||seen[k])return; seen[k]=1; out.push({key:k,label:_labelFor(def,k),col:colOf[k]||''}); };
+  keys.forEach(add);
   def.defaultKeys().forEach(add);
   (ST&&ST.groups||[]).forEach(g=>(g.rows||[]).forEach(r=>add(r.key)));
   return out;
@@ -388,7 +391,11 @@ function _accentPick(gi,cur){
     '<input type="color" class="scf-acc-inp" value="'+_esc(cur||'#1E5F63')+'" oninput="SLIPCFG._gAccentLive('+gi+',this.value)" title="Màu tuỳ chọn"></span>';
 }
 function _drowHtml(gi,ri,r,n,avail){
-  const opts=avail.map(a=>'<option value="'+_esc(a.key)+'"'+(a.key===r.key?' selected':'')+'>'+_esc(a.label)+'</option>').join('');
+  // Mỗi lựa chọn hiện CỘT NGUỒN: "[A] Nhãn · khóa" → thấy rõ dòng này lấy dữ liệu từ cột nào.
+  let hasSel=false;
+  const opts=avail.map(a=>{ const sel=(a.key===r.key); if(sel)hasSel=true; return '<option value="'+_esc(a.key)+'"'+(sel?' selected':'')+'>'+(a.col?'['+a.col+'] ':'')+_esc(a.label)+' · '+_esc(a.key)+'</option>'; }).join('');
+  // Khóa hiện tại không nằm trong danh sách cột (đã đổi/xoá) → vẫn cho thấy để không mất, đánh dấu (?).
+  const extra=hasSel?'':'<option value="'+_esc(r.key)+'" selected>[?] '+_esc(r.label||r.key)+' · '+_esc(r.key)+'</option>';
   const fmtOpts=FMTS.map(f=>'<option value="'+f.v+'"'+(f.v===r.fmt?' selected':'')+'>'+f.t+'</option>').join('');
   return '<div class="scf-drow" data-r="'+ri+'">'+
     '<div class="scf-col-acts col">'+
@@ -397,7 +404,7 @@ function _drowHtml(gi,ri,r,n,avail){
     '<div class="scf-drow-main">'+
       '<input class="scf-lbl-inp" value="'+_esc(r.label||'')+'" placeholder="Nhãn hiển thị" oninput="SLIPCFG._gRowLabel('+gi+','+ri+',this.value)">'+
       '<div class="scf-drow-sel">'+
-        '<select class="scf-sel2" onchange="SLIPCFG._gRowKey('+gi+','+ri+',this.value)" title="Trường dữ liệu">'+opts+'</select>'+
+        '<select class="scf-sel2 scf-sel-key" onchange="SLIPCFG._gRowKey('+gi+','+ri+',this.value)" title="Lấy dữ liệu từ cột nào">'+extra+opts+'</select>'+
         '<select class="scf-sel2" onchange="SLIPCFG._gRowFmt('+gi+','+ri+',this.value)" title="Định dạng">'+fmtOpts+'</select>'+
         '<label class="scf-zero" title="Luôn hiện kể cả khi = 0"><input type="checkbox" '+(r.showZero?'checked':'')+' onchange="SLIPCFG._gRowZero('+gi+','+ri+')"> =0</label>'+
       '</div></div>'+
