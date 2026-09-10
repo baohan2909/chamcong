@@ -47,6 +47,8 @@ const TN_GROUPS = [
     ['tk_ten','Chủ tài khoản','txt'], ['tk_stk','Số tài khoản','stk'],
     ['tk_nganhang','Ngân hàng','txt'], ['tk_chinhanh','Chi nhánh','txt'] ] },
 ];
+// [Cấu hình phiếu] Lộ nhóm hiển thị MẶC ĐỊNH để engine SLIPCFG đọc + cho admin tuỳ chỉnh giao diện phiếu.
+try{ window.TN_GROUPS_DEFAULT = TN_GROUPS; }catch(e){}
 
 // ═══ NHÂN VIÊN ═══════════════════════════════════════════════════════════
 function tnInitPage(){
@@ -105,7 +107,7 @@ function tnLoadKy(ky){
 }
 // [refactor] Thân phiếu (head+who+hero+nhóm) — DÙNG CHUNG cho NV (tnRenderPhieu) và
 // modal admin xem phiếu NV (tnAdminPhieuModal). Chỉ-đọc, không gồm nút hành động.
-function _tnSlipCore(p, d){
+function _tnSlipCore(p, d, groupsOverride){
   const daXN = !!p.xacNhanLuc;
   let h='';
   // head
@@ -125,19 +127,23 @@ function _tnSlipCore(p, d){
        ( _tnHasVal(d.thuc_nhan_ck) ? '<div><div class="l">Chuyển khoản</div><div class="n">'+_tnMoney(d.thuc_nhan_ck)+'</div></div>':'')+
        ( _tnHasVal(d.thuc_nhan_tm) ? '<div><div class="l">Nhận tại cửa hàng</div><div class="n">'+_tnMoney(d.thuc_nhan_tm)+'</div></div>':'')+
      '</div></div>';
-  // groups
-  TN_GROUPS.forEach((g,gi)=>{
-    // [v18.114] Dòng fmt='num0' (vd Số người phụ thuộc): LUÔN hiện; giá trị rỗng/0 → ghi "0".
-    const rows=g.rows.filter(r=>_tnHasVal(d[r[0]]) || r[2]==='num0');
+  // groups — [Cấu hình phiếu] ưu tiên cấu hình admin (SLIPCFG.resolveGroups), fallback TN_GROUPS.
+  //   Hỗ trợ dòng dạng tuple [key,label,fmt] (mặc định) LẪN object {key,label,fmt,showZero} (cấu hình).
+  const GROUPS = groupsOverride || tnGroups();
+  GROUPS.forEach((g,gi)=>{
+    if(g.hidden) return;                       // nhóm bị ẩn trong cấu hình
+    const grows=(g.rows||[]).map(_tnNormRow);
+    // Dòng num0/showZero LUÔN hiện (=0 ghi "0"); còn lại chỉ hiện khi có giá trị.
+    const rows=grows.filter(r=>_tnHasVal(d[r.key]) || r.fmt==='num0' || r.showZero);
     if(!rows.length) return;
     const open = gi<3;
-    const totalTxt = g.total!=null ? ((g.neg?'−':'')+_tnMoney(d[g.total])) : '';
-    h+='<div class="tn-grp'+(open?' open':'')+'" style="--ga:'+g.accent+'">'+
+    const totalTxt = g.total ? ((g.neg?'−':'')+_tnMoney(d[g.total])) : '';
+    h+='<div class="tn-grp'+(open?' open':'')+'" style="--ga:'+(g.accent||'#1E5F63')+'">'+
        '<button class="tn-grp-head" onclick="tnTg(this)"><span class="tn-grp-dot"></span><span class="tn-grp-name">'+_tnEsc(g.name)+'</span>'+
        '<span class="tn-grp-meta'+(g.neg?' neg':'')+'">'+totalTxt+'<svg class="tn-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></button>'+
        '<div class="tn-grp-rows">';
     rows.forEach(r=>{
-      const key=r[0], lbl=r[1], fmt=r[2]; const raw=d[key];
+      const key=r.key, lbl=r.label, fmt=r.fmt; const raw=d[key];
       let val = fmt==='money'?( (g.neg?'−':'')+_tnMoney(raw) ) : fmt==='gio'?_tnGio(raw) : fmt==='stk'?_tnMaskStk(raw) : fmt==='num0'?String(Math.round(_tnNum(raw))) : _tnEsc(raw);
       h+='<div class="tn-row"><span class="k">'+_tnEsc(lbl)+'</span><span class="v'+(g.neg&&fmt==='money'?' neg':'')+'">'+val+'</span></div>';
     });
@@ -145,6 +151,10 @@ function _tnSlipCore(p, d){
   });
   return h;
 }
+// [Cấu hình phiếu] Chuẩn hóa 1 dòng: tuple [key,label,fmt(,showZero)] HOẶC object → object.
+function _tnNormRow(r){ return Array.isArray(r) ? {key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3]} : {key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero}; }
+// [Cấu hình phiếu] Nhóm hiển thị đang hiệu lực (cấu hình admin nếu có, không thì mặc định).
+function tnGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLIPCFG.resolveGroups('tn'); if(g&&g.length) return g; } }catch(e){} return TN_GROUPS; }
 function tnRenderPhieu(){
   const wrap=document.getElementById('tn-slip-wrap'); if(!wrap) return;
   const p=TN.phieu, d=p.duLieu||{};
@@ -305,14 +315,18 @@ function tnAdminSyncCardHtml(){
   const kySel=(TN.adData&&TN.adData.kyList||[]).map(k=>'<option value="'+k.ky+'"'+(k.ky===TN.adKy?' selected':'')+'>'+_tnEsc(k.ten||k.ky)+'</option>').join('');
   // [v18.36] mặc định = THÁNG TRƯỚC (lương tháng N chốt đầu tháng N+1)
   const now=new Date(); const pm=new Date(now.getFullYear(), now.getMonth()-1, 1); const defM=pm.getFullYear()+'-'+String(pm.getMonth()+1).padStart(2,'0');
+  const gear=(window.SLIPCFG)?'<button class="tn-cfg-gear" onclick="SLIPCFG.open(\'tn\')" title="Cấu hình cột dữ liệu & hiển thị phiếu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Cấu hình</button>':'';
   return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ dữ liệu</div>'+
     '<div class="tn-ad-sub">Chọn <b>tháng</b> cần đồng bộ → kéo TẤT CẢ dòng sheet TN vào kỳ đó (đây cũng là tháng hiển thị cho NV). Secret chỉ giữ trong phiên.</div></div>'+
-    (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tnAdminLoad(this.value)">'+kySel+'</select>':'')+'</div>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">'+
+      (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tnAdminLoad(this.value)">'+kySel+'</select>':'')+
+      gear+
+    '</div></div>'+
     '<div class="tn-sync-row">'+
       '<div class="tn-fld"><label>Tháng đồng bộ / hiển thị</label><input id="tn-sync-month" class="tn-inp sm" type="month" value="'+defM+'"></div>'+
       '<div class="tn-fld"><label>Secret <span class="tn-nolock">không lưu</span></label><input id="tn-secret" class="tn-inp sm" type="password" placeholder="Nhập secret" autocomplete="off"></div>'+
       '<button class="tn-btn-ok tn-sync-btn" onclick="tnAdminSyncNow()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Đồng bộ ngay</button>'+
-      '<label class="tn-btn-ghost tn-file">Tải CSV<input type="file" accept=".csv" style="display:none" onchange="tnAdminCsv(this)"></label>'+
+      '<label class="tn-btn-ghost tn-file">Tải Excel/CSV<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="tnAdminImportData(this)"></label>'+
     '</div>'+
     '<label class="tn-sync-replace"><input type="checkbox" id="tn-sync-replace" checked> <b>Thay dữ liệu cũ</b> — xóa sạch phiếu của tháng này trước khi nạp (nạp mới bỏ cũ)</label>'+
     '</div>';
@@ -329,26 +343,76 @@ function tnAdminSyncNow(){
     tnAdminDoSync(k.ky,k.ten,res.rows||[]);
   }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi lấy Sheet (kiểm secret/CORS)','err'); });
 }
-function tnAdminCsv(inp){
+// [Excel/CSV] Nhập DATA lương từ file .xlsx (ưu tiên) hoặc .csv — map theo cấu hình cột hiện hành.
+function tnAdminImportData(inp){
   const f=inp.files&&inp.files[0]; if(!f) return;
-  const k=_tnSyncKy();
-  const rd=new FileReader();
-  rd.onload=()=>{ const rows=tnParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tnAdminDoSync(k.ky,k.ten,rows); };
-  rd.readAsText(f,'utf-8');
+  const k=_tnSyncKy(); const name=(f.name||'').toLowerCase();
+  const go=(rows)=>{ inp.value=''; if(!rows.length){ if(typeof showToast==='function')showToast('Không có dòng dữ liệu hợp lệ (thiếu Mã NV?)','warn'); return; } tnAdminDoSync(k.ky,k.ten,rows,f.name); };
+  const fail=(m)=>{ inp.value=''; if(typeof showToast==='function')showToast(m,'err'); };
+  if(name.endsWith('.csv')){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ go(tnParseCsv(rd.result)); }catch(e){ fail('Lỗi đọc CSV: '+e.message); } };
+    rd.onerror=()=>fail('Lỗi đọc CSV'); rd.readAsText(f,'utf-8'); return;
+  }
+  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+    if(typeof showToast==='function')showToast('Đang đọc Excel…','ok');
+    _tnLoadSheetJS().then(XLSX=>{
+      const rd=new FileReader();
+      rd.onload=()=>{ try{
+        // cellDates:true → ô ngày thành Date (không phải số serial); raw:true → SỐ CHÍNH XÁC (STK dài không bị scientific);
+        // blankrows:false → bỏ dòng trống (khỏi lệch khi có dòng trống trên tiêu đề). _tnCellStr/_tnRowsFromMatrix xử lý phần còn lại.
+        const wb=XLSX.read(new Uint8Array(rd.result),{type:'array',cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,blankrows:false,defval:''});
+        go(_tnRowsFromMatrix(aoa.slice(1)));
+      }catch(e){ fail('Lỗi đọc Excel: '+e.message); } };
+      rd.onerror=()=>fail('Lỗi đọc file'); rd.readAsArrayBuffer(f);
+    }).catch(e=>fail(e.message||'Không tải được thư viện Excel'));
+    return;
+  }
+  fail('Định dạng không hỗ trợ — chọn .xlsx hoặc .csv');
 }
+// Lazy-load SheetJS (giống các nơi xuất Excel khác trong app)
+function _tnLoadSheetJS(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(window._xlsxLoading) return window._xlsxLoading;
+  window._xlsxLoading=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; s.onload=()=>res(window.XLSX); s.onerror=()=>rej(new Error('Không tải được thư viện đọc Excel')); document.head.appendChild(s); });
+  return window._xlsxLoading;
+}
+try{ window.tnAdminImportData=tnAdminImportData; }catch(e){}
 const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_thi_dua','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','so_nguoi_phu_thuoc','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
 // [v18.112] CHÈN 'so_nguoi_phu_thuoc' tại cột BO (sau tk_gmail=BN) khi sheet TN thêm cột "SL NPT".
 //   → các cột BP..BS (tong_gio_cong2/tong_ngay_nghi/phep_su_dung/phep_con_lai) dịch phải 1, KHÔNG lệch. Phải khớp Apps Script.
-function tnParseCsv(text){
-  const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length); const out=[];
-  for(let i=1;i<lines.length;i++){
-    const cells=tnCsvLine(lines[i]); const ma=(cells[1]||'').trim(); if(!ma) continue;
-    const o={}; for(let c=0;c<TN_KEYS.length;c++){ o[TN_KEYS[c]]=cells[c]!==undefined?cells[c]:''; } out.push(o);
+// [Cấu hình phiếu] Lộ bản MẶC ĐỊNH để engine SLIPCFG (13-slipcfg.js) đọc + cho phép admin ánh xạ lại cột.
+try{ window.TN_KEYS_DEFAULT = TN_KEYS.slice(); }catch(e){}
+// [Cấu hình phiếu] Danh sách khóa theo thứ tự cột: ưu tiên cấu hình admin (SLIPCFG), fallback TN_KEYS.
+function _tnResolveKeys(){ const k=(window.SLIPCFG&&SLIPCFG.resolveKeys)?(SLIPCFG.resolveKeys('tn')||[]):null; return (k&&k.length)?k:TN_KEYS; }
+// Chuyển 1 ô về chuỗi CHUẨN: Date→dd/mm/yyyy; number→chuỗi CHÍNH XÁC (không scientific — quan trọng cho STK dài); còn lại→String.
+function _tnCellStr(v){
+  if(v===undefined||v===null) return '';
+  if(v instanceof Date){ const dd=('0'+v.getDate()).slice(-2), mm=('0'+(v.getMonth()+1)).slice(-2); return dd+'/'+mm+'/'+v.getFullYear(); }
+  if(typeof v==='number'){ return Number.isFinite(v) ? (Number.isInteger(v)?String(v):String(v)) : ''; }
+  return String(v);
+}
+// Dựng phiếu từ ma trận ô (ĐÃ bỏ dòng tiêu đề). Dùng chung CSV + Excel. Bỏ dòng không có mã NV / dòng tiêu đề rác.
+function _tnRowsFromMatrix(rows2d){
+  const K=_tnResolveKeys(); const out=[];
+  for(let i=0;i<rows2d.length;i++){
+    const cells=rows2d[i]||[]; const o={};
+    for(let c=0;c<K.length;c++){ o[K[c]]=_tnCellStr(cells[c]); }
+    const ma=String(o.ma_nv||'').trim();
+    if(!ma) continue;               // vị trí cột ma_nv theo cấu hình, không cố định
+    if(!/\d/.test(ma)) continue;    // mã NV thật LUÔN có chữ số → loại dòng tiêu đề "Mã NV"/tiêu đề phụ lọt qua
+    out.push(o);
   }
   return out;
 }
+function tnParseCsv(text){
+  const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length);
+  return _tnRowsFromMatrix(lines.slice(1).map(tnCsvLine));
+}
 function tnCsvLine(line){ const r=[]; let cur='',q=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(q){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; } else { if(ch==='"')q=true; else if(ch===','){r.push(cur);cur='';} else cur+=ch; } } r.push(cur); return r; }
-function tnAdminDoSync(ky,ten,rows){
+async function tnAdminDoSync(ky,ten,rows,fname){
   // [AN TOÀN — chống mất dữ liệu] Nếu Sheet/CSV trả 0 dòng → HỦY, KHÔNG xóa gì.
   // (Trước đây: "Thay dữ liệu cũ" xóa trước rồi ghi — gặp 0 dòng là mất sạch. Nay chặn.)
   if(!rows || !rows.length){
@@ -357,6 +421,21 @@ function tnAdminDoSync(ky,ten,rows){
   }
   // [Request 2] "Thay dữ liệu cũ": xóa sạch phiếu kỳ này TRƯỚC khi nạp (chỉ khi CÓ dữ liệu mới)
   const replace = !!(document.getElementById('tn-sync-replace')||{}).checked;
+  // [AN TOÀN — chống mất/sai bảng lương do cấu hình cột] "Thay dữ liệu cũ" = XÓA sạch kỳ rồi ghi (KHÔNG hoàn tác).
+  // Từ khi cho phép ánh xạ lại cột (SLIPCFG), cấu hình sai có thể làm parse THIẾU dòng (vẫn >0) → guard 0-dòng ở trên không bắt.
+  // → Bắt xác nhận trước khi xóa + cảnh báo khi số phiếu mới GIẢM MẠNH so với hiện có (dấu hiệu map sai cột Mã NV).
+  if(replace){
+    const cur=(TN.adData && TN.adKy===ky && Array.isArray(TN.adData.danhSach)) ? TN.adData.danhSach.length : null;
+    let msg='Sẽ XÓA toàn bộ dữ liệu lương kỳ '+ky+(cur!=null?(' ('+cur+' phiếu hiện có)'):'')+' rồi ghi '+rows.length+' phiếu mới.';
+    if(cur!=null && rows.length < cur*0.6) msg+='\n\n⚠ Số phiếu mới ('+rows.length+') GIẢM MẠNH so với hiện có ('+cur+'). Có thể do cấu hình cột sai (Mã NV rơi vào cột trống) — hãy kiểm tra lại "Cấu hình" trước khi tiếp tục.';
+    // [an toàn] Dòng mẫu để admin soi nhanh có bị lệch cột giá trị không (vd Thực lãnh sai bất thường).
+    const s0=rows[0]||{}; if(s0.ho_ten||s0.tong_thuc_lanh) msg+='\n\nVD dòng đầu'+(fname?(' ('+fname+')'):'')+': '+(s0.ho_ten||'(tên trống)')+(s0.ma_nv?(' · '+s0.ma_nv):'')+(s0.tong_thuc_lanh?(' · Thực lãnh '+_tnMoney(s0.tong_thuc_lanh)+'₫'):'');
+    msg+='\n\nThao tác KHÔNG hoàn tác. Tiếp tục?';
+    let ok=false;
+    if(typeof appConfirm==='function') ok=await appConfirm(msg,{title:'Thay dữ liệu cũ — xác nhận',okLabel:'Xóa & ghi mới',danger:true});
+    else ok=confirm(msg);
+    if(!ok){ if(typeof showToast==='function')showToast('Đã hủy — không thay đổi gì','ok'); return; }
+  }
   const _write=()=>{
     supa.rpc('fn_tn_sync',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
       if(error||!data||!data.success){ if(typeof showToast==='function')showToast('Đồng bộ lỗi: '+((data&&data.error)||(error&&error.message)),'err'); return; }
