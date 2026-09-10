@@ -119,7 +119,7 @@ function _tnSlipCore(p, d, groupsOverride){
   h+='<div class="tn-who">'+
      _tnWho('Họ và tên', d.ho_ten)+ _tnWho('Mã nhân viên', (d.ma_nv||'')+(d.ma_ns?' · '+d.ma_ns:''))+
      _tnWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+ _tnWho('Chức vụ', d.chuc_vu)+
-     _tnWho('Vào làm', d.ngay_vao_lam)+ _tnWho('Thâm niên', d.tham_nien)+ '</div>';
+     _tnWho('Vào làm', _tnDate(d.ngay_vao_lam))+ _tnWho('Thâm niên', d.tham_nien)+ '</div>';
   // hero THỰC LÃNH
   h+='<div class="tn-hero"><div class="tn-hero-main"><div class="tn-hero-lbl">Thực lãnh kỳ này</div>'+
      '<div class="tn-hero-num">'+_tnMoney(d.tong_thuc_lanh)+' <span>₫</span></div></div>'+
@@ -176,7 +176,10 @@ function tnRenderPhieu(){
 }
 function _tnWho(l,v){ return '<div><span>'+_tnEsc(l)+'</span><b>'+(_tnEsc(v)||'—')+'</b></div>'; }
 function _tnDt(t){ if(!t)return''; const d=new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
-function _tnDate(s){ if(!s)return''; const p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):s; }
+// [v18.121] Chuẩn hoá ngày: nhận cả serial Google Sheets/Excel (epoch 1899-12-30, vd 46217=14/07/2026) lẫn chuỗi ISO yyyy-mm-dd -> dd/mm/yyyy.
+function _tnDate(s){ if(s==null||s==='')return''; const t=String(s).trim();
+  if(/^\d+(\.\d+)?$/.test(t)){ const n=parseFloat(t); if(n>=20000&&n<80000){ const dt=new Date(Math.round((n-25569)*86400000)); if(!isNaN(dt.getTime())){ const z=x=>(x<10?'0':'')+x; return z(dt.getUTCDate())+'/'+z(dt.getUTCMonth()+1)+'/'+dt.getUTCFullYear(); } } return t; }
+  const p=t.slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):t; }
 function tnThreadHtml(list){
   if(!list||!list.length) return '';
   let h='<div class="tn-thread"><div class="tn-thread-l">Trao đổi</div>';

@@ -27,7 +27,10 @@ function _tuHasVal(v){ if(v==null||v==='') return false; if(typeof v==='number')
 function _tuMaskStk(v){ const s=String(v||'').replace(/\s/g,''); return s.length>4?'•••• '+s.slice(-4):s; }
 function _tuGio(v){ const n=_tuNum(v); return n? n.toLocaleString('vi-VN',{maximumFractionDigits:1})+' giờ':''; }
 function _tuDt(t){ if(!t)return''; const d=new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
-function _tuDate(s){ if(!s)return''; const p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):String(s); }
+// [v18.121] Chuẩn hoá ngày: nhận cả serial Google Sheets/Excel (epoch 1899-12-30, vd 46217=14/07/2026) lẫn chuỗi ISO yyyy-mm-dd -> dd/mm/yyyy.
+function _tuDate(s){ if(s==null||s==='')return''; const t=String(s).trim();
+  if(/^\d+(\.\d+)?$/.test(t)){ const n=parseFloat(t); if(n>=20000&&n<80000){ const dt=new Date(Math.round((n-25569)*86400000)); if(!isNaN(dt.getTime())){ const z=x=>(x<10?'0':'')+x; return z(dt.getUTCDate())+'/'+z(dt.getUTCMonth()+1)+'/'+dt.getUTCFullYear(); } } return t; }
+  const p=t.slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):t; }
 function _tuWho(l,v){ return '<div><span>'+_tuEsc(l)+'</span><b>'+(_tuEsc(v)||'—')+'</b></div>'; }
 
 // ═══ NHÂN VIÊN ═══════════════════════════════════════════════════════════
@@ -94,7 +97,7 @@ function _tuSlipCore(p,d,groupsOverride){
      '<span class="tn-chip '+(daXN?'ok':'live')+'"><span class="tn-dot"></span>'+(daXN?'Đã xác nhận':'Đang mở')+'</span></div>';
   h+='<div class="tn-who">'+
      _tuWho('Họ và tên', d.ho_ten)+ _tuWho('Mã nhân viên', maNvLine)+
-     _tuWho('Ngày vào làm', d.ngay_vao_lam)+ _tuWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+
+     _tuWho('Ngày vào làm', _tuDate(d.ngay_vao_lam))+ _tuWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+
      _tuWho('Chức vụ', d.chuc_vu)+ _tuWho('Email', d.tk_gmail)+ '</div>';
   h+='<div class="tn-hero"><div class="tn-hero-main"><div class="tn-hero-lbl">Mức tạm ứng</div>'+
      '<div class="tn-hero-num">'+_tuMoney(d.muc_ung)+' <span>₫</span></div></div>'+
