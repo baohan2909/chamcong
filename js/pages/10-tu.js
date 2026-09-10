@@ -10,12 +10,22 @@ const TU = { pw:null, ma:null, kyList:[], ky:null, phieu:null,
 // 20 key theo cột A→T sheet TU. Cột B="MÃ NV"(BH)→ma_bh; cột T="Mã NS"→ma_nv (khớp login).
 const TU_KEYS=['stt','ma_bh','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','luong_bh','ngay_vao_lam',
   'bhxh_105','muc_ung','chuyen_khoan','tien_mat','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','ma_nv'];
+// [Cấu hình phiếu] Lộ mặc định cho engine SLIPCFG (13-slipcfg.js) — cho phép admin ánh xạ cột + sửa giao diện.
+try{ window.TU_KEYS_DEFAULT = TU_KEYS.slice(); }catch(e){}
+const TU_GROUPS_DEFAULT=[{name:'Tài khoản nhận',accent:'#CBA45A',rows:[
+  ['tk_ten','Chủ tài khoản','txt'],['tk_stk','Số tài khoản','txt'],
+  ['tk_nganhang','Ngân hàng','txt'],['tk_chinhanh','Chi nhánh','txt'] ]}];
+try{ window.TU_GROUPS_DEFAULT = TU_GROUPS_DEFAULT; }catch(e){}
+function _tuNormRow(r){ return Array.isArray(r)?{key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3]}:{key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero}; }
+function tuGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLIPCFG.resolveGroups('tu'); if(g&&g.length) return g; } }catch(e){} return (window.TU_GROUPS_DEFAULT||[]); }
 
 function _tuLaCH(){ return typeof _laCuaHang==='function' && _laCuaHang(); }
 function _tuEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 function _tuNum(v){ if(v==null||v==='') return 0; const n=(typeof v==='number')?v:parseFloat(String(v).replace(/[^\d.-]/g,'')); return isNaN(n)?0:n; }
 function _tuMoney(v){ return Math.round(_tuNum(v)).toLocaleString('vi-VN'); }
 function _tuHasVal(v){ if(v==null||v==='') return false; if(typeof v==='number') return v!==0; const s=String(v).trim(); if(!s||s==='0') return false; return _tuNum(v)!==0 || /[a-zA-Z]/.test(s); }
+function _tuMaskStk(v){ const s=String(v||'').replace(/\s/g,''); return s.length>4?'•••• '+s.slice(-4):s; }
+function _tuGio(v){ const n=_tuNum(v); return n? n.toLocaleString('vi-VN',{maximumFractionDigits:1})+' giờ':''; }
 function _tuDt(t){ if(!t)return''; const d=new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
 function _tuDate(s){ if(!s)return''; const p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):String(s); }
 function _tuWho(l,v){ return '<div><span>'+_tuEsc(l)+'</span><b>'+(_tuEsc(v)||'—')+'</b></div>'; }
@@ -74,7 +84,7 @@ function tuLoadKy(ky){
   }).catch(()=>{ if(wrap)wrap.innerHTML='<div class="tn-empty">Lỗi kết nối.</div>'; });
 }
 // Thân phiếu tạm ứng (dùng chung NV + admin xem). Chỉ-đọc.
-function _tuSlipCore(p,d){
+function _tuSlipCore(p,d,groupsOverride){
   const daXN=!!p.xacNhanLuc;
   const maNvLine=(d.ma_bh||'')+((d.ma_nv&&d.ma_nv!==d.ma_bh)?' · '+d.ma_nv:'');
   let h='';
@@ -92,14 +102,24 @@ function _tuSlipCore(p,d){
        ( _tuHasVal(d.chuyen_khoan) ? '<div><div class="l">Chuyển khoản</div><div class="n">'+_tuMoney(d.chuyen_khoan)+'</div></div>':'')+
        ( _tuHasVal(d.tien_mat) ? '<div><div class="l">Nhận tiền mặt</div><div class="n">'+_tuMoney(d.tien_mat)+'</div></div>':'')+
      '</div></div>';
-  // Tài khoản nhận
-  const tkRows=[['tk_ten','Chủ tài khoản'],['tk_stk','Số tài khoản'],['tk_nganhang','Ngân hàng'],['tk_chinhanh','Chi nhánh']].filter(r=>_tuHasVal(d[r[0]]));
-  if(tkRows.length){
-    h+='<div class="tn-grp open" style="--ga:#CBA45A"><button class="tn-grp-head" onclick="tuTg(this)"><span class="tn-grp-dot"></span><span class="tn-grp-name">Tài khoản nhận</span>'+
-       '<span class="tn-grp-meta"><svg class="tn-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></button><div class="tn-grp-rows">';
-    tkRows.forEach(r=>{ h+='<div class="tn-row"><span class="k">'+_tuEsc(r[1])+'</span><span class="v">'+_tuEsc(d[r[0]])+'</span></div>'; });
+  // [Cấu hình phiếu] Nhóm hiển thị (mặc định = Tài khoản nhận); admin có thể thêm/sửa nhóm/dòng.
+  //   Hỗ trợ dòng tuple [key,label,fmt(,showZero)] LẪN object {key,label,fmt,showZero}.
+  const GROUPS = groupsOverride || tuGroups();
+  GROUPS.forEach((g)=>{
+    if(g.hidden) return;
+    const grows=(g.rows||[]).map(_tuNormRow);
+    const rows=grows.filter(r=>_tuHasVal(d[r.key]) || r.fmt==='num0' || r.showZero);
+    if(!rows.length) return;
+    h+='<div class="tn-grp open" style="--ga:'+(g.accent||'#CBA45A')+'">'+
+       '<button class="tn-grp-head" onclick="tuTg(this)"><span class="tn-grp-dot"></span><span class="tn-grp-name">'+_tuEsc(g.name)+'</span>'+
+       '<span class="tn-grp-meta'+(g.neg?' neg':'')+'">'+(g.total?((g.neg?'−':'')+_tuMoney(d[g.total])):'')+'<svg class="tn-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></button>'+
+       '<div class="tn-grp-rows">';
+    rows.forEach(r=>{ const key=r.key,lbl=r.label,fmt=r.fmt; const raw=d[key];
+      let val = fmt==='money'?((g.neg?'−':'')+_tuMoney(raw)) : fmt==='gio'?_tuGio(raw) : fmt==='stk'?_tuMaskStk(raw) : fmt==='num0'?String(Math.round(_tuNum(raw))) : _tuEsc(raw);
+      h+='<div class="tn-row"><span class="k">'+_tuEsc(lbl)+'</span><span class="v'+(g.neg&&fmt==='money'?' neg':'')+'">'+val+'</span></div>';
+    });
     h+='</div></div>';
-  }
+  });
   return h;
 }
 // Ghi chú cuối phiếu (Phòng NS · Zalo · ngày nhận) — theo mẫu phiếu tạm ứng
@@ -188,13 +208,16 @@ function tuAdminSyncCardHtml(){
   const kySel=(TU.adData&&TU.adData.kyList||[]).map(k=>'<option value="'+k.ky+'"'+(k.ky===TU.adKy?' selected':'')+'>'+_tuEsc(k.ten||k.ky)+'</option>').join('');
   const now=new Date(); const pm=new Date(now.getFullYear(), now.getMonth(), 1); const defM=pm.getFullYear()+'-'+String(pm.getMonth()+1).padStart(2,'0');
   return '<div class="tn-card"><div class="tn-ad-top"><div><div class="tn-ad-title">Đồng bộ tạm ứng</div>'+
-    '<div class="tn-ad-sub">Chọn <b>tháng</b> → kéo tất cả dòng sheet <b>TU</b> vào kỳ đó. Tải CSV chạy ngay; "Đồng bộ ngay" cần GAS hỗ trợ <code>?sheet=TU</code>.</div></div>'+
-    (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tuAdminLoad(this.value)">'+kySel+'</select>':'')+'</div>'+
+    '<div class="tn-ad-sub">Chọn <b>tháng</b> → kéo tất cả dòng sheet <b>TU</b> vào kỳ đó. Tải Excel/CSV chạy ngay; "Đồng bộ ngay" cần GAS hỗ trợ <code>?sheet=TU</code>.</div></div>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">'+
+      (kySel?'<select class="tn-sel" title="Xem kỳ đã có" onchange="tuAdminLoad(this.value)">'+kySel+'</select>':'')+
+      (window.SLIPCFG?'<button class="tn-cfg-gear" onclick="SLIPCFG.open(\'tu\')" title="Cấu hình cột dữ liệu & hiển thị phiếu tạm ứng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Cấu hình</button>':'')+
+    '</div></div>'+
     '<div class="tn-sync-row">'+
       '<div class="tn-fld"><label>Tháng đồng bộ / hiển thị</label><input id="tu-sync-month" class="tn-inp sm" type="month" value="'+defM+'"></div>'+
       '<div class="tn-fld"><label>Secret <span class="tn-nolock">không lưu</span></label><input id="tu-secret" class="tn-inp sm" type="password" placeholder="Nhập secret" autocomplete="off"></div>'+
       '<button class="tn-btn-ok tn-sync-btn" onclick="tuAdminSyncNow()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Đồng bộ ngay</button>'+
-      '<label class="tn-btn-ghost tn-file">Tải CSV<input type="file" accept=".csv" style="display:none" onchange="tuAdminCsv(this)"></label>'+
+      '<label class="tn-btn-ghost tn-file">Tải Excel/CSV<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="tuAdminImportData(this)"></label>'+
     '</div>'+
     '<label class="tn-sync-replace"><input type="checkbox" id="tu-sync-replace" checked> <b>Thay dữ liệu cũ</b> — xóa sạch phiếu tháng này trước khi nạp</label>'+
     '</div>';
@@ -211,23 +234,58 @@ function tuAdminSyncNow(){
     tuAdminDoSync(k.ky,k.ten,res.rows||[]);
   }).catch(()=>{ if(typeof showToast==='function')showToast('Lỗi lấy Sheet (kiểm secret/GAS ?sheet=TU)','err'); });
 }
-function tuAdminCsv(inp){
+// [Excel/CSV] Nhập DATA tạm ứng từ .xlsx (ưu tiên) hoặc .csv — map theo cấu hình cột hiện hành.
+function tuAdminImportData(inp){
   const f=inp.files&&inp.files[0]; if(!f) return;
-  const k=_tuSyncKy(); const rd=new FileReader();
-  rd.onload=()=>{ const rows=tuParseCsv(rd.result); inp.value=''; if(!rows.length){if(typeof showToast==='function')showToast('CSV rỗng/không đọc được','warn');return;} tuAdminDoSync(k.ky,k.ten,rows); };
-  rd.readAsText(f,'utf-8');
+  const k=_tuSyncKy(); const name=(f.name||'').toLowerCase();
+  const go=(rows)=>{ inp.value=''; if(!rows.length){ if(typeof showToast==='function')showToast('Không có dòng hợp lệ (thiếu Mã NS/Mã NV?)','warn'); return; } tuAdminDoSync(k.ky,k.ten,rows,f.name); };
+  const fail=(m)=>{ inp.value=''; if(typeof showToast==='function')showToast(m,'err'); };
+  if(name.endsWith('.csv')){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ go(tuParseCsv(rd.result)); }catch(e){ fail('Lỗi đọc CSV: '+e.message); } };
+    rd.onerror=()=>fail('Lỗi đọc CSV'); rd.readAsText(f,'utf-8'); return;
+  }
+  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+    if(typeof showToast==='function')showToast('Đang đọc Excel…','ok');
+    _tuLoadSheetJS().then(XLSX=>{
+      const rd=new FileReader();
+      rd.onload=()=>{ try{
+        const wb=XLSX.read(new Uint8Array(rd.result),{type:'array',cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,blankrows:false,defval:''});
+        go(_tuRowsFromMatrix(aoa.slice(1)));
+      }catch(e){ fail('Lỗi đọc Excel: '+e.message); } };
+      rd.onerror=()=>fail('Lỗi đọc file'); rd.readAsArrayBuffer(f);
+    }).catch(e=>fail(e.message||'Không tải được thư viện Excel'));
+    return;
+  }
+  fail('Định dạng không hỗ trợ — chọn .xlsx hoặc .csv');
 }
-function tuParseCsv(text){
-  const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length); const out=[];
-  for(let i=1;i<lines.length;i++){
-    const cells=tuCsvLine(lines[i]); const maBh=(cells[1]||'').trim(); const maNs=(cells[19]||'').trim();
-    if(!maBh && !maNs) continue;
-    const o={}; for(let c=0;c<TU_KEYS.length;c++){ o[TU_KEYS[c]]=cells[c]!==undefined?cells[c]:''; } out.push(o);
+function _tuLoadSheetJS(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(window._xlsxLoading) return window._xlsxLoading;
+  window._xlsxLoading=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; s.onload=()=>res(window.XLSX); s.onerror=()=>rej(new Error('Không tải được thư viện đọc Excel')); document.head.appendChild(s); });
+  return window._xlsxLoading;
+}
+// [Cấu hình phiếu] Khóa theo thứ tự cột: ưu tiên cấu hình admin (SLIPCFG), fallback TU_KEYS.
+function _tuResolveKeys(){ const k=(window.SLIPCFG&&SLIPCFG.resolveKeys)?(SLIPCFG.resolveKeys('tu')||[]):null; return (k&&k.length)?k:TU_KEYS; }
+function _tuCellStr(v){ if(v===undefined||v===null)return''; if(v instanceof Date){ const dd=('0'+v.getDate()).slice(-2),mm=('0'+(v.getMonth()+1)).slice(-2); return dd+'/'+mm+'/'+v.getFullYear(); } return String(v); }
+// Dựng phiếu từ ma trận ô (ĐÃ bỏ tiêu đề). TU khớp theo Mã NS HOẶC Mã BH; bỏ dòng tiêu đề (mã thật có chữ số).
+function _tuRowsFromMatrix(rows2d){
+  const K=_tuResolveKeys(); const out=[];
+  for(let i=0;i<rows2d.length;i++){
+    const cells=rows2d[i]||[]; const o={};
+    for(let c=0;c<K.length;c++){ o[K[c]]=_tuCellStr(cells[c]); }
+    const maNv=String(o.ma_nv||'').trim(), maBh=String(o.ma_bh||'').trim();
+    if(!maNv && !maBh) continue;
+    if(!/\d/.test(maNv) && !/\d/.test(maBh)) continue;   // loại dòng tiêu đề "Mã NV"/"Mã NS"…
+    out.push(o);
   }
   return out;
 }
+function tuParseCsv(text){ const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.length); return _tuRowsFromMatrix(lines.slice(1).map(tuCsvLine)); }
 function tuCsvLine(line){ const r=[]; let cur='',q=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(q){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; } else { if(ch==='"')q=true; else if(ch===','){r.push(cur);cur='';} else cur+=ch; } } r.push(cur); return r; }
-function tuAdminDoSync(ky,ten,rows){
+async function tuAdminDoSync(ky,ten,rows,fname){
   if(!rows||!rows.length){ if(typeof showToast==='function')showToast('⚠ Không nhận được dòng nào — ĐÃ HỦY để tránh mất dữ liệu.','err'); return; }
   // [v18.66] Chặn nạp bậy: rows phải có shape TU (muc_ung / ma_bh). GAS chưa hỗ trợ ?sheet=TU
   //   sẽ trả về data sheet TN (thiếu 2 key này) → báo rõ thay vì lưu sai.
@@ -236,6 +294,18 @@ function tuAdminDoSync(ky,ten,rows){
     return;
   }
   const replace=!!(document.getElementById('tu-sync-replace')||{}).checked;
+  // [AN TOÀN] "Thay dữ liệu cũ" = XÓA sạch kỳ rồi ghi (không hoàn tác). Bắt xác nhận + cảnh báo sụt + dòng mẫu.
+  if(replace){
+    const cur=(TU.adData && TU.adKy===ky && Array.isArray(TU.adData.danhSach))?TU.adData.danhSach.length:null;
+    let msg='Sẽ XÓA toàn bộ phiếu tạm ứng kỳ '+ky+(cur!=null?(' ('+cur+' phiếu hiện có)'):'')+' rồi ghi '+rows.length+' phiếu mới.';
+    if(cur!=null && rows.length<cur*0.6) msg+='\n\n⚠ Số phiếu mới ('+rows.length+') GIẢM MẠNH so với hiện có ('+cur+'). Có thể do cấu hình cột sai — hãy kiểm tra lại "Cấu hình".';
+    const s0=rows[0]||{}; if(s0.ho_ten||s0.muc_ung) msg+='\n\nVD dòng đầu'+(fname?(' ('+fname+')'):'')+': '+(s0.ho_ten||'(trống)')+(s0.ma_bh?(' · '+s0.ma_bh):'')+(s0.muc_ung?(' · Ứng '+_tuMoney(s0.muc_ung)+'₫'):'');
+    msg+='\n\nThao tác KHÔNG hoàn tác. Tiếp tục?';
+    let ok=false;
+    if(typeof appConfirm==='function') ok=await appConfirm(msg,{title:'Thay dữ liệu cũ — xác nhận',okLabel:'Xóa & ghi mới',danger:true});
+    else ok=confirm(msg);
+    if(!ok){ if(typeof showToast==='function')showToast('Đã hủy — không thay đổi gì','ok'); return; }
+  }
   const _write=()=>{
     supa.rpc('fn_tu_sync',{p_ma:TU.ma,p_password:TU.pw,p_ky:ky,p_ten:ten,p_rows:rows}).then(({data,error})=>{
       if(error||!data||!data.success){ if(typeof showToast==='function')showToast('Đồng bộ lỗi: '+((data&&data.error)||(error&&error.message)),'err'); return; }
@@ -244,8 +314,18 @@ function tuAdminDoSync(ky,ten,rows){
     });
   };
   if(typeof showToast==='function')showToast((replace?'Đang thay dữ liệu cũ + ghi ':'Đang ghi ')+rows.length+' phiếu...','ok');
-  if(replace) Promise.resolve(supa.rpc('fn_tu_admin_clear',{p_ma:TU.ma,p_password:TU.pw,p_ky:ky,p_mode:'all'})).then(()=>_write()).catch(()=>_write());
-  else _write();
+  if(replace){
+    // [AN TOÀN] fn_tu_sync là UPSERT (ky+ma_nv), KHÔNG tự xóa → chỉ ghi mới KHI xóa cũ THÀNH CÔNG.
+    //   Clear lỗi mà vẫn ghi → NV vắng trong file mới còn giữ phiếu cũ (trộn dữ liệu, sai hợp đồng "thay").
+    supa.rpc('fn_tu_admin_clear',{p_ma:TU.ma,p_password:TU.pw,p_ky:ky,p_mode:'all'}).then(({data,error})=>{
+      if(error || !data || !data.success){
+        const nf = error && /find the function|does not exist|schema cache/i.test(error.message||'');
+        if(typeof showToast==='function')showToast(nf ? '⚠ Chưa có hàm xóa (chạy SQL v18.65_tam_ung) — ĐÃ HỦY ghi để tránh trộn dữ liệu' : ('⚠ Xóa dữ liệu cũ THẤT BẠI — ĐÃ HỦY ghi mới để tránh trộn cũ/mới. '+((data&&data.error)||(error&&error.message)||'')),'err');
+        return;
+      }
+      _write();
+    }).catch(()=>{ if(typeof showToast==='function')showToast('⚠ Lỗi kết nối khi xóa dữ liệu cũ — ĐÃ HỦY ghi mới (tránh trộn dữ liệu).','err'); });
+  } else _write();
 }
 function tuAdminLoad(ky){
   TU.adKy=ky;
@@ -386,7 +466,7 @@ function tuAdReply(id){
 window.tuInitPage=tuInitPage; window.tuVerify=tuVerify; window.tuLoadKy=tuLoadKy;
 window.tuTg=tuTg; window.tuToggleFb=tuToggleFb; window.tuConfirm=tuConfirm; window.tuSendFb=tuSendFb;
 window.tuAdminInitPage=tuAdminInitPage; window.tuAdminVerify=tuAdminVerify;
-window.tuAdminSyncNow=tuAdminSyncNow; window.tuAdminCsv=tuAdminCsv; window.tuAdminLoad=tuAdminLoad;
+window.tuAdminSyncNow=tuAdminSyncNow; window.tuAdminImportData=tuAdminImportData; window.tuAdminLoad=tuAdminLoad;
 window.tuAdOpenAll=tuAdOpenAll; window.tuAdminToggleOne=tuAdminToggleOne; window.tuAdSetNgayNhan=tuAdSetNgayNhan;
 window.tuAdApplyFilter=tuAdApplyFilter; window.tuAdClearData=tuAdClearData; window.tuAdClearResponses=tuAdClearResponses;
 window.tuAdminViewPhieu=tuAdminViewPhieu; window.tuAdminCloseView=tuAdminCloseView;

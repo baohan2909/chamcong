@@ -445,8 +445,16 @@ async function tnAdminDoSync(ky,ten,rows,fname){
   };
   if(typeof showToast==='function')showToast((replace?'Đang thay dữ liệu cũ + ghi ':'Đang ghi ')+rows.length+' phiếu...','ok');
   if(replace){
-    Promise.resolve(supa.rpc('fn_tn_admin_clear',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_mode:'all'}))
-      .then(()=>_write()).catch(()=>_write());   // xóa lỗi/chưa có RPC → vẫn ghi (fn_tn_sync tự upsert)
+    // [AN TOÀN] fn_tn_sync là UPSERT, KHÔNG tự xóa → chỉ ghi mới KHI xóa cũ THÀNH CÔNG.
+    //   Clear lỗi mà vẫn ghi → NV vắng trong file mới còn giữ phiếu cũ (trộn dữ liệu, sai hợp đồng "thay").
+    supa.rpc('fn_tn_admin_clear',{p_ma:TN.ma,p_password:TN.pw,p_ky:ky,p_mode:'all'}).then(({data,error})=>{
+      if(error || !data || !data.success){
+        const nf = error && /find the function|does not exist|schema cache/i.test(error.message||'');
+        if(typeof showToast==='function')showToast(nf ? '⚠ Chưa có hàm xóa (chạy SQL tn_v6_xoa) — ĐÃ HỦY ghi để tránh trộn dữ liệu' : ('⚠ Xóa dữ liệu cũ THẤT BẠI — ĐÃ HỦY ghi mới để tránh trộn cũ/mới. '+((data&&data.error)||(error&&error.message)||'')),'err');
+        return;
+      }
+      _write();
+    }).catch(()=>{ if(typeof showToast==='function')showToast('⚠ Lỗi kết nối khi xóa dữ liệu cũ — ĐÃ HỦY ghi mới (tránh trộn dữ liệu).','err'); });
   } else _write();
 }
 function tnAdminLoad(ky, allowAuto){

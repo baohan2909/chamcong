@@ -36,17 +36,44 @@ const TN_LABELS = {
   phep_con_lai:'Phép năm còn lại'
 };
 
+// ── Nhãn tiếng Việt cho 20 khóa Tạm ứng ──
+const TU_LABELS = {
+  stt:'STT', ma_bh:'Mã NV (BH)', ho_ten:'Họ và tên', chuc_vu:'Chức vụ', cua_hang:'Cửa hàng',
+  ma_ch:'Mã cửa hàng', khu_vuc:'Khu vực', luong_cb:'Lương căn bản', luong_bh:'Lương bảo hiểm',
+  ngay_vao_lam:'Ngày vào làm', bhxh_105:'BHXH (10,5%)', muc_ung:'Mức tạm ứng', chuyen_khoan:'Chuyển khoản',
+  tien_mat:'Tiền mặt', tk_ten:'Chủ tài khoản', tk_stk:'Số tài khoản', tk_nganhang:'Ngân hàng',
+  tk_chinhanh:'Chi nhánh', tk_gmail:'Email', ma_nv:'Mã NS'
+};
+
 // ── Đăng ký phân hệ ──
 const DEFS = {
   tn: {
     key:'tn', title:'TN · Bảng lương', roles:['ADMIN'], idKeys:['ma_nv','ho_ten'], labels:TN_LABELS,
     settingKey:'tn.columns', histKey:'tn.columns_hist',
     groupsSettingKey:'tn.groups', groupsHistKey:'tn.groups_hist',
+    previewFn:'_tnSlipCore',
+    previewP:{ ky:'2026-09', kyTen:'Tháng 9, 2026', ngayChi:'2026-09-05', xacNhanLuc:null },
+    sampleBase:{ ho_ten:'Nguyễn Văn Mẫu', ma_nv:'NS00001', ma_ns:'NS00001', chuc_vu:'Nhân viên bán hàng',
+      cua_hang:'CH Quận 1', ma_ch:'CH01', khu_vuc:'TP.HCM', ngay_vao_lam:'01/03/2021', tham_nien:'4 năm',
+      tk_ten:'NGUYEN VAN MAU', tk_stk:'0071001234567', tk_nganhang:'Vietcombank', tk_chinhanh:'TP.HCM', tk_gmail:'mau@example.com',
+      tong_thuc_lanh:18500000, thuc_nhan_ck:15000000, thuc_nhan_tm:3500000 },
     defaultKeys(){ return (window.TN_KEYS_DEFAULT || window.TN_KEYS || []).slice(); },
     defaultGroups(){ return (window.TN_GROUPS_DEFAULT || []); },
-    onReload(){ try{ if(typeof tnAdminLoad==='function' && window.TN && TN.adKy) tnAdminLoad(TN.adKy); }catch(e){} }
+    onReload(){ try{ if(typeof tnAdminLoad==='function' && typeof TN!=='undefined' && TN && TN.adKy) tnAdminLoad(TN.adKy); }catch(e){} }
+  },
+  tu: {
+    key:'tu', title:'Tạm ứng · Phiếu ứng lương', roles:['ADMIN','QLNS'], idKeys:['ma_nv','ho_ten'], labels:TU_LABELS,
+    settingKey:'tu.columns', histKey:'tu.columns_hist',
+    groupsSettingKey:'tu.groups', groupsHistKey:'tu.groups_hist',
+    previewFn:'_tuSlipCore',
+    previewP:{ ky:'2026-09', kyTen:'Tháng 9, 2026', ngayNhan:'2026-09-05', hanHoi:'17h30 ngày 06/09', zalo:'0902753345', xacNhanLuc:null },
+    sampleBase:{ ho_ten:'Nguyễn Văn Mẫu', ma_bh:'BH1256', ma_nv:'NS00001', chuc_vu:'Nhân viên bán hàng',
+      cua_hang:'CH Quận 1', ma_ch:'CH01', khu_vuc:'TP.HCM', ngay_vao_lam:'01/03/2021', tk_gmail:'mau@example.com',
+      muc_ung:3000000, chuyen_khoan:3000000, tien_mat:0, tk_ten:'NGUYEN VAN MAU', tk_stk:'0071001234567', tk_nganhang:'Vietcombank', tk_chinhanh:'TP.HCM' },
+    defaultKeys(){ return (window.TU_KEYS_DEFAULT || []).slice(); },
+    defaultGroups(){ return (window.TU_GROUPS_DEFAULT || []); },
+    onReload(){ try{ if(typeof tuAdminLoad==='function' && typeof TU!=='undefined' && TU && TU.adKy) tuAdminLoad(TU.adKy); }catch(e){} }
   }
-  // 'tu' sẽ thêm sau (song song, dùng chung engine này)
 };
 const HIST_CAP = 25;
 const ACCENTS = ['#1E5F63','#2E8B57','#C6373C','#4A5670','#CBA45A','#D6006C','#185FA5','#BA7517'];
@@ -152,11 +179,8 @@ function _availKeys(def){
   (ST&&ST.groups||[]).forEach(g=>(g.rows||[]).forEach(r=>add(r.key)));
   return out;
 }
-function _sampleD(groups){
-  const d={ ho_ten:'Nguyễn Văn Mẫu', ma_nv:'NS00001', ma_ns:'NS00001', chuc_vu:'Nhân viên bán hàng',
-    cua_hang:'CH Quận 1', ma_ch:'CH01', khu_vuc:'TP.HCM', ngay_vao_lam:'01/03/2021', tham_nien:'4 năm',
-    tk_ten:'NGUYEN VAN MAU', tk_stk:'0071001234567', tk_nganhang:'Vietcombank', tk_chinhanh:'TP.HCM', tk_gmail:'mau@example.com',
-    tong_thuc_lanh:18500000, thuc_nhan_ck:15000000, thuc_nhan_tm:3500000 };
+function _sampleD(def,groups){
+  const d=Object.assign({}, (def&&def.sampleBase)||{});
   (groups||[]).forEach(g=>{
     if(g.total && d[g.total]===undefined) d[g.total]= g.neg?1200000:21000000;
     (g.rows||[]).forEach(r=>{ const k=r.key, fmt=r.fmt; if(d[k]!==undefined) return;
@@ -381,10 +405,10 @@ function _drowHtml(gi,ri,r,n,avail){
 }
 function _rerenderDisp(){ const e=document.getElementById('scf-disp-edit'); if(e)e.innerHTML=_dispEditHtml(); const c=document.querySelector('#scf-pane-disp .scf-count'); if(c)c.textContent=ST.groups.length+' nhóm'; _updPreview(); }
 function _updPreview(){
-  const box=document.getElementById('scf-preview'); if(!box) return;
-  if(typeof window._tnSlipCore!=='function'){ box.innerHTML='<div class="scf-empty">Không tải được bản xem trước</div>'; return; }
-  const p={ ky:'2026-09', kyTen:'Tháng 9, 2026', ngayChi:'2026-09-05', xacNhanLuc:null };
-  try{ box.innerHTML='<div class="tn-slip">'+window._tnSlipCore(p,_sampleD(ST.groups),ST.groups)+'</div>'; }
+  const box=document.getElementById('scf-preview'); if(!box||!ST) return;
+  const fn=window[ST.def.previewFn||''];
+  if(typeof fn!=='function'){ box.innerHTML='<div class="scf-empty">Không tải được bản xem trước</div>'; return; }
+  try{ box.innerHTML='<div class="tn-slip">'+fn(ST.def.previewP||{}, _sampleD(ST.def,ST.groups), ST.groups)+'</div>'; }
   catch(e){ box.innerHTML='<div class="scf-empty">Lỗi xem trước: '+_esc(e.message)+'</div>'; }
 }
 function _markGroupsDirty(){ if(ST){ ST.groupsDirty=true; _updFoot(); } }
