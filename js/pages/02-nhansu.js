@@ -184,7 +184,7 @@ function onLCQLSearch(){
   renderLCQL();
 }
 
-let _lcqlAllData = [];
+let _lcqlAllData = [], _lcqlWeekDays = [];
 async function taiLichCaQL(){
   if(typeof _chanXemNS==='function' && _chanXemNS()) return;   // [v18.29] ADMIN/QLNS + CH (xem, lọc client theo cửa hàng); roster read-only không có nút
   if(!lcqlTuan)lcqlTuan=_tuanISO(new Date());
@@ -201,6 +201,9 @@ async function taiLichCaQL(){
   const _fmt = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const tuStr = _fmt(thuHai);
   const denStr = _fmt(chuNhat);
+  // [v18.123] 7 ngày của tuần (T2→CN) để view "Theo ngày" hiện ĐỦ tuần, kể cả ngày trống
+  _lcqlWeekDays = [];
+  for(let _i=0;_i<7;_i++){ _lcqlWeekDays.push(_fmt(new Date(thuHai.getTime()+_i*86400000))); }
   // [FIX #1] CỬA HÀNG: lọc lịch ca THEO CỬA HÀNG NGAY TRÊN SERVER.
   //   Trước đây kéo TOÀN CHUỖI 220 CH rồi lọc client → vượt trần 1000 dòng của Supabase (Max rows)
   //   → dữ liệu bị CẮT NGẦM → roster thiếu ngày NV đăng ký. Scope server đưa kết quả xuống dưới trần.
@@ -212,17 +215,21 @@ async function taiLichCaQL(){
     const hvRes = await supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc').eq('ma_ch_mac_dinh', _maCH);
     _homeNVList = hvRes.data || [];
   }
-  let _lcQ = supa.from('lich_ca').select('*').gte('ngay', tuStr).lte('ngay', denStr);
-  let _dnQ = supa.from('don_nghi').select('*').gte('ngay_nghi', tuStr).lte('ngay_nghi', denStr);
-  if (_isCH) {
-    const _ids = _homeNVList.length ? _homeNVList.map(x => '"'+x.ma_nv+'"').join(',') : '"__none__"';
-    // ca/đơn TẠI cửa hàng mình  HOẶC  của NV thuộc cửa hàng mình (kể cả đi hỗ trợ CH khác / ma_ch trống)
-    _lcQ = _lcQ.or(`ma_ch.eq.${_maCH},ma_nv.in.(${_ids})`);
-    _dnQ = _dnQ.or(`ma_ch.eq.${_maCH},ma_nv.in.(${_ids})`);
-  }
+  // [v18.123] Tải lịch/đơn THEO TỪNG NGÀY rồi gộp — mỗi ngày < 1000 dòng, tránh trần 1000
+  //   của Supabase (view toàn chuỗi 1 tuần >1000 dòng → bị cắt ngầm → thiếu CH/NV đã đăng ký).
+  const _orFilter = _isCH
+    ? `ma_ch.eq.${_maCH},ma_nv.in.(${_homeNVList.length ? _homeNVList.map(x => '"'+x.ma_nv+'"').join(',') : '"__none__"'})`
+    : null;
+  const _fetchAllByDay = (table, dateCol) => Promise.all(
+    (_lcqlWeekDays.length ? _lcqlWeekDays : [tuStr]).map(day => {
+      let q = supa.from(table).select('*').eq(dateCol, day);
+      if (_orFilter) q = q.or(_orFilter);
+      return q.then(r => r.data || []);
+    })
+  ).then(arrs => ({ data: [].concat.apply([], arrs) }));
   Promise.all([
-    _lcQ,
-    _dnQ,
+    _fetchAllByDay('lich_ca', 'ngay'),
+    _fetchAllByDay('don_nghi', 'ngay_nghi'),
     supa.from('nhan_vien').select('ma_nv, ho_ten, ma_ch_mac_dinh, khu_vuc'),
     supa.from('cua_hang').select('ma_ch, ten_ch, khu_vuc')
   ]).then(([lcRes, dnRes, nvRes, chRes]) => {
@@ -395,8 +402,9 @@ function renderLCQL(){
       const ngayMap = {};
       ci.allDays.forEach(d=>{ if(!ngayMap[d.ngay]) ngayMap[d.ngay]=[]; ngayMap[d.ngay].push(d); });
       let dayHtml = '';
-      Object.keys(ngayMap).sort().forEach(ng=>{
-        const items = ngayMap[ng];
+      const _dayList = (_lcqlWeekDays && _lcqlWeekDays.length) ? _lcqlWeekDays : Object.keys(ngayMap).sort();
+      _dayList.forEach(ng=>{
+        const items = ngayMap[ng] || [];
         const uniqueNV = new Set(items.map(x=>x.maNV)).size;
         const dt = new Date(ng); const dowLbl = dow[dt.getDay()];
         dayHtml += `<div style="margin-bottom:5px"><div ${_tog} style="cursor:pointer;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid ${c.bd};display:flex;align-items:center;gap:8px;font-size:12px">${_icoCal}<span style="flex:1;color:#0F172A"><strong>${dowLbl} ${ng.substring(8)}/${ng.substring(5,7)}</strong></span><span style="color:#64748B;font-size:11px;font-weight:600">${uniqueNV} NV · ${items.length} slot</span></div><div style="display:none;padding:4px 0 4px 4px">${items.sort((a,b)=>(a.tenNV||'').localeCompare(b.tenNV||'','vi')).map(d=>{
