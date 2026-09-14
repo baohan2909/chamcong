@@ -287,11 +287,28 @@ async function bskOpenNV(maNV){
   document.addEventListener('keydown',_bskKeyEsc);
   try{
     var r=await supa.rpc('fn_bs_ks_detail',{p_ma_admin:SESSION.ma,p_ma_nv:maNV,p_thang:_bskThang});
+    // [v18.124] RPC lỗi/timeout → supabase trả {data:null,error} (KHÔNG ném exception). Phải bắt r.error;
+    //   nếu bỏ qua sẽ render rỗng "—/0 lỗi/Không còn lỗi" gây HIỂU NHẦM NV sạch lỗi → dễ chốt xử lý nhầm.
+    if(r.error || !r.data){ _bskRenderLoi(maNV, (r.error&&r.error.message)||''); return; }
     var d=r.data||{};
     if(d.ok===false){ bskCloseNV(); if(typeof showToast==='function')showToast(d.error||'Lỗi','warn'); return; }
     _bskCurD=d; _bskFinalPick=(d.chot&&d.chot.hinh_thuc)||null; d._finalNote=(d.chot&&d.chot.phan_hoi)||'';
     _bskRenderDetail();
-  }catch(e){ bskCloseNV(); if(typeof showToast==='function')showToast('Lỗi tải','warn'); }
+  }catch(e){ _bskRenderLoi(maNV, (e&&e.message)||''); }
+}
+// [v18.124] Màn lỗi tải hồ sơ (thay vì vẽ modal rỗng) — có nút Thử lại
+function _bskRenderLoi(maNV, msg){
+  var ov=document.getElementById('bsk-modal-root'); if(!ov) return;
+  var to=/57014|timeout|canceling statement|quá tải/i.test(msg||'');
+  ov.innerHTML='<div class="bsk-ov" onclick="if(event.target===this)bskCloseNV()"><div class="bsk-modal"><div class="bsk-mbody">'+
+    '<button type="button" class="bsk-mx" aria-label="Đóng" onclick="bskCloseNV()">×</button>'+
+    '<div class="bsk-empty" style="text-align:center;padding:26px 14px">'+
+      '<div style="font-size:34px">⚠️</div>'+
+      '<div style="font-weight:800;margin-top:6px;color:#B91C1C">Không tải được hồ sơ lỗi</div>'+
+      '<div style="font-size:12px;color:#6B7280;margin-top:6px;line-height:1.5">'+(to?'Máy chủ quá tải (hết thời gian chờ). ĐÂY KHÔNG PHẢI nhân viên sạch lỗi — vui lòng bấm Thử lại.':'Có lỗi khi tải hồ sơ. Vui lòng thử lại.')+'</div>'+
+      '<button type="button" onclick="bskOpenNV(\''+_bscEsc(maNV)+'\')" style="margin-top:15px;padding:10px 22px;background:linear-gradient(135deg,#0F6E56,#1D9E75);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer">↻ Thử lại</button>'+
+    '</div>'+
+  '</div></div></div>';
 }
 function bskCloseNV(){
   var ov=document.getElementById('bsk-modal-root'); if(ov)ov.innerHTML='';

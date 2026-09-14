@@ -47,6 +47,8 @@ function _tddGiaiTrinh(e){
           (b.ghi_chu_ql?'<div style="margin-top:6px;font-size:11px;color:#0F6E56"><b>QLNS:</b> '+_tddEsc(b.ghi_chu_ql)+'</div>':'')+
         '</div>';
       }).join('')+
+      // [v18.124] Đã nộp rồi VẪN cho gửi THÊM ảnh/biên bản vào đúng lỗi này (RPC insert thêm dòng, không ghi đè)
+      '<button type="button" onclick="bsBienBanMo(\''+_tddJs(e.event_key)+'\')" style="width:100%;margin-top:2px;padding:9px;background:#FFF7ED;color:#9A3412;border:1px dashed #FDBA74;border-radius:9px;font-weight:700;font-size:12px;cursor:pointer">📎 Gửi thêm ảnh / biên bản</button>'+
     '</div>';
   }
   // chưa nộp: chỉ hiện nút với lỗi BẮT BUỘC (Chờ); lỗi Nhắc nhở chưa nộp → không hiện gì
