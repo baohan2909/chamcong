@@ -110,8 +110,10 @@ function _tddRender(d){
   if(!sk.length){
     h+='<div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:12px;padding:26px 18px;text-align:center;color:#0F6E56;font-size:13.5px;font-weight:600">Tháng này bạn chưa bị trừ điểm nào — giữ vững nhé!</div>';
   } else {
-    h+='<div style="display:flex;gap:8px;align-items:center;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:9px 11px;margin-bottom:12px;font-size:11.5px;color:#0F6E56;line-height:1.45">'+
-       'Quản lý đã xử lý <b style="margin:0 3px">'+daXL+'/'+sk.length+'</b> lỗi. Bạn được thông báo mỗi khi quản lý xử lý một lỗi.</div>';
+    h+='<div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:9px 11px;margin-bottom:12px;font-size:11.5px;color:#0F6E56;line-height:1.5">'+
+       '<div>Quản lý đã xử lý <b style="margin:0 3px">'+daXL+'/'+sk.length+'</b> lỗi. Bạn được thông báo mỗi khi quản lý xử lý một lỗi.</div>'+
+       '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #9FE1CB">Nhân viên phải giải trình riêng cho từng trường hợp vi phạm bị trừ điểm. Nếu đã có tường trình nhưng tiếp tục vi phạm, nhân viên phải gửi biên bản mới để giải trình cho lỗi phát sinh.</div>'+
+       '</div>';
     h+='<div style="font-size:11.5px;font-weight:800;color:#64748B;letter-spacing:.03em;margin:2px 2px 9px">CÁC LỖI TRONG THÁNG ('+sk.length+')</div>';
     sk.forEach(e=>{
       const hf=e.hinh_thuc?_TDD_HF[e.hinh_thuc]:null;
