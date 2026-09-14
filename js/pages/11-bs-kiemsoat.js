@@ -205,6 +205,7 @@ async function bscbbGui(){
 // ═══════════════════════════════════════════════════════════════════════════
 let _bskThang = null, _bskFilter = 'all', _bskData = null, _bskBusy = false;
 let _bskCurD = null, _bskFinalPick = null;
+let _bskSortKey = null, _bskSortDir = 1;   // [v18.125] sắp xếp bảng: 1 = A→Z / nhỏ→lớn, -1 = Z→A / lớn→nhỏ
 // mã → nhãn hình thức xử lý (+ class màu)
 var BSK_HF = { NHAC_NHO:['Nhắc nhở','nn'], NHAC_NHO_BB:['Nhắc nhở bằng biên bản','bb'], KY_LUAT:['Xử lý kỷ luật','kl'] };
 var BSK_HF_LIST = [['NHAC_NHO','Nhắc nhở'],['NHAC_NHO_BB','Nhắc nhở + biên bản'],['KY_LUAT','Xử lý kỷ luật']];
@@ -255,10 +256,25 @@ function _bskChip(tt){ var m={CHO_XU_LY:['cho','Chờ xử lý'],DA_XU_LY:['ok',
 // Màu điểm theo ngưỡng luật: ≤5 đỏ · 6 vàng · ≥7 xanh
 function _bskDiemColor(v){ return (v!=null&&v<=5)?'var(--red)':(v!=null&&v<=6)?'var(--amber)':'var(--green-m)'; }
 function _bskHFLabel(hf){ return hf&&BSK_HF[hf] ? '<span class="bsk-hf-tag '+BSK_HF[hf][1]+'">'+BSK_HF[hf][0]+'</span>' : '<span class="bsk-hf-none">—</span>'; }
+// [v18.125] Bấm tiêu đề cột → sắp xếp; bấm lại cột đó → đảo chiều A→Z / Z→A
+function bskSort(key){
+  if(!key) return;
+  if(_bskSortKey===key){ _bskSortDir=-_bskSortDir; } else { _bskSortKey=key; _bskSortDir=1; }
+  _bskRenderList();
+}
 function _bskRenderList(){
   var el=document.getElementById('bsk-list'); if(!el||!_bskData)return;
   var ds=(_bskData.ds||[]).filter(function(x){ return _bskFilter==='all' || x.trang_thai===_bskFilter; });
   if(!ds.length){ el.innerHTML='<div class="bsk-card"><div class="bsk-empty">Không có nhân viên '+(_bskFilter==='all'?'':'khớp lọc')+' trong tháng.</div></div>'; return; }
+  // [v18.125] sắp xếp theo cột đang chọn (số: Điểm/Bổ sung công so numeric; còn lại so chuỗi tiếng Việt)
+  if(_bskSortKey){
+    var k=_bskSortKey, dir=_bskSortDir, numK={diem:1,so_lan_bs:1};
+    ds=ds.slice().sort(function(a,b){
+      var va=a[k], vb=b[k];
+      if(numK[k]){ va=(va==null?-Infinity:Number(va)); vb=(vb==null?-Infinity:Number(vb)); return (va-vb)*dir; }
+      return String(va==null?'':va).localeCompare(String(vb==null?'':vb),'vi',{numeric:true,sensitivity:'base'})*dir;
+    });
+  }
   var rows=ds.map(function(x){
     return '<tr onclick="bskOpenNV(\''+_bscEsc(x.ma_nv)+'\')">'+
       '<td class="l">'+_bscEsc(x.ten_ch||'—')+'</td>'+
@@ -269,9 +285,13 @@ function _bskRenderList(){
       '<td>'+_bskChip(x.trang_thai)+'</td>'+
       '<td class="bsk-go">›</td></tr>';
   }).join('');
-  var heads=[['Cửa hàng','l'],['Nhân viên','l'],['Điểm',''],['Bổ sung công',''],['Hình thức xử lý',''],['Trạng thái',''],['','']];
+  var heads=[['Cửa hàng','l','ten_ch'],['Nhân viên','l','ten_nv'],['Điểm','','diem'],['Bổ sung công','','so_lan_bs'],['Hình thức xử lý','','hinh_thuc'],['Trạng thái','','trang_thai'],['','',null]];
   el.innerHTML='<div class="bsk-card"><div class="bsk-scroll"><table class="bsk-table">'+
-    '<thead><tr>'+heads.map(function(h){return '<th class="'+h[1]+'">'+h[0]+'</th>';}).join('')+'</tr></thead>'+
+    '<thead><tr>'+heads.map(function(h){
+      if(!h[2]) return '<th class="'+h[1]+'"></th>';
+      var ar=(_bskSortKey===h[2])?(_bskSortDir>0?' ▲':' ▼'):'';
+      return '<th class="'+h[1]+'" onclick="bskSort(\''+h[2]+'\')" style="cursor:pointer;user-select:none" title="Bấm để sắp xếp">'+h[0]+ar+'</th>';
+    }).join('')+'</tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div></div>';
 }
 // ─── Chi tiết NV (PORTAL ra body, xem note v18.73/74) ───
@@ -462,6 +482,7 @@ async function bskBoChot(){
 /* Globals */
 window.bskInitPage=bskInitPage; window.bskReload=bskReload; window.bskDoiThang=bskDoiThang;
 window.bskLoc=bskLoc; window.bskOpenNV=bskOpenNV; window.bskCloseNV=bskCloseNV;
+window.bskSort=bskSort;   // [v18.125] sắp xếp bảng khi bấm tiêu đề
 window.bskSetEvent=bskSetEvent; window.bskEventNote=bskEventNote;
 window.bskChotPick=bskChotPick; window.bskChot=bskChot; window.bskBoChot=bskBoChot;
 window._bscGateVaoCa = _bscGateVaoCa;
