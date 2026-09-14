@@ -1281,6 +1281,22 @@ async function taiLichSuDuyet(){
     if (loai === 'THIẾU CA') { await _lsdRenderThieuRaCa(tu, den, maNV, maCH, listEl); return; }
     // [v10.85] Đảm bảo NV list đã load để biết đội sale
     if (!_lsdNVList) { await _lsdLoadNVList().catch(()=>{}); }
+    // [v18.128] Gõ mã/tên NV nhưng CHƯA bấm chọn gợi ý → tự khớp để lọc (giống Lịch sử chấm công).
+    //   Trước đây bắt buộc phải bấm 1 dòng gợi ý mới set mã ẩn; chỉ gõ rồi thôi → không lọc gì
+    //   → hiện toàn bộ. Chỉ áp cho QL (maNV lúc này còn rỗng; NV/CTV đã bị ép = SESSION.ma).
+    if (!maNV) {
+      const _nvTyped = ((document.getElementById('lsd-nv-inp') || {}).value || '').trim();
+      if (_nvTyped && _lsdNVList && _lsdNVList.length) {
+        const _low = _nvTyped.toLowerCase();
+        let _hit = _lsdNVList.find(n => (n.ma_nv || '').toLowerCase() === _low);
+        if (!_hit) {
+          const _cands = _lsdNVList.filter(n =>
+            (n.ma_nv || '').toLowerCase().includes(_low) || (n.ten_nv || '').toLowerCase().includes(_low));
+          if (_cands.length === 1) _hit = _cands[0];
+        }
+        if (_hit) maNV = _hit.ma_nv;
+      }
+    }
     // [v13.05] Truyền p_ma_ch để RPC filter server-side — robust hơn client-side
     const { data, error } = await supa.rpc('fn_get_lich_su_duyet', {
       p_tu_ngay: tu, p_den_ngay: den, p_ma_nv: maNV,
@@ -1735,8 +1751,11 @@ async function _lsdLoadQLList(){
 function lsdOnNVInput(){
   const inp = document.getElementById('lsd-nv-inp');
   const hid = document.getElementById('lsd-nv-ma');
-  if (!inp.value.trim()){ hid.value = ''; taiLichSuDuyet(); }
+  // [v18.128] Gõ tay → bỏ mã đã chọn trước đó, để lọc tự khớp theo chữ đang gõ (không cần bấm chọn gợi ý)
+  hid.value = '';
   lsdShowNVSuggest();
+  // [v18.128] Gõ là tự lọc (debounce 400ms) — giống Lịch sử chấm công, không bắt buộc bấm chọn dòng gợi ý
+  _debLichSuDuyet();
 }
 async function lsdShowNVSuggest(){
   const inp = document.getElementById('lsd-nv-inp');
