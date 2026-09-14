@@ -1677,15 +1677,24 @@ async function _lsdLoadNVList(){
   try {
     // [v10.85] Thêm avatar_url để hiển thị ảnh đại diện trong các card
     // [v18.104] + ghi_chu để ẨN mã đã chuyển (CTV→NS): data đã dồn hết sang mã mới
-    const { data, error } = await supa.from('nhan_vien')
-      .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url, ghi_chu')
-      .order('ho_ten', { ascending: true });
-    if (error || !data) {
-      console.warn('[_lsdLoadNVList] Lỗi:', error?.message);
-      return [];
+    // [v18.127] PHÂN TRANG — nhan_vien > 1000 dòng bị Supabase cắt ngầm ở 1000 → NV cuối bảng
+    //   chữ cái (vd "Triệu…") biến mất khỏi ô tìm Lịch sử duyệt. Lặp .range() để nạp HẾT.
+    const rows = [];
+    let _from = 0; const _PAGE = 1000;
+    while (true) {
+      const { data, error } = await supa.from('nhan_vien')
+        .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url, ghi_chu')
+        .order('ho_ten', { ascending: true })
+        .range(_from, _from + _PAGE - 1);
+      if (error) { console.warn('[_lsdLoadNVList] Lỗi:', error?.message); if (!rows.length) return []; break; }
+      if (!data || !data.length) break;
+      rows.push(...data);
+      if (data.length < _PAGE) break;
+      _from += _PAGE;
+      if (_from > 20000) break;   // chặn vòng vô hạn
     }
     // Normalize về { ma_nv, ten_nv, role, ma_ch, avatar } để code phía sau dùng nhất quán
-    _lsdNVList = data.filter(r => !_maDaChuyen(r.ghi_chu)).map(r => ({
+    _lsdNVList = rows.filter(r => !_maDaChuyen(r.ghi_chu)).map(r => ({
       ma_nv: r.ma_nv,
       ten_nv: r.ho_ten || r.ma_nv,
       role: r.role || 'NV',
