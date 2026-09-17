@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.128',
+  'sys.cache_version': 'v18.129',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -267,6 +267,8 @@ function tick(){
   }
 }
 setInterval(tick,1000);tick();
+// [v18.129] Định kỳ đá phiên nếu mã đã chuyển (CTV→NS) — 60s/lần; hàm tự bỏ qua nếu chưa đăng nhập / không phải NV·CTV
+setInterval(function(){ if (typeof _kiemTraHieuLucTaiKhoan==='function') _kiemTraHieuLucTaiKhoan(); }, 60000);
 
 // ═══════════════════════════════════════════════════════════
 // [v10.85 Yc #5] VERSION CHECK — phát hiện deploy mới → banner 5s → reload
@@ -964,6 +966,33 @@ async function _kiemTraDoiViTri(){
   } catch(e){}
 }
 window._kiemTraDoiViTri = _kiemTraDoiViTri;
+
+// [v18.129] Đá phiên nếu MÃ ĐÃ CHUYỂN (CTV→NS) — chống chấm công tiếp bằng mã cũ.
+//   Boot KHÔNG tái xác thực (985) + _kiemTraDoiViTri chỉ bắt đổi role → mã đã chuyển lọt lưới.
+//   Dấu hiệu BỀN = ghi_chu chứa 'Đã chuyển sang' (fn_chuyen_doi_ma_nv set NGAY khi chuyển; bền hơn
+//   trang_thai vì sync Sheet đè DA_CHUYEN_MA→INACTIVE). Lỗi/không rõ → KHÔNG kick (an toàn, tránh đá oan).
+//   Đây là LỚP CLIENT (đá phiên đang mở + báo NV); chốt chặn GỐC vẫn phải ở RPC server (chấm công/đăng nhập).
+let _dangKtHieuLuc = false;
+function _maDaChuyenGhiChu(gc){ return /Đã\s*chuyển\s*sang/i.test(gc||''); }
+async function _kiemTraHieuLucTaiKhoan(){
+  try {
+    if (!SESSION || !SESSION.ma) return;
+    const role = String(SESSION.vaiTro||'').toUpperCase();
+    if (role !== 'NV' && role !== 'CTV') return;   // chỉ NV/CTV; không đụng admin/QL/cửa hàng
+    if (_dangKtHieuLuc) return; _dangKtHieuLuc = true;
+    const { data, error } = await supa.from('nhan_vien')
+      .select('ghi_chu').eq('ma_nv', SESSION.ma).limit(1);
+    _dangKtHieuLuc = false;
+    if (error || !data || !data.length) return;    // lỗi/không rõ → KHÔNG kick (an toàn)
+    if (_maDaChuyenGhiChu(data[0].ghi_chu)) {
+      try { localStorage.removeItem('session_cc'); localStorage.removeItem('session_login_ts'); sessionStorage.removeItem('session_cc'); } catch(e){}
+      if (typeof showToast === 'function') showToast('Mã của bạn đã được chuyển sang mã mới. Vui lòng đăng nhập lại bằng mã mới.', 'warn');
+      setTimeout(function(){ location.reload(); }, 2500);
+    }
+  } catch(e){ _dangKtHieuLuc = false; }
+}
+window._kiemTraHieuLucTaiKhoan = _kiemTraHieuLucTaiKhoan;
+
 window.addEventListener('load',()=>{
   // [v10.85] Restore session: ưu tiên localStorage, fallback sessionStorage (migration)
   let s = null;
@@ -1140,6 +1169,7 @@ function khoiDongApp(){
   }
   // [v2-role] Kiểm tra đổi vị trí CTV⇄NV → buộc đăng nhập lại (delay để không chặn khởi động)
   if (typeof _kiemTraDoiViTri === 'function') setTimeout(_kiemTraDoiViTri, 1500);
+  if (typeof _kiemTraHieuLucTaiKhoan === 'function') setTimeout(_kiemTraHieuLucTaiKhoan, 1800);  // [v18.129] đá phiên nếu mã đã chuyển (CTV→NS)
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
   // [v10.94] Header modern compact + Hero card data
