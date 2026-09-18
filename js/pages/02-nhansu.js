@@ -849,10 +849,11 @@ async function openAdminThemLog(opts) {
   if (!window._adminNVList || !window._adminNVList.length) {
     try {
       const { data } = await supa.from('nhan_vien')
-        .select('ma_nv, ho_ten, ma_ch_mac_dinh, ghi_chu')
+        .select('ma_nv, ho_ten, ma_ch_mac_dinh, ghi_chu, trang_thai')
         .eq('trang_thai', 'ACTIVE').order('ma_nv');
       // [v18.104] Ẩn mã đã chuyển (CTV→NS) — data đã dồn hết sang mã mới
-      window._adminNVList = (data || []).filter(r => !_maDaChuyen(r.ghi_chu));
+      // [v18.130] + trang_thai → mã ACTIVE (đang dùng) KHÔNG bị ẩn oan dù ghi_chu còn dấu 'đã chuyển' cũ
+      window._adminNVList = (data || []).filter(r => !_maDaChuyen(r.ghi_chu, r.trang_thai));
     } catch (e) { window._adminNVList = []; }
   }
   if (!window._bscChList || !window._bscChList.length) {
@@ -1699,7 +1700,7 @@ async function _lsdLoadNVList(){
     let _from = 0; const _PAGE = 1000;
     while (true) {
       const { data, error } = await supa.from('nhan_vien')
-        .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url, ghi_chu')
+        .select('ma_nv, ho_ten, role, ma_ch_mac_dinh, avatar_url, ghi_chu, trang_thai')
         .order('ho_ten', { ascending: true })
         .range(_from, _from + _PAGE - 1);
       if (error) { console.warn('[_lsdLoadNVList] Lỗi:', error?.message); if (!rows.length) return []; break; }
@@ -1710,7 +1711,8 @@ async function _lsdLoadNVList(){
       if (_from > 20000) break;   // chặn vòng vô hạn
     }
     // Normalize về { ma_nv, ten_nv, role, ma_ch, avatar } để code phía sau dùng nhất quán
-    _lsdNVList = rows.filter(r => !_maDaChuyen(r.ghi_chu)).map(r => ({
+    // [v18.130] + trang_thai → mã ACTIVE (đang dùng) KHÔNG bị ẩn oan khỏi ô tìm NV (vd NS01671)
+    _lsdNVList = rows.filter(r => !_maDaChuyen(r.ghi_chu, r.trang_thai)).map(r => ({
       ma_nv: r.ma_nv,
       ten_nv: r.ho_ten || r.ma_nv,
       role: r.role || 'NV',

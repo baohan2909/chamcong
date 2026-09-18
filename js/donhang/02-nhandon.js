@@ -112,8 +112,9 @@ async function dhNhanLoadNV(){
   if (dhNhanNVList) return dhNhanNVList;
   try {
     // [v18.104] + ghi_chu để ẨN mã đã chuyển (CTV→NS): data đã dồn hết sang mã mới
-    const { data } = await supa.from('nhan_vien').select('ma_nv, ho_ten, ghi_chu').order('ho_ten');
-    dhNhanNVList = (data||[]).filter(r => !_maDaChuyen(r.ghi_chu)).map(r => ({ ma: r.ma_nv, ten: r.ho_ten || r.ma_nv }));
+    // [v18.130] + trang_thai → mã ACTIVE (đang dùng) KHÔNG bị ẩn oan dù ghi_chu còn dấu 'đã chuyển' cũ
+    const { data } = await supa.from('nhan_vien').select('ma_nv, ho_ten, ghi_chu, trang_thai').order('ho_ten');
+    dhNhanNVList = (data||[]).filter(r => !_maDaChuyen(r.ghi_chu, r.trang_thai)).map(r => ({ ma: r.ma_nv, ten: r.ho_ten || r.ma_nv }));
   } catch(e){ dhNhanNVList = []; }
   return dhNhanNVList;
 }
