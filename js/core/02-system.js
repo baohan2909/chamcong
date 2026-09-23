@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.131',
+  'sys.cache_version': 'v18.132',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -267,7 +267,7 @@ function tick(){
   }
 }
 setInterval(tick,1000);tick();
-// [v18.131] Định kỳ đá phiên nếu mã đã chuyển (CTV→NS) — 60s/lần; hàm tự bỏ qua nếu chưa đăng nhập / không phải NV·CTV
+// [v18.132] Định kỳ đá phiên nếu mã đã chuyển (CTV→NS) — 60s/lần; hàm tự bỏ qua nếu chưa đăng nhập / không phải NV·CTV
 setInterval(function(){ if (typeof _kiemTraHieuLucTaiKhoan==='function') _kiemTraHieuLucTaiKhoan(); }, 60000);
 
 // ═══════════════════════════════════════════════════════════
@@ -967,9 +967,9 @@ async function _kiemTraDoiViTri(){
 }
 window._kiemTraDoiViTri = _kiemTraDoiViTri;
 
-// [v18.131] Đá phiên nếu mã đã chuyển / ngừng hoạt động — chống chấm công tiếp bằng mã cũ.
+// [v18.132] Đá phiên nếu mã đã chuyển / ngừng hoạt động — chống chấm công tiếp bằng mã cũ.
 //   Boot KHÔNG tái xác thực (985) + _kiemTraDoiViTri chỉ bắt đổi role → mã đã chuyển lọt lưới.
-// [v18.131] Xét theo TRẠNG THÁI (INACTIVE/DA_CHUYEN_MA), KHÔNG theo ghi_chu: mã đang dùng luôn ACTIVE,
+// [v18.132] Xét theo TRẠNG THÁI (INACTIVE/DA_CHUYEN_MA), KHÔNG theo ghi_chu: mã đang dùng luôn ACTIVE,
 //   còn NV chuyển qua-lại (CTV⇄NS) vẫn giữ dòng ghi_chu 'đã chuyển' CŨ → xét ghi_chu sẽ kick NHẦM
 //   người đang làm (đã xảy ra với NS01671). Chỉ kick khi trạng thái RÕ RÀNG là khóa;
 //   rỗng/null/ACTIVE/lỗi mạng → KHÔNG kick (an toàn, tránh đá oan).
@@ -1171,7 +1171,7 @@ function khoiDongApp(){
   }
   // [v2-role] Kiểm tra đổi vị trí CTV⇄NV → buộc đăng nhập lại (delay để không chặn khởi động)
   if (typeof _kiemTraDoiViTri === 'function') setTimeout(_kiemTraDoiViTri, 1500);
-  if (typeof _kiemTraHieuLucTaiKhoan === 'function') setTimeout(_kiemTraHieuLucTaiKhoan, 1800);  // [v18.131] đá phiên nếu mã đã chuyển (CTV→NS)
+  if (typeof _kiemTraHieuLucTaiKhoan === 'function') setTimeout(_kiemTraHieuLucTaiKhoan, 1800);  // [v18.132] đá phiên nếu mã đã chuyển (CTV→NS)
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
   // [v10.94] Header modern compact + Hero card data
@@ -4171,7 +4171,7 @@ function onNSSearch(){
 }
 function escHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 // [v18.104] Mã NV đã CHUYỂN sang mã khác (CTV→NS...) → ẨN mã CŨ khỏi các ô TÌM/CHỌN nhân viên.
-// [v18.131] Xét THÊM trang_thai: mã ĐANG DÙNG luôn ACTIVE. Vì NV chuyển qua-lại (CTV⇄NS) nhiều lần,
+// [v18.132] Xét THÊM trang_thai: mã ĐANG DÙNG luôn ACTIVE. Vì NV chuyển qua-lại (CTV⇄NS) nhiều lần,
 //   mã MỚI (ACTIVE) VẪN còn dòng ghi_chu 'Đã chuyển sang' cũ → nếu chỉ xét ghi_chu sẽ nhận NHẦM mã
 //   đang dùng là đã chuyển rồi ẩn/chặn nhầm. Mã cũ đã chết = ghi_chu 'Đã chuyển sang' + trang_thai != ACTIVE.
 function _maDaChuyen(ghiChu, trangThai){
@@ -4190,7 +4190,7 @@ function _loadMaChuyenSet(force){
   _maChuyenProm = supa.from('nhan_vien').select('ma_nv, ghi_chu, trang_thai')
     .ilike('ghi_chu', '%Đã chuyển sang %')
     .then(({ data }) => {
-      // [v18.131] + trang_thai: mã ACTIVE (đang dùng) KHÔNG vào Set dù ghi_chu còn dấu 'đã chuyển' cũ
+      // [v18.132] + trang_thai: mã ACTIVE (đang dùng) KHÔNG vào Set dù ghi_chu còn dấu 'đã chuyển' cũ
       _maChuyenSet = new Set((data || []).filter(r => _maDaChuyen(r.ghi_chu, r.trang_thai)).map(r => r.ma_nv));
       return _maChuyenSet;
     })

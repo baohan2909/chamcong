@@ -1452,10 +1452,8 @@ function bgqlFmtDayVN(dateStr){
   const today = new Date(); today.setHours(0,0,0,0);
   const diffDays = Math.floor((today - d) / 86400000);
   if (diffDays === 0) return 'Hôm nay';
-  if (diffDays === 1) return 'Hôm qua';
-  if (diffDays < 7) return `${diffDays} ngày trước`;
-  const days = ['CN','T2','T3','T4','T5','T6','T7'];
-  return `${days[d.getDay()]} · ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  // [v18.132] Bỏ "Hôm qua / N ngày trước" → luôn hiện ngày dd/mm/yyyy (Aroma yêu cầu)
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
 
