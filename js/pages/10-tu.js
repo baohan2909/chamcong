@@ -272,7 +272,13 @@ function _tuLoadSheetJS(){
 }
 // [Cấu hình phiếu] Khóa theo thứ tự cột: ưu tiên cấu hình admin (SLIPCFG), fallback TU_KEYS.
 function _tuResolveKeys(){ const k=(window.SLIPCFG&&SLIPCFG.resolveKeys)?(SLIPCFG.resolveKeys('tu')||[]):null; return (k&&k.length)?k:TU_KEYS; }
-function _tuCellStr(v){ if(v===undefined||v===null)return''; if(v instanceof Date){ const dd=('0'+v.getDate()).slice(-2),mm=('0'+(v.getMonth()+1)).slice(-2); return dd+'/'+mm+'/'+v.getFullYear(); } return String(v); }
+// [v18.131] Ô NGÀY từ file Excel: thư viện đọc (SheetJS) hay lệch mili giây — 24/10 bị trả thành
+//   23/10 23:59:59.999 → getDate() ra 23, LÙI 1 NGÀY (đúng lỗi "Tải Excel/CSV" ra sai ngày vào làm).
+//   Cách trị: làm tròn mốc thời gian về NỬA ĐÊM GẦN NHẤT rồi đọc theo UTC → luôn đúng ngày Excel định ghi.
+function _tuCellStr(v){ if(v===undefined||v===null)return'';
+  if(v instanceof Date){ const d2=new Date(Math.round(v.getTime()/86400000)*86400000), z=x=>(x<10?'0':'')+x;
+    return z(d2.getUTCDate())+'/'+z(d2.getUTCMonth()+1)+'/'+d2.getUTCFullYear(); }
+  return String(v); }
 // Dựng phiếu từ ma trận ô (ĐÃ bỏ tiêu đề). TU khớp theo Mã NS HOẶC Mã BH; bỏ dòng tiêu đề (mã thật có chữ số).
 function _tuRowsFromMatrix(rows2d){
   const K=_tuResolveKeys(); const out=[];

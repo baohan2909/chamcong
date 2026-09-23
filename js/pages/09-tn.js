@@ -393,7 +393,10 @@ function _tnResolveKeys(){ const k=(window.SLIPCFG&&SLIPCFG.resolveKeys)?(SLIPCF
 // Chuyển 1 ô về chuỗi CHUẨN: Date→dd/mm/yyyy; number→chuỗi CHÍNH XÁC (không scientific — quan trọng cho STK dài); còn lại→String.
 function _tnCellStr(v){
   if(v===undefined||v===null) return '';
-  if(v instanceof Date){ const dd=('0'+v.getDate()).slice(-2), mm=('0'+(v.getMonth()+1)).slice(-2); return dd+'/'+mm+'/'+v.getFullYear(); }
+  // [v18.131] Làm tròn về nửa đêm gần nhất rồi đọc theo UTC — thư viện đọc Excel hay lệch mili giây
+  //   (24/10 → 23/10 23:59:59.999) khiến getDate() lùi 1 ngày. Giống hệt cách vá bên phiếu tạm ứng.
+  if(v instanceof Date){ const d2=new Date(Math.round(v.getTime()/86400000)*86400000), z=x=>(x<10?'0':'')+x;
+    return z(d2.getUTCDate())+'/'+z(d2.getUTCMonth()+1)+'/'+d2.getUTCFullYear(); }
   if(typeof v==='number'){ return Number.isFinite(v) ? (Number.isInteger(v)?String(v):String(v)) : ''; }
   return String(v);
 }
