@@ -353,6 +353,10 @@ function tuAdminRenderMain(){
     _tuStat(list.length,'Phiếu')+_tuStat(c.xem,'Đã xem')+_tuStat(c.xn,'Đã xác nhận')+_tuStat(c.yk,'Ý kiến chờ',c.yk>0)+'</div>';
   h+='<div class="tn-card"><div class="tn-openall">'+
      '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAllEff?' on':'')+'" onclick="tuAdOpenAll('+(!hienAllEff)+')"></button></label>'+
+     // [v18.133] Dropdown gia hạn thời gian mở phiếu (giống Quản lý TN) — DB tu_ky.hien_all_den đã có sẵn
+     '<select id="tu-openall-dur" class="tn-sel sm" onchange="tuAdDurChange(this.value)" title="Thời hạn mở"><option value="0">Vĩnh viễn</option><option value="24">Trong 24 giờ</option><option value="72">Trong 3 ngày</option><option value="168">Trong 7 ngày</option><option value="date">Đến ngày…</option></select>'+
+     '<input id="tu-openall-date" type="datetime-local" class="tn-inp sm" style="display:none">'+
+     tuOpenAllStatus(hienAllEff,den)+
      '<label class="tn-tgl-lbl tn-paydate-fld"><span class="tn-gold-dot"></span>Ngày nhận <input type="date" id="tu-ngaynhan" class="tn-inp sm" value="'+_tuEsc((TU.adData.ngayNhan||'').slice(0,10))+'" onchange="tuAdSetNgayNhan()"></label>'+
      '<label class="tn-tgl-lbl">Hạn hỏi <input type="text" id="tu-han" class="tn-inp sm" style="min-width:150px" placeholder="17h30 ngày…" value="'+_tuEsc(TU.adData.hanHoi||'')+'" onchange="tuAdSetNgayNhan()"></label>'+
      '<label class="tn-tgl-lbl">Zalo <input type="text" id="tu-zalo" class="tn-inp sm" style="min-width:120px" value="'+_tuEsc(TU.adData.zalo||'0902753345')+'" onchange="tuAdSetNgayNhan()"></label>'+
@@ -369,6 +373,7 @@ function tuAdminRenderMain(){
      '</div><div class="tn-danger-note">Thao tác không hoàn tác được.</div></div>';
   root.innerHTML=h;
   tuAdRenderTable();
+  tuStartCountdown();   // [v18.133] đồng hồ đếm ngược tới lúc tự ẩn
 }
 function _tuStat(n,l,alert){ return '<div class="tn-stat'+(alert?' warn':'')+'"><div class="n">'+n+'</div><div class="l">'+_tuEsc(l)+'</div></div>'; }
 function tuAdApplyFilter(){
@@ -399,8 +404,42 @@ function tuPill(p){
   if(p.xemLuc) return '<span class="tn-pill p-seen">Đã xem</span>';
   return '<span class="tn-pill p-hid">Chưa xem</span>';
 }
+// [v18.133] Đổi dropdown gia hạn → hiện/ẩn ô "Đến ngày…"
+function tuAdDurChange(v){ const d=document.getElementById('tu-openall-date'); if(d)d.style.display=(v==='date')?'':'none'; }
+// [v18.133] Trạng thái mở/ẩn + neo đồng hồ đếm ngược (giống Quản lý TN)
+function tuOpenAllStatus(eff,den){
+  if(!eff) return '<span class="tn-openall-st">Đang ẩn với NV</span>';
+  if(!den) return '<span class="tn-openall-st">● Đang mở · vĩnh viễn</span>';
+  if(den.getTime()-Date.now()<=0) return '<span class="tn-openall-st">Đã hết hạn (ẩn)</span>';
+  return '<span class="tn-openall-st" id="tu-countdown" data-den="'+den.toISOString()+'">● Đang mở…</span>';
+}
+// [v18.133] Đồng hồ đếm ngược tới lúc "Mở tất cả" tự tắt (nhảy giờ:phút:giây)
+function tuStartCountdown(){
+  if(TU.cdTimer){ clearInterval(TU.cdTimer); TU.cdTimer=null; }
+  if(!document.getElementById('tu-countdown')) return;
+  const pad=n=>('0'+n).slice(-2);
+  const tick=()=>{
+    const e=document.getElementById('tu-countdown');
+    if(!e){ if(TU.cdTimer){clearInterval(TU.cdTimer);TU.cdTimer=null;} return; }
+    let ms=new Date(e.getAttribute('data-den')).getTime()-Date.now();
+    if(ms<=0){ e.innerHTML='<b style="color:#C6373C">Đã hết hạn — đang tự ẩn…</b>'; clearInterval(TU.cdTimer); TU.cdTimer=null; setTimeout(()=>{try{tuAdminLoad(TU.adKy);}catch(x){}},1500); return; }
+    const d=Math.floor(ms/86400000); ms-=d*86400000;
+    const hh=Math.floor(ms/3600000); ms-=hh*3600000;
+    const mm=Math.floor(ms/60000); ms-=mm*60000;
+    const ss=Math.floor(ms/1000);
+    e.innerHTML='● Đang mở · còn <b class="tn-cd-num">'+(d>0?d+' ngày ':'')+pad(hh)+':'+pad(mm)+':'+pad(ss)+'</b>';
+  };
+  tick(); TU.cdTimer=setInterval(tick,1000);
+}
 function tuAdOpenAll(v){
-  supa.rpc('fn_tu_admin_toggle',{p_ma:TU.ma,p_password:TU.pw,p_ky:TU.adKy,p_all:!!v}).then(({data})=>{
+  // [v18.133] Đọc thời hạn từ dropdown → truyền p_den (thời điểm tự ẩn); '0'/Vĩnh viễn → null
+  let den=null;
+  if(v){
+    const dur=((document.getElementById('tu-openall-dur')||{}).value)||'0';
+    if(dur==='date'){ const dv=(document.getElementById('tu-openall-date')||{}).value; if(!dv){ if(typeof showToast==='function')showToast('Chọn ngày giờ tự tắt','warn'); return; } den=new Date(dv).toISOString(); }
+    else if(dur!=='0'){ den=new Date(Date.now()+parseInt(dur)*3600000).toISOString(); }
+  }
+  supa.rpc('fn_tu_admin_toggle',{p_ma:TU.ma,p_password:TU.pw,p_ky:TU.adKy,p_all:!!v,p_den:den}).then(({data})=>{
     if(data&&data.success){ if(typeof showToast==='function')showToast(v?'✓ Đã mở tất cả':'Đã ẩn tất cả','ok'); tuAdminLoad(TU.adKy); }
     else if(typeof showToast==='function')showToast((data&&data.error)||'Lỗi','warn');
   });
@@ -477,6 +516,7 @@ window.tuTg=tuTg; window.tuToggleFb=tuToggleFb; window.tuConfirm=tuConfirm; wind
 window.tuAdminInitPage=tuAdminInitPage; window.tuAdminVerify=tuAdminVerify;
 window.tuAdminSyncNow=tuAdminSyncNow; window.tuAdminImportData=tuAdminImportData; window.tuAdminLoad=tuAdminLoad;
 window.tuAdOpenAll=tuAdOpenAll; window.tuAdminToggleOne=tuAdminToggleOne; window.tuAdSetNgayNhan=tuAdSetNgayNhan;
+window.tuAdDurChange=tuAdDurChange;   // [v18.133]
 window.tuAdApplyFilter=tuAdApplyFilter; window.tuAdClearData=tuAdClearData; window.tuAdClearResponses=tuAdClearResponses;
 window.tuAdminViewPhieu=tuAdminViewPhieu; window.tuAdminCloseView=tuAdminCloseView;
 window.tuAdminToggleThread=tuAdminToggleThread; window.tuAdReply=tuAdReply;
