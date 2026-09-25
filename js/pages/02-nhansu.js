@@ -1602,9 +1602,14 @@ function _nhanDoiSaleLog(row){
   const di = row.device_info || '';
   let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
   if (m) return m[1].trim();
+  // [v18.137] Ghi chú TÍCH LŨY nhiều lần sửa (append) → lấy nhãn MỚI NHẤT (cuối chuỗi), KHÔNG phải
+  //   nhãn đầu tiên. Trước đây .match() lấy nhãn ĐẦU → sửa Cơ Động→Đội SALE vẫn hiện "Cơ Động" cũ.
   const ghi = row.ghi_chu || '';
-  m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
-  if (m) return m[1].trim();
+  const all = ghi.match(/\[(?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*\]/ig);
+  if (all && all.length){
+    const last = all[all.length - 1].match(/\[(.+)\]/);
+    if (last) return last[1].trim();
+  }
   return null;
 }
 // [v18.90] Dựng nhãn CH per-log: Đội SALE trực tiếp → xanh; cơ động/sale hỗ trợ → "Đội X - CH"; thường → chỉ CH
