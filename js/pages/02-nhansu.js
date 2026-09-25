@@ -682,15 +682,9 @@ async function taiLichSuCC(){
 
     const loaiLabel = { VAO_CA:'Vào ca', RA_CA:'Ra ca', VAO_GIUA_CA:'Vào giữa ca', RA_GIUA_CA:'Ra giữa ca' };
     // [#5] Tên đội SALE / cơ động của CHÍNH log này (per-log, KHÔNG gom theo NV-ngày)
-    const _logSaleTeamName = (r) => {
-      const di = r.device_info || '';
-      let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
-      if (m) return m[1].trim();
-      const ghi = r.ghi_chu || '';
-      m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
-      if (m) return m[1].trim();
-      return null;
-    };
+    // [v18.138] Dùng CHUNG _nhanDoiSaleLog (lấy nhãn MỚI NHẤT trong ghi_chu) — trước đây card Lịch sử
+    //   duyệt có bản sao riêng lấy nhãn ĐẦU nên vẫn hiện nhãn cũ (Cơ Động) dù đã sửa sang Đội SALE.
+    const _logSaleTeamName = (r) => (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(r) : null;
     // [v13.99] Item 1 lần chấm (gọn). allowLive=true CHỈ cho log mới nhất của HÔM NAY (#1/#2)
     const _renderCCItem = (r, allowLive) => {
       const gio = r.thoi_gian ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}) : '--:--';
