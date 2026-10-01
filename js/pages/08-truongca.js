@@ -331,7 +331,19 @@ async function tcGsReload(){
   try{
     const { data, error } = await supa.rpc('fn_truong_ca_toan_chuoi',{p_ngay:tcToday(), p_ma_ch:(typeof _laCuaHang==='function'&&_laCuaHang())?(SESSION.cuaHangMa||null):null});  // [v18.29] CH chỉ xem cửa hàng mình
     if(error||!data){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi tải dữ liệu.</div>'; return; }
-    _tcGsData=data; tcGsRender();
+    _tcGsData=data;
+    // [v18.140] Ẩn trưởng ca có phân quyền khỏi tài khoản cửa hàng (nếu ds_tc có mã NV)
+    if (typeof _laCuaHang === 'function' && _laCuaHang() && typeof _locPhanQuyenCH === 'function' && _tcGsData && Array.isArray(_tcGsData.cua_hang)){
+      try { if (typeof _loadMaPhanQuyenSet === 'function') await _loadMaPhanQuyenSet(); } catch(e){}
+      _tcGsData.cua_hang.forEach(s => {
+        if (Array.isArray(s.ds_tc)) {
+          const _n0 = s.ds_tc.length;
+          s.ds_tc = _locPhanQuyenCH(s.ds_tc, t => t.ma_nv || t.maNV);
+          if (typeof s.so_tc === 'number') s.so_tc = Math.max(0, s.so_tc - (_n0 - s.ds_tc.length));
+        }
+      });
+    }
+    tcGsRender();
   }catch(e){ body.innerHTML='<div style="text-align:center;color:#DC2626;padding:30px">Lỗi kết nối.</div>'; }
 }
 function tcGsRender(){

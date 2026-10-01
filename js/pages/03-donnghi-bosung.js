@@ -333,8 +333,10 @@ function taiDashboard(){
     _set('dash-k-cb', tq.tongCanhBao||0);
     _set('dash-k-cbcho', tq.cbChuaXuLy||0);
     _set('dash-k-dncho', tq.dnChoDuyet||0);
-    _renderCanhBaoLoai(dRes.data.canhBaoLoai||{}, dRes.data.topNVCB||[]);
-    _renderDiemDash((diemRes.data&&diemRes.data.danh_sach)||[]);
+    // [v18.140] Ẩn NV có phân quyền khỏi tài khoản cửa hàng (chỉ lọc khi _laCuaHang; admin giữ nguyên)
+    const _loc = (arr)=> (typeof _locPhanQuyenCH==='function') ? _locPhanQuyenCH(arr, x=>x.maNV||x.ma_nv||x.ma) : arr;
+    _renderCanhBaoLoai(dRes.data.canhBaoLoai||{}, _loc(dRes.data.topNVCB||[]));
+    _renderDiemDash(_loc((diemRes.data&&diemRes.data.danh_sach)||[]));
     _renderTCDash((tcRes.data&&tcRes.data.cua_hang)||[]);
   }).catch(err=>{
     _dashLoading=false;
@@ -1466,6 +1468,13 @@ function taiDuyetYC(){
       soDonNghi: doiLichItems.length + (res.donNghi || []).length,
       soGiaiTrinh: (res.giaiTrinh || []).length
     };
+    // [v18.140] Ẩn NV có phân quyền khỏi tài khoản CỬA HÀNG (Duyệt yêu cầu: đơn nghỉ + giải trình)
+    if (typeof _laCuaHang === 'function' && _laCuaHang() && typeof _locPhanQuyenCH === 'function'){
+      _ycData.donNghi   = _locPhanQuyenCH(_ycData.donNghi,   x => x.maNV || x.ma_nv);
+      _ycData.giaiTrinh = _locPhanQuyenCH(_ycData.giaiTrinh, x => x.maNV || x.ma_nv);
+      _ycData.soDonNghi = _ycData.donNghi.length;
+      _ycData.soGiaiTrinh = _ycData.giaiTrinh.length;
+    }
     const sDN=_ycData.soDonNghi||0;
     const sGT=_ycData.soGiaiTrinh||0;
     const dnBadge=document.getElementById('yc-dn-badge');

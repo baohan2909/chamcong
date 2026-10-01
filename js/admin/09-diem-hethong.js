@@ -122,6 +122,11 @@ async function diemHubLoad() {
       return;
     }
     _diemHub.list = data.danh_sach || [];
+    // [v18.140] Ẩn NV có phân quyền khỏi tài khoản cửa hàng (chỉ khi _laCuaHang; admin giữ nguyên)
+    if (typeof _laCuaHang === 'function' && _laCuaHang() && typeof _locPhanQuyenCH === 'function') {
+      try { if (typeof _loadMaPhanQuyenSet === 'function') await _loadMaPhanQuyenSet(); } catch(e){}
+      _diemHub.list = _locPhanQuyenCH(_diemHub.list, x => x.ma_nv || x.maNV || x.ma);
+    }
     _diemHub.tk = data.thong_ke_loai || {};
     _diemHub.open = new Set();
     _diemHubPaint();
