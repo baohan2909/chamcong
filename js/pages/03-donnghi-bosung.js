@@ -655,7 +655,11 @@ async function _bscLoadTrangThai(){
   const st=document.getElementById('bsc-status'); if(st)st.innerHTML='<div style="font-size:12px;color:#9CA3AF">Đang tải trạng thái…</div>';
   window._bscTT=null;
   try{
-    const { data } = await supa.rpc('fn_bs_trang_thai_nv',{ p_ma_nv: SESSION.ma });
+    // [v18.142] Truyền NGÀY CA đang chọn → cổng tính số lần bổ sung theo ĐÚNG tháng của ngày ca
+    //   (bịt kẽ hở gửi bổ sung trễ sang tháng mới cho ca tháng cũ → cổng tháng mới đếm 0 lần).
+    //   Không có ngày (null) → giữ nguyên hành vi cũ (tháng hiện tại).
+    const _ng=((document.getElementById('bsc-ngay')||{}).value)||null;
+    const { data } = await supa.rpc('fn_bs_trang_thai_nv',{ p_ma_nv: SESSION.ma, p_ngay_ca: _ng });
     window._bscTT=data||{};
     _bscRenderTrangThai(data||{});
   }catch(e){ if(st)st.innerHTML=''; }
@@ -814,6 +818,8 @@ function bscSetupNgay(){
   el.value = today;
   el.min = _bscMinBoSung();
   el.max = today;
+  // [v18.142] Đổi ngày ca → tải lại trạng thái kiểm soát theo đúng tháng của ngày ca
+  el.onchange = function(){ _bscLoadTrangThai(); };
 }
 
 async function guiBoSungCa(){
