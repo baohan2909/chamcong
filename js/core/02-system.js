@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.138',
+  'sys.cache_version': 'v18.139',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -267,7 +267,7 @@ function tick(){
   }
 }
 setInterval(tick,1000);tick();
-// [v18.138] Định kỳ đá phiên nếu mã đã chuyển (CTV→NS) — 60s/lần; hàm tự bỏ qua nếu chưa đăng nhập / không phải NV·CTV
+// [v18.139] Định kỳ đá phiên nếu mã đã chuyển (CTV→NS) — 60s/lần; hàm tự bỏ qua nếu chưa đăng nhập / không phải NV·CTV
 setInterval(function(){ if (typeof _kiemTraHieuLucTaiKhoan==='function') _kiemTraHieuLucTaiKhoan(); }, 60000);
 
 // ═══════════════════════════════════════════════════════════
@@ -967,9 +967,9 @@ async function _kiemTraDoiViTri(){
 }
 window._kiemTraDoiViTri = _kiemTraDoiViTri;
 
-// [v18.138] Đá phiên nếu mã đã chuyển / ngừng hoạt động — chống chấm công tiếp bằng mã cũ.
+// [v18.139] Đá phiên nếu mã đã chuyển / ngừng hoạt động — chống chấm công tiếp bằng mã cũ.
 //   Boot KHÔNG tái xác thực (985) + _kiemTraDoiViTri chỉ bắt đổi role → mã đã chuyển lọt lưới.
-// [v18.138] Xét theo TRẠNG THÁI (INACTIVE/DA_CHUYEN_MA), KHÔNG theo ghi_chu: mã đang dùng luôn ACTIVE,
+// [v18.139] Xét theo TRẠNG THÁI (INACTIVE/DA_CHUYEN_MA), KHÔNG theo ghi_chu: mã đang dùng luôn ACTIVE,
 //   còn NV chuyển qua-lại (CTV⇄NS) vẫn giữ dòng ghi_chu 'đã chuyển' CŨ → xét ghi_chu sẽ kick NHẦM
 //   người đang làm (đã xảy ra với NS01671). Chỉ kick khi trạng thái RÕ RÀNG là khóa;
 //   rỗng/null/ACTIVE/lỗi mạng → KHÔNG kick (an toàn, tránh đá oan).
@@ -1171,7 +1171,8 @@ function khoiDongApp(){
   }
   // [v2-role] Kiểm tra đổi vị trí CTV⇄NV → buộc đăng nhập lại (delay để không chặn khởi động)
   if (typeof _kiemTraDoiViTri === 'function') setTimeout(_kiemTraDoiViTri, 1500);
-  if (typeof _kiemTraHieuLucTaiKhoan === 'function') setTimeout(_kiemTraHieuLucTaiKhoan, 1800);  // [v18.138] đá phiên nếu mã đã chuyển (CTV→NS)
+  if (typeof _kiemTraHieuLucTaiKhoan === 'function') setTimeout(_kiemTraHieuLucTaiKhoan, 1800);  // [v18.139] đá phiên nếu mã đã chuyển (CTV→NS)
+  if (typeof _loadMaPhanQuyenSet === 'function' && typeof _laCuaHang === 'function' && _laCuaHang()) _loadMaPhanQuyenSet();  // [v18.139] nạp sớm tập mã phân quyền để ẩn khỏi màn cửa hàng
   document.getElementById('header-nv-info').textContent=SESSION.ten+' ('+SESSION.ma+')';
 
   // [v10.94] Header modern compact + Hero card data
@@ -2828,6 +2829,7 @@ function taiGioCongQLRange(){
     if (SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
       const _maCH = SESSION.cuaHangMa;
       _rows = _rows.filter(r => (r.maCH || r.ma_ch || '') === _maCH);
+      _rows = _locPhanQuyenCH(_rows);   // [v18.139] ẩn NV có phân quyền khỏi cửa hàng
     }
     gcDataQL=_rows;
     renderGioCongQL();
@@ -2916,6 +2918,7 @@ function taiGioCongQL(){
     if (SESSION && SESSION.vaiTro === 'CUA_HANG' && SESSION.cuaHangMa) {
       const _maCH = SESSION.cuaHangMa;
       gcDataQL = gcDataQL.filter(r => (r.maCH || r.ma_ch || '') === _maCH);
+      gcDataQL = _locPhanQuyenCH(gcDataQL);   // [v18.139] ẩn NV có phân quyền khỏi cửa hàng
     }
     renderGioCongQL();
   })
@@ -4036,7 +4039,7 @@ function startNSPolling(){
       const newCount=newCBList.length;
       if(newCount!==_pollLastCount){
         _pollLastCount=newCount;
-        nsData=_locMaChuyen(d.danhSach);   // [v18.105] ẨN mã đã chuyển
+        nsData=_locPhanQuyenCH(_locMaChuyen(d.danhSach), x=>x.ma);   // [v18.105] ẩn mã chuyển + [v18.139] ẩn mã phân quyền (CH)
         nsCBList=newCBList;
         document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
@@ -4171,7 +4174,7 @@ function onNSSearch(){
 }
 function escHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 // [v18.104] Mã NV đã CHUYỂN sang mã khác (CTV→NS...) → ẨN mã CŨ khỏi các ô TÌM/CHỌN nhân viên.
-// [v18.138] Xét THÊM trang_thai: mã ĐANG DÙNG luôn ACTIVE. Vì NV chuyển qua-lại (CTV⇄NS) nhiều lần,
+// [v18.139] Xét THÊM trang_thai: mã ĐANG DÙNG luôn ACTIVE. Vì NV chuyển qua-lại (CTV⇄NS) nhiều lần,
 //   mã MỚI (ACTIVE) VẪN còn dòng ghi_chu 'Đã chuyển sang' cũ → nếu chỉ xét ghi_chu sẽ nhận NHẦM mã
 //   đang dùng là đã chuyển rồi ẩn/chặn nhầm. Mã cũ đã chết = ghi_chu 'Đã chuyển sang' + trang_thai != ACTIVE.
 function _maDaChuyen(ghiChu, trangThai){
@@ -4190,7 +4193,7 @@ function _loadMaChuyenSet(force){
   _maChuyenProm = supa.from('nhan_vien').select('ma_nv, ghi_chu, trang_thai')
     .ilike('ghi_chu', '%Đã chuyển sang %')
     .then(({ data }) => {
-      // [v18.138] + trang_thai: mã ACTIVE (đang dùng) KHÔNG vào Set dù ghi_chu còn dấu 'đã chuyển' cũ
+      // [v18.139] + trang_thai: mã ACTIVE (đang dùng) KHÔNG vào Set dù ghi_chu còn dấu 'đã chuyển' cũ
       _maChuyenSet = new Set((data || []).filter(r => _maDaChuyen(r.ghi_chu, r.trang_thai)).map(r => r.ma_nv));
       return _maChuyenSet;
     })
@@ -4202,6 +4205,38 @@ function _locMaChuyen(list){
   if (!_maChuyenSet) return list || [];
   return (list || []).filter(nv => nv && !_maChuyenSet.has(nv.ma));
 }
+
+// [v18.139] Tập mã NV CÓ PHÂN QUYỀN = role != 'NV' HOẶC chuc_danh_m khác rỗng (gồm quản lý, cơ động CD…).
+//   Dùng để ẨN khỏi MỌI màn tài khoản CỬA HÀNG — cửa hàng CHỈ thấy nhân viên thường. Nạp 1 lần, cache.
+let _maPhanQuyenSet = null, _maPhanQuyenProm = null;
+function _coPhanQuyen(role, chucDanhM){
+  return (String(role || '').toUpperCase() !== 'NV') || (!!chucDanhM && String(chucDanhM).trim() !== '');
+}
+function _loadMaPhanQuyenSet(force){
+  if (_maPhanQuyenSet && !force) return Promise.resolve(_maPhanQuyenSet);
+  if (_maPhanQuyenProm && !force) return _maPhanQuyenProm;
+  _maPhanQuyenProm = supa.from('nhan_vien').select('ma_nv, role, chuc_danh_m')
+    .or('role.neq.NV,chuc_danh_m.not.is.null')
+    .then(({ data }) => {
+      _maPhanQuyenSet = new Set((data || [])
+        .filter(r => _coPhanQuyen(r.role, r.chuc_danh_m))
+        .map(r => String(r.ma_nv || '').toUpperCase()));
+      return _maPhanQuyenSet;
+    })
+    .catch(() => { _maPhanQuyenSet = new Set(); return _maPhanQuyenSet; });
+  return _maPhanQuyenProm;
+}
+// Lọc bỏ NV có phân quyền khỏi 1 danh sách — CHỈ khi tài khoản là CỬA HÀNG; NV thường/admin KHÔNG đụng.
+//   Chưa nạp set → trả nguyên (an toàn). getMa(x) tùy biến mã NV; mặc định dò ma_nv/maNV/maNv/ma.
+function _locPhanQuyenCH(list, getMa){
+  if (!_laCuaHang() || !_maPhanQuyenSet) return list || [];
+  return (list || []).filter(x => {
+    if (!x) return false;
+    const ma = String((getMa ? getMa(x) : (x.ma_nv || x.maNV || x.maNv || x.ma)) || '').toUpperCase();
+    return ma && !_maPhanQuyenSet.has(ma);
+  });
+}
+window._loadMaPhanQuyenSet = _loadMaPhanQuyenSet; window._locPhanQuyenCH = _locPhanQuyenCH;
 
 // ════════════════════════════════════════════════════════════════════════
 // [v10.85 YC#7] Avatar helper — dùng cho mọi nơi cần hiển thị ảnh đại diện
@@ -4401,10 +4436,11 @@ function taiNhanSu(forceRefresh){
       p_cua_hang: _maCH, p_khu_vuc: null,
       p_tu_ngay: nsTu, p_den_ngay: nsDen
     }),
-    _loadMaChuyenSet()   // [v18.105] nạp tập mã đã chuyển để lọc
+    _loadMaChuyenSet(),   // [v18.105] nạp tập mã đã chuyển để lọc
+    _loadMaPhanQuyenSet()   // [v18.139] nạp tập mã phân quyền để ẩn khỏi cửa hàng
   ]).then(([{ data: d, error }]) => {
     if(error || !d){list.innerHTML='<div class="ns-empty">❌ Lỗi tải. Bấm ↻ để thử lại.</div>';return;}
-    nsData=_locMaChuyen(d.danhSach);   // [v18.105] ẨN mã đã chuyển khỏi tab Nhân sự (card + search + số liệu)
+    nsData=_locPhanQuyenCH(_locMaChuyen(d.danhSach), x=>x.ma);   // [v18.105] ẩn mã đã chuyển + [v18.139] ẩn mã phân quyền khỏi cửa hàng
     nsCBList=d.canhBaoChuaXuLy||[];
     nsNghiMaSet=new Set((d.stats && d.stats.dsNghiMa) || []);
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;

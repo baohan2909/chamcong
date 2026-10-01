@@ -964,7 +964,9 @@ function taiDonNghiACC(){
       if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
       // Adapt: Apps Script trả {tongChoDuyet, theoDon: [{ngay, donList:[]}], theoNV: [...]}
       // RPC mới trả {tongChoDuyet, danhSach: [...]} → group theo ngày
-      const ds = res.danhSach || [];
+      let ds = res.danhSach || [];
+      // [v18.139] Ẩn đơn của NV có phân quyền khỏi tài khoản cửa hàng
+      if (typeof _laCuaHang === 'function' && _laCuaHang() && typeof _locPhanQuyenCH === 'function') ds = _locPhanQuyenCH(ds, d => d.maNV || d.ma_nv);
       const map = {};
       ds.forEach(d => {
         if(!map[d.ngayNghi]) map[d.ngayNghi] = [];

@@ -281,6 +281,8 @@ async function taiLichCaQL(){
       _lcqlAllData = _lcqlAllData.filter(d =>
         (nvMap[d.maNV]||{}).ma_ch_mac_dinh === SESSION.cuaHangMa || d.maCH === SESSION.cuaHangMa
       );
+      // [v18.139] Ẩn NV có phân quyền khỏi cửa hàng
+      if (typeof _locPhanQuyenCH === 'function') _lcqlAllData = _locPhanQuyenCH(_lcqlAllData, d => d.maNV || d.ma_nv);
     }
     renderLCQL();
     const kvs = new Set(_lcqlAllData.map(d=>d.khuVuc));
@@ -1304,6 +1306,11 @@ async function taiLichSuDuyet(){
     }
 
     let list = data.list || [];
+    // [v18.139] Ẩn NV có phân quyền khỏi tài khoản CỬA HÀNG (cửa hàng chỉ thấy NV thường)
+    if (typeof _laCuaHang === 'function' && _laCuaHang()){
+      try { if (typeof _loadMaPhanQuyenSet === 'function') await _loadMaPhanQuyenSet(); } catch(e){}
+      if (typeof _locPhanQuyenCH === 'function') list = _locPhanQuyenCH(list, r => r.maNV || r.ma_nv || r.maNv);
+    }
 
     // [v10.85] Debug: log keys của 1 record để xác định field name
     if (list.length > 0 && !window._lsdDebugged){
@@ -1945,7 +1952,9 @@ function taiDonNghiPhep(keepScroll){
   }).then(({ data: res, error }) => {
     if(error || !res){listEl.innerHTML='<div class="dnp-empty">❌ Lỗi tải.</div>';return;}
     // Adapt RPC → Apps Script format
-    const ds = res.danhSach || [];
+    let ds = res.danhSach || [];
+    // [v18.139] Ẩn đơn của NV có phân quyền khỏi tài khoản cửa hàng
+    if (typeof _laCuaHang === 'function' && _laCuaHang() && typeof _locPhanQuyenCH === 'function') ds = _locPhanQuyenCH(ds, d => d.maNV || d.ma_nv);
     const map = {};
     ds.forEach(d => {
       if(!map[d.ngayNghi]) map[d.ngayNghi] = [];
