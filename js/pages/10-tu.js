@@ -12,12 +12,30 @@ const TU_KEYS=['stt','ma_bh','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','lu
   'bhxh_105','muc_ung','chuyen_khoan','tien_mat','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','ma_nv'];
 // [Cấu hình phiếu] Lộ mặc định cho engine SLIPCFG (13-slipcfg.js) — cho phép admin ánh xạ cột + sửa giao diện.
 try{ window.TU_KEYS_DEFAULT = TU_KEYS.slice(); }catch(e){}
-const TU_GROUPS_DEFAULT=[{name:'Tài khoản nhận',accent:'#CBA45A',rows:[
-  ['tk_ten','Chủ tài khoản','txt'],['tk_stk','Số tài khoản','txt'],
-  ['tk_nganhang','Ngân hàng','txt'],['tk_chinhanh','Chi nhánh','txt'] ]}];
+const TU_GROUPS_DEFAULT=[
+  {header:true,name:'Thông tin nhân viên',accent:'#1E5F63',rows:[   // [v18.144] khối header cấu hình được (Mức A)
+    ['ho_ten','Họ và tên','txt'],['ma_bh','Mã nhân viên','txt'],
+    ['ngay_vao_lam','Ngày vào làm','txt'],['cua_hang','Cửa hàng','txt'],
+    ['chuc_vu','Chức vụ','txt'],['tk_gmail','Email','txt'] ]},
+  {name:'Tài khoản nhận',accent:'#CBA45A',rows:[
+    ['tk_ten','Chủ tài khoản','txt'],['tk_stk','Số tài khoản','txt'],
+    ['tk_nganhang','Ngân hàng','txt'],['tk_chinhanh','Chi nhánh','txt'] ]}];
 try{ window.TU_GROUPS_DEFAULT = TU_GROUPS_DEFAULT; }catch(e){}
 function _tuNormRow(r){ return Array.isArray(r)?{key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3]}:{key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero}; }
 function tuGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLIPCFG.resolveGroups('tu'); if(g&&g.length) return g; } }catch(e){} return (window.TU_GROUPS_DEFAULT||[]); }
+// [v18.144] Giá trị 1 field trong khối header (giữ cách ghép + định dạng ngày như khối cố định cũ).
+function _tuHeaderVal(d,key){
+  switch(key){
+    case 'ho_ten': return d.ho_ten;
+    case 'ma_bh': return (d.ma_bh||'')+((d.ma_nv&&d.ma_nv!==d.ma_bh)?' · '+d.ma_nv:'');
+    case 'ma_nv': return d.ma_nv;
+    case 'ngay_vao_lam': return _tuDate(d.ngay_vao_lam);
+    case 'cua_hang': return (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:'');
+    case 'chuc_vu': return d.chuc_vu;
+    case 'tk_gmail': return d.tk_gmail;
+    default: return d[key];
+  }
+}
 
 function _tuLaCH(){ return typeof _laCuaHang==='function' && _laCuaHang(); }
 function _tuEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -90,15 +108,22 @@ function tuLoadKy(ky){
 function _tuSlipCore(p,d,groupsOverride){
   const daXN=!!p.xacNhanLuc;
   const maNvLine=(d.ma_bh||'')+((d.ma_nv&&d.ma_nv!==d.ma_bh)?' · '+d.ma_nv:'');
+  const GROUPS = groupsOverride || tuGroups();
+  const headerG = (GROUPS||[]).find(g=>g&&g.header);   // [v18.144] khối "Thông tin nhân viên" cấu hình được
   let h='';
   h+='<div class="tn-slip-head"><div><div class="tn-kicker">TẠM ỨNG · Kỳ '+_tuEsc((p.ky||'').replace('-','/'))+'</div>'+
      '<div class="tn-slip-title">Phiếu tạm ứng '+_tuEsc(p.kyTen||p.ky)+'</div>'+
      (p.ngayNhan?'<div class="tn-paydate"><span class="tn-gold-dot"></span>Ngày nhận: '+_tuDate(p.ngayNhan)+'</div>':'')+'</div>'+
      '<span class="tn-chip '+(daXN?'ok':'live')+'"><span class="tn-dot"></span>'+(daXN?'Đã xác nhận':'Đang mở')+'</span></div>';
-  h+='<div class="tn-who">'+
-     _tuWho('Họ và tên', d.ho_ten)+ _tuWho('Mã nhân viên', maNvLine)+
-     _tuWho('Ngày vào làm', _tuDate(d.ngay_vao_lam))+ _tuWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+
-     _tuWho('Chức vụ', d.chuc_vu)+ _tuWho('Email', d.tk_gmail)+ '</div>';
+  // [v18.144] Khối thông tin NV: lấy từ nhóm header (admin chỉnh được); config cũ chưa có nhóm header → khối cố định như cũ.
+  if(!headerG){
+    h+='<div class="tn-who">'+
+       _tuWho('Họ và tên', d.ho_ten)+ _tuWho('Mã nhân viên', maNvLine)+
+       _tuWho('Ngày vào làm', _tuDate(d.ngay_vao_lam))+ _tuWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+
+       _tuWho('Chức vụ', d.chuc_vu)+ _tuWho('Email', d.tk_gmail)+ '</div>';
+  } else if(!headerG.hidden){
+    h+='<div class="tn-who">'+ (headerG.rows||[]).map(_tuNormRow).map(function(r){ return _tuWho(r.label, _tuHeaderVal(d, r.key)); }).join('') +'</div>';
+  }
   h+='<div class="tn-hero"><div class="tn-hero-main"><div class="tn-hero-lbl">Mức tạm ứng</div>'+
      '<div class="tn-hero-num">'+_tuMoney(d.muc_ung)+' <span>₫</span></div></div>'+
      '<div class="tn-hero-sub">'+
@@ -107,8 +132,7 @@ function _tuSlipCore(p,d,groupsOverride){
      '</div></div>';
   // [Cấu hình phiếu] Nhóm hiển thị (mặc định = Tài khoản nhận); admin có thể thêm/sửa nhóm/dòng.
   //   Hỗ trợ dòng tuple [key,label,fmt(,showZero)] LẪN object {key,label,fmt,showZero}.
-  const GROUPS = groupsOverride || tuGroups();
-  GROUPS.forEach((g)=>{
+  (GROUPS||[]).filter(function(g){return !(g&&g.header);}).forEach((g)=>{   // [v18.144] header render riêng ở khối who
     if(g.hidden) return;
     const grows=(g.rows||[]).map(_tuNormRow);
     const rows=grows.filter(r=>_tuHasVal(d[r.key]) || r.fmt==='num0' || r.showZero);

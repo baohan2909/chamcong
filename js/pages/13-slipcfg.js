@@ -149,21 +149,36 @@ function _normGroups(raw){
     total: g.total||null,
     neg: !!g.neg,
     hidden: !!g.hidden,
+    header: !!g.header,   // [v18.144] nhóm đặc biệt = khối "Thông tin nhân viên" (header lưới 2 cột)
     rows: (g.rows||[]).map(r=> Array.isArray(r)
       ? {key:_slug(r[0]),label:(r[1]!=null?String(r[1]):r[0]),fmt:r[2]||'txt',showZero:!!r[3]}
       : {key:_slug(r.key),label:(r.label!=null?String(r.label):r.key),fmt:r.fmt||'txt',showZero:!!r.showZero})
   }));
 }
 function _serializeGroups(gs){
-  return (gs||[]).map(g=>({ name:g.name, accent:g.accent, total:g.total||null, neg:!!g.neg, hidden:!!g.hidden,
+  return (gs||[]).map(g=>({ name:g.name, accent:g.accent, total:g.total||null, neg:!!g.neg, hidden:!!g.hidden, header:!!g.header,
     rows:(g.rows||[]).map(r=>({key:r.key,label:r.label,fmt:r.fmt||'txt',showZero:!!r.showZero})) }));
 }
+// [v18.144] Nhóm header mặc định (khối "Thông tin nhân viên") từ defaultGroups của phân hệ.
+function _headerGroupDefault(def){
+  const dgs=(def.defaultGroups?def.defaultGroups():[])||[];
+  const hg=dgs.find(g=>g&&g.header);
+  return hg?_normGroups([hg])[0]:null;
+}
+// [v18.144] Đảm bảo danh sách nhóm LUÔN có nhóm header (config cũ lưu trước đây chưa có → chèn lại đầu
+//   để admin chỉnh được; không ghi đè nếu đã có). Không đổi dữ liệu đã lưu cho tới khi admin Áp dụng.
+function _ensureHeaderGroup(def,groups){
+  groups=groups||[];
+  if(groups.some(g=>g&&g.header)) return groups;
+  const hg=_headerGroupDefault(def);
+  return hg?[hg].concat(groups):groups;
+}
 function _loadGroups(def){
-  if(!def.groupsSettingKey) return {groups:_normGroups(def.defaultGroups?def.defaultGroups():[]),meta:null,fromSaved:false};
+  if(!def.groupsSettingKey) return {groups:_ensureHeaderGroup(def,_normGroups(def.defaultGroups?def.defaultGroups():[])),meta:null,fromSaved:false};
   const cfg=_readSetting(def.groupsSettingKey);
   if(cfg && Array.isArray(cfg.groups) && cfg.groups.length)
-    return {groups:_normGroups(cfg.groups),meta:{updatedAt:cfg.updatedAt||null,updatedBy:cfg.updatedBy||null,updatedByName:cfg.updatedByName||null},fromSaved:true};
-  return {groups:_normGroups(def.defaultGroups?def.defaultGroups():[]),meta:null,fromSaved:false};
+    return {groups:_ensureHeaderGroup(def,_normGroups(cfg.groups)),meta:{updatedAt:cfg.updatedAt||null,updatedBy:cfg.updatedBy||null,updatedByName:cfg.updatedByName||null},fromSaved:true};
+  return {groups:_ensureHeaderGroup(def,_normGroups(def.defaultGroups?def.defaultGroups():[])),meta:null,fromSaved:false};
 }
 function resolveGroups(subsys){
   const def=DEFS[subsys]; if(!def||!def.groupsSettingKey) return null;
@@ -368,20 +383,26 @@ function _paneDisp(){
     '<div class="scf-disp-prev"><div class="scf-prev-hd">👁 Xem trước phiếu</div><div class="scf-preview" id="scf-preview"></div></div></div>';
 }
 function _dispEditHtml(){ return ST.groups.map((g,gi)=>_grpCard(g,gi,ST.groups.length)).join('') || '<div class="scf-empty" style="padding:24px">Chưa có nhóm nào. Bấm “Thêm nhóm”.</div>'; }
+// [v18.144] LOCK: dòng Họ tên + Mã NV trong nhóm header không cho xoá (phiếu luôn biết của ai).
+const SCF_HDR_LOCK={ho_ten:1,ma_nv:1,ma_bh:1};
 function _grpCard(g,gi,n){
   const avail=_availKeys(ST.def);
-  const rowsH=(g.rows||[]).map((r,ri)=>_drowHtml(gi,ri,r,g.rows.length,avail)).join('') || '<div class="scf-drow-empty">Nhóm trống — thêm dòng bên dưới</div>';
-  return '<div class="scf-grp'+(g.hidden?' off':'')+'" data-g="'+gi+'">'+
-    '<div class="scf-grp-hd">'+
-      '<span class="scf-grp-color" style="background:'+_esc(g.accent||'#1E5F63')+'"></span>'+
-      '<input class="scf-grp-name" value="'+_esc(g.name||'')+'" placeholder="Tên nhóm" oninput="SLIPCFG._gName('+gi+',this.value)">'+
-      _accentPick(gi,g.accent)+
-      '<label class="scf-sw" title="Ẩn/hiện nhóm trên phiếu"><input type="checkbox" '+(g.hidden?'':'checked')+' onchange="SLIPCFG._gHidden('+gi+')"><span></span></label>'+
-      '<div class="scf-col-acts">'+
+  const isH=!!g.header;
+  const rowsH=(g.rows||[]).map((r,ri)=>_drowHtml(gi,ri,r,g.rows.length,avail,!!(isH&&SCF_HDR_LOCK[_slug(r.key)]))).join('') || '<div class="scf-drow-empty">Nhóm trống — thêm dòng bên dưới</div>';
+  const acts = isH
+    ? '<div class="scf-col-acts"><span class="scf-hdr-tag" title="Khối Thông tin nhân viên — luôn ở đầu phiếu, không xoá được">Header</span></div>'
+    : '<div class="scf-col-acts">'+
         '<button class="scf-mini" title="Lên" onclick="SLIPCFG._gMoveG('+gi+',-1)" '+(gi===0?'disabled':'')+'>↑</button>'+
         '<button class="scf-mini" title="Xuống" onclick="SLIPCFG._gMoveG('+gi+',1)" '+(gi===n-1?'disabled':'')+'>↓</button>'+
         '<button class="scf-mini del" title="Xoá nhóm" onclick="SLIPCFG._gDelG('+gi+')">✕</button>'+
-      '</div></div>'+
+      '</div>';
+  return '<div class="scf-grp'+(g.hidden?' off':'')+(isH?' scf-grp-hdr':'')+'" data-g="'+gi+'">'+
+    '<div class="scf-grp-hd">'+
+      '<span class="scf-grp-color" style="background:'+_esc(g.accent||'#1E5F63')+'"></span>'+
+      '<input class="scf-grp-name" value="'+_esc(g.name||'')+'" placeholder="Tên nhóm" oninput="SLIPCFG._gName('+gi+',this.value)">'+
+      (isH?'':_accentPick(gi,g.accent))+
+      '<label class="scf-sw" title="Ẩn/hiện nhóm trên phiếu"><input type="checkbox" '+(g.hidden?'':'checked')+' onchange="SLIPCFG._gHidden('+gi+')"><span></span></label>'+
+      acts+'</div>'+
     '<div class="scf-drows">'+rowsH+'</div>'+
     '<button class="scf-addrow" onclick="SLIPCFG._gAddRow('+gi+')">＋ Thêm dòng</button></div>';
 }
@@ -390,7 +411,7 @@ function _accentPick(gi,cur){
   return '<span class="scf-acc">'+ACCENTS.map(c=>'<button class="scf-acc-sw'+(c.toLowerCase()===cl?' on':'')+'" style="background:'+c+'" title="'+c+'" onclick="SLIPCFG._gAccent('+gi+',\''+c+'\')"></button>').join('')+
     '<input type="color" class="scf-acc-inp" value="'+_esc(cur||'#1E5F63')+'" oninput="SLIPCFG._gAccentLive('+gi+',this.value)" title="Màu tuỳ chọn"></span>';
 }
-function _drowHtml(gi,ri,r,n,avail){
+function _drowHtml(gi,ri,r,n,avail,noDel){
   // Mỗi lựa chọn hiện CỘT NGUỒN: "[A] Nhãn · khóa" → thấy rõ dòng này lấy dữ liệu từ cột nào.
   let hasSel=false;
   const opts=avail.map(a=>{ const sel=(a.key===r.key); if(sel)hasSel=true; return '<option value="'+_esc(a.key)+'"'+(sel?' selected':'')+'>'+(a.col?'['+a.col+'] ':'')+_esc(a.label)+' · '+_esc(a.key)+'</option>'; }).join('');
@@ -408,7 +429,9 @@ function _drowHtml(gi,ri,r,n,avail){
         '<select class="scf-sel2" onchange="SLIPCFG._gRowFmt('+gi+','+ri+',this.value)" title="Định dạng">'+fmtOpts+'</select>'+
         '<label class="scf-zero" title="Luôn hiện kể cả khi = 0"><input type="checkbox" '+(r.showZero?'checked':'')+' onchange="SLIPCFG._gRowZero('+gi+','+ri+')"> =0</label>'+
       '</div></div>'+
-    '<button class="scf-mini del" title="Xoá dòng" onclick="SLIPCFG._gRowDel('+gi+','+ri+')">✕</button></div>';
+    (noDel
+      ? '<button class="scf-mini" title="Khóa — không thể xoá" disabled style="opacity:.35">🔒</button>'
+      : '<button class="scf-mini del" title="Xoá dòng" onclick="SLIPCFG._gRowDel('+gi+','+ri+')">✕</button>')+'</div>';
 }
 function _rerenderDisp(){ const e=document.getElementById('scf-disp-edit'); if(e)e.innerHTML=_dispEditHtml(); const c=document.querySelector('#scf-pane-disp .scf-count'); if(c)c.textContent=ST.groups.length+' nhóm'; _updPreview(); }
 function _updPreview(){
@@ -428,15 +451,15 @@ function _gAccentLive(gi,v){
   _updPreview();
 }
 function _gHidden(gi){ if(ST&&ST.groups[gi]){ ST.groups[gi].hidden=!ST.groups[gi].hidden; _markGroupsDirty(); _rerenderDisp(); } }
-function _gMoveG(gi,d){ if(!ST)return; const j=gi+d; if(j<0||j>=ST.groups.length)return; const t=ST.groups[gi];ST.groups[gi]=ST.groups[j];ST.groups[j]=t; _markGroupsDirty(); _rerenderDisp(); }
-function _gDelG(gi){ if(!ST||!ST.groups[gi])return; ST.groups.splice(gi,1); _markGroupsDirty(); _rerenderDisp(); }
+function _gMoveG(gi,d){ if(!ST)return; const j=gi+d; if(j<0||j>=ST.groups.length)return; if(ST.groups[gi].header||ST.groups[j].header) return; const t=ST.groups[gi];ST.groups[gi]=ST.groups[j];ST.groups[j]=t; _markGroupsDirty(); _rerenderDisp(); }   // [v18.144] nhóm header ghim ở đầu, không hoán vị
+function _gDelG(gi){ if(!ST||!ST.groups[gi])return; if(ST.groups[gi].header)return; ST.groups.splice(gi,1); _markGroupsDirty(); _rerenderDisp(); }   // [v18.144] không xoá nhóm header
 function _gAddG(){ if(!ST)return; ST.groups.push({name:'Nhóm mới',accent:ACCENTS[0],total:null,neg:false,hidden:false,rows:[]}); _markGroupsDirty(); _rerenderDisp(); const e=document.getElementById('scf-disp-edit'); if(e&&e.lastElementChild)e.lastElementChild.scrollIntoView({block:'nearest'}); }
 function _gRowLabel(gi,ri,v){ const g=ST&&ST.groups[gi]; if(g&&g.rows[ri]){ g.rows[ri].label=v; _markGroupsDirty(); _updPreview(); } }
 function _gRowKey(gi,ri,v){ const g=ST&&ST.groups[gi]; if(g&&g.rows[ri]){ g.rows[ri].key=_slug(v); _markGroupsDirty(); _updPreview(); } }
 function _gRowFmt(gi,ri,v){ const g=ST&&ST.groups[gi]; if(g&&g.rows[ri]){ g.rows[ri].fmt=v; _markGroupsDirty(); _updPreview(); } }
 function _gRowZero(gi,ri){ const g=ST&&ST.groups[gi]; if(g&&g.rows[ri]){ g.rows[ri].showZero=!g.rows[ri].showZero; _markGroupsDirty(); _updPreview(); } }
 function _gRowMove(gi,ri,d){ const g=ST&&ST.groups[gi]; if(!g)return; const j=ri+d; if(j<0||j>=g.rows.length)return; const t=g.rows[ri];g.rows[ri]=g.rows[j];g.rows[j]=t; _markGroupsDirty(); _rerenderDisp(); }
-function _gRowDel(gi,ri){ const g=ST&&ST.groups[gi]; if(g){ g.rows.splice(ri,1); _markGroupsDirty(); _rerenderDisp(); } }
+function _gRowDel(gi,ri){ const g=ST&&ST.groups[gi]; if(!g||!g.rows[ri])return; if(g.header&&SCF_HDR_LOCK[_slug(g.rows[ri].key)])return; g.rows.splice(ri,1); _markGroupsDirty(); _rerenderDisp(); }   // [v18.144] khóa Họ tên/Mã NV trong header
 function _gAddRow(gi){ const g=ST&&ST.groups[gi]; if(!g)return; const avail=_availKeys(ST.def); const first=avail[0]||{key:'ho_ten',label:'Họ và tên'}; g.rows.push({key:first.key,label:first.label,fmt:'txt',showZero:false}); _markGroupsDirty(); _rerenderDisp(); }
 async function _gReset(){ if(!ST)return; let ok=true; if(typeof appConfirm==='function') ok=await appConfirm('Đưa giao diện phiếu về MẶC ĐỊNH? (bản nháp, cần Áp dụng để lưu)',{title:'Về mặc định',okLabel:'Về mặc định'}); if(!ok)return; ST.groups=_normGroups(ST.def.defaultGroups()); _markGroupsDirty(); _rerenderDisp(); _toast('Đã nạp giao diện mặc định (chưa lưu — bấm Áp dụng)','ok'); }
 

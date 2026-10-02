@@ -17,6 +17,10 @@ function _tnMaskStk(v){ const s=String(v||'').replace(/\s/g,''); return s.length
 
 // ─── Nhóm hiển thị phiếu (chỉ render dòng có giá trị) ───
 const TN_GROUPS = [
+  { header:true, name:'Thông tin nhân viên', accent:'#1E5F63', rows:[   // [v18.144] khối header cấu hình được (Mức A)
+    ['ho_ten','Họ và tên','txt'], ['ma_nv','Mã nhân viên','txt'],
+    ['cua_hang','Cửa hàng','txt'], ['chuc_vu','Chức vụ','txt'],
+    ['ngay_vao_lam','Vào làm','txt'], ['tham_nien','Thâm niên','txt'] ] },
   { name:'Công & giờ làm', accent:'#1E5F63', rows:[
     ['tong_gio_cong','Tổng giờ công','gio'], ['gio_chuan','Giờ công chuẩn','gio'],
     ['gio_12','Giờ tăng ca ×1.2','gio'], ['gio_x2','Giờ tăng ca ×2.0','gio'], ['gio_x3','Giờ tăng ca ×3.0 (lễ)','gio'],
@@ -109,17 +113,23 @@ function tnLoadKy(ky){
 // modal admin xem phiếu NV (tnAdminPhieuModal). Chỉ-đọc, không gồm nút hành động.
 function _tnSlipCore(p, d, groupsOverride){
   const daXN = !!p.xacNhanLuc;
+  const GROUPS = groupsOverride || tnGroups();
+  const headerG = (GROUPS||[]).find(g=>g&&g.header);   // [v18.144] khối "Thông tin nhân viên" cấu hình được
   let h='';
   // head
   h+='<div class="tn-slip-head"><div><div class="tn-kicker">TN · Kỳ '+_tnEsc((p.ky||'').replace('-','/'))+'</div>'+
      '<div class="tn-slip-title">Phiếu kỳ '+_tnEsc(p.kyTen||p.ky)+'</div>'+
      (p.ngayChi?'<div class="tn-paydate"><span class="tn-gold-dot"></span>Ngày chi lương: '+_tnDate(p.ngayChi)+'</div>':'')+'</div>'+
      '<span class="tn-chip '+(daXN?'ok':'live')+'"><span class="tn-dot"></span>'+(daXN?'Đã xác nhận':'Đang mở')+'</span></div>';
-  // who
-  h+='<div class="tn-who">'+
-     _tnWho('Họ và tên', d.ho_ten)+ _tnWho('Mã nhân viên', (d.ma_nv||'')+(d.ma_ns?' · '+d.ma_ns:''))+
-     _tnWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+ _tnWho('Chức vụ', d.chuc_vu)+
-     _tnWho('Vào làm', _tnDate(d.ngay_vao_lam))+ _tnWho('Thâm niên', d.tham_nien)+ '</div>';
+  // who — [v18.144] từ nhóm header (admin chỉnh được); config cũ chưa có nhóm header → khối cố định như cũ.
+  if(!headerG){
+    h+='<div class="tn-who">'+
+       _tnWho('Họ và tên', d.ho_ten)+ _tnWho('Mã nhân viên', (d.ma_nv||'')+(d.ma_ns?' · '+d.ma_ns:''))+
+       _tnWho('Cửa hàng', (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:''))+ _tnWho('Chức vụ', d.chuc_vu)+
+       _tnWho('Vào làm', _tnDate(d.ngay_vao_lam))+ _tnWho('Thâm niên', d.tham_nien)+ '</div>';
+  } else if(!headerG.hidden){
+    h+='<div class="tn-who">'+ (headerG.rows||[]).map(_tnNormRow).map(function(r){ return _tnWho(r.label, _tnHeaderVal(d, r.key)); }).join('') +'</div>';
+  }
   // hero THỰC LÃNH
   h+='<div class="tn-hero"><div class="tn-hero-main"><div class="tn-hero-lbl">Thực lãnh kỳ này</div>'+
      '<div class="tn-hero-num">'+_tnMoney(d.tong_thuc_lanh)+' <span>₫</span></div></div>'+
@@ -129,8 +139,7 @@ function _tnSlipCore(p, d, groupsOverride){
      '</div></div>';
   // groups — [Cấu hình phiếu] ưu tiên cấu hình admin (SLIPCFG.resolveGroups), fallback TN_GROUPS.
   //   Hỗ trợ dòng dạng tuple [key,label,fmt] (mặc định) LẪN object {key,label,fmt,showZero} (cấu hình).
-  const GROUPS = groupsOverride || tnGroups();
-  GROUPS.forEach((g,gi)=>{
+  (GROUPS||[]).filter(function(g){return !(g&&g.header);}).forEach((g,gi)=>{   // [v18.144] header render riêng ở khối who
     if(g.hidden) return;                       // nhóm bị ẩn trong cấu hình
     const grows=(g.rows||[]).map(_tnNormRow);
     // Dòng num0/showZero LUÔN hiện (=0 ghi "0"); còn lại chỉ hiện khi có giá trị.
@@ -155,6 +164,19 @@ function _tnSlipCore(p, d, groupsOverride){
 function _tnNormRow(r){ return Array.isArray(r) ? {key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3]} : {key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero}; }
 // [Cấu hình phiếu] Nhóm hiển thị đang hiệu lực (cấu hình admin nếu có, không thì mặc định).
 function tnGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLIPCFG.resolveGroups('tn'); if(g&&g.length) return g; } }catch(e){} return TN_GROUPS; }
+// [v18.144] Giá trị 1 field trong khối header (giữ cách ghép + định dạng ngày như khối cố định cũ).
+function _tnHeaderVal(d,key){
+  switch(key){
+    case 'ho_ten': return d.ho_ten;
+    case 'ma_nv': return (d.ma_nv||'')+(d.ma_ns?' · '+d.ma_ns:'');
+    case 'ma_ns': return d.ma_ns;
+    case 'cua_hang': return (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:'');
+    case 'chuc_vu': return d.chuc_vu;
+    case 'ngay_vao_lam': return _tnDate(d.ngay_vao_lam);
+    case 'tham_nien': return d.tham_nien;
+    default: return d[key];
+  }
+}
 function tnRenderPhieu(){
   const wrap=document.getElementById('tn-slip-wrap'); if(!wrap) return;
   const p=TN.phieu, d=p.duLieu||{};
