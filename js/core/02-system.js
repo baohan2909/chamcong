@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.145',
+  'sys.cache_version': 'v18.147',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4044,6 +4044,8 @@ function startNSPolling(){
         document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
         document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
+        const _chuaEl1=document.getElementById('ns-s-chua'); if(_chuaEl1)_chuaEl1.textContent=d.stats.chuaCham||0;   // [v18.147]
+        const _thieuEl1=document.getElementById('ns-s-thieu'); if(_thieuEl1)_thieuEl1.textContent=d.stats.thieuRaCa||0;   // [v18.147]
         const nghiEl=document.getElementById('ns-s-nghi');
         if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
         document.getElementById('ns-s-loi').textContent=newCount;
@@ -4446,6 +4448,8 @@ function taiNhanSu(forceRefresh){
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
     document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
     document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
+    const _chuaEl2=document.getElementById('ns-s-chua'); if(_chuaEl2)_chuaEl2.textContent=d.stats.chuaCham||0;   // [v18.147]
+    const _thieuEl2=document.getElementById('ns-s-thieu'); if(_thieuEl2)_thieuEl2.textContent=d.stats.thieuRaCa||0;   // [v18.147]
     const nghiEl=document.getElementById('ns-s-nghi');
     if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
     const soCB=nsCBList.length;
@@ -4586,6 +4590,10 @@ function renderNhanSu(){
     if(nsFilter==='all') return true;
     // [v10 Yc #3] Tab "NGHỈ PHÉP" — chỉ hiện NV có đơn nghỉ đã duyệt trong phạm vi
     if(nsFilter==='NGHỈ PHÉP') return nsNghiMaSet.has(nv.ma);
+    // [v18.147] Chưa làm = chưa chấm công hôm nay VÀ không nghỉ phép (cách A)
+    if(nsFilter==='CHƯA CHẤM') return nv.trangThai==='CHƯA CHẤM' && !nsNghiMaSet.has(nv.ma);
+    // [v18.147] Thiếu ra ca = còn ca treo ngày đã qua (cờ thieuRaCa từ RPC)
+    if(nsFilter==='THIẾU RA CA') return !!nv.thieuRaCa;
     return nv.trangThai===nsFilter;
   }).sort((a,b)=>{
     const kv=(a.khuVuc||'').localeCompare(b.khuVuc||'');
