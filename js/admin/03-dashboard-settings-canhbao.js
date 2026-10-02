@@ -1462,7 +1462,7 @@ async function adm2LoadSuaLogBody() {
     let _tcMap = {}, _autoTcById = {};
     try {
       const { data: _tcRows } = await supa.from('cham_cong')
-        .select('id, truong_ca, ghi_chu, nguon')
+        .select('id, truong_ca, ghi_chu, nguon, ma_nv, ngay, ma_ch, ten_ch_snapshot, device_info')
         .eq('ma_nv', _suaLogState.maNV).eq('ngay', _suaLogState.ngay);
       (_tcRows || []).forEach(r => {
         _tcMap[r.id] = !!r.truong_ca;
@@ -1470,6 +1470,11 @@ async function adm2LoadSuaLogBody() {
           || (typeof _ccHideAutoTc === 'function' && _ccHideAutoTc(r.ghi_chu));
         if (_isAuto) _autoTcById[r.id] = true;
       });
+      // [v18.145] Làm mới cache nhận diện Đội SALE theo DỮ LIỆU TƯƠI sau mỗi reload (kể cả sau khi Lưu sửa)
+      //   → tránh hiển thị tên đội CŨ (cache chỉ dựng lúc mở modal ở adm2OpenSuaLog).
+      if (typeof _buildDoiSaleMap === 'function') window._doiSaleMap = _buildDoiSaleMap(_tcRows || []);
+      window._suaLogRawById = {};
+      (_tcRows || []).forEach(r => { if (r.id != null) window._suaLogRawById[r.id] = r; });
     } catch (e) {}
     const LOAI_OPTIONS = ['VAO_CA','RA_GIUA_CA','VAO_GIUA_CA','RA_CA'];
     const LOAI_TEXT = {'VAO_CA':'Vào ca','RA_GIUA_CA':'Ra giữa ca','VAO_GIUA_CA':'Vào giữa ca','RA_CA':'Ra ca'};

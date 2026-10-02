@@ -1600,17 +1600,19 @@ function _fmtChVoiDoiSale(maNV, tenCH, ngay, maCH) {
 //   (Trích từ _logSaleTeamName trong Lịch sử duyệt — nguồn chuẩn.)
 function _nhanDoiSaleLog(row){
   if (!row) return null;
-  const di = row.device_info || '';
-  let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
-  if (m) return m[1].trim();
-  // [v18.137] Ghi chú TÍCH LŨY nhiều lần sửa (append) → lấy nhãn MỚI NHẤT (cuối chuỗi), KHÔNG phải
-  //   nhãn đầu tiên. Trước đây .match() lấy nhãn ĐẦU → sửa Cơ Động→Đội SALE vẫn hiện "Cơ Động" cũ.
+  // [v18.145] ƯU TIÊN nhãn MỚI NHẤT trong ghi_chu TRƯỚC device_info. Lý do: admin sửa (đổi Đội SALE/Cơ Động)
+  //   chỉ cập nhật ghi_chu, KHÔNG cập nhật device_info (ảnh gốc lúc NV chấm) → nếu đọc device_info trước sẽ
+  //   hiện tên đội CŨ dù đã sửa. device_info chỉ dùng khi ghi_chu không có nhãn nào.
+  // [v18.137] ghi_chu tích lũy nhiều lần sửa (append) → lấy nhãn CUỐI chuỗi (mới nhất), không phải đầu.
   const ghi = row.ghi_chu || '';
   const all = ghi.match(/\[(?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*\]/ig);
   if (all && all.length){
     const last = all[all.length - 1].match(/\[(.+)\]/);
     if (last) return last[1].trim();
   }
+  const di = row.device_info || '';
+  let m = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i) || di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
+  if (m) return m[1].trim();
   return null;
 }
 // [v18.90] Dựng nhãn CH per-log: Đội SALE trực tiếp → xanh; cơ động/sale hỗ trợ → "Đội X - CH"; thường → chỉ CH
@@ -1635,18 +1637,19 @@ function _buildDoiSaleMap(records) {
   const _nhan = (r) => {
     const ten = r.ten_ch_snapshot || r.tenCH || '';
     if (/đội\s*sale/i.test(ten)) { const m = ten.match(/(đội\s*sale\s*\d+)/i); return m ? m[1].trim() : ten.trim(); }
+    // [v18.145] ghi_chu (nhãn MỚI NHẤT) TRƯỚC device_info — admin sửa chỉ cập nhật ghi_chu, không đụng device_info.
+    const ghi = r.ghi_chu || r.ghiChu || '';
+    if (ghi) {
+      // [v16.2] Bắt cả "[Cơ Động]" (không chỉ Đội SALE); [v18.145] lấy nhãn CUỐI (mới nhất) khi sửa nhiều lần.
+      const all = ghi.match(/\[(?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*\]/ig);
+      if (all && all.length){ const last = all[all.length-1].match(/\[(.+)\]/); if (last) return last[1].trim(); }
+    }
     const di = r.device_info || r.deviceInfo || '';
     if (di) {
       const mNew = di.match(/\[SALE_ORIGIN:[^|]+\|([^\]]+)\]/i);
       const mOld = di.match(/\[SALE_TARGET:[^|]+\|([^\]]+)\]/i);
       if (mNew) return mNew[1].trim();
       if (mOld) return mOld[1].trim();
-    }
-    const ghi = r.ghi_chu || r.ghiChu || '';
-    if (ghi) {
-      // [v16.2] Bắt cả "[Cơ Động]" (không chỉ Đội SALE)
-      const m = ghi.match(/\[((?:đội\s*sale|cơ\s*động|co\s*dong)[^\]]*)\]/i);
-      if (m) return m[1].trim();
     }
     return null;
   };
