@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.147',
+  'sys.cache_version': 'v18.148',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -4044,8 +4044,6 @@ function startNSPolling(){
         document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
         document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
         document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
-        const _chuaEl1=document.getElementById('ns-s-chua'); if(_chuaEl1)_chuaEl1.textContent=d.stats.chuaCham||0;   // [v18.147]
-        const _thieuEl1=document.getElementById('ns-s-thieu'); if(_thieuEl1)_thieuEl1.textContent=d.stats.thieuRaCa||0;   // [v18.147]
         const nghiEl=document.getElementById('ns-s-nghi');
         if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
         document.getElementById('ns-s-loi').textContent=newCount;
@@ -4448,8 +4446,6 @@ function taiNhanSu(forceRefresh){
     document.getElementById('ns-s-dang').textContent=d.stats.dangLamViec||d.stats.dangLam||0;
     document.getElementById('ns-s-ra').textContent=d.stats.raNgoai;
     document.getElementById('ns-s-ket').textContent=d.stats.hetCa;
-    const _chuaEl2=document.getElementById('ns-s-chua'); if(_chuaEl2)_chuaEl2.textContent=d.stats.chuaCham||0;   // [v18.147]
-    const _thieuEl2=document.getElementById('ns-s-thieu'); if(_thieuEl2)_thieuEl2.textContent=d.stats.thieuRaCa||0;   // [v18.147]
     const nghiEl=document.getElementById('ns-s-nghi');
     if(nghiEl)nghiEl.textContent=d.stats.nghiPhep||0;
     const soCB=nsCBList.length;
@@ -4509,6 +4505,12 @@ function renderNhanSu(){
     const nghiCount = statsBase.filter(n=>nsNghiMaSet.has(n.ma)).length;
     nghiEl.textContent=nghiCount;
   }
+  // [v18.148] Chưa làm + Thiếu ra ca — đếm theo DANH SÁCH HIỆN TẠI (statsBase: đã lọc KV/search + bỏ mã đã chuyển),
+  //   KHÔNG theo RPC stats (đếm cả toàn bộ nhan_vien gồm mã đã chuyển).
+  const _chuaEl=document.getElementById('ns-s-chua');
+  if(_chuaEl) _chuaEl.textContent=statsBase.filter(n=>n.trangThai==='CHƯA CHẤM' && !nsNghiMaSet.has(n.ma)).length;
+  const _thieuEl=document.getElementById('ns-s-thieu');
+  if(_thieuEl) _thieuEl.textContent=statsBase.filter(n=>!!n.thieuRaCa).length;
   // Đếm cảnh báo theo KV + search
   const cbFiltered = nsCBList.filter(cb=>{
     const nv = nsData.find(n=>n.ma===cb.maNV);
