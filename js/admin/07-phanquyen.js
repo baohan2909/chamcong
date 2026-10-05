@@ -15,6 +15,7 @@ const PQ_GROUPS = [
     { id:'giocong.xem_all',  ten:'Xem giờ công toàn hệ thống' },
     { id:'giocong.sua_lich', ten:'Sửa lịch chấm công', can:['giocong.xem_all'] },
     { id:'giocong.duyet_cb', ten:'Duyệt cảnh báo chấm công', can:['giocong.xem_all'] },
+    { id:'giocong.xem_ch',   ten:'Xem giờ công cửa hàng (tài khoản cửa hàng)' },
   ]},
   { id:'lichca', ten:'Lịch ca', quyen:[
     { id:'lichca.xem_minh', ten:'Xem lịch của mình', gd:true },
@@ -29,10 +30,13 @@ const PQ_GROUPS = [
     { id:'nhansu.giamsat',   ten:'Giám sát Trưởng ca toàn chuỗi' },
     { id:'diem.xem',         ten:'Xem điểm hệ thống (điểm phong độ NV)' },
     { id:'diem.quanly',      ten:'Quản lý điểm — xóa điểm trừ / miễn', can:['diem.xem'] },
+    { id:'phongdo.xem_minh', ten:'Theo dõi phong độ của mình', gd:true },
+    { id:'bosung.kiemsoat',  ten:'Kiểm soát bổ sung (tường trình / biên bản / kỷ luật)' },
   ]},
   { id:'duyetyc', ten:'Nghỉ phép & Duyệt yêu cầu', quyen:[
-    { id:'donnghi.tao',   ten:'Xin nghỉ / bổ sung ca', gd:true },
-    { id:'duyetyc.duyet', ten:'Duyệt yêu cầu (nghỉ / đổi ca / bổ sung)' },
+    { id:'donnghi.tao',    ten:'Xin nghỉ / bổ sung ca', gd:true },
+    { id:'duyetyc.duyet',  ten:'Duyệt yêu cầu (nghỉ / đổi ca / bổ sung)' },
+    { id:'donnghi.xem_ch', ten:'Xem đơn nghỉ tại cửa hàng (tài khoản cửa hàng)' },
   ]},
   { id:'bangiao', ten:'Bàn giao', quyen:[
     { id:'bangiao.ca',     ten:'Bàn giao ca' },
@@ -52,9 +56,21 @@ const PQ_GROUPS = [
     { id:'muanon.quanly',   ten:'Quản lý mẫu nón', can:['muanon.xem'] },
   ]},
   { id:'congcu', ten:'Công cụ & AI', quyen:[
-    { id:'nvai.dung',     ten:'Nhân viên AI' },
-    { id:'bando.xem',     ten:'Bản đồ cửa hàng' },
-    { id:'giaodien.dung', ten:'Giao diện cá nhân hóa', gd:true },
+    { id:'nvai.dung',       ten:'Nhân viên AI' },
+    { id:'bando.xem',       ten:'Bản đồ cửa hàng' },
+    { id:'giaodien.dung',   ten:'Giao diện cá nhân hóa', gd:true },
+    { id:'khuonmat.dangky', ten:'Đăng ký khuôn mặt', gd:true },
+  ]},
+  { id:'thunhap', ten:'Thu nhập & Tạm ứng', quyen:[
+    { id:'tn.xem_minh', ten:'Xem phiếu thu nhập (TN) của mình', gd:true },
+    { id:'tn.quanly',   ten:'Quản lý TN (đồng bộ / mở-ẩn / phản hồi)' },
+    { id:'tu.xem_minh', ten:'Xem phiếu tạm ứng của mình', gd:true },
+    { id:'tu.quanly',   ten:'Quản lý Tạm ứng (đồng bộ / mở-ẩn / phản hồi)' },
+  ]},
+  { id:'livestream', ten:'Livestream', quyen:[
+    { id:'livestream.xem',      ten:'Xem Livestream · điểm danh lượt', gd:true },
+    { id:'livestream.kiemsoat', ten:'Kiểm soát Livestream (tần suất / phản hồi / toàn cảnh)' },
+    { id:'livestream.phanhoi',  ten:'Chi tiết phản hồi Livestream' },
   ]},
   { id:'admin', ten:'Quản trị hệ thống', quyen:[
     { id:'admin.truycap',  ten:'Vào trang Admin' },
