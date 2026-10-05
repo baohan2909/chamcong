@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.153',
+  'sys.cache_version': 'v18.154',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -615,26 +615,26 @@ const HUB_GROUPS = {
       { label:'Bản đồ cửa hàng',    desc:'Chỉ đường đến cửa hàng', ic:_hubIc.map,   roles:['NV','CTV'],               quyen:'bando.xem',        act:()=>goToPage('bandochidung') },
       { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
       { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
-      { label:'Theo dõi phong độ',  desc:'Điểm & xử lý lỗi của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['NV','CTV'], act:()=>goToPage('theodoi') },   // [v18.86]
-      { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV','QLNS','QLBH','ADMIN'], act:()=>nsFaceOpenEnrollment() },  // [v18.15] mọi vai trò trừ CUA_HANG (Aroma)
+      { label:'Theo dõi phong độ',  desc:'Điểm & xử lý lỗi của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['NV','CTV'], quyen:'phongdo.xem_minh', act:()=>goToPage('theodoi') },   // [v18.86]
+      { label:'Đăng ký khuôn mặt',  desc:'Cập nhật khuôn mặt',    ic:_hubIc.face,  roles:['NV','CTV','QLNS','QLBH','ADMIN'], quyen:'khuonmat.dangky', act:()=>nsFaceOpenEnrollment() },  // [v18.15] mọi vai trò trừ CUA_HANG (Aroma)
       { label:'Nhân sự',            desc:'Quản lý nhân viên',     ic:_hubIc.users, roles:['QLNS','CUA_HANG'],         quyen:'nhansu.xem',       act:()=>goToPage('nhansu') },
       // [v18.28] Tài khoản CỬA HÀNG — mục CHỈ XEM, phạm vi cửa hàng mình (nút hành động đã gate riêng)
-      { label:'Giờ công cửa hàng',  desc:'Giờ công NV tại cửa hàng', ic:_hubIc.clock, roles:['CUA_HANG'],           act:()=>goToPage('giocong-ql') },
-      { label:'Đơn nghỉ phép',      desc:'Xem đơn nghỉ tại cửa hàng', ic:_hubIc.check, roles:['CUA_HANG'],          act:()=>goToPage('donnghi-acc') },
+      { label:'Giờ công cửa hàng',  desc:'Giờ công NV tại cửa hàng', ic:_hubIc.clock, roles:['CUA_HANG'],           quyen:'giocong.xem_ch', act:()=>goToPage('giocong-ql') },
+      { label:'Đơn nghỉ phép',      desc:'Xem đơn nghỉ tại cửa hàng', ic:_hubIc.check, roles:['CUA_HANG'],          quyen:'donnghi.xem_ch', act:()=>goToPage('donnghi-acc') },
       { label:'Lịch ca hệ thống',   desc:'Xếp ca toàn hệ thống',  ic:_hubIc.cal,   roles:['QLNS','CUA_HANG'],        quyen:'lichca.quanly',    act:()=>moLichCaQL_safe() },
       { label:'Lịch hoạt động CH',   desc:'Mở/đóng toàn hệ thống', ic:_hubIc.cal,   roles:['QLNS','QLBH'], setting:'lichhd.enabled', quyen:'lichca.hoatdong', act:()=>moLichHDQL() },
       { label:'Duyệt yêu cầu',      desc:'Nghỉ phép, đổi ca',     ic:_hubIc.check, roles:['QLNS','CUA_HANG'],         quyen:'duyetyc.duyet',    act:()=>goToPage('duyetyc') },
       { label:'Khuôn mặt (AI)',     desc:'Quản lý khuôn mặt NV',  ic:_hubIc.face,  roles:['QLNS'],                   quyen:'nhansu.xem',       act:()=>nsFaceOpenAdmin() },
       { label:'Giám sát Trưởng ca', desc:'Trưởng ca toàn chuỗi',  ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>', roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.giamsat', act:()=>tcOpenGiamSat() },
       { label:'Điểm hệ thống',      desc:'Điểm phong độ toàn NV', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>', roles:['QLNS','CUA_HANG'], quyen:'diem.xem', act:()=>diemHubOpen() },
-      { label:'Kiểm soát bổ sung',  desc:'Tường trình · biên bản · kỷ luật', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', roles:['QLNS'], act:()=>goToPage('bs-kiemsoat') },   // [v18.71] ADMIN(auto)+QLNS
+      { label:'Kiểm soát bổ sung',  desc:'Tường trình · biên bản · kỷ luật', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', roles:['QLNS'], quyen:'bosung.kiemsoat', act:()=>goToPage('bs-kiemsoat') },   // [v18.71] ADMIN(auto)+QLNS
       // [v18.32] Chuyển từ nhóm Bán hàng: "Dashboard bán hàng" thực chất là báo cáo nhân sự (chấm công/giờ công/cảnh báo)
       { label:'Tổng quan nhân sự',  desc:'Chấm công · giờ công · cảnh báo', ic:_hubIc.chart, roles:['QLNS','QLBH','CUA_HANG'], quyen:'nhansu.xem', act:()=>goToPage('dashboard') },
       // [v18.34] TN — bảng thu nhập cá nhân. Mọi vai trò TRỪ CUA_HANG. ADMIN thấy thêm console.
-      { label:'TN',                 desc:'Thông tin cá nhân của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>', roles:['NV','CTV','QLNS','QLBH'], act:()=>goToPage('tn') },
-      { label:'Quản lý TN',         desc:'Đồng bộ · mở/ẩn · phản hồi', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>', roles:[], act:()=>goToPage('tn-admin') },
-      { label:'Tạm ứng',            desc:'Phiếu tạm ứng của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>', roles:['NV','CTV','QLNS','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB','ADMINBH'], act:()=>goToPage('tu') },   // [v18.68] TẤT CẢ cá nhân (ADMIN auto), trừ Cửa hàng
-      { label:'Quản lý Tạm ứng',    desc:'Đồng bộ · mở/ẩn · phản hồi', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="17" cy="15" r="1.4"/></svg>', roles:['QLNS'], act:()=>goToPage('tu-admin') },   // [v18.68] ADMIN (auto) + QLNS
+      { label:'TN',                 desc:'Thông tin cá nhân của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>', roles:['NV','CTV','QLNS','QLBH'], quyen:'tn.xem_minh', act:()=>goToPage('tn') },
+      { label:'Quản lý TN',         desc:'Đồng bộ · mở/ẩn · phản hồi', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>', roles:[], quyen:'tn.quanly', act:()=>goToPage('tn-admin') },
+      { label:'Tạm ứng',            desc:'Phiếu tạm ứng của bạn', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>', roles:['NV','CTV','QLNS','QLBH','QLBHHCM','QLBHMD','QLBHMT','QLBHTTN','QLBHMDTTN','QLBHHNTB','ADMINBH'], quyen:'tu.xem_minh', act:()=>goToPage('tu') },   // [v18.68] TẤT CẢ cá nhân (ADMIN auto), trừ Cửa hàng
+      { label:'Quản lý Tạm ứng',    desc:'Đồng bộ · mở/ẩn · phản hồi', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="17" cy="15" r="1.4"/></svg>', roles:['QLNS'], quyen:'tu.quanly', act:()=>goToPage('tu-admin') },   // [v18.68] ADMIN (auto) + QLNS
     ]
   },
   banhang: {
@@ -649,9 +649,9 @@ const HUB_GROUPS = {
   livestream: {
     title: 'Livestream',
     items: [
-      { label:'Livestream',         desc:'Xem live · điểm danh lượt', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
-      { label:'Kiểm soát Livestream', desc:'Tần suất · phản hồi · toàn cảnh', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>', roles:['QLNS','ADMIN'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-control') },   // [v18.62] Admin+QLNS
-      { label:'Chi tiết phản hồi', desc:'Soi phản hồi + ảnh · ai đã xem', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', roles:['QLNS','ADMIN'], hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-feedback') },   // [v18.63] Admin+QLNS
+      { label:'Livestream',         desc:'Xem live · điểm danh lượt', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>', roles:['NV','CTV','QLNS','QLBH','ADMIN','CUA_HANG'], quyen:'livestream.xem', hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('livestream') },
+      { label:'Kiểm soát Livestream', desc:'Tần suất · phản hồi · toàn cảnh', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>', roles:['QLNS','ADMIN'], quyen:'livestream.kiemsoat', hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-control') },   // [v18.62] Admin+QLNS
+      { label:'Chi tiết phản hồi', desc:'Soi phản hồi + ảnh · ai đã xem', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', roles:['QLNS','ADMIN'], quyen:'livestream.phanhoi', hien:()=>(typeof _lsOn==='function'&&_lsOn()), act:()=>goToPage('ls-feedback') },   // [v18.63] Admin+QLNS
     ]
   },
   bangiao: {
@@ -670,6 +670,12 @@ const HUB_GROUPS = {
     ]
   },
 };
+// [v18.154] Quyền THIẾT YẾU/CÁ NHÂN (gd:true trong PQ_GROUPS) — ai cũng cần: chấm công của mình,
+//   xem giờ/lịch/phiếu TN-TU của mình, bổ sung ca, xem KM, giao diện, phong độ, khuôn mặt, livestream.
+//   Dưới restrictive VẪN theo vai trò (không đòi phân riêng) → không khóa nhầm chức năng thiết yếu
+//   (vd NV cấu hình thiếu → mất nút chấm công). GIỮ ĐỒNG BỘ với gd:true trong js/admin/07-phanquyen.js.
+var PQ_GD_QUYEN = ['chamcong.tu_cham','giocong.xem_minh','lichca.xem_minh','donnghi.tao','chuongtrinh.xem',
+                   'giaodien.dung','phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'];
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
   if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.67] tắt theo công tắc tính năng
@@ -677,11 +683,15 @@ function _hubItemVisible(it){
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [v18.150] CHẾ ĐỘ RESTRICTIVE (bật qua setting 'pq.restrictive'): chức danh ĐÃ cấu hình → CHỈ thấy
-  //   tile có quyền NẰM TRONG danh sách đã phân (ẩn phần còn lại). Tile KHÔNG gắn quyền (cá nhân/thiết
-  //   yếu: TN, Tạm ứng, Theo dõi phong độ, Đăng ký khuôn mặt, Livestream…) vẫn theo vai trò để không khóa nhầm.
-  //   ADMIN vẫn full; chức danh CHƯA cấu hình (da_cau_hinh=false) giữ nguyên theo vai trò.
+  //   tile có quyền NẰM TRONG danh sách đã phân (ẩn phần còn lại). ADMIN vẫn full; chức danh CHƯA cấu
+  //   hình (da_cau_hinh=false) giữ nguyên theo vai trò.
+  //   [v18.154] Quyền gd (PQ_GD_QUYEN — thiết yếu/cá nhân) VẪN theo vai trò, KHÔNG đòi phân riêng.
+  //   Tile KHÔNG gắn quyền cũng vẫn theo vai trò.
   if(typeof _getSetting==='function' && _getSetting('pq.restrictive', false) === true && window.SESSION_DACAUHINH === true){
-    if(it.quyen) return (window.SESSION_QUYEN||[]).indexOf(it.quyen) !== -1;
+    if(it.quyen){
+      if(PQ_GD_QUYEN.indexOf(it.quyen) !== -1) return baseVisible;    // thiết yếu → theo vai trò
+      return (window.SESSION_QUYEN||[]).indexOf(it.quyen) !== -1;     // còn lại → phải được phân
+    }
     return baseVisible;
   }
   // [A2] Mặc định (chưa bật restrictive hoặc chức danh chưa cấu hình): cấu hình chỉ MỞ THÊM tile (không gỡ của ai)

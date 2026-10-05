@@ -85,15 +85,27 @@ const PQ_PRESETS = {
   xemall: { ten:'Chỉ xem', ids: PQ_ALL_IDS.filter(id => /\.(xem|xem_minh|xem_all)$/.test(id) || /tu_cham|giaodien\.dung|chuongtrinh\.xem/.test(id)) },
 };
 const PQ_DEF_NV = ['chamcong.tu_cham','giocong.xem_minh','bando.xem','lichca.xem_minh',
-                   'donnghi.tao','bangiao.ca','muanon.xem','chuongtrinh.xem','giaodien.dung'];
+                   'donnghi.tao','bangiao.ca','muanon.xem','chuongtrinh.xem','giaodien.dung',
+                   // [v18.153] cá nhân/thiết yếu NV-CTV đang thấy hôm nay
+                   'phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'];
 const PQ_DEFAULT = {
   ADMIN: PQ_ALL_IDS.slice(),
   QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','lichca.hoatdong','duyetyc.duyet','giocong.xem_all',
           'nhansu.giamsat','diem.xem','diem.quanly',
-          'banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly'],
+          'banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly',
+          // [v18.153] QLNS đang thấy hôm nay
+          'khuonmat.dangky','bosung.kiemsoat','tn.xem_minh','tu.xem_minh','tu.quanly',
+          'livestream.xem','livestream.kiemsoat','livestream.phanhoi'],
   QLBH:  ['banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly','donnghi.tao',
-          'nhansu.giamsat','lichca.hoatdong'],
-  CUA_HANG: ['banhang.phien','banhang.dashboard','donhang.nhan','bangiao.ca','muanon.xem','muanon.quanly'],
+          'nhansu.giamsat','lichca.hoatdong',
+          'nhansu.xem',   // [v18.154] "Tổng quan nhân sự" đổi gate sang nhansu.xem từ v18.32 — bổ sung kẻo bật restrictive là QLBH mất tile
+          // [v18.153] QLBH đang thấy hôm nay
+          'khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'],
+  CUA_HANG: ['banhang.phien','banhang.dashboard','donhang.nhan','bangiao.ca','muanon.xem','muanon.quanly',
+          // [v18.154] các tile QLNS/CUA_HANG mà cửa hàng đang thấy theo vai trò (kẻo bật restrictive là mất)
+          'nhansu.xem','lichca.quanly','duyetyc.duyet','nhansu.giamsat','diem.xem',
+          // [v18.153] cửa hàng đang thấy hôm nay
+          'giocong.xem_ch','donnghi.xem_ch','livestream.xem'],
   NV:  PQ_DEF_NV.slice(), CTV: PQ_DEF_NV.slice(),
 };
 function pqDefaultFor(cd){
