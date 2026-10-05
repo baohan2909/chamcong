@@ -376,7 +376,11 @@ function bhInitPage() {
   const viewCH = document.getElementById('bh-view-ch');
   const viewQL = document.getElementById('bh-view-qlbh');
   const isCH = SESSION.vaiTro === 'CUA_HANG';
-  const isQLBH = SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN' || String(SESSION.vaiTro || '').startsWith('QLBH');
+  // [v18.152] Gate theo QUYỀN: ai có quyền banhang.phien (cấu hình phân quyền) + không phải cửa hàng → thấy view
+  //   quản lý (toàn hệ thống). Trước đây hardcode QLBH/ADMIN nên QLNS được cấp quyền vẫn mở ra TRỐNG.
+  const _canSales = (typeof coQuyen === 'function') ? coQuyen('banhang.phien') : false;
+  const isQLBH = !isCH && (SESSION.vaiTro === 'QLBH' || SESSION.vaiTro === 'ADMIN'
+                 || String(SESSION.vaiTro || '').startsWith('QLBH') || _canSales);
 
   // Load SP data (async, không block UI)
   bhLoadSpData();
