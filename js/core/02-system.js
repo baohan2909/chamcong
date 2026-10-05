@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.150',
+  'sys.cache_version': 'v18.151',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1075,6 +1075,10 @@ function pqLoadQuyenSession(){
       window.SESSION_CHUCDANH= data.chuc_danh||'';
       window.SESSION_DACAUHINH = (data.da_cau_hinh === true);   // [A2] chức danh có dòng quyền riêng trong chuc_danh_quyen?
       window.SESSION_QUYEN_READY = true;
+      // [v18.151] Quyền về ASYNC (sau khi đã dựng hub+sidebar lúc SESSION_DACAUHINH còn false) → VẼ LẠI
+      //   hub Trang chủ + sidebar/drawer/bnav để chế độ restrictive (pq.restrictive) ẩn đúng mục đã bỏ phân quyền.
+      try { if (typeof currentPage!=='undefined' && currentPage==='home' && typeof hubRenderHeader==='function') hubRenderHeader(); } catch(e){}
+      try { if (typeof ns18InitShell==='function') ns18InitShell(); } catch(e){}
     }).catch(()=>{});
   }catch(e){}
 }
