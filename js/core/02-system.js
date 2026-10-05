@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.154',
+  'sys.cache_version': 'v18.155',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -587,6 +587,23 @@ function hubRenderHeader(){
   if(lsCard){
     lsCard.style.display = (typeof _lsOn==='function' && _lsOn()) ? '' : 'none';
   }
+  // [v18.155] Phân quyền RIÊNG (nguon_quyen='ca_nhan'): ẩn thẻ Trang chủ không nằm trong tập quyền cá nhân.
+  //   CHỈ áp cho người có Riêng → không đụng hiển thị của các vai trò khác (an toàn).
+  if(window.SESSION_CORIENG === true){
+    try{
+      document.querySelectorAll('.hub-card[data-hcard-group]').forEach(function(c){
+        var gk=c.getAttribute('data-hcard-group'); var g=(typeof HUB_GROUPS==='object')?HUB_GROUPS[gk]:null;
+        var ok = g && Array.isArray(g.items) && g.items.some(function(it){ try{return _hubItemVisible(it);}catch(e){return false;} });
+        c.style.display = ok ? '' : 'none';
+      });
+      document.querySelectorAll('.hub-card[data-hcard-quyen]').forEach(function(c){
+        var q=c.getAttribute('data-hcard-quyen');
+        var ok = (typeof coQuyen==='function') ? coQuyen(q) : true;
+        if(c.id==='hub-card-livestream') ok = ok && (typeof _lsOn==='function' && _lsOn()); // livestream còn phụ thuộc _lsOn
+        c.style.display = ok ? '' : 'none';
+      });
+    }catch(e){}
+  }
 }
 
 // ═══ [v13.51] HUB SUBMENU — gom chức năng con theo phân hệ ═══════════════
@@ -680,6 +697,12 @@ function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
   if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.67] tắt theo công tắc tính năng
   if(typeof it.hien==='function'){ try{ if(!it.hien()) return false; }catch(e){ return false; } } // [v18.57] gate động (ẩn cả ADMIN khi phân hệ off)
+  // [v18.155] "Riêng" (phân quyền cá nhân, nguon_quyen='ca_nhan') = whitelist tuyệt đối RIÊNG người đó,
+  //   ĐÈ cả vai trò lẫn ADMIN, độc lập công tắc restrictive. Chỉ hiện mục có quyền nằm trong tập Riêng.
+  if(window.SESSION_CORIENG === true){
+    if(it.quyen) return (window.SESSION_QUYEN||[]).indexOf(it.quyen) !== -1;
+    return true;   // mục không gắn quyền → không khoá (hầu hết tile đã có quyền)
+  }
   if(SESSION.vaiTro==='ADMIN') return true;          // ADMIN thấy mọi chức năng
   var baseVisible = Array.isArray(it.roles) && it.roles.indexOf(SESSION.vaiTro) !== -1;
   // [v18.150] CHẾ ĐỘ RESTRICTIVE (bật qua setting 'pq.restrictive'): chức danh ĐÃ cấu hình → CHỈ thấy
@@ -1071,7 +1094,7 @@ function _setupKeyboardHandler(){
 // [v15.7] ───── RBAC: nạp quyền + phạm vi của người dùng ─────
 window.SESSION_QUYEN = []; window.SESSION_PHAMVI = 'canhan';
 window.SESSION_KV = null; window.SESSION_KVPT = []; window.SESSION_MACH = null; window.SESSION_CHUCDANH = '';
-window.SESSION_QUYEN_READY = false; window.SESSION_DACAUHINH = false;
+window.SESSION_QUYEN_READY = false; window.SESSION_DACAUHINH = false; window.SESSION_CORIENG = false;
 function pqLoadQuyenSession(){
   try{
     if(typeof SESSION==='undefined'||!SESSION||!SESSION.ma) return;
@@ -1084,6 +1107,7 @@ function pqLoadQuyenSession(){
       window.SESSION_MACH    = data.ma_ch||null;
       window.SESSION_CHUCDANH= data.chuc_danh||'';
       window.SESSION_DACAUHINH = (data.da_cau_hinh === true);   // [A2] chức danh có dòng quyền riêng trong chuc_danh_quyen?
+      window.SESSION_CORIENG   = (data.nguon_quyen === 'ca_nhan'); // [v18.155] quyền lấy từ quyen_ca_nhan (phân quyền Riêng) → whitelist tuyệt đối, đè cả ADMIN
       window.SESSION_QUYEN_READY = true;
       // [v18.151] Quyền về ASYNC (sau khi đã dựng hub+sidebar lúc SESSION_DACAUHINH còn false) → VẼ LẠI
       //   hub Trang chủ + sidebar/drawer/bnav để chế độ restrictive (pq.restrictive) ẩn đúng mục đã bỏ phân quyền.
@@ -1099,6 +1123,7 @@ function _quyenCauHinh(maQuyen){
 }
 // Kiểm quyền tổng quát: ADMIN full; chức danh ĐÃ cấu hình dùng quyền DB; CHƯA cấu hình → mặc định theo chức danh|vai trò (không khóa nhầm). Dành cho các slice enforcement kế tiếp.
 function coQuyen(maQuyen){
+  if(window.SESSION_CORIENG === true) return (window.SESSION_QUYEN||[]).indexOf(maQuyen)!==-1; // [v18.155] Riêng đè cả ADMIN
   if(typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN') return true;
   var ids;
   if(window.SESSION_DACAUHINH===true){

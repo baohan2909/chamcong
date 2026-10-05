@@ -92,7 +92,11 @@
     }
     out.push({ sec: 'Hệ thống' });
     out.push({ label: 'Tài khoản', ic: _ic.acc, page: 'taikhoan', act: function () { goToPage('taikhoan'); } });
-    if (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN') {
+    // [v18.155] Quản trị: qua coQuyen('admin.truycap') để phân quyền Riêng ẩn được (trước check vai trò ADMIN thô)
+    var _canAdmin = (typeof coQuyen === 'function')
+      ? coQuyen('admin.truycap')
+      : (typeof SESSION !== 'undefined' && SESSION && SESSION.vaiTro === 'ADMIN');
+    if (_canAdmin) {
       out.push({ label: 'Quản trị hệ thống', ic: _ic.admin, page: 'admin', act: function () { goToPage('admin'); } });
     }
     return out;
