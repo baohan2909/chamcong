@@ -25,18 +25,22 @@ function adm2InitPage() {
 
 // [v18.159] Quyền TỪNG tab Admin. ADMIN (vai trò) thấy hết; admin "một phần" chỉ thấy tab được cấp.
 function adm2CanTab(tab) {
+  // [v18.160] "Xóa khẩn cấp" CHỈ chủ hệ thống NS00490 (kể cả ADMIN khác cũng không) — nguy hiểm.
+  if (tab === 'khancap') return (typeof SESSION !== 'undefined' && SESSION && SESSION.ma === 'NS00490');
   if (SESSION && SESSION.vaiTro === 'ADMIN') return true;
   if (typeof coQuyen !== 'function') return false;
   switch (tab) {
-    case 'tongquan':  return coQuyen('admin.truycap');     // tổng quan = thống kê read-only
+    case 'tongquan':  return coQuyen('admin.truycap');     // tổng quan = thống kê read-only, đi kèm "vào trang"
     case 'taikhoan':  return coQuyen('admin.taikhoan');
+    case 'phienbh':   return coQuyen('admin.phienbh');
+    case 'chamcong':  return coQuyen('admin.chamcong');
     case 'phanquyen': return coQuyen('nhansu.phanquyen');
     case 'caidat':    return coQuyen('admin.caidat');
-    default:          return false;                         // phienbh / chamcong / khancap: chỉ ADMIN
+    default:          return false;
   }
 }
 function adm2ApplyTabPerms() {
-  var tabs = ['tongquan','taikhoan','phienbh','chamcong','phanquyen'];   // khancap giữ logic ẩn riêng
+  var tabs = ['tongquan','taikhoan','phienbh','chamcong','phanquyen','khancap'];
   var firstOk = null;
   tabs.forEach(function (t) {
     var btn = document.querySelector('.adm2-tab[data-tab="' + t + '"]');

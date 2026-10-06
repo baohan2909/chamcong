@@ -25,7 +25,6 @@ const PQ_GROUPS = [
   { id:'nhansu', ten:'Nhân sự', quyen:[
     { id:'nhansu.xem',       ten:'Xem nhân sự hôm nay' },
     { id:'nhansu.quanly',    ten:'Quản lý nhân viên (thêm / sửa / xóa)', can:['nhansu.xem'] },
-    { id:'nhansu.phanquyen', ten:'Phân quyền (tab này)', can:['nhansu.xem'] },
     { id:'nhansu.chuyenma',  ten:'Chuyển đổi mã nhân viên', can:['nhansu.xem'] },
     { id:'nhansu.giamsat',   ten:'Giám sát Trưởng ca toàn chuỗi' },
     { id:'diem.xem',         ten:'Xem điểm hệ thống (điểm phong độ NV)' },
@@ -74,9 +73,13 @@ const PQ_GROUPS = [
     { id:'livestream.phanhoi',  ten:'Chi tiết phản hồi Livestream' },
   ]},
   { id:'admin', ten:'Quản trị hệ thống', quyen:[
-    { id:'admin.truycap',  ten:'Vào trang Admin' },
-    { id:'admin.taikhoan', ten:'Quản lý tài khoản nhân sự', can:['admin.truycap'] },
-    { id:'admin.caidat',   ten:'Cấu hình hệ thống', can:['admin.truycap'] },
+    { id:'admin.truycap',    ten:'Vào trang Admin (Tổng quan)' },
+    { id:'admin.taikhoan',   ten:'Quản lý tài khoản nhân sự', can:['admin.truycap'] },
+    { id:'admin.phienbh',    ten:'Quản lý phiên bán hàng', can:['admin.truycap'] },
+    { id:'admin.chamcong',   ten:'Sửa / xử lý log chấm công', can:['admin.truycap'] },
+    { id:'nhansu.phanquyen', ten:'Phân quyền (tab này)', can:['admin.truycap'] },
+    { id:'admin.caidat',     ten:'Cấu hình hệ thống', can:['admin.truycap'] },
+    // [v18.160] "Xóa khẩn cấp" CỐ Ý không đưa vào — giữ chỉ chủ hệ thống NS00490 (nguy hiểm).
   ]},
 ];
 const PQ_MAP = (function(){ const m={}; PQ_GROUPS.forEach(g=>g.quyen.forEach(q=>{ m[q.id]={...q, nhom:g.id}; })); return m; })();
