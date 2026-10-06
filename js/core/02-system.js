@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.160',
+  'sys.cache_version': 'v18.161',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -507,9 +507,9 @@ function goToPage(page){
   if(page==='bandochidung')khoiDongBanDo();
   if(page==='nhansu'){
     taiNhanSu();startNSPolling();
-    // [v10.85] Show tab "Lịch sử chấm công" chỉ cho ADMIN
+    // [v18.161] Tab "Lịch sử chấm công": gate theo quyền giocong.xem_all (ADMIN luôn có) thay vì chỉ vai trò ADMIN cứng → cấp linh hoạt
     const btnLSCC = document.getElementById('nssub-lichsucc');
-    if (btnLSCC) btnLSCC.style.display = (SESSION && SESSION.vaiTro === 'ADMIN') ? '' : 'none';
+    if (btnLSCC) btnLSCC.style.display = ((typeof coQuyen === 'function') ? coQuyen('giocong.xem_all') : (SESSION && SESSION.vaiTro === 'ADMIN')) ? '' : 'none';
     // [v10.86] Show tab "Chuyển đổi mã" cho ADMIN + QLNS
     const btnCDM = document.getElementById('nssub-chuyenma');
     if (btnCDM) btnCDM.style.display = (SESSION && (SESSION.vaiTro === 'ADMIN' || SESSION.vaiTro === 'QLNS')) ? '' : 'none';
