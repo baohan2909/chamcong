@@ -12,16 +12,48 @@ const ADM2 = {
 
 // ─── Init ──────────────────────────────────────────────────
 function adm2InitPage() {
-  if (!SESSION || SESSION.vaiTro !== 'ADMIN') {
+  // [v18.159] Vào trang theo quyền admin.truycap (cho phép admin "một phần" qua phân quyền/Riêng), KHÔNG chỉ vai trò ADMIN cứng.
+  var _ok = (typeof coQuyen === 'function') ? coQuyen('admin.truycap') : (SESSION && SESSION.vaiTro === 'ADMIN');
+  if (!SESSION || !_ok) {
     document.querySelector('#page-admin .adm2-wrap').innerHTML =
       '<div class="adm2-empty">Không có quyền truy cập.</div>';
     return;
   }
-  adm2LoadDashboard();
+  adm2ApplyTabPerms();   // ẩn tab không được cấp + chọn tab hợp lệ
   if (ADM2.currentTab === 'phienbh') adm2StartPhienAutoRefresh();
 }
 
+// [v18.159] Quyền TỪNG tab Admin. ADMIN (vai trò) thấy hết; admin "một phần" chỉ thấy tab được cấp.
+function adm2CanTab(tab) {
+  if (SESSION && SESSION.vaiTro === 'ADMIN') return true;
+  if (typeof coQuyen !== 'function') return false;
+  switch (tab) {
+    case 'tongquan':  return coQuyen('admin.truycap');     // tổng quan = thống kê read-only
+    case 'taikhoan':  return coQuyen('admin.taikhoan');
+    case 'phanquyen': return coQuyen('nhansu.phanquyen');
+    case 'caidat':    return coQuyen('admin.caidat');
+    default:          return false;                         // phienbh / chamcong / khancap: chỉ ADMIN
+  }
+}
+function adm2ApplyTabPerms() {
+  var tabs = ['tongquan','taikhoan','phienbh','chamcong','phanquyen'];   // khancap giữ logic ẩn riêng
+  var firstOk = null;
+  tabs.forEach(function (t) {
+    var btn = document.querySelector('.adm2-tab[data-tab="' + t + '"]');
+    var ok = adm2CanTab(t);
+    if (btn) btn.style.display = ok ? '' : 'none';
+    if (ok && !firstOk) firstOk = t;
+  });
+  if (!adm2CanTab(ADM2.currentTab)) ADM2.currentTab = firstOk || 'tongquan';
+  adm2SwitchTab(ADM2.currentTab);
+}
+
 function adm2SwitchTab(tab) {
+  // [v18.159] chặn vào tab không có quyền (admin một phần / điều hướng trực tiếp)
+  if (typeof adm2CanTab === 'function' && !adm2CanTab(tab)) {
+    if (typeof adm2Toast === 'function') adm2Toast('Bạn không có quyền xem mục này');
+    return;
+  }
   ADM2.currentTab = tab;
   document.querySelectorAll('.adm2-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.adm2-pane').forEach(p => p.classList.remove('active'));
