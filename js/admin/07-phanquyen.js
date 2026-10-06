@@ -39,10 +39,11 @@ const PQ_GROUPS = [
     { id:'donnghi.xem_ch', ten:'Xem đơn nghỉ tại cửa hàng (tài khoản cửa hàng)' },
   ]},
   { id:'bangiao', ten:'Bàn giao', quyen:[
-    { id:'bangiao.ca',     ten:'Bàn giao ca' },
-    { id:'bangiao.quanly', ten:'Quản lý bàn giao (đối soát, sự vụ)' },
-    { id:'bangiao.xoa',    ten:'Xóa sự vụ', can:['bangiao.quanly'] },
-    { id:'suvu.codong',    ten:'Sự vụ khu vực (cơ động nhận việc)' },
+    { id:'bangiao.ca',         ten:'Bàn giao ca' },
+    { id:'bangiao.quanly',     ten:'Quản lý bàn giao (đối soát, sự vụ)' },
+    { id:'bangiao.muckiemtra', ten:'Cấu hình mục kiểm tra bàn giao (biên bản ca)' },
+    { id:'bangiao.xoa',        ten:'Xóa sự vụ', can:['bangiao.quanly'] },
+    { id:'suvu.codong',        ten:'Sự vụ khu vực (cơ động nhận việc)' },
   ]},
   { id:'banhang', ten:'Bán hàng & Đơn hàng', quyen:[
     { id:'banhang.phien',     ten:'Phiên bán hàng' },
@@ -92,7 +93,7 @@ const PQ_DEFAULT = {
   ADMIN: PQ_ALL_IDS.slice(),
   QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','lichca.hoatdong','duyetyc.duyet','giocong.xem_all',
           'nhansu.giamsat','diem.xem','diem.quanly',
-          'banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly',
+          'banhang.phien','banhang.dashboard','bangiao.quanly','bangiao.muckiemtra','muanon.xem','muanon.quanly',
           // [v18.153] QLNS đang thấy hôm nay
           'khuonmat.dangky','bosung.kiemsoat','tn.xem_minh','tu.xem_minh','tu.quanly',
           'livestream.xem','livestream.kiemsoat','livestream.phanhoi'],

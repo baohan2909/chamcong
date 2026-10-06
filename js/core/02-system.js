@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.156',
+  'sys.cache_version': 'v18.157',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -676,7 +676,7 @@ const HUB_GROUPS = {
     items: [
       { label:'Bàn giao ca',        desc:'Bàn giao tại cửa hàng', ic:_hubIc.box,   roles:['NV','CTV','CUA_HANG'],    quyen:'bangiao.ca',       act:()=>goToPage('bangiao') },
       { label:'Bàn giao (Quản lý)', desc:'Đối soát, sự vụ',       ic:_hubIc.check, roles:['QLNS','QLBH'],            quyen:'bangiao.quanly',   act:()=>goToPage('bangiao-ql') },
-      { label:'Mục kiểm tra bàn giao', desc:'Thêm/xóa mục check (vd dột nước)', ic:_hubIc.box, roles:['QLNS'], quyen:'bangiao.quanly', act:()=>mucBGOpen() },
+      { label:'Mục kiểm tra bàn giao', desc:'Thêm/xóa mục check (vd dột nước)', ic:_hubIc.box, roles:['QLNS'], quyen:'bangiao.muckiemtra', act:()=>mucBGOpen() },   // [v18.157] tách quyền riêng (cấu hình biên bản), KHÔNG dùng chung bangiao.quanly
     ]
   },
   muanon: {
