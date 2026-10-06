@@ -1423,6 +1423,46 @@ async function bhHuyYeuCauXoa(idPhien) {
   } catch(e){}
 }
 
+// [v18.158] CH: XÓA phiên TRỰC TIẾP (thay "Yêu cầu xóa"). Chỉ xóa phiên ĐANG DỞ DANG (DANG_MO) của cửa hàng mình.
+//   Chặn 2 lớp: nút chỉ hiện trên phiên đang mở (BH.sessions) + RPC fn_bh_ch_xoa_phien kiểm tra ma_ch + trang_thai (server-side).
+async function bhXoaPhienCH(idPhien) {
+  if (window._bhXoaChLock && window._bhXoaChLock[idPhien]) return;   // chống double-click
+  window._bhXoaChLock = window._bhXoaChLock || {};
+  window._bhXoaChLock[idPhien] = Date.now();
+  setTimeout(() => { try { delete window._bhXoaChLock[idPhien]; } catch(e){} }, 10000);
+  try {
+    const s = BH.sessions.find(x => x.idPhien === idPhien);
+    if (!s) return;
+    if (String(idPhien).startsWith('temp_') || s.syncing) {
+      bhShowToast('Phiên đang đồng bộ, vui lòng đợi...', null);
+      return;
+    }
+    const ok = await appConfirm('Xóa phiên này? Thao tác KHÔNG khôi phục được.', {
+      title: 'Xóa phiên #' + (s.num || ''),
+      okLabel: 'Xóa phiên',
+      danger: true
+    });
+    if (!ok) return;
+    const { data: d, error } = await supa.rpc('fn_bh_ch_xoa_phien', {
+      p_phien_id: idPhien,
+      p_ma_ch: SESSION.cuaHangMa,
+    });
+    if (error || !(d && d.success)) {
+      bhShowToast('Không xóa được: ' + ((d && d.error) || (error && error.message) || 'Lỗi'), null);
+      return;
+    }
+    const i = BH.sessions.findIndex(x => x.idPhien === idPhien);
+    if (i >= 0) BH.sessions.splice(i, 1);
+    bhRenderSessions();
+    bhShowToast('✓ Đã xóa phiên', 'success');
+  } catch(e) {
+    console.error('[BH Xóa phiên CH] error:', e);
+    bhShowToast('Lỗi xóa phiên', null);
+  } finally {
+    try { delete window._bhXoaChLock[idPhien]; } catch(e){}
+  }
+}
+
 function bhRenderCardContent(card, s) {
   const elapsedMs = Date.now() - s.startMs;
   const elapsed = Math.floor(elapsedMs / 1000);
@@ -1511,12 +1551,9 @@ function bhRenderCardContent(card, s) {
       </button>
     </div>`
     }
-    <!-- [v11.8] Link nhỏ yêu cầu xóa / hủy yêu cầu -->
+    <!-- [v18.158] CH xóa phiên TRỰC TIẾP (chỉ phiên đang dở dang) — thay "Yêu cầu xóa" -->
     <div class="bh-card-yc-row">
-      ${s.xinXoa
-        ? `<a class="bh-yc-link cancel" onclick="bhHuyYeuCauXoa('${s.idPhien}')">↶ Hủy yêu cầu xóa</a>`
-        : `<a class="bh-yc-link" onclick="bhYeuCauXoaPhien('${s.idPhien}')">🗑 Yêu cầu xóa phiên này</a>`
-      }
+      <a class="bh-yc-link" onclick="bhXoaPhienCH('${s.idPhien}')">🗑 Xóa phiên này</a>
     </div>`;
 }
 
