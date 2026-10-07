@@ -518,6 +518,9 @@ function bgqlSuVuDaysLeft(s){
   return `<span style="margin-left:auto;background:${bg};color:${fg};font-size:13px;font-weight:800;padding:3px 11px;border-radius:99px;white-space:nowrap">${txt}</span>`;
 }
 // [v17.2] Đường tiến độ 4 mốc CÓ TÊN NGƯỜI (giống bảng cơ động)
+// [v18.162] Gộp ngày giờ vào TỪNG mốc trên trục (bỏ hàng mốc rời bgqlSuVuMocNgay):
+//   Người tạo→gửi (created_at) · Giao việc→phản hồi/giao (thoi_gian_phan_hoi) ·
+//   Xử lý→cơ động xử lý xong (thoi_gian_xu_ly_xong) · Hoàn tất→CH xác nhận (thoi_gian_dong).
 function bgqlSuVuProgress(s){
   if (s.trang_thai === 'HUY') return '';
   const tt = s.trang_thai;
@@ -527,11 +530,13 @@ function bgqlSuVuProgress(s){
   const daXuLy = !!s.nguoi_xu_ly_ten || !!s.thoi_gian_phan_hoi || ['DA_TIEP_NHAN','DANG_XU_LY','DA_PHAN_HOI','DA_XU_LY_XONG','HOAN_TAT'].includes(tt);
   const xlName = s.nguoi_xu_ly_ten || (daXuLy ? (s.nguoi_phu_trach_ten || '—') : 'Chờ nhận');
   const htName = hoanTat ? (s.nguoi_dong_ten || s.nguoi_xu_ly_ten || '—') : '—';
+  // [v18.162] format mốc ngày giờ gắn vào từng bước
+  const fmtMoc = (t) => { if(!t) return ''; const d=new Date(t); return pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes()); };
   const steps = [
-    { lbl:'Người tạo', name: s.nguoi_tao_ten || '—',                reached:true },
-    { lbl:'Giao việc', name: s.nguoi_phu_trach_ten || 'Ban quản lý', reached:true },
-    { lbl:'Xử lý',     name: xlName,                                 reached:daXuLy, active:daXuLy && !hoanTat },
-    { lbl:'Hoàn tất',  name: htName,                                 reached:hoanTat }
+    { lbl:'Người tạo', name: s.nguoi_tao_ten || '—',                reached:true,    t:s.created_at },
+    { lbl:'Giao việc', name: s.nguoi_phu_trach_ten || 'Ban quản lý', reached:true,    t:s.thoi_gian_phan_hoi },
+    { lbl:'Xử lý',     name: xlName,                                 reached:daXuLy,  active:daXuLy && !hoanTat, t:s.thoi_gian_xu_ly_xong },
+    { lbl:'Hoàn tất',  name: htName,                                 reached:hoanTat, t:s.thoi_gian_dong }
   ];
   return `<div style="display:flex;margin-top:11px;border-top:1px solid #EEF2F6;padding-top:11px">
     ${steps.map((st,i)=>{
@@ -539,6 +544,7 @@ function bgqlSuVuProgress(s){
       const dotColor = st.reached ? (st.active ? '#D97706' : '#1D9E75') : '#CBD5E1';
       const leftLine = i===0 ? 'transparent' : (steps[i].reached ? '#1D9E75' : '#E2E8F0');
       const rightLine = last ? 'transparent' : (steps[i+1].reached ? '#1D9E75' : '#E2E8F0');
+      const mocT = fmtMoc(st.t);
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0">
         <div style="display:flex;align-items:center;width:100%">
           <div style="flex:1;height:2px;background:${leftLine}"></div>
@@ -547,23 +553,10 @@ function bgqlSuVuProgress(s){
         </div>
         <div style="font-size:11px;font-weight:600;color:${st.reached?'#0F2E45':'#94A3B8'};margin-top:5px">${st.lbl}</div>
         <div style="font-size:10.5px;color:#475569;line-height:1.3;margin-top:3px;word-break:break-word">${escHtml(st.name)}</div>
+        <div style="font-size:9.5px;color:#94A3B8;line-height:1.2;margin-top:2px;font-variant-numeric:tabular-nums">${mocT || '—'}</div>
       </div>`;
     }).join('')}
   </div>`;
-}
-// [v17.87] 3 mốc thời gian cho admin/QL theo dõi vòng đời sự vụ:
-//   Gửi (created_at) · Cơ động xử lý xong (thoi_gian_xu_ly_xong) · CH xác nhận hoàn tất (thoi_gian_dong).
-//   Mốc chưa tới hiện "—". Dữ liệu có sẵn trong fn_su_vu_list, không đụng DB.
-function bgqlSuVuMocNgay(s){
-  const f = (t) => { if(!t) return '—'; const d=new Date(t); return pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes()); };
-  const items = [
-    ['Gửi', s.created_at],
-    ['Cơ động xử lý', s.thoi_gian_xu_ly_xong],
-    ['CH xác nhận HT', s.thoi_gian_dong]
-  ];
-  return `<div class="bgql-sv-moc">` + items.map(([lbl,t]) =>
-    `<span class="bgql-sv-moc-i"><span class="bgql-sv-moc-l">${lbl}</span><span class="bgql-sv-moc-v${t?'':' none'}">${f(t)}</span></span>`
-  ).join('') + `</div>`;
 }
 
 function bgqlSuVuCardHtml(s){
@@ -626,7 +619,6 @@ function bgqlSuVuCardHtml(s){
     <div class="bgql-card-meta"><b>${escHtml(s.ten_ch_snapshot||s.ma_ch||'?')}</b> · ${bgqlFmtTimeShort(s.created_at)}${s.ma_sv?` · <span style="color:#94A3B8">#${escHtml(s.ma_sv)}</span>`:''}</div>
     ${s.mo_ta?`<div class="bgql-card-desc"><span>Chi tiết:</span> ${escHtml((s.mo_ta||'').replace(/\s+/g,' ').trim().slice(0,160))}${(s.mo_ta||'').trim().length>160?'…':''}</div>`:''}
     ${bgqlSuVuProgress(s)}
-    ${bgqlSuVuMocNgay(s)}
     ${s.phan_hoi_xu_ly?`<div class="bgql-reply">
       <div class="bgql-reply-l">Phản hồi · ${escHtml(s.nguoi_phu_trach_ten||'QL')}</div>
       <div class="bgql-reply-txt">${escHtml(s.phan_hoi_xu_ly).slice(0,300)}</div>
