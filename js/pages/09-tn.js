@@ -306,7 +306,9 @@ try{ window.tnLeaveGuard=tnLeaveGuard; window.tnLeaveStay=tnLeaveStay; window.tn
 
 // ═══ ADMIN CONSOLE ═══════════════════════════════════════════════════════
 function tnAdminInitPage(){
-  if(!(typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN')){ try{goToPage('home');}catch(e){} return; }
+  // [v18.163] cho admin một phần có quyền tn.quanly (ngoài ADMIN đầy đủ) — vẫn còn lớp mật khẩu + RPC kiểm quyền
+  var _tnQL = (typeof coQuyen==='function') ? coQuyen('tn.quanly') : (typeof SESSION!=='undefined'&&SESSION&&SESSION.vaiTro==='ADMIN');
+  if(!_tnQL){ try{goToPage('home');}catch(e){} return; }
   TN.ma=SESSION.ma;
   if(TN.pw) tnAdminShell(); else tnAdminGate();
 }
