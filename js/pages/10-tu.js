@@ -202,9 +202,10 @@ function tuSendFb(){
 
 // ═══ ADMIN ═══════════════════════════════════════════════════════════════
 function tuAdminInitPage(){
-  // [v18.68] Console mở cho ADMIN + QLNS (server RPC cũng đã cho phép 2 vai trò này)
-  var _r=(typeof SESSION!=='undefined'&&SESSION)?String(SESSION.vaiTro||'').toUpperCase():'';
-  if(_r!=='ADMIN' && _r!=='QLNS'){ try{goToPage('home');}catch(e){} return; }
+  // [v18.164] Gate theo quyền tu.quanly (ADMIN luôn có) — khớp RPC + cấp linh hoạt. Vẫn còn lớp mật khẩu + RPC kiểm quyền.
+  var _tuQL = (typeof coQuyen==='function') ? coQuyen('tu.quanly')
+            : (typeof SESSION!=='undefined'&&SESSION&&(String(SESSION.vaiTro||'').toUpperCase()==='ADMIN'||String(SESSION.vaiTro||'').toUpperCase()==='QLNS'));
+  if(!_tuQL){ try{goToPage('home');}catch(e){} return; }
   TU.ma=SESSION.ma;
   if(TU.pw) tuAdminShell(); else tuAdminGate();
 }
