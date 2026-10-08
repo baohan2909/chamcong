@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.164',
+  'sys.cache_version': 'v18.165',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2730,7 +2730,14 @@ function _renderGioCongTable(){
       if (khacCH) {
         chHtml = `<div style="line-height:1.4">${tenVao} →</div><div style="line-height:1.4">${tenRa}</div>`;
       } else {
-        const ten = tenVao || tenRa || '--';
+        // [v18.165] Cùng CH: ca cắt qua đêm tạo mốc 00:00 giả (không có log thật tại 00:00
+        //   → _teamVao rỗng, nếu chọn tenVao sẽ MẤT nhãn "Đội SALE/Cơ Động"). Gộp nhãn đội từ
+        //   cả vào lẫn ra (_teamVao || _teamRa) để đoạn 00:00→ra vẫn hiện "Đội X - CH".
+        const _tenPlain = p.tenCHVao || p.tenCHRa || '';
+        const _teamCap = _teamVao || _teamRa;
+        const ten = _tenPlain
+          ? (typeof _fmtChPerLog === 'function' ? _fmtChPerLog(_tenPlain, _teamCap) : escHtml(_tenPlain))
+          : '--';
         // [FIX #3] Bỏ cắt cụt (ellipsis/nowrap) → cho tên cửa hàng xuống dòng, hiện ĐẦY ĐỦ trên điện thoại
         chHtml = `<div style="line-height:1.4;word-break:break-word">${ten}</div>`;
       }
