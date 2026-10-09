@@ -514,12 +514,13 @@ function tnAdminRenderMain(){
   const root=document.getElementById('tn-ad-main'); if(!root) return;
   if(!TN.adFilter)TN.adFilter='all'; if(!TN.adSort)TN.adSort={col:'hoTen',dir:1};
   const list=TN.adData.danhSach||[];
-  const c={xem:0,xn:0,yk:0}; list.forEach(p=>{ if(p.xemLuc)c.xem++; if(p.xacNhanLuc)c.xn++; if(p.coYkien && p.chuaTraLoi)c.yk++; });
+  // [v18.167] c.yk = TẤT CẢ phiếu có ý kiến (đã/chưa phản hồi); c.ykCho = còn chờ QL trả lời (NV nhắn cuối)
+  const c={xem:0,xn:0,yk:0,ykCho:0}; list.forEach(p=>{ if(p.xemLuc)c.xem++; if(p.xacNhanLuc)c.xn++; if(p.coYkien){c.yk++; if(p.chuaTraLoi)c.ykCho++;} });
   const den=TN.adData.hienAllDen? new Date(TN.adData.hienAllDen):null;
   const hienAllEff=!!TN.adData.hienAll && (!den || den.getTime()>Date.now());
   // [v18.36] thẻ số = FILTER (bấm để lọc)
   let h='<div class="tn-stats">'+
-    _tnStatF('all',list.length,'Phiếu')+_tnStatF('xem',c.xem,'Đã xem')+_tnStatF('xacnhan',c.xn,'Đã xác nhận')+_tnStatF('ykien',c.yk,'Ý kiến chờ',c.yk>0)+'</div>';
+    _tnStatF('all',list.length,'Phiếu')+_tnStatF('xem',c.xem,'Đã xem')+_tnStatF('xacnhan',c.xn,'Đã xác nhận')+_tnStatF('ykien',c.yk,'Ý kiến',c.ykCho>0)+'</div>';
   // [v18.36] Mở tất cả + hẹn giờ tự tắt
   h+='<div class="tn-card"><div class="tn-openall">'+
      '<label class="tn-tgl-lbl">Mở tất cả kỳ này <button class="tn-tgl'+(hienAllEff?' on':'')+'" onclick="tnAdOpenAll('+(!hienAllEff)+')"></button></label>'+
@@ -620,7 +621,7 @@ function tnTh(col,label,cls){ const s=TN.adSort; const arr=(s.col===col)?(s.dir>
 function tnAdSort(col){ const s=TN.adSort; if(s.col===col)s.dir=-s.dir; else {s.col=col;s.dir=1;} tnAdRenderTable(); }
 function tnAdFilterSort(list){
   let r=list.slice(); const f=TN.adFilter;
-  if(f==='xem')r=r.filter(p=>p.xemLuc); else if(f==='xacnhan')r=r.filter(p=>p.xacNhanLuc); else if(f==='ykien')r=r.filter(p=>p.coYkien&&p.chuaTraLoi);
+  if(f==='xem')r=r.filter(p=>p.xemLuc); else if(f==='xacnhan')r=r.filter(p=>p.xacNhanLuc); else if(f==='ykien')r=r.filter(p=>p.coYkien);
   // [Request 4] tìm tên/mã + lọc cửa hàng
   const q=(TN.adSearch||'').trim().toLowerCase();
   if(q) r=r.filter(p=>(String(p.hoTen||'')+' '+String(p.maNV||'')).toLowerCase().includes(q));
@@ -661,6 +662,13 @@ function tnAdOpenAll(on){
   });
 }
 function tnPill(p){
+  // [v18.167] Phiếu có ý kiến: phân biệt theo người nhắn CUỐI.
+  //   NV nhắn cuối (chuaTraLoi) → "Có ý kiến" (chờ QL); QL nhắn cuối → "Đã phản hồi".
+  if(p.coYkien){
+    return p.chuaTraLoi
+      ? '<span class="tn-pill p-fb">Có ý kiến</span>'
+      : '<span class="tn-pill p-rep">Đã phản hồi</span>';
+  }
   const s=p.trangThai;
   const m={AN:['p-hid','Chưa mở'],MO:['p-hid','Đã mở'],DA_XEM:['p-seen','Đã xem'],DA_XAC_NHAN:['p-ok','Đã xác nhận'],CO_YKIEN:['p-fb','Có ý kiến'],HOAN_TAT:['p-ok','Hoàn tất']}[s]||['p-hid',s];
   return '<span class="tn-pill '+m[0]+'">'+m[1]+'</span>';
