@@ -497,6 +497,16 @@ body.ns18-shell #page-giocong.ns18 .stat-val{font-size:clamp(28px,9vw,34px)!impo
 #page-giocong.ns18 .gc-gio,#page-giocong.ns18 .gc-tong{font-variant-numeric:tabular-nums}
 #page-giocong.ns18 .gc-table tbody tr:active td{background:var(--teal-tint)}
 
+/* ── [v18.168] MOBILE hẹp (≤480px): bảng Giờ công fit đủ, cột Cửa hàng không bị cắt.
+   Giảm padding + bỏ max-width cứng 140px của ô cuối để tên CH wrap đầy đủ, bảng vừa khung. ── */
+@media (max-width:480px){
+  #page-giocong.ns18 .gc-table{font-size:11px}
+  #page-giocong.ns18 .gc-table td,
+  #page-giocong.ns18 .gc-table th{padding:9px 5px!important}
+  #page-giocong.ns18 .gc-table td:last-child,
+  #page-giocong.ns18 .gc-table th:last-child{max-width:none!important;white-space:normal;word-break:break-word}
+}
+
 /* ── U3. GIỜ CÔNG QL: control cân xứng + nhịp dọc 10–12px + KPI đều tầm ── */
 #page-giocong-ql.ns18 .gcql-mode-tabs{display:flex!important;gap:8px!important;margin-top:12px!important}
 #page-giocong-ql.ns18 .gcql-mode-tab{flex:1;padding:10px 8px!important;border-radius:10px!important;font-size:13px!important}
