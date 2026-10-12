@@ -16,6 +16,7 @@ const PQ_GROUPS = [
     { id:'giocong.sua_lich', ten:'Sửa lịch chấm công', can:['giocong.xem_all'] },
     { id:'giocong.duyet_cb', ten:'Duyệt cảnh báo chấm công', can:['giocong.xem_all'] },
     { id:'giocong.xem_ch',   ten:'Xem giờ công cửa hàng (tài khoản cửa hàng)' },
+    { id:'huongdan.xem',     ten:'Xem Hướng dẫn & xử lý sự cố chấm công', gd:true },   // [v18.170]
   ]},
   { id:'lichca', ten:'Lịch ca', quyen:[
     { id:'lichca.xem_minh', ten:'Xem lịch của mình', gd:true },
@@ -91,7 +92,8 @@ const PQ_PRESETS = {
 const PQ_DEF_NV = ['chamcong.tu_cham','giocong.xem_minh','bando.xem','lichca.xem_minh',
                    'donnghi.tao','bangiao.ca','muanon.xem','chuongtrinh.xem','giaodien.dung',
                    // [v18.153] cá nhân/thiết yếu NV-CTV đang thấy hôm nay
-                   'phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'];
+                   'phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem',
+                   'huongdan.xem'];   // [v18.170] hướng dẫn chấm công — bật mặc định mọi NV/CTV
 const PQ_DEFAULT = {
   ADMIN: PQ_ALL_IDS.slice(),
   QLNS:  ['nhansu.xem','nhansu.quanly','lichca.quanly','lichca.hoatdong','duyetyc.duyet','giocong.xem_all',
@@ -99,17 +101,17 @@ const PQ_DEFAULT = {
           'banhang.phien','banhang.dashboard','bangiao.quanly','bangiao.muckiemtra','muanon.xem','muanon.quanly',
           // [v18.153] QLNS đang thấy hôm nay
           'khuonmat.dangky','bosung.kiemsoat','tn.xem_minh','tu.xem_minh','tu.quanly',
-          'livestream.xem','livestream.kiemsoat','livestream.phanhoi'],
+          'livestream.xem','livestream.kiemsoat','livestream.phanhoi','huongdan.xem'],
   QLBH:  ['banhang.phien','banhang.dashboard','bangiao.quanly','muanon.xem','muanon.quanly','donnghi.tao',
           'nhansu.giamsat','lichca.hoatdong',
           'nhansu.xem',   // [v18.154] "Tổng quan nhân sự" đổi gate sang nhansu.xem từ v18.32 — bổ sung kẻo bật restrictive là QLBH mất tile
           // [v18.153] QLBH đang thấy hôm nay
-          'khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'],
+          'khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem','huongdan.xem'],
   CUA_HANG: ['banhang.phien','banhang.dashboard','donhang.nhan','bangiao.ca','muanon.xem','muanon.quanly',
           // [v18.154] các tile QLNS/CUA_HANG mà cửa hàng đang thấy theo vai trò (kẻo bật restrictive là mất)
           'nhansu.xem','lichca.quanly','duyetyc.duyet','nhansu.giamsat','diem.xem',
           // [v18.153] cửa hàng đang thấy hôm nay
-          'giocong.xem_ch','donnghi.xem_ch','livestream.xem'],
+          'giocong.xem_ch','donnghi.xem_ch','livestream.xem','huongdan.xem'],
   NV:  PQ_DEF_NV.slice(), CTV: PQ_DEF_NV.slice(),
 };
 function pqDefaultFor(cd){

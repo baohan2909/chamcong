@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.169',
+  'sys.cache_version': 'v18.170',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -367,6 +367,7 @@ const PAGE_TITLES={
   'ls-feedback':'CHI TIẾT PHẢN HỒI',   // [v18.63]
   'bs-kiemsoat':'KIỂM SOÁT BỔ SUNG',   // [v18.71]
   'theodoi':'THEO DÕI PHONG ĐỘ',       // [v18.86]
+  'huongdan':'HƯỚNG DẪN CHẤM CÔNG',    // [v18.170]
   'donhang':   '',
   'donhang-nhan': '',
   'donhang-ql': '',
@@ -629,6 +630,8 @@ const HUB_GROUPS = {
     items: [
       { label:'Chấm công',          desc:'Vào ca / ra ca',        ic:_hubIc.cc,    roles:['NV','CTV'],               quyen:'chamcong.tu_cham', act:()=>goToPage('chamcong') },
       { label:'Giờ công',           desc:'Bảng công của tôi',     ic:_hubIc.clock, roles:['NV','CTV'],               quyen:'giocong.xem_minh', act:()=>navGioCong() },
+      // [v18.170] Cẩm nang hướng dẫn xử lý lỗi chấm công — trang tĩnh, mặc định bật mọi người (quyền nền huongdan.xem)
+      { label:'Hướng dẫn & xử lý sự cố chấm công', desc:'Xử lý lỗi chấm công thường gặp', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>', roles:['NV','CTV','QLNS','QLBH','CUA_HANG','ADMIN'], quyen:'huongdan.xem', act:()=>goToPage('huongdan') },
       { label:'Bản đồ cửa hàng',    desc:'Chỉ đường đến cửa hàng', ic:_hubIc.map,   roles:['NV','CTV'],               quyen:'bando.xem',        act:()=>goToPage('bandochidung') },
       { label:'Lịch ca của tôi',    desc:'Ca làm trong tuần',     ic:_hubIc.cal,   roles:['NV','CTV'],               quyen:'lichca.xem_minh',  act:()=>moLichCa() },
       { label:'Bổ sung ca',         desc:'Đề nghị thêm ca',       ic:_hubIc.plus,  roles:['NV','CTV'],               quyen:'donnghi.tao',      act:()=>moModalBoSungCa() },
@@ -692,7 +695,8 @@ const HUB_GROUPS = {
 //   Dưới restrictive VẪN theo vai trò (không đòi phân riêng) → không khóa nhầm chức năng thiết yếu
 //   (vd NV cấu hình thiếu → mất nút chấm công). GIỮ ĐỒNG BỘ với gd:true trong js/admin/07-phanquyen.js.
 var PQ_GD_QUYEN = ['chamcong.tu_cham','giocong.xem_minh','lichca.xem_minh','donnghi.tao','chuongtrinh.xem',
-                   'giaodien.dung','phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem'];
+                   'giaodien.dung','phongdo.xem_minh','khuonmat.dangky','tn.xem_minh','tu.xem_minh','livestream.xem',
+                   'huongdan.xem'];   // [v18.170]
 function _hubItemVisible(it){
   if(typeof SESSION==='undefined'||!SESSION) return false;
   if(it.setting && _getSetting(it.setting, true) === false) return false; // [v17.67] tắt theo công tắc tính năng
