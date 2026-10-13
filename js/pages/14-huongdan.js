@@ -16,31 +16,31 @@ var HD_DEFAULT = {
   luuY: "**Lưu ý quan trọng:** Chấm công xong, hãy qua tab **GIỜ CÔNG** kiểm tra giờ vừa chấm đã được ghi nhận chưa rồi mới tắt app — tránh thoát app khi hệ thống chưa ghi nhận.",
   muc: [
     { tieuDe:"Chấm nhầm loại ca / cửa hàng",
-      noiDung:"**Không** dùng Xin bổ sung ca. Nhắn thông tin vào **nhóm** để được hỗ trợ, theo mẫu:\n\n1. Cửa hàng: Quảng Ngãi 2\n2. Hạng mục hỗ trợ: Chấm công\n3. Nội dung chi tiết:\n- Ngày: 11/10/2026\n- Thời gian: 7:30 – 17:30\n- Nhân viên: NS01253 – Nguyễn Văn Linh\n- Mô tả vấn đề: Chấm nhầm cửa hàng",
+      noiDung:"**Không** dùng Xin bổ sung ca. Nhắn thông tin vào **nhóm** để được hỗ trợ, theo mẫu:\n\n```\n1. Cửa hàng: Quảng Ngãi 2\n2. Hạng mục hỗ trợ: Chấm công\n3. Nội dung chi tiết:\n   - Ngày: 11/10/2026\n   - Thời gian: 7:30 – 17:30\n   - Nhân viên: NS01253 – Nguyễn Văn Linh\n   - Mô tả vấn đề: Chấm nhầm cửa hàng\n```",
       anh:[] },
     { tieuDe:"Quên chấm công (vào ca / ra ca)",
-      noiDung:"Khi đã đi làm nhưng quên chấm vào hoặc ra ca.\n\n- Vào **Thêm → Xin bổ sung ca**.\n- Chọn **đúng** thông tin của ca bị thiếu: **ngày làm việc, giờ chấm, loại ca, cửa hàng**; ghi lý do (≥10 ký tự).\n- ⚠ Khi nhớ ra đã quên chấm, **KHÔNG chấm bù tại chỗ** (vì sai vị trí & thời gian) — phải dùng Xin bổ sung ca.",
-      anh:["assets/huongdan/quen-cham.png?v=18.172"] },
+      noiDung:"Khi đã đi làm nhưng quên chấm vào hoặc ra ca.\n\n- Vào **Thêm ▸ Xin bổ sung ca**.\n- Chọn **đúng** thông tin của ca bị thiếu: **ngày làm việc, giờ chấm, loại ca, cửa hàng**; ghi lý do (≥10 ký tự).\n- ⚠ Khi nhớ ra đã quên chấm, **KHÔNG chấm bù tại chỗ** (vì sai vị trí & thời gian) — phải dùng Xin bổ sung ca.",
+      anh:["assets/huongdan/quen-cham.png?v=18.173"] },
     { tieuDe:"Hỗ trợ 2 cửa hàng trong ngày — gần (< 50km)",
-      noiDung:"Chấm bình thường theo đúng cửa hàng đang đứng.\n\n**Làm tại Hai Bà Trưng**\n- Vào ca → Hai Bà Trưng\n- Ra ca → Hai Bà Trưng\n\n**Làm tại Nguyễn Trãi 3**\n- Vào ca → Nguyễn Trãi 3\n- Ra ca → Nguyễn Trãi 3\n\nSẽ có cảnh báo — Ban quản lý sẽ duyệt.",
+      noiDung:"Chấm bình thường theo đúng cửa hàng đang đứng.\n\n**Làm tại Hai Bà Trưng**\nVào ca → Hai Bà Trưng\nRa ca → Hai Bà Trưng\n\n**Làm tại Nguyễn Trãi 3**\nVào ca → Nguyễn Trãi 3\nRa ca → Nguyễn Trãi 3\n\nSẽ có cảnh báo — Ban quản lý sẽ duyệt.",
       anh:[] },
     { tieuDe:"Đi hỗ trợ cửa hàng khác — xa (> 50km)",
-      noiDung:"**Trường hợp A — tới cửa hàng 2 nhưng chưa làm ngay (chỉ di chuyển)**\n- Làm Hai Bà Trưng: Vào ca → Hai Bà Trưng · Ra ca → Hai Bà Trưng\n- Di chuyển hỗ trợ Cà Mau: Vào ca → Cơ động - Hai Bà Trưng · Ra ca → Cơ động - Cà Mau\n\n**Trường hợp B — tới cửa hàng 2 và làm việc luôn**\n- Làm Hai Bà Trưng: Vào ca → Hai Bà Trưng · Ra ca → Hai Bà Trưng\n- Di chuyển: Vào ca → Cơ động - Hai Bà Trưng · Ra ca → Cơ động - Cà Mau\n- Làm tại Cà Mau: Vào ca → Cà Mau · Ra ca → Cà Mau\n\nNhân viên ghi chú lý do; có cảnh báo — Ban quản lý sẽ duyệt.",
+      noiDung:"**Trường hợp A — tới cửa hàng 2 nhưng chưa làm ngay (chỉ di chuyển)**\n\n**Làm tại Hai Bà Trưng**\nVào ca → Hai Bà Trưng\nRa ca → Hai Bà Trưng\n\n**Di chuyển hỗ trợ Cà Mau**\nVào ca → Cơ động - Hai Bà Trưng\nRa ca → Cơ động - Cà Mau\n\n**Trường hợp B — tới cửa hàng 2 và làm việc luôn**\n\n**Làm tại Hai Bà Trưng**\nVào ca → Hai Bà Trưng\nRa ca → Hai Bà Trưng\n\n**Di chuyển hỗ trợ Cà Mau**\nVào ca → Cơ động - Hai Bà Trưng\nRa ca → Cơ động - Cà Mau\n\n**Làm tại Cà Mau**\nVào ca → Cà Mau\nRa ca → Cà Mau\n\nNhân viên ghi chú lý do; có cảnh báo — Ban quản lý sẽ duyệt.",
       anh:[] },
     { tieuDe:"Cơ động hoặc nhân viên đi hỗ trợ ≥ 3 cửa hàng trong 1 ngày",
-      noiDung:"Ví dụ: Hai Bà Trưng → Nguyễn Trãi 3 → Dân Chủ → Nguyễn Trãi 5…\n\n**Chỉ chấm 1 lần vào — 1 lần ra**\n- Vào ca → Cơ động - Hai Bà Trưng (cửa hàng đầu)\n- Ra ca → Cơ động - Nguyễn Trãi 5 (cửa hàng cuối)\n\nGhi chú lý do + lịch trình di chuyển; có cảnh báo — Ban quản lý sẽ duyệt.",
+      noiDung:"Ví dụ: Hai Bà Trưng, Nguyễn Trãi 3, Dân Chủ, Nguyễn Trãi 5…\n\n**Chỉ chấm 1 lần vào — 1 lần ra**\nVào ca → Cơ động - Hai Bà Trưng (cửa hàng đầu)\nRa ca → Cơ động - Nguyễn Trãi 5 (cửa hàng cuối)\n\nGhi chú lý do + lịch trình di chuyển; có cảnh báo — Ban quản lý sẽ duyệt.",
       anh:[] },
     { tieuDe:"Ca kéo dài qua ngày hôm sau (ca đêm)",
-      noiDung:"Cứ chấm vào ca và ra ca qua ngày như bình thường.\n\n- 05/11 — Vào ca 07:30 → Hai Bà Trưng\n- 06/11 — Ra ca 00:50 → Hai Bà Trưng\n\nGhi chú lý do; có cảnh báo — Ban quản lý sẽ duyệt.",
+      noiDung:"Cứ chấm vào ca và ra ca qua ngày như bình thường.\n\n**Ví dụ**\nVào ca → 05/11 lúc 07:30 · Hai Bà Trưng\nRa ca → 06/11 lúc 00:50 · Hai Bà Trưng\n\nGhi chú lý do; có cảnh báo — Ban quản lý sẽ duyệt.",
       anh:[] },
     { tieuDe:"Bị \"Từ chối truy cập vị trí\"",
-      noiDung:"Bật lại quyền vị trí cho trình duyệt:\n\n- **iPhone (Safari):** Cài đặt → Ứng dụng → Safari → Vị trí → Cho phép.\n- **Android (Chrome):** Cài đặt trình duyệt → Quyền trang web → Vị trí → Cho phép.",
-      anh:["assets/huongdan/vi-tri.png?v=18.172"] },
+      noiDung:"Bật lại quyền vị trí cho trình duyệt:\n\n- **iPhone (Safari):** Cài đặt ▸ Ứng dụng ▸ Safari ▸ Vị trí ▸ Cho phép.\n- **Android (Chrome):** Cài đặt trình duyệt ▸ Quyền trang web ▸ Vị trí ▸ Cho phép.",
+      anh:["assets/huongdan/vi-tri.png?v=18.173"] },
     { tieuDe:"App lỗi, chấm mãi không được",
-      noiDung:"- Mở app chấm công từ trình duyệt web: https://baohan2909.github.io/chamcong/\n- Vẫn không được → dùng **bất kỳ điện thoại nào** truy cập đường link trên, đăng nhập tài khoản của mình để chấm công.",
+      noiDung:"- Mở app chấm công từ trình duyệt web: https://baohan2909.github.io/chamcong/\n- Vẫn không được: dùng **bất kỳ điện thoại nào** truy cập đường link trên, đăng nhập tài khoản của mình để chấm công.",
       anh:[] },
     { tieuDe:"Nhân viên đi hỗ trợ đội SALE",
-      noiDung:"- Vào ca → Đội SALE 01 - Hai Bà Trưng\n- Ra ca → Đội SALE 01 - Hai Bà Trưng\n\n⚠ Phải chọn **đội SALE** trước, sau đó mới chọn **cửa hàng SALE** — để tránh ghi nhận dữ liệu nhầm vào cửa hàng.",
+      noiDung:"Vào ca → Đội SALE 01 - Hai Bà Trưng\nRa ca → Đội SALE 01 - Hai Bà Trưng\n\n⚠ Phải chọn **đội SALE** trước, sau đó mới chọn **cửa hàng SALE** — để tránh ghi nhận dữ liệu nhầm vào cửa hàng.",
       anh:[] }
   ]
 };
@@ -49,23 +49,49 @@ var HD_DEFAULT = {
 function hdEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function hdEscTa(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function hdFmtInline(s){ return hdEsc(s).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); }
+// Dòng "khung xanh": bắt đầu bằng "Vào ca →" / "Ra ca →" (có mũi tên)
+function hdIsRow(s){ var t=s.replace(/^\s*-\s*/,''); return /^(vào|ra)\s*ca\b/i.test(t) && t.indexOf('→')>=0; }
 function hdFmt(raw){
-  var esc = hdEsc(raw||'').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
-  var blocks = esc.split(/\n\s*\n/), html='';
+  // Tách cặp ``` làm "khung mẫu" (verbatim), phần còn lại format thường
+  var parts = String(raw||'').split(/```/), html='';
+  for(var p=0;p<parts.length;p++){
+    if(p%2===1){ html += '<div class="hd-tpl">'+hdEsc(parts[p].replace(/^\n/,'').replace(/\n+$/,''))+'</div>'; }
+    else html += hdFmtBlocks(parts[p]);
+  }
+  return html;
+}
+function hdFmtBlocks(text){
+  var esc = hdEsc(text).replace(/->/g,'→').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  var blocks = esc.split(/\n\s*\n/), out='';
   blocks.forEach(function(blk){
     var lines = blk.split('\n').map(function(x){return x.replace(/\s+$/,'');}).filter(function(x){return x.trim()!=='';});
     if(!lines.length) return;
-    var buf=[], ul=[];
-    function flush(){ if(ul.length){ buf.push('<ul>'+ul.join('')+'</ul>'); ul=[]; } }
-    lines.forEach(function(x){
-      var t=x.replace(/^\s+/,'');
-      if(/^-\s+/.test(t)){ var it=t.replace(/^-\s+/,''); ul.push('<li'+(/^⚠/.test(it)?' class="hd-warn"':'')+'>'+it+'</li>'); }
-      else { flush(); buf.push('<p'+(/^⚠/.test(t)?' class="hd-warn"':'')+'>'+t+'</p>'); }
-    });
-    flush();
-    html += buf.join('');
+    if(lines.some(hdIsRow)){
+      // KHUNG XANH (flow card): dòng Vào/Ra = hàng; dòng khác = tiêu đề khung
+      var inner='';
+      lines.forEach(function(x){
+        if(hdIsRow(x)){
+          var ai=x.indexOf('→'), left=x.slice(0,ai).replace(/^\s*-\s*/,'').trim(), right=x.slice(ai+1).trim();
+          var teal=/cơ\s*động|đội\s*sale/i.test(right);
+          inner += '<div class="hd-row"><span class="hd-k">'+left+'</span><span class="hd-v">→ '+(teal?'<span class="hd-co">'+right+'</span>':right)+'</span></div>';
+        } else {
+          inner += '<div class="hd-ft">'+x.replace(/^\s*-\s*/,'')+'</div>';
+        }
+      });
+      out += '<div class="hd-flow">'+inner+'</div>';
+    } else {
+      var buf=[], ul=[];
+      function flush(){ if(ul.length){ buf.push('<ul>'+ul.join('')+'</ul>'); ul=[]; } }
+      lines.forEach(function(x){
+        var t=x.replace(/^\s+/,'');
+        if(/^-\s+/.test(t)){ var it=t.replace(/^-\s+/,''); ul.push('<li'+(/^⚠/.test(it)?' class="hd-warn"':'')+'>'+it+'</li>'); }
+        else { flush(); buf.push('<p'+(/^⚠/.test(t)?' class="hd-warn"':'')+'>'+t+'</p>'); }
+      });
+      flush();
+      out += buf.join('');
+    }
   });
-  return html;
+  return out;
 }
 
 // ─── Đọc / ghi app_settings (pattern slipcfg) ───
@@ -139,7 +165,10 @@ function hdRenderEditor(){
   var h='';
   h += '<label class="hd-ed-lbl">Lưu ý quan trọng (ô đầu trang)</label>';
   h += '<textarea class="hd-ed-ta" rows="3" oninput="hdEditData.luuY=this.value">'+hdEscTa(hdEditData.luuY||'')+'</textarea>';
-  h += '<div class="hd-ed-tip">Mẹo: đầu dòng <b>- </b> = gạch đầu dòng · <b>**chữ**</b> = in đậm · dòng trống = ngắt đoạn.</div>';
+  h += '<div class="hd-ed-tip"><b>Mẹo định dạng:</b><br>'
+     + '• Đầu dòng <b>- </b> = gạch đầu dòng · <b>**chữ**</b> = in đậm · dòng trống = ngắt đoạn.<br>'
+     + '• Dòng bắt đầu <b>Vào ca →</b> hoặc <b>Ra ca →</b> sẽ tự thành <b>khung xanh</b> (chữ "Cơ động"/"Đội SALE" được tô màu).<br>'
+     + '• Muốn có <b>khung mẫu</b> (ô xám, như mẫu tin nhắn): để đoạn đó giữa hai dòng chỉ gõ 3 dấu huyền <b>```</b>.</div>';
   h += '<div class="hd-ed-seclbl">Các tình huống ('+hdEditData.muc.length+')</div>';
   hdEditData.muc.forEach(function(m,i){
     h += '<div class="hd-ed-card">';
