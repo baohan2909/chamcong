@@ -80,8 +80,11 @@
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') _nsReloadIfSafe();
     });
-    // (2) Camera / quét mặt vừa đóng (chấm công xong) → an toàn để reload.
-    window.nsReloadIfPending = function () { _nsReloadIfSafe(); };
+    // (2) KHÔNG reload lúc camera/quét mặt vừa ĐÓNG — vì bản ghi chấm công CHƯA gửi xong (camera đóng
+    //     TRƯỚC khi fn_ghi_cham_cong_v2 chạy). Reload "sau chấm công" đã do startCountdown() lo — nó CHỈ
+    //     chạy KHI SERVER XÁC NHẬN ghi công thành công (giờ công đã vào tab Giờ công). Giữ hàm no-op để
+    //     face engine gọi không lỗi. Trường hợp còn lại (giải trình, chỉ xem) → reload khi app chuyển nền.
+    window.nsReloadIfPending = function () { /* no-op: chờ app chuyển nền, hoặc startCountdown sau khi ghi công */ };
   });
   
   window.pwaApplyUpdate = function() {
