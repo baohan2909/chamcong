@@ -62,18 +62,26 @@
     
     let refreshing = false;
     function _nsReloadNow() { if (refreshing) return; refreshing = true; window.location.reload(); }
+    // [v18.177] TỰ CẬP NHẬT nhưng CHỌN THỜI ĐIỂM AN TOÀN để reload (NV không phải bấm banner,
+    //   cũng KHÔNG bị văng giữa lúc chấm công / quét khuôn mặt). SW mới activate nền → chỉ ĐÁNH DẤU
+    //   chờ; reload vào lúc: (1) app chuyển sang nền/ẩn (user không nhìn), (2) camera/quét mặt vừa đóng.
+    function _nsReloadIfSafe() {
+      if (!window._nsReloadPending || refreshing) return;
+      if (window._nsBusy) return;                         // đang mở camera / quét mặt → chờ
+      if (document.querySelector('.ns-face-modal')) return; // modal quét mặt đang mở → chờ
+      _nsReloadNow();
+    }
+    window._nsReloadIfSafe = _nsReloadIfSafe;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (refreshing) return;
-      // [FIX GỐC] KHÔNG reload khi NV đang quét khuôn mặt / mở camera (window._nsBusy)
-      // → chống "văng về màn hình chính" giữa lúc chấm công. Chờ camera đóng
-      //   (_faceStopStreams gọi window.nsReloadIfPending) rồi mới reload — lúc đó an toàn.
-      if (window._nsBusy) { window._nsReloadPending = true; return; }
-      _nsReloadNow();
+      window._nsReloadPending = true;                     // KHÔNG reload ngay — chờ thời điểm an toàn
     });
-    // Camera đóng / hết bận → nếu có bản mới đang chờ thì reload NGAY (không còn phá scan)
-    window.nsReloadIfPending = function () {
-      if (window._nsReloadPending && !window._nsBusy) _nsReloadNow();
-    };
+    // (1) App chuyển sang nền (ẩn) = lúc lý tưởng: reload ngầm, mở lại đã là bản mới (không ai thấy gián đoạn).
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') _nsReloadIfSafe();
+    });
+    // (2) Camera / quét mặt vừa đóng (chấm công xong) → an toàn để reload.
+    window.nsReloadIfPending = function () { _nsReloadIfSafe(); };
   });
   
   window.pwaApplyUpdate = function() {
