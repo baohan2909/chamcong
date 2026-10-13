@@ -48,7 +48,14 @@ var HD_DEFAULT = {
 // ─── Tiện ích ───
 function hdEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function hdEscTa(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function hdFmtInline(s){ return hdEsc(s).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); }
+// Biến link http/https trong nội dung thành <a> bấm được (mở tab mới). Chạy SAU hdEsc.
+function hdLinkify(s){
+  return String(s).replace(/(https?:\/\/[^\s<>"']+)/g, function(m){
+    var href=m.replace(/[),.;:!?]+$/,''), tail=m.slice(href.length);
+    return '<a href="'+href+'" target="_blank" rel="noopener" class="hd-a">'+href+'</a>'+tail;
+  });
+}
+function hdFmtInline(s){ return hdLinkify(hdEsc(s).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')); }
 // Dòng "khung xanh": bắt đầu bằng "Vào ca →" / "Ra ca →" (có mũi tên)
 function hdIsRow(s){ var t=s.replace(/^\s*-\s*/,''); return /^(vào|ra)\s*ca\b/i.test(t) && t.indexOf('→')>=0; }
 function hdFmt(raw){
@@ -61,7 +68,7 @@ function hdFmt(raw){
   return html;
 }
 function hdFmtBlocks(text){
-  var esc = hdEsc(text).replace(/->/g,'→').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  var esc = hdLinkify(hdEsc(text).replace(/->/g,'→').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'));
   var blocks = esc.split(/\n\s*\n/), out='';
   blocks.forEach(function(blk){
     var lines = blk.split('\n').map(function(x){return x.replace(/\s+$/,'');}).filter(function(x){return x.trim()!=='';});

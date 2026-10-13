@@ -47,6 +47,7 @@
 #page-huongdan .hd-cap{font-size:11.5px;color:var(--ink-3);margin-top:5px;text-align:center}
 
 #page-huongdan .hd-link{color:var(--teal-deep);font-weight:700;word-break:break-all}
+#page-huongdan .hd-a{color:var(--teal-deep);font-weight:700;text-decoration:underline;word-break:break-all}
 #page-huongdan .hd-foot{text-align:center;color:var(--ink-3);font-size:11.5px;margin-top:18px}
 
 /* Lightbox phóng to ảnh (append vào body) */
