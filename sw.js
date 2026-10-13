@@ -12,7 +12,7 @@
  *   4. User bấm → skipWaiting + reload
  */
 
-const CACHE_VERSION = 'nonson-v18.175';
+const CACHE_VERSION = 'nonson-v18.176';
 const CACHE_NAME = `nonson-cache-${CACHE_VERSION}`;
 // [ỔN ĐỊNH v18.49] Cache RIÊNG cho model khuôn mặt (self-host ~7.8MB) — BỀN qua mọi lần deploy
 // (KHÔNG bị xoá khi đổi CACHE_VERSION). Chỉ đổi khi CHÍNH model đổi → khỏi tải lại 7.8MB mỗi deploy.
@@ -32,9 +32,12 @@ const PRECACHE_ASSETS = [
 
 // ─── INSTALL ──────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
-  // [v13.26] AUTO skipWaiting — iOS Safari PWA standalone không tự update
-  // nếu chờ user bấm banner. Force takeover → controllerchange → auto reload.
-  self.skipWaiting();
+  // [v18.176] ĐÃ BỎ auto skipWaiting — nó ép controllerchange → RELOAD NGAY mỗi lần deploy,
+  //   làm VĂNG nhân viên đang chấm công / quét khuôn mặt (giai đoạn xin quyền camera + tải model
+  //   chưa được window._nsBusy bảo vệ). Nay SW mới CHỜ (waiting) → hiện banner "bản mới" → user tự
+  //   bấm Cập nhật (pwaApplyUpdate gửi message 'skipWaiting' ở dưới). iOS PWA vẫn nhận bản mới khi
+  //   đóng/mở lại app. => deploy KHÔNG còn tự reload giữa chừng.
+  // self.skipWaiting();   // (tắt có chủ đích — xem lý do trên)
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_ASSETS).catch(err => {
