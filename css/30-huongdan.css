@@ -52,3 +52,35 @@
 /* Lightbox phóng to ảnh (append vào body) */
 #hd-lb{position:fixed;inset:0;background:rgba(6,14,11,.86);display:flex;align-items:center;justify-content:center;padding:16px;z-index:99999;cursor:zoom-out}
 #hd-lb img{max-width:96vw;max-height:92vh;border-radius:10px;box-shadow:0 20px 60px -20px #000}
+
+/* ─── [v18.172] Nút soạn nội dung (admin) + màn soạn thảo ─── */
+#page-huongdan .hd-edit-btn{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer}
+#page-huongdan .hd-edit-btn:hover{background:rgba(255,255,255,.28)}
+
+#hd-ed-ov{position:fixed;inset:0;z-index:9300;background:var(--bg,#F7F5F1);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#hd-ed-ov .hd-ed-head{display:flex;align-items:center;gap:10px;padding:13px 14px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff}
+#hd-ed-ov .hd-ed-ttl{flex:1;font-size:16px;font-weight:800}
+#hd-ed-ov .hd-ed-headbtn{display:flex;gap:8px}
+#hd-ed-ov .hd-ed-x{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:9px;padding:8px 14px;font-size:13.5px;font-weight:700;cursor:pointer}
+#hd-ed-ov .hd-ed-save{background:#fff;color:#0C6B52;border:none;border-radius:9px;padding:8px 18px;font-size:13.5px;font-weight:800;cursor:pointer}
+#hd-ed-ov .hd-ed-save:disabled{opacity:.6}
+#hd-ed-ov .hd-ed-body{flex:1;overflow-y:auto;padding:14px;max-width:760px;width:100%;margin:0 auto}
+#hd-ed-ov .hd-ed-lbl{display:block;font-size:12px;font-weight:700;color:var(--ink,#14213A);margin:4px 2px 6px}
+#hd-ed-ov .hd-ed-tip{font-size:11.5px;color:var(--ink-3,#8A93A5);margin:6px 2px 2px;line-height:1.5}
+#hd-ed-ov .hd-ed-seclbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3,#8A93A5);margin:18px 2px 8px}
+#hd-ed-ov .hd-ed-inp,#hd-ed-ov .hd-ed-ta{width:100%;box-sizing:border-box;border:1px solid var(--line,#E6E2D8);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit;background:var(--surface,#fff);color:var(--ink,#14213A)}
+#hd-ed-ov .hd-ed-ta{resize:vertical;line-height:1.5;margin-top:8px}
+#hd-ed-ov .hd-ed-inp{font-weight:700}
+#hd-ed-ov .hd-ed-card{background:var(--surface,#fff);border:1px solid var(--line,#E6E2D8);border-radius:12px;padding:12px;margin-bottom:12px}
+#hd-ed-ov .hd-ed-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#hd-ed-ov .hd-ed-ord{width:24px;height:24px;border-radius:7px;background:var(--teal-tint,#EEF6F5);color:var(--teal-deep,#0C6B52);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none}
+#hd-ed-ov .hd-ed-mini{width:30px;height:30px;border:1px solid var(--line,#E6E2D8);background:var(--surface,#fff);border-radius:8px;cursor:pointer;font-size:12px;color:var(--teal-deep,#0C6B52)}
+#hd-ed-ov .hd-ed-mini:disabled{opacity:.35;cursor:default}
+#hd-ed-ov .hd-ed-del{border:1px solid #F3C9C9;background:#FEF2F2;color:#DC2626;border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+#hd-ed-ov .hd-ed-anh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+#hd-ed-ov .hd-ed-thumb{position:relative;width:74px;height:74px;border-radius:9px;overflow:hidden;border:1px solid var(--line,#E6E2D8);flex:none}
+#hd-ed-ov .hd-ed-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+#hd-ed-ov .hd-ed-thumb button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(220,38,38,.92);color:#fff;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#hd-ed-ov .hd-ed-addimg{display:inline-flex;align-items:center;justify-content:center;width:74px;height:74px;border:1.5px dashed var(--teal,#3FB6A8);border-radius:9px;color:var(--teal-deep,#0C6B52);font-size:12px;font-weight:700;cursor:pointer;text-align:center;flex:none}
+#hd-ed-ov .hd-ed-upld{font-size:12px;color:var(--ink-3,#8A93A5);align-self:center}
+#hd-ed-ov .hd-ed-addmuc{width:100%;border:1.5px dashed var(--teal,#3FB6A8);background:var(--teal-tint,#EEF6F5);color:var(--teal-deep,#0C6B52);border-radius:11px;padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;margin-bottom:24px}

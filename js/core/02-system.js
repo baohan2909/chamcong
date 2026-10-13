@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.171',
+  'sys.cache_version': 'v18.172',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -506,6 +506,7 @@ function goToPage(page){
   if(page==='giocong-ql') taiGioCongQL();
   if(page==='taikhoan'){renderTaiKhoan();_silentUpdateAccBadges();}
   if(page==='bandochidung')khoiDongBanDo();
+  if(page==='huongdan' && typeof hdRenderPage==='function') hdRenderPage();   // [v18.172] trang hướng dẫn render động từ app_settings
   if(page==='nhansu'){
     taiNhanSu();startNSPolling();
     // [v18.161] Tab "Lịch sử chấm công": gate theo quyền giocong.xem_all (ADMIN luôn có) thay vì chỉ vai trò ADMIN cứng → cấp linh hoạt
