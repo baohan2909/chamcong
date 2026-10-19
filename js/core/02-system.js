@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.178',
+  'sys.cache_version': 'v18.179',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2600,7 +2600,7 @@ function taiGioCong(){
   Promise.all([
     supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: SESSION.ma, p_thang: gcThang }),
     supa.from('cham_cong')
-      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
+      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh, loai')
       .eq('ma_nv', SESSION.ma)
       .gte('ngay', ngayDau)
       .lte('ngay', ngayCuoi)
@@ -2628,7 +2628,10 @@ function taiGioCong(){
       const hhmm = r.thoi_gian
         ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' })
         : '';
-      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm] = t;
+      // [v18.179] Khóa kèm cờ V/R (vào/ra) → tránh ĐỤNG KHÓA khi 1 log Vào và 1 log Ra CÙNG giờ
+      //   (vd Ra 14:30 thường + Vào 14:30 Cơ Động) khiến cặp giờ công thường "ăn" nhầm nhãn đội.
+      const _vr = /^VAO/i.test(r.loai || '') ? 'V' : (/^RA/i.test(r.loai || '') ? 'R' : '');
+      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm + '|' + _vr] = t;
     });
     document.getElementById('gc-so-ngay').textContent = d.soNgay || 0;
     const tongGioGiay = Math.round((Number(d.tongGio)||0) * 3600);
@@ -2725,8 +2728,8 @@ function _renderGioCongTable(){
       const _maNV = SESSION && SESSION.ma;
       // [v18.90] Nhãn cơ động/sale THEO TỪNG CA: khớp ngày|giờ với ghi_chu của log đó
       //   → ca thường cùng CH cùng ngày với 1 ca cơ động KHÔNG còn bị lây nhãn "Cơ Động".
-      const _teamVao = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioVao || '')]) || null;
-      const _teamRa  = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioRa  || '')]) || null;
+      const _teamVao = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioVao || '') + '|V']) || null;   // [v18.179] team của log VÀO tại giờ vào
+      const _teamRa  = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioRa  || '') + '|R']) || null;   // [v18.179] team của log RA tại giờ ra
       const tenVao = p.tenCHVao ? (typeof _fmtChPerLog === 'function' ? _fmtChPerLog(p.tenCHVao, _teamVao) : escHtml(p.tenCHVao)) : (p.maCHVao || '');
       const tenRa  = p.tenCHRa  ? (typeof _fmtChPerLog === 'function' ? _fmtChPerLog(p.tenCHRa,  _teamRa ) : escHtml(p.tenCHRa )) : (p.maCHRa  || '');
       // [v8.2 - hotfix] Hiện cả 2 CH nếu khác nhau, xuống dòng cho dễ đọc, KHÔNG cắt cụt
@@ -3186,7 +3189,7 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
   Promise.all([
     supa.rpc('fn_get_gio_cong_thang', { p_ma_nv: maNV, p_thang: thang }),
     supa.from('cham_cong')
-      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh')
+      .select('ma_nv, ngay, thoi_gian, ten_ch_snapshot, ghi_chu, device_info, ma_ch, ma_ch_dieu_chinh, loai')
       .eq('ma_nv', maNV).gte('ngay', thang + '-01').lte('ngay', thang + '-' + String(_lastD).padStart(2,'0'))
   ])
   .then(([gcRes, ccRes]) => {
@@ -3204,7 +3207,10 @@ function _openGioCongChiTiet(maNV, tenNV, ngayClick){
       const hhmm = r.thoi_gian
         ? new Date(r.thoi_gian).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' })
         : '';
-      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm] = t;
+      // [v18.179] Khóa kèm cờ V/R (vào/ra) → tránh ĐỤNG KHÓA khi 1 log Vào và 1 log Ra CÙNG giờ
+      //   (vd Ra 14:30 thường + Vào 14:30 Cơ Động) khiến cặp giờ công thường "ăn" nhầm nhãn đội.
+      const _vr = /^VAO/i.test(r.loai || '') ? 'V' : (/^RA/i.test(r.loai || '') ? 'R' : '');
+      if (hhmm) window._gcTeamByTime[(r.ngay || '') + '|' + hhmm + '|' + _vr] = t;
     });
     // [v8.2] Parse string nếu cần
     if (typeof d === 'string') {
