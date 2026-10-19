@@ -56,8 +56,8 @@ function hdLinkify(s){
   });
 }
 function hdFmtInline(s){ return hdLinkify(hdEsc(s).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')); }
-// Dòng "khung xanh": bắt đầu bằng "Vào ca →" / "Ra ca →" (có mũi tên)
-function hdIsRow(s){ var t=s.replace(/^\s*-\s*/,''); return /^(vào|ra)\s*ca\b/i.test(t) && t.indexOf('→')>=0; }
+// Dòng "khung xanh": CÓ CHỨA "Vào ca →" / "Ra ca →" (cho phép tiền tố như "Bước 1:", "- ")
+function hdIsRow(s){ var t=s.replace(/^\s*-\s*/,''); return /\b(vào|ra)\s*ca\b[^→]*→/i.test(t); }
 function hdFmt(raw){
   // Tách cặp ``` làm "khung mẫu" (verbatim), phần còn lại format thường
   var parts = String(raw||'').split(/```/), html='';
@@ -174,7 +174,7 @@ function hdRenderEditor(){
   h += '<textarea class="hd-ed-ta" rows="3" oninput="hdEditData.luuY=this.value">'+hdEscTa(hdEditData.luuY||'')+'</textarea>';
   h += '<div class="hd-ed-tip"><b>Mẹo định dạng:</b><br>'
      + '• Đầu dòng <b>- </b> = gạch đầu dòng · <b>**chữ**</b> = in đậm · dòng trống = ngắt đoạn.<br>'
-     + '• Dòng bắt đầu <b>Vào ca →</b> hoặc <b>Ra ca →</b> sẽ tự thành <b>khung xanh</b> (chữ "Cơ động"/"Đội SALE" được tô màu).<br>'
+     + '• Dòng có <b>Vào ca →</b> hoặc <b>Ra ca →</b> (kể cả khi thêm "Bước 1:" phía trước) sẽ tự thành <b>khung xanh</b> — chữ "Cơ động"/"Đội SALE" được tô màu.<br>'
      + '• Muốn có <b>khung mẫu</b> (ô xám, như mẫu tin nhắn): để đoạn đó giữa hai dòng chỉ gõ 3 dấu huyền <b>```</b>.</div>';
   h += '<div class="hd-ed-seclbl">Các tình huống ('+hdEditData.muc.length+')</div>';
   hdEditData.muc.forEach(function(m,i){
