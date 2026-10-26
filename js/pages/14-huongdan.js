@@ -187,7 +187,14 @@ function hdRenderEditor(){
     h += '<input class="hd-ed-inp" placeholder="Tiêu đề tình huống" value="'+hdEsc(m.tieuDe||'')+'" oninput="hdEditData.muc['+i+'].tieuDe=this.value">';
     h += '<textarea class="hd-ed-ta" rows="5" placeholder="Nội dung hướng dẫn..." oninput="hdEditData.muc['+i+'].noiDung=this.value">'+hdEscTa(m.noiDung||'')+'</textarea>';
     h += '<div class="hd-ed-anh" id="hd-ed-anh-'+i+'">';
-    (m.anh||[]).forEach(function(u,j){ h += '<div class="hd-ed-thumb"><img src="'+hdEsc(u)+'"><button onclick="hdDelAnh('+i+','+j+')" title="Xóa ảnh">✕</button></div>'; });
+    (function(){ var n=(m.anh||[]).length; (m.anh||[]).forEach(function(u,j){
+      h += '<div class="hd-ed-thumb"><img src="'+hdEsc(u)+'">'
+         + '<button class="hd-ed-xoa" onclick="hdDelAnh('+i+','+j+')" title="Xóa ảnh">✕</button>'
+         + '<div class="hd-ed-move">'
+         +   '<button onclick="hdMoveAnh('+i+','+j+',-1)" title="Qua trái"'+(j===0?' disabled':'')+'>◀</button>'
+         +   '<button onclick="hdMoveAnh('+i+','+j+',1)" title="Qua phải"'+(j===n-1?' disabled':'')+'>▶</button>'
+         + '</div></div>';
+    }); })();
     h += '<label class="hd-ed-addimg">+ Ảnh<input type="file" accept="image/*" style="display:none" onchange="hdAddAnh('+i+',this)"></label>';
     h += '</div></div>';
   });
@@ -198,6 +205,7 @@ function hdMove(i,d){ var a=hdEditData.muc, j=i+d; if(j<0||j>=a.length) return; 
 function hdDelMuc(i){ if(typeof confirm==='function' && !confirm('Xóa tình huống này?')) return; hdEditData.muc.splice(i,1); hdRenderEditor(); }
 function hdAddMuc(){ hdEditData.muc.push({tieuDe:'Tình huống mới', noiDung:'', anh:[]}); hdRenderEditor(); }
 function hdDelAnh(i,j){ hdEditData.muc[i].anh.splice(j,1); hdRenderEditor(); }
+function hdMoveAnh(i,j,d){ var a=hdEditData.muc[i].anh; if(!a) return; var k=j+d; if(k<0||k>=a.length) return; var t=a[j]; a[j]=a[k]; a[k]=t; hdRenderEditor(); }
 async function hdAddAnh(i, inp){
   var file = inp.files && inp.files[0]; if(!file) return; inp.value='';
   var box = document.getElementById('hd-ed-anh-'+i); var ld=null;
@@ -231,4 +239,5 @@ if(typeof window!=='undefined'){
   window.hdRenderPage=hdRenderPage; window.hdZoom=hdZoom; window.hdOpenEditor=hdOpenEditor;
   window.hdCloseEditor=hdCloseEditor; window.hdSaveEditor=hdSaveEditor; window.hdMove=hdMove;
   window.hdDelMuc=hdDelMuc; window.hdAddMuc=hdAddMuc; window.hdDelAnh=hdDelAnh; window.hdAddAnh=hdAddAnh;
+  window.hdMoveAnh=hdMoveAnh;
 }
