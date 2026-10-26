@@ -1862,7 +1862,7 @@ window.bgOpenBanGiaoDetail = async function(id){
     if (error) throw error;
     if (!data || data.ok === false) throw new Error((data&&data.error)||'Lỗi');
     const xn = (xnRes.data && xnRes.data[0]) || null;
-    document.getElementById('bgdetail-body').innerHTML = bgXacNhanHtml(id, xn) + bgDetailRenderHtml(data);
+    document.getElementById('bgdetail-body').innerHTML = bgXacNhanHtml(id, xn) + bgDetailRenderHtml(data) + bgXoaBtnHtml(id, (data.su_vu||[]).length);
   } catch(e){
     document.getElementById('bgdetail-body').innerHTML = 
       `<div class="ns-empty" style="color:#DC2626">Lỗi: ${escHtml(e.message||'')}</div>`;
@@ -1907,6 +1907,49 @@ window.bgXacNhanBienBan = async function(id, btn){
   } catch(e){
     if (btn) { btn.disabled = false; btn.textContent = 'Xác nhận đã kiểm tra'; }
     showToast('⚠ ' + e.message, 'warn');
+  }
+};
+
+// [v18.183] Nút XÓA biên bản — CHỈ ADMIN. Xóa sạch: ảnh (DB+storage), tài sản, hàng hóa,
+//   xác nhận (cascade) + sự vụ kèm (cascade audit/người xem). Xác nhận 2 bước, không khôi phục.
+function bgXoaBtnHtml(id, soSV){
+  const isAdmin = (typeof SESSION !== 'undefined') && SESSION && String(SESSION.vaiTro||'').toUpperCase() === 'ADMIN';
+  if (!isAdmin) return '';
+  return '<div style="margin-top:18px;padding-top:16px;border-top:1px solid #F0EDE6">'
+    + '<button onclick="bgXoaBienBan(\''+id+'\','+(soSV||0)+',this)" style="width:100%;padding:12px;border:1.5px solid #FCA5A5;background:#FEF2F2;color:#B91C1C;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">🗑 Xóa biên bản này</button>'
+    + '<div style="margin-top:8px;font-size:11.5px;color:#9CA3AF;line-height:1.5;text-align:center">Chỉ ADMIN · Xóa sẽ gỡ toàn bộ: ảnh, mục tài sản, hàng hóa, xác nhận'
+    + (soSV>0 ? (' và <b style="color:#B91C1C">'+soSV+' sự vụ kèm</b>') : '')
+    + ' — KHÔNG khôi phục được.</div>'
+    + '</div>';
+}
+
+window.bgXoaBienBan = async function(id, soSV, btn){
+  let msg = 'XÓA VĨNH VIỄN biên bản này?\n\nSẽ xóa luôn:\n• Ảnh biên bản\n• Mục tài sản + hàng hóa\n• Xác nhận';
+  if (soSV > 0) msg += '\n• ' + soSV + ' sự vụ kèm (và lịch sử xử lý)';
+  msg += '\n\nKHÔNG thể khôi phục.';
+  if (!confirm(msg)) return;
+  if (!confirm('Chắc chắn xóa? Bấm OK lần nữa để xác nhận.')) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xóa...'; }
+  try {
+    const { data, error } = await supa.rpc('fn_ban_giao_xoa', { p_id: id, p_ma_admin: SESSION.ma });
+    if (error || !data || data.ok === false) throw new Error((data&&data.error) || (error&&error.message) || 'Lỗi xóa');
+    // Xóa file ảnh trong storage (DB rows đã cascade)
+    try {
+      const paths = Array.isArray(data.anh_paths) ? data.anh_paths : [];
+      if (paths.length) await supa.storage.from('bien-ban-ban-giao').remove(paths);
+    } catch(_){}
+    showToast('✓ Đã xóa biên bản' + (data.so_su_vu_da_xoa>0 ? (' + '+data.so_su_vu_da_xoa+' sự vụ') : ''), 'ok');
+    const bg = document.querySelector('.bgdetail-bg'); if (bg) bg.remove();
+    // Gỡ khỏi Timeline (Quản lý) ngay, không cần tải lại
+    try {
+      if (typeof bgqlTimelineCache !== 'undefined' && Array.isArray(bgqlTimelineCache)){
+        bgqlTimelineCache = bgqlTimelineCache.filter(b => b.id !== id);
+        if (typeof bgqlRenderTimeline === 'function') bgqlRenderTimeline();
+      }
+    } catch(_){}
+  } catch(e){
+    if (btn) { btn.disabled = false; btn.textContent = '🗑 Xóa biên bản này'; }
+    showToast('⚠ ' + (e.message || 'Lỗi xóa'), 'warn');
   }
 };
 
