@@ -22,7 +22,7 @@
   let _rafPending = false;
 
   const MAX_EDIT_SIZE = 2200;   // downscale khi load
-  const MAX_OUT_SIZE = 1700;    // output max chiều dài
+  const MAX_OUT_SIZE = 1500;    // output max chiều dài (v18.182: 1700→1500 cho upload nhanh hơn, chữ vẫn rõ)
 
   // ═══════════════════════════════════════════════════════════════════
   //  PUBLIC
@@ -300,7 +300,7 @@
         showSpinner(false);
         csClose();
         _onComplete(blob);
-      }, 'image/jpeg', 0.88);
+      }, 'image/jpeg', 0.82);
     } catch(e){
       console.error('[CamScanner apply]', e);
       showSpinner(false);

@@ -572,6 +572,24 @@ function _bgAnhStatusText(){
   return bgPhotos.length + ' ảnh' + (bgPhotos.length % 2 !== 0 ? ' · lẻ' : '');
 }
 
+// [v18.182] Upload SONG SONG có giới hạn luồng (nhanh hơn trên wifi cửa hàng yếu,
+//   nhưng không mở quá nhiều kết nối cùng lúc gây nghẽn). Giữ NGUYÊN thứ tự kết quả.
+async function _bgUploadPool(items, limit, taskFn){
+  const results = new Array(items.length);
+  let next = 0;
+  async function worker(){
+    while (true){
+      const i = next++; if (i >= items.length) break;
+      results[i] = await taskFn(items[i], i);
+    }
+  }
+  const n = Math.min(limit, items.length);
+  const workers = [];
+  for (let k = 0; k < n; k++) workers.push(worker());
+  await Promise.all(workers);
+  return results;
+}
+
 window.bgAddBienBanPhoto = function(input){
   const f = input.files && input.files[0];
   if (!f) return;
@@ -726,16 +744,20 @@ async function bgSubmit(){
     // [fix-ngay] Ngày LOCAL VN — trước dùng toISOString() (UTC) → up sáng sớm (00:00-06:59) bị lùi 1 ngày → biên bản "mất" khi lọc đúng ngày
     const _dNow = new Date();
     const ngay = _dNow.getFullYear() + '-' + String(_dNow.getMonth()+1).padStart(2,'0') + '-' + String(_dNow.getDate()).padStart(2,'0');
-    for (let i = 0; i < bgPhotos.length; i++){
-      btn.innerHTML = 'Tải ảnh '+(i+1)+'/'+bgPhotos.length+'...';
-      const p = bgPhotos[i];
+    // [v18.182] Upload SONG SONG (tối đa 4 luồng) thay vì tuần tự → nhanh hơn nhiều trên wifi yếu
+    let _xong = 0; const _tong = bgPhotos.length;
+    const _resPaths = await _bgUploadPool(bgPhotos, 4, async (p, i) => {
       const path = `${bgCurrentCH.ma}/${ngay}/${Date.now()}_${i}_${SESSION.ma}.jpg`;
       const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
       if (ue) throw new Error('Upload ảnh '+(i+1)+': '+ue.message);
+      _xong++; btn.innerHTML = 'Tải ảnh '+_xong+'/'+_tong+'...';
+      return path;
+    });
+    _resPaths.forEach(path => {
       const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
       anhUrls.push(pub.publicUrl);
       anhPaths.push(path);
-    }
+    });
 
     // 2) Upload ảnh per-item (chỉ items VD)
     btn.innerHTML = 'Tải ảnh hạng mục...';
@@ -744,18 +766,16 @@ async function bgSubmit(){
       for (const it of g.items){
         const st = bgState[it.id];
         if (st && st.status === 'VD' && st.anh_urls && st.anh_urls.length){
-          const urls = [];
-          for (let i = 0; i < st.anh_urls.length; i++){
-            const p = st.anh_urls[i];
-            if (!p.blob) { urls.push(p.dataUrl || p); continue; }
+          // [v18.182] Ảnh mỗi hạng mục cũng upload SONG SONG (tối đa 4 luồng), giữ thứ tự
+          const _res = await _bgUploadPool(st.anh_urls, 4, async (p, i) => {
+            if (!p.blob) return (p.dataUrl || p);
             const path = `${bgCurrentCH.ma}/${ngay}/item_${it.stt}_${Date.now()}_${i}_${SESSION.ma}.jpg`;
             const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
-            if (!ue) {
-              const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
-              urls.push(pub.publicUrl);
-            }
-          }
-          itemAnh[it.id] = urls;
+            if (ue) return null;
+            const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
+            return pub.publicUrl;
+          });
+          itemAnh[it.id] = _res.filter(u => u != null);
         }
       }
     }
