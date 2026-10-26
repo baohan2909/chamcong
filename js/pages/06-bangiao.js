@@ -590,6 +590,23 @@ async function _bgUploadPool(items, limit, taskFn){
   return results;
 }
 
+// [v18.184] Upload 1 ảnh có TỰ ĐỘNG THỬ LẠI khi rớt mạng ("Load failed" trên wifi yếu).
+//   upsert:true để lần thử lại ghi đè đúng path (tránh lỗi "đã tồn tại" nếu lần trước
+//   đã lên server nhưng mất phản hồi). Thử tối đa `tries` lần, giãn cách tăng dần.
+async function _bgUploadRetry(bucket, path, blob, tries){
+  tries = tries || 3;
+  let lastErr = null;
+  for (let t = 0; t < tries; t++){
+    if (t > 0) await new Promise(r => setTimeout(r, 700 * t));   // backoff: 0 / 700 / 1400ms
+    try {
+      const { error } = await supa.storage.from(bucket).upload(path, blob, { contentType:'image/jpeg', upsert:true });
+      if (!error) return true;
+      lastErr = error;
+    } catch(e){ lastErr = e; }
+  }
+  throw (lastErr || new Error('Tải ảnh thất bại'));
+}
+
 window.bgAddBienBanPhoto = function(input){
   const f = input.files && input.files[0];
   if (!f) return;
@@ -746,10 +763,10 @@ async function bgSubmit(){
     const ngay = _dNow.getFullYear() + '-' + String(_dNow.getMonth()+1).padStart(2,'0') + '-' + String(_dNow.getDate()).padStart(2,'0');
     // [v18.182] Upload SONG SONG (tối đa 4 luồng) thay vì tuần tự → nhanh hơn nhiều trên wifi yếu
     let _xong = 0; const _tong = bgPhotos.length;
-    const _resPaths = await _bgUploadPool(bgPhotos, 4, async (p, i) => {
+    const _resPaths = await _bgUploadPool(bgPhotos, 2, async (p, i) => {
       const path = `${bgCurrentCH.ma}/${ngay}/${Date.now()}_${i}_${SESSION.ma}.jpg`;
-      const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
-      if (ue) throw new Error('Upload ảnh '+(i+1)+': '+ue.message);
+      try { await _bgUploadRetry(bucket, path, p.blob, 3); }
+      catch(ue){ throw new Error('Upload ảnh '+(i+1)+': '+((ue&&ue.message)||'rớt mạng')); }
       _xong++; btn.innerHTML = 'Tải ảnh '+_xong+'/'+_tong+'...';
       return path;
     });
@@ -767,11 +784,11 @@ async function bgSubmit(){
         const st = bgState[it.id];
         if (st && st.status === 'VD' && st.anh_urls && st.anh_urls.length){
           // [v18.182] Ảnh mỗi hạng mục cũng upload SONG SONG (tối đa 4 luồng), giữ thứ tự
-          const _res = await _bgUploadPool(st.anh_urls, 4, async (p, i) => {
+          const _res = await _bgUploadPool(st.anh_urls, 2, async (p, i) => {
             if (!p.blob) return (p.dataUrl || p);
             const path = `${bgCurrentCH.ma}/${ngay}/item_${it.stt}_${Date.now()}_${i}_${SESSION.ma}.jpg`;
-            const { error: ue } = await supa.storage.from(bucket).upload(path, p.blob, { contentType:'image/jpeg' });
-            if (ue) return null;
+            try { await _bgUploadRetry(bucket, path, p.blob, 3); }
+            catch(_){ return null; }
             const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
             return pub.publicUrl;
           });
