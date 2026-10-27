@@ -16,40 +16,43 @@ function _tnGio(v){ const n=_tnNum(v); return n? n.toLocaleString('vi-VN',{maxim
 function _tnMaskStk(v){ const s=String(v||'').replace(/\s/g,''); return s.length>4 ? '•••• '+s.slice(-4) : s; }
 
 // ─── Nhóm hiển thị phiếu (chỉ render dòng có giá trị) ───
+// [v18.185] Layout phiếu lương MỚI theo mẫu in I–X (format 61 cột).
+//   - sum:true → TỔNG nhóm = cộng các dòng 'money' (bỏ dòng có cờ noSum=phần tử thứ 5).
+//     Dòng giờ/ngày (gio/num0) KHÔNG phải money → tự động không cộng.
+//   - Nhóm có total:'<key>' → lấy tổng từ cột (IV* dùng cột, VII/VIII/IX dùng cột).
 const TN_GROUPS = [
-  { header:true, name:'Thông tin nhân viên', accent:'#1E5F63', rows:[   // [v18.144] khối header cấu hình được (Mức A)
-    ['ho_ten','Họ và tên','txt'], ['ma_nv','Mã nhân viên','txt'],
-    ['cua_hang','Cửa hàng','txt'], ['chuc_vu','Chức vụ','txt'],
-    ['ngay_vao_lam','Vào làm','txt'], ['tham_nien','Thâm niên','txt'] ] },
-  { name:'Công & giờ làm', accent:'#1E5F63', rows:[
-    ['tong_gio_cong','Tổng giờ công','gio'], ['gio_chuan','Giờ công chuẩn','gio'],
-    ['gio_12','Giờ tăng ca ×1.2','gio'], ['gio_x2','Giờ tăng ca ×2.0','gio'], ['gio_x3','Giờ tăng ca ×3.0 (lễ)','gio'],
-    ['nghi_phep','Nghỉ phép','txt'],
-    ['phep_su_dung','Phép sử dụng/tháng','txt'], ['phep_con_lai','Phép năm còn lại','txt'] ] },
-    // [fix cột] Bỏ "Ngày nghỉ trong tháng" (BO = tong_ngay_nghi, gồm cả CN → gây hiểu nhầm là phép).
-    // "Phép sử dụng/tháng" lấy đúng cột BP (phep_su_dung). "Phép năm còn lại" = BQ (giữ nguyên).
-  { name:'Các khoản thu nhập', accent:'#2E8B57', total:'tong_thu_nhap', rows:[
-    ['luong_cb','Lương căn bản','money'], ['thanh_tien','Thành tiền công','money'],
-    ['tangca_12','Thành tiền tăng ca ×1.2','money'], ['tangca_20','Thành tiền tăng ca ×2.0','money'], ['tangca_30','Thành tiền tăng ca ×3.0','money'],
-    ['thuong_hieu_qua','Thưởng hiệu quả','money'], ['hieu_qua_thanhtien','Hiệu quả công việc','money'],
-    ['pc_trach_nhiem','Phụ cấp trách nhiệm, điện thoại','money'],
-    ['hh_cht','Hoa hồng CHT 1%','money'], ['hh_nvbhsx','Hoa hồng đơn hàng NVBH SX','money'], ['hh_dungca_db','Hoa hồng đứng ca 3% DB','money'],
-    ['online_tiktok','Online (Tiktok)','money'], ['sale_hoahong','Hoa hồng Sale Đội','money'], ['sale_tai_ch','Hoa hồng cửa hàng','money'], ['hh_thi_dua','Hoa hồng thi đua','money'],
-    ['pc_com','Phụ cấp cơm','money'], ['com_ch','Tiền cơm cửa hàng','money'], ['com_doi_live','Tiền cơm đội Live','money'],
-    ['pc_xang','Phụ cấp xăng','money'], ['pc_dilai','Phụ cấp đi lại','money'],
-    ['cong_tac_phi','Công tác phí','money'], ['tien_tham_nien','Tiền thâm niên','money'],
-    ['thanhtoan_phep_nam','Thanh toán phép năm','money'], ['ho_tro_khac','Hỗ trợ / bổ sung khác','money'] ] },
+  { header:true, name:'Thông tin nhân viên', accent:'#1E5F63', rows:[
+    ['ho_ten','Họ và tên','txt'], ['ngay_vao_lam','Ngày vào làm','txt'],
+    ['ma_bh','Mã NV','txt'], ['ma_nv','MSNV2','txt'],
+    ['tham_nien','Số năm thâm niên','txt'], ['so_nguoi_phu_thuoc','Số NPT','num0'] ] },
+  { name:'Thu nhập thỏa thuận', accent:'#2E8B57', sum:true, rows:[
+    ['luong_cb','Mức lương chính','money'], ['hieu_qua_cv','HQCV','money'],
+    ['bhxh_tham_gia','Mức đóng BHXH','money',false,true] ] },   // BHXH: hiển thị nhưng KHÔNG cộng vào tổng
+  { name:'Thu nhập thực tế', accent:'#2E8B57', sum:true, rows:[
+    ['tong_gio_cong','Giờ công thực tế','gio'], ['gio_chuan','Công chính','gio'], ['thanh_tien','Thành tiền 1','money'],
+    ['gio_12','Tăng ca ngày thường','gio'], ['tangca_12','Thành tiền 1.5','money'],
+    ['gio_x2','Tăng ca ngày nghỉ hàng tuần','gio'], ['tangca_20','Thành tiền 2','money'],
+    ['gio_x3','Tăng ca lễ','gio'], ['tangca_30','Thành tiền 3','money'],
+    ['cong_nang_suat','Công năng suất','gio'], ['luong_nang_suat','Lương năng suất','money'],
+    ['luong_hqcv','Lương HQCV','money'], ['pc_trach_nhiem','PC-TN (CĐ thực tế)','money'] ] },
+  { name:'Ngày phép, chế độ', accent:'#4A5670', sum:true, rows:[
+    ['tong_ngay_nghi','Tổng cộng (Số ngày không làm việc)','num0'], ['phep_su_dung','Phép năm, CĐ, Lễ, Tết','num0'],
+    ['tien_luong_ngay_nghi','Tiền lương ngày nghỉ','money'], ['phep_con_lai','Phép tồn (cuối kỳ)','num0'],
+    ['thanhtoan_phep_nam','Trả phép (nghỉ việc)','money'] ] },
+  { name:'Hoa hồng', accent:'#CBA45A', sum:true, rows:[
+    ['hh_xuat_sac','HH xuất sắc','money'], ['hh_dungca_ch','HH Đứng ca CH','money'], ['hh_dungca_db','HH đứng ca ĐB','money'],
+    ['online_tiktok','HH Tiktok','money'], ['sale_hoahong','HH sale đội','money'], ['sale_tai_ch','HH sale','money'],
+    ['hh_khac','HH khác','money'] ] },
+  { name:'Các khoản khác', accent:'#CBA45A', sum:true, rows:[
+    ['cong_tac_phi','Công tác phí','money'], ['ho_tro_khac','Thu nhập khác','money'], ['tong_com','Tổng cơm','money'],
+    ['truy_linh','Truy lĩnh','money'], ['truy_thu','Truy thu','money'], ['tien_tham_nien','Thâm niên','money'] ] },
   { name:'Các khoản trừ', accent:'#C6373C', total:'tong_phai_tru', neg:true, rows:[
-    ['tong_tam_ung','Tạm ứng trong kỳ','money'], ['bhxh_105','BHXH (10,5%)','money'],
-    ['thue_tncn','Thuế TNCN','money'], ['tru_khac','Trừ khác','money'] ] },
-  { name:'Thuế & bảo hiểm (chi tiết)', accent:'#4A5670', rows:[
-    ['bhxh_8','BHXH 8%','money'], ['bhyt_15','BHYT 1,5%','money'], ['bhtn_1','BHTN 1%','money'],
-    ['nguoi_phu_thuoc','Người phụ thuộc','num0'],  // [v18.117] LẤY CỘT AX (nguoi_phu_thuoc — đã sync đúng sẵn), KHÔNG lấy BO; LUÔN hiện (=0 ghi "0"), ngay TRÊN Giảm trừ gia cảnh
-    ['giam_tru_gia_canh','Giảm trừ gia cảnh','money'],
-    ['com_khong_thue','Tiền cơm không tính thuế','money'], ['tn_chiu_thue','Thu nhập chịu thuế','money'] ] },
-  { name:'Tài khoản nhận', accent:'#CBA45A', rows:[
-    ['tk_ten','Chủ tài khoản','txt'], ['tk_stk','Số tài khoản','stk'],
-    ['tk_nganhang','Ngân hàng','txt'], ['tk_chinhanh','Chi nhánh','txt'] ] },
+    ['tong_tam_ung','Tạm ứng','money'], ['bhxh_105','Tổng BHXH','money'], ['thue_tncn','Thuế TNCN','money'] ] },
+  { name:'Tổng thu nhập', accent:'#1E5F63', total:'tong_thu_nhap', rows:[] },
+  { name:'Thực lãnh', accent:'#2E8B57', total:'tong_thuc_lanh', rows:[] },
+  { name:'Thông tin tài khoản', accent:'#CBA45A', rows:[
+    ['tk_ten','Tên','txt'], ['tk_stk','Số tài khoản','stk'],
+    ['tk_nganhang','Ngân hàng','txt'], ['tk_chinhanh','Chi nhánh','txt'], ['tk_gmail','Email','txt'] ] },
 ];
 // [Cấu hình phiếu] Lộ nhóm hiển thị MẶC ĐỊNH để engine SLIPCFG đọc + cho admin tuỳ chỉnh giao diện phiếu.
 try{ window.TN_GROUPS_DEFAULT = TN_GROUPS; }catch(e){}
@@ -144,9 +147,11 @@ function _tnSlipCore(p, d, groupsOverride){
     const grows=(g.rows||[]).map(_tnNormRow);
     // Dòng num0/showZero LUÔN hiện (=0 ghi "0"); còn lại chỉ hiện khi có giá trị.
     const rows=grows.filter(r=>_tnHasVal(d[r.key]) || r.fmt==='num0' || r.showZero);
-    if(!rows.length) return;
+    if(!rows.length && !g.total && !g.sum) return;   // nhóm total-only (VIII/IX) vẫn hiện
     const open = gi<3;
-    const totalTxt = g.total ? ((g.neg?'−':'')+_tnMoney(d[g.total])) : '';
+    let totalTxt='';
+    if(g.total){ totalTxt=(g.neg?'−':'')+_tnMoney(d[g.total]); }
+    else if(g.sum){ var _s=0; grows.forEach(function(r){ if(r.fmt==='money' && !r.noSum) _s+=_tnNum(d[r.key]); }); totalTxt=(g.neg?'−':'')+_tnMoney(_s); }
     h+='<div class="tn-grp'+(open?' open':'')+'" style="--ga:'+(g.accent||'#1E5F63')+'">'+
        '<button class="tn-grp-head" onclick="tnTg(this)"><span class="tn-grp-dot"></span><span class="tn-grp-name">'+_tnEsc(g.name)+'</span>'+
        '<span class="tn-grp-meta'+(g.neg?' neg':'')+'">'+totalTxt+'<svg class="tn-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></button>'+
@@ -161,7 +166,7 @@ function _tnSlipCore(p, d, groupsOverride){
   return h;
 }
 // [Cấu hình phiếu] Chuẩn hóa 1 dòng: tuple [key,label,fmt(,showZero)] HOẶC object → object.
-function _tnNormRow(r){ return Array.isArray(r) ? {key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3]} : {key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero}; }
+function _tnNormRow(r){ return Array.isArray(r) ? {key:r[0],label:r[1],fmt:r[2]||'txt',showZero:!!r[3],noSum:!!r[4]} : {key:r.key,label:(r.label!=null?r.label:r.key),fmt:r.fmt||'txt',showZero:!!r.showZero,noSum:!!r.noSum}; }
 // [Cấu hình phiếu] Nhóm hiển thị đang hiệu lực (cấu hình admin nếu có, không thì mặc định).
 function tnGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLIPCFG.resolveGroups('tn'); if(g&&g.length) return g; } }catch(e){} return TN_GROUPS; }
 // [v18.144] Giá trị 1 field trong khối header (giữ cách ghép + định dạng ngày như khối cố định cũ).
@@ -407,9 +412,23 @@ function _tnLoadSheetJS(){
   return window._xlsxLoading;
 }
 try{ window.tnAdminImportData=tnAdminImportData; }catch(e){}
-const TN_KEYS=['stt','ma_nv','ma_ns','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc','luong_cb','hieu_qua_cv','bhxh_tham_gia','pc_com','pc_xang','pc_dilai','thuong_hieu_qua','pc_trach_nhiem','tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30','hieu_qua_thanhtien','nghi_phep','hh_cht','hh_nvbhsx','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_thi_dua','cong_tac_phi','ho_tro_khac','com_doi_live','com_ch','thanhtoan_phep_nam','ngay_vao_lam','tham_nien','tien_tham_nien','tong_thu_nhap','tong_tn_ck','tong_tn_tm','bhxh_8','bhyt_15','bhtn_1','bhxh_105','nguoi_phu_thuoc','giam_tru_gia_canh','com_khong_thue','tn_chiu_thue','thue_tncn','tong_tam_ung','tn_da_nhan','tru_khac','tong_phai_tru','tong_thuc_lanh','thuc_nhan_ck','thuc_nhan_tm','tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail','so_nguoi_phu_thuoc','tong_gio_cong2','tong_ngay_nghi','phep_su_dung','phep_con_lai'];
-// [v18.112] CHÈN 'so_nguoi_phu_thuoc' tại cột BO (sau tk_gmail=BN) khi sheet TN thêm cột "SL NPT".
-//   → các cột BP..BS (tong_gio_cong2/tong_ngay_nghi/phep_su_dung/phep_con_lai) dịch phải 1, KHÔNG lệch. Phải khớp Apps Script.
+// [v18.185] FORMAT MỚI 61 CỘT — map THEO VỊ TRÍ, đúng thứ tự cột file Excel.
+//   QUAN TRỌNG: cột 2 "MÃ NV"=mã BH → ma_bh; cột 3 "MSNV2"=mã NS → ma_nv (KHÓA lấy phiếu,
+//   phải khớp SESSION.ma=NS). Nếu đảo 2 cột này, NV sẽ KHÔNG mở được phiếu.
+const TN_KEYS=[
+  'stt','ma_bh','ma_nv','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc',
+  'luong_cb','hieu_qua_cv','bhxh_tham_gia',
+  'tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30',
+  'cong_nang_suat','luong_nang_suat','luong_hqcv','pc_trach_nhiem',
+  'tong_ngay_nghi','phep_su_dung','tien_luong_ngay_nghi','phep_con_lai','thanhtoan_phep_nam',
+  'hh_xuat_sac','hh_dungca_ch','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_khac',
+  'cong_tac_phi','ho_tro_khac','tong_com','truy_linh','truy_thu',
+  'ngay_vao_lam','tham_nien','tien_tham_nien',
+  'tong_thu_nhap',
+  'bhxh_8','bhyt_15','bhtn_1','bhxh_105',
+  'so_nguoi_phu_thuoc','giam_tru_gia_canh','tn_chiu_thue','thue_tncn',
+  'tong_tam_ung','tong_phai_tru','tong_thuc_lanh',
+  'tk_ten','tk_stk','tk_nganhang','tk_chinhanh','tk_gmail'];
 // [Cấu hình phiếu] Lộ bản MẶC ĐỊNH để engine SLIPCFG (13-slipcfg.js) đọc + cho phép admin ánh xạ lại cột.
 try{ window.TN_KEYS_DEFAULT = TN_KEYS.slice(); }catch(e){}
 // [Cấu hình phiếu] Danh sách khóa theo thứ tự cột: ưu tiên cấu hình admin (SLIPCFG), fallback TN_KEYS.

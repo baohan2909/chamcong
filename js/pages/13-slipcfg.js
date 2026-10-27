@@ -32,8 +32,13 @@ const TN_LABELS = {
   tong_phai_tru:'Tổng phải trừ', tong_thuc_lanh:'Tổng thực lãnh', thuc_nhan_ck:'Thực nhận chuyển khoản',
   thuc_nhan_tm:'Thực nhận tại cửa hàng', tk_ten:'Chủ tài khoản', tk_stk:'Số tài khoản',
   tk_nganhang:'Ngân hàng', tk_chinhanh:'Chi nhánh', tk_gmail:'Email', so_nguoi_phu_thuoc:'SL người phụ thuộc',
-  tong_gio_cong2:'Tổng giờ công (2)', tong_ngay_nghi:'Tổng ngày nghỉ', phep_su_dung:'Phép sử dụng/tháng',
-  phep_con_lai:'Phép năm còn lại'
+  tong_gio_cong2:'Tổng giờ công (2)', tong_ngay_nghi:'Tổng cộng (số ngày không làm việc)', phep_su_dung:'Phép năm, CĐ, Lễ, Tết',
+  phep_con_lai:'Phép tồn (cuối kỳ)',
+  // [v18.185] Cột MỚI của format 61 cột
+  ma_bh:'Mã NV (BH)', cong_nang_suat:'Công năng suất', luong_nang_suat:'Lương năng suất',
+  luong_hqcv:'Lương HQCV', tien_luong_ngay_nghi:'Tiền lương ngày nghỉ',
+  hh_xuat_sac:'HH xuất sắc', hh_dungca_ch:'HH Đứng ca CH', hh_khac:'HH khác',
+  tong_com:'Tổng cơm', truy_linh:'Truy lĩnh', truy_thu:'Truy thu'
 };
 
 // ── Nhãn tiếng Việt cho 20 khóa Tạm ứng ──
@@ -150,14 +155,15 @@ function _normGroups(raw){
     neg: !!g.neg,
     hidden: !!g.hidden,
     header: !!g.header,   // [v18.144] nhóm đặc biệt = khối "Thông tin nhân viên" (header lưới 2 cột)
+    sum: !!g.sum,         // [v18.185] tổng nhóm = cộng các dòng money (bỏ dòng noSum)
     rows: (g.rows||[]).map(r=> Array.isArray(r)
-      ? {key:_slug(r[0]),label:(r[1]!=null?String(r[1]):r[0]),fmt:r[2]||'txt',showZero:!!r[3]}
-      : {key:_slug(r.key),label:(r.label!=null?String(r.label):r.key),fmt:r.fmt||'txt',showZero:!!r.showZero})
+      ? {key:_slug(r[0]),label:(r[1]!=null?String(r[1]):r[0]),fmt:r[2]||'txt',showZero:!!r[3],noSum:!!r[4]}
+      : {key:_slug(r.key),label:(r.label!=null?String(r.label):r.key),fmt:r.fmt||'txt',showZero:!!r.showZero,noSum:!!r.noSum})
   }));
 }
 function _serializeGroups(gs){
-  return (gs||[]).map(g=>({ name:g.name, accent:g.accent, total:g.total||null, neg:!!g.neg, hidden:!!g.hidden, header:!!g.header,
-    rows:(g.rows||[]).map(r=>({key:r.key,label:r.label,fmt:r.fmt||'txt',showZero:!!r.showZero})) }));
+  return (gs||[]).map(g=>({ name:g.name, accent:g.accent, total:g.total||null, neg:!!g.neg, hidden:!!g.hidden, header:!!g.header, sum:!!g.sum,
+    rows:(g.rows||[]).map(r=>({key:r.key,label:r.label,fmt:r.fmt||'txt',showZero:!!r.showZero,noSum:!!r.noSum})) }));
 }
 // [v18.144] Nhóm header mặc định (khối "Thông tin nhân viên") từ defaultGroups của phân hệ.
 function _headerGroupDefault(def){
