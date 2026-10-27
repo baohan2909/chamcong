@@ -16,7 +16,7 @@ const TN_LABELS = {
   hieu_qua_cv:'Hiệu quả công việc (gốc)', bhxh_tham_gia:'BHXH tham gia', pc_com:'Phụ cấp cơm',
   pc_xang:'Phụ cấp xăng', pc_dilai:'Phụ cấp đi lại', thuong_hieu_qua:'Thưởng hiệu quả',
   pc_trach_nhiem:'Phụ cấp trách nhiệm, điện thoại', tong_gio_cong:'Tổng giờ công', gio_chuan:'Giờ công chuẩn',
-  thanh_tien:'Thành tiền công', gio_12:'Giờ tăng ca ×1.2', tangca_12:'Thành tiền tăng ca ×1.2',
+  thanh_tien:'Thành tiền công', gio_15:'Giờ tăng ca ×1.5 (ngày thường)', tangca_15:'Thành tiền tăng ca ×1.5',
   gio_x2:'Giờ tăng ca ×2.0', tangca_20:'Thành tiền tăng ca ×2.0', gio_x3:'Giờ tăng ca ×3.0 (lễ)',
   tangca_30:'Thành tiền tăng ca ×3.0', hieu_qua_thanhtien:'Hiệu quả công việc (thành tiền)',
   nghi_phep:'Nghỉ phép', hh_cht:'Hoa hồng CHT 1%', hh_nvbhsx:'Hoa hồng đơn hàng NVBH SX',

@@ -30,7 +30,7 @@ const TN_GROUPS = [
     ['bhxh_tham_gia','Mức đóng BHXH','money',false,true] ] },   // BHXH: hiển thị nhưng KHÔNG cộng vào tổng
   { name:'Thu nhập thực tế', accent:'#2E8B57', sum:true, rows:[
     ['tong_gio_cong','Giờ công thực tế','gio'], ['gio_chuan','Công chính','gio'], ['thanh_tien','Thành tiền 1','money'],
-    ['gio_12','Tăng ca ngày thường','gio'], ['tangca_12','Thành tiền 1.5','money'],
+    ['gio_15','Tăng ca ngày thường','gio'], ['tangca_15','Thành tiền 1.5','money'],
     ['gio_x2','Tăng ca ngày nghỉ hàng tuần','gio'], ['tangca_20','Thành tiền 2','money'],
     ['gio_x3','Tăng ca lễ','gio'], ['tangca_30','Thành tiền 3','money'],
     ['cong_nang_suat','Công năng suất','gio'], ['luong_nang_suat','Lương năng suất','money'],
@@ -418,7 +418,7 @@ try{ window.tnAdminImportData=tnAdminImportData; }catch(e){}
 const TN_KEYS=[
   'stt','ma_bh','ma_nv','ho_ten','chuc_vu','cua_hang','ma_ch','khu_vuc',
   'luong_cb','hieu_qua_cv','bhxh_tham_gia',
-  'tong_gio_cong','gio_chuan','thanh_tien','gio_12','tangca_12','gio_x2','tangca_20','gio_x3','tangca_30',
+  'tong_gio_cong','gio_chuan','thanh_tien','gio_15','tangca_15','gio_x2','tangca_20','gio_x3','tangca_30',
   'cong_nang_suat','luong_nang_suat','luong_hqcv','pc_trach_nhiem',
   'tong_ngay_nghi','phep_su_dung','tien_luong_ngay_nghi','phep_con_lai','thanhtoan_phep_nam',
   'hh_xuat_sac','hh_dungca_ch','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_khac',
