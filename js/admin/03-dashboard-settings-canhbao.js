@@ -1624,8 +1624,10 @@ async function adm2SuaLog(id, ngay) {
   if (!gio) { adm2Toast('Cần nhập giờ', 'error'); return; }
 
   // [v10.85] Detect vị trí di động → bắt buộc nhập CH thực
+  const _rawLog = (window._suaLogRawById && window._suaLogRawById[id]) || null;
   let maChFinal = maCH || null;
   let lyDoFinal = 'Sửa từ form duyệt CB';
+  let nguonFinal = null;
   const isDoi = maCH && _slLaDiDong(tenCHChon, maCH);
   // [v16.2] Cơ Động cần ghi nguon='CO_DONG' để fn_tong_hop_ngay bỏ lỗi "khác CH" → tính giờ
   const isCoDong = !!(isDoi && (typeof _laCoDong === 'function') && _laCoDong(tenCHChon, maCH));
@@ -1640,6 +1642,18 @@ async function adm2SuaLog(id, ngay) {
     const tenDoi = tenCHChon.replace(/\s*\([^)]*\)\s*$/, '').trim();
     const tenChThucClean = tenChThuc.replace(/\s*\([^)]*\)\s*$/, '').trim();
     lyDoFinal = `[${tenDoi}] hỗ trợ ${tenChThucClean} · Sửa từ form duyệt CB`;
+    nguonFinal = isCoDong ? 'CO_DONG' : null;
+  } else {
+    // [v18.187] GIỮ marker Đội SALE / Cơ động CŨ khi admin KHÔNG chọn đội SALE mới và CH KHÔNG đổi.
+    //   Trước đây: lưu no-op hoặc đổi Vào↔Ra ghi đè ghi_chu="Sửa từ form duyệt CB" + nguon=null
+    //   → mất "[Đội SALE X] hỗ trợ..." / CO_DONG, chỉ còn cửa hàng. Nay giữ nguyên gốc.
+    const _wasTeam = _rawLog && (typeof _nhanDoiSaleLog === 'function') && _nhanDoiSaleLog(_rawLog);
+    const _wasCoDong = _rawLog && _rawLog.nguon === 'CO_DONG';
+    const _chUnchanged = _rawLog && String(maCH) === String(_rawLog.ma_ch || '');
+    if ((_wasTeam || _wasCoDong) && _chUnchanged) {
+      if (_rawLog.ghi_chu) lyDoFinal = _rawLog.ghi_chu;   // giữ ghi_chu gốc (chứa marker đội SALE)
+      nguonFinal = _rawLog.nguon || null;                  // giữ nguon gốc (CO_DONG)
+    }
   }
 
   const thoiGian = ngay + 'T' + gio + ':00+07:00';
@@ -1649,7 +1663,7 @@ async function adm2SuaLog(id, ngay) {
       p_admin: SESSION.ma, p_id: id,
       p_thoi_gian: thoiGian, p_loai: loai,
       p_ma_ch: maChFinal, p_ly_do: lyDoFinal,
-      p_nguon: isCoDong ? 'CO_DONG' : null,
+      p_nguon: nguonFinal,
       p_truong_ca: _tcEl ? _tcEl.checked : null
     });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
