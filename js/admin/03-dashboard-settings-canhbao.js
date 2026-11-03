@@ -1643,17 +1643,13 @@ async function adm2SuaLog(id, ngay) {
     const tenChThucClean = tenChThuc.replace(/\s*\([^)]*\)\s*$/, '').trim();
     lyDoFinal = `[${tenDoi}] hỗ trợ ${tenChThucClean} · Sửa từ form duyệt CB`;
     nguonFinal = isCoDong ? 'CO_DONG' : null;
-  } else {
-    // [v18.187] GIỮ marker Đội SALE / Cơ động CŨ khi admin KHÔNG chọn đội SALE mới và CH KHÔNG đổi.
-    //   Trước đây: lưu no-op hoặc đổi Vào↔Ra ghi đè ghi_chu="Sửa từ form duyệt CB" + nguon=null
-    //   → mất "[Đội SALE X] hỗ trợ..." / CO_DONG, chỉ còn cửa hàng. Nay giữ nguyên gốc.
-    const _wasTeam = _rawLog && (typeof _nhanDoiSaleLog === 'function') && _nhanDoiSaleLog(_rawLog);
-    const _wasCoDong = _rawLog && _rawLog.nguon === 'CO_DONG';
-    const _chUnchanged = _rawLog && String(maCH) === String(_rawLog.ma_ch || '');
-    if ((_wasTeam || _wasCoDong) && _chUnchanged) {
-      if (_rawLog.ghi_chu) lyDoFinal = _rawLog.ghi_chu;   // giữ ghi_chu gốc (chứa marker đội SALE)
-      nguonFinal = _rawLog.nguon || null;                  // giữ nguon gốc (CO_DONG)
-    }
+  } else if (_rawLog) {
+    // [v18.188] admin KHÔNG chọn đội SALE mới → GIỮ NGUYÊN ghi_chu + nguon GỐC (không ghi đè).
+    //   (Bỏ điều kiện _chUnchanged/_wasTeam của v18.187 — quá chặt → log Ra ca vẫn mất marker.)
+    //   → bảo toàn "[Đội SALE X] hỗ trợ..." / "[Cơ Động]" trong ghi_chu + nguon=CO_DONG cho MỌI log
+    //     khi chỉ sửa giờ/loại hoặc lưu no-op.
+    if (_rawLog.ghi_chu) lyDoFinal = _rawLog.ghi_chu;   // giữ ghi_chu gốc (chứa marker đội SALE/cơ động)
+    nguonFinal = _rawLog.nguon || null;                  // giữ nguon gốc (CO_DONG)
   }
 
   const thoiGian = ngay + 'T' + gio + ':00+07:00';
