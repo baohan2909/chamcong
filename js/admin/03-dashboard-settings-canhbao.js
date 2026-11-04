@@ -1565,9 +1565,11 @@ async function adm2LoadSuaLogBody() {
                 <div id="sua-ch-sug-${l.id}" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.15);margin-top:4px;max-height:240px;overflow-y:auto;z-index:100;min-width:280px"></div>
               </div>
               <label title="Đánh dấu trưởng ca" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0F766E;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-tc-${l.id}" ${_tcMap[l.id]?'checked':''} style="width:15px;height:15px;accent-color:#0F766E;cursor:pointer">TC</label>
-              <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
-              <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
-              ${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-sm" style="background:#0F766E;color:#fff;border-color:#0F766E" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}
+              <div style="display:flex;gap:6px;flex-wrap:nowrap;align-items:center">
+                <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
+                <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
+                ${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-sm" style="background:#0F766E;color:#fff;border-color:#0F766E;white-space:nowrap" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}
+              </div>
             </div>
           </div>
           <!-- [v10.85] Field CH thực khi đã chọn Đội SALE -->
