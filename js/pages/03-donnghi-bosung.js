@@ -618,7 +618,11 @@ async function moModalBoSungCa(){
 //   (bổ sung lần ≥ ngưỡng, mặc định 3) — không còn phụ thuộc điểm.
 function _bscCanBienBan(d){
   if(!d || !d.ok || d.co_dong) return false;
-  return !!d.can_tuong_trinh;
+  // [v18.190] Luật OR: điểm ≤ ngưỡng tường trình (mặc định 6) HOẶC lần kế ≥ ngưỡng lần (mặc định 3).
+  //   (Trước chỉ xét lần → NV điểm thấp bổ sung lần 1-2 lọt không cần biên bản.)
+  const ng = d.nguong || {};
+  return (d.diem != null && d.diem <= (ng.diem_tt != null ? ng.diem_tt : 6))
+      || ((d.lan_ke || 0) >= (ng.lan_tt != null ? ng.lan_tt : 3));
 }
 // [v18.83] Ảnh biên bản đính kèm ở modal bổ sung ca
 let _bscBBAnhs = [];   // [{blob, dataUrl}]
@@ -682,7 +686,7 @@ function _bscRenderTrangThai(d){
     st.innerHTML=h; return;
   }
   if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent='Gửi yêu cầu';}
-  if(d.can_tuong_trinh){
+  if(_bscCanBienBan(d)){   // [v18.190] hiện ô tường trình theo luật OR (điểm ≤6 HOẶC lần ≥3), không chỉ lần
     const why=(lan>=(ng.lan_tt||3))?('bổ sung lần '+lan):('điểm còn '+d.diem);
     h+='<div style="margin-top:8px;padding:8px 11px;background:#FEF3C7;border:1px solid #FBBF24;border-radius:8px;font-size:11.5px;color:#92400E"><b>⚠ Bắt buộc tường trình</b> — '+why+'.</div>';
     if(ttWrap)ttWrap.style.display='';
@@ -836,17 +840,23 @@ async function guiBoSungCa(){
   if (!maCH) { errEl.textContent = 'Vui lòng chọn cửa hàng.'; errEl.style.display='block'; return; }
   if (lyDo.length < 10) { errEl.textContent = 'Lý do tối thiểu 10 ký tự.'; errEl.style.display='block'; return; }
 
-  // [v18.69] Kiểm soát bổ sung: chặn lần 4+, bắt buộc tường trình khi chạm ngưỡng
-  const _bsTT = window._bscTT || {};
+  // [v18.190] FAIL-CLOSED: trạng thái kiểm soát CHƯA tải (null) → tải lại 1 lần; vẫn không được → CHẶN.
+  //   (Trước: window._bscTT||{} → rỗng = fail-OPEN → bổ sung lọt qua không cần biên bản khi mạng yếu/bấm nhanh.)
+  if (!window._bscTT || window._bscTT.ok === false) { try { await _bscLoadTrangThai(); } catch(e){} }
+  const _bsTT = window._bscTT;
+  if (!_bsTT || _bsTT.ok === false) {
+    errEl.textContent = 'Chưa kiểm tra được điều kiện bổ sung — kiểm tra mạng rồi thử lại.';
+    errEl.style.display='block'; return;
+  }
   let _ttNoiDung = '';
   if (_bsTT.chan_bo_sung) { errEl.textContent = 'Đã hết lượt bổ sung tháng này — vui lòng liên hệ QLNS.'; errEl.style.display='block'; return; }
-  if (_bsTT.can_tuong_trinh) {
+  // [v18.190] Luật OR (điểm ≤6 HOẶC lần ≥3) → BẮT BUỘC tường trình + biên bản giấy. Thiếu → CHẶN hẳn.
+  const _laBB = _bscCanBienBan(_bsTT);
+  if (_laBB) {
     _ttNoiDung = ((document.getElementById('bsc-tt')||{}).value || '').trim();
     if (_ttNoiDung.length < 15) { errEl.textContent = 'Bắt buộc viết tường trình (tối thiểu 15 ký tự).'; errEl.style.display='block'; const _t=document.getElementById('bsc-tt'); if(_t)_t.focus(); return; }
+    if (!_bscBBAnhs.length) { errEl.textContent = 'Điểm ≤6 hoặc bổ sung lần ≥3 — BẮT BUỘC đính kèm ảnh biên bản giấy.'; errEl.style.display='block'; return; }
   }
-  // [v18.83] điểm ≤6 + lần ≥3 → BẮT BUỘC biên bản giấy có ảnh (kèm giải trình ở trên)
-  const _laBB = _bscCanBienBan(_bsTT);
-  if (_laBB && !_bscBBAnhs.length) { errEl.textContent = 'Bổ sung lần ≥3 — BẮT BUỘC đính kèm ảnh biên bản giấy.'; errEl.style.display='block'; return; }
 
   // [v16.2] Nếu chọn vị trí di động (Đội SALE/Cơ Động) → bắt buộc nhập CH thực, lưu CH thực vào ma_ch
   let maChFinal = maCH;
