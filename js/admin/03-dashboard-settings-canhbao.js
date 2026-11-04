@@ -1549,7 +1549,7 @@ async function adm2LoadSuaLogBody() {
             <div style="flex:1;min-width:200px">
               <div style="font-weight:600;font-size:13px">${l.loaiText} · ${l.gio}</div>
               <div style="font-size:11px;color:#6B7280">${chHtml} · ${l.xacNhan} · ${l.soCB} CB</div>
-              ${cbBadges ? `<div style="margin-top:2px">${cbBadges}</div>` : ''}
+              ${cbBadges ? `<div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${cbBadges}${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-primary adm2-btn-sm" style="padding:3px 12px" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}</div>` : ''}
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
               <input type="time" id="sua-gio-${l.id}" value="${l.gio}" style="padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px">
@@ -1602,10 +1602,7 @@ async function adm2LoadSuaLogBody() {
       ${logsHtml}
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #E5E7EB;flex-wrap:wrap">
         <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2ThemLogPrompt()">+ Thêm log thiếu</button>
-        ${_suaLogState.cbId ? `
-        <button class="adm2-btn adm2-btn-primary" onclick="adm2DuyetCBSauSua()">
-          ✓ Tôi đã sửa xong - Duyệt CB
-        </button>` : ''}
+        <button class="adm2-btn adm2-btn-secondary adm2-btn-sm" onclick="adm2CloseSuaLog()">Đóng</button>
       </div>
       ${cbsHtml}
       <div style="margin-top:12px;font-size:11px;color:#9CA3AF">
@@ -1812,6 +1809,29 @@ async function adm2DuyetCBSauSua() {
     if (row) row.remove();
   } catch (e) { adm2Toast(e.message, 'error'); }
 }
+
+// [v18.191] Duyệt cảnh báo THEO TỪNG LOG (thay nút gộp "Tôi đã sửa xong - Duyệt CB").
+//   Duyệt xong KHÔNG đóng modal → admin duyệt tiếp log khác; badge tự chuyển DA_DUYET.
+async function adm2DuyetLogCB(cbIdsStr) {
+  const ids = String(cbIdsStr || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!ids.length) return;
+  try {
+    for (const cbId of ids) {
+      const d = await adm2Rpc('fn_admin_duyet_cb_sau_sua', {
+        p_admin: SESSION.ma, p_cb_id: cbId,
+        p_da_sua_gio: !!_suaLogState.daSuaGio,
+        p_ly_do: 'Duyệt sau khi sửa lịch (từng log)'
+      });
+      if (d && d.success === false) { adm2Toast(d.error || 'Lỗi duyệt', 'error'); return; }
+    }
+    await _rebuildCong(_suaLogState.maNV, _suaLogState.ngay);
+    // Gỡ dòng cảnh báo tương ứng khỏi danh sách ngoài (giống hành vi nút gộp cũ)
+    ids.forEach(function(cbId){ var r = document.getElementById('adm2-cb-' + cbId); if (r) r.remove(); });
+    adm2Toast('✓ Đã duyệt cảnh báo', 'success');
+    adm2LoadSuaLogBody();   // làm mới modal, giữ mở để duyệt tiếp
+  } catch (e) { adm2Toast(e.message, 'error'); }
+}
+
 async function adm2DetailPhienDangMo(bodyEl) {
   try {
     const { data, error } = await supa.from('phien_ban_hang')
