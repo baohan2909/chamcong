@@ -1568,7 +1568,7 @@ async function adm2LoadSuaLogBody() {
               <div style="display:flex;gap:6px;flex-wrap:nowrap;align-items:center">
                 <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
                 <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
-                ${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-sm" style="background:#0F766E;color:#fff;border-color:#0F766E;white-space:nowrap" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}
+                ${(function(){ if(!_logCbs.length) return ''; var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); if(cd.length) return '<button class="adm2-btn adm2-btn-sm" style="background:#0F766E;color:#fff;border-color:#0F766E;white-space:nowrap" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>'; return '<span style="display:inline-flex;align-items:center;color:#15803D;font-weight:700;font-size:12px;white-space:nowrap;padding:0 10px;background:#DCFCE7;border:1px solid #BBF7D0;border-radius:6px;height:28px">✓ Đã duyệt</span>'; })()}
               </div>
             </div>
           </div>
