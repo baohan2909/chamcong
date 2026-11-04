@@ -1403,7 +1403,7 @@ async function adm2OpenSuaLog(maNV, ngay, cbId) {
     modal.id = 'adm2-sua-log-modal';
     modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px';
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:14px;max-width:730px;width:100%;margin:20px auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
+      <div style="background:#fff;border-radius:14px;max-width:735px;width:100%;margin:20px auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E5E7EB">
           <div>
             <div style="font-size:16px;font-weight:600;color:#111827" id="adm2-sua-log-title">Sửa lịch chấm công</div>
