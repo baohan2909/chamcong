@@ -1403,7 +1403,7 @@ async function adm2OpenSuaLog(maNV, ngay, cbId) {
     modal.id = 'adm2-sua-log-modal';
     modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px';
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:14px;max-width:740px;width:100%;margin:20px auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
+      <div style="background:#fff;border-radius:14px;max-width:730px;width:100%;margin:20px auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E5E7EB">
           <div>
             <div style="font-size:16px;font-weight:600;color:#111827" id="adm2-sua-log-title">Sửa lịch chấm công</div>
@@ -1568,7 +1568,7 @@ async function adm2LoadSuaLogBody() {
               <div style="display:flex;gap:6px;flex-wrap:nowrap;align-items:center">
                 <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
                 <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
-                ${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-sm" style="background:#0F766E;color:#fff;border-color:#0F766E;white-space:nowrap" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}
+                ${(function(){ var cd=_logCbs.filter(function(cb){return cb.trang_thai!=='DA_DUYET';}); return cd.length ? '<button class="adm2-btn adm2-btn-primary adm2-btn-sm" style="background:#0F766E;border-color:#0F766E;white-space:nowrap" onclick="adm2DuyetLogCB(\''+cd.map(function(c){return c.id;}).join(',')+'\')">✓ Duyệt</button>' : ''; })()}
               </div>
             </div>
           </div>
