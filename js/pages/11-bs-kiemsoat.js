@@ -20,14 +20,18 @@ function _bscEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt
 // Cổng khi NV bấm "Vào ca"
 async function _bscGateVaoCa(loai, btnId){
   let d = null;
-  try {
-    // timeout 4s → fail-OPEN (không để RPC treo làm kẹt nút Vào ca)
-    const r = await Promise.race([
-      supa.rpc('fn_bs_trang_thai_nv', { p_ma_nv: SESSION.ma }),
-      new Promise(function(res){ setTimeout(function(){ res({ data: null }); }, 4000); })
-    ]);
-    d = r.data;
-  } catch(e){}
+  // [v18.203] THỬ 2 LẦN × 5s (trước: 1 lần × 4s). Cache làm server nhanh, nhưng MẠNG điện thoại NV
+  //   yếu hay vượt 4s → d=null → fail-OPEN → lọt cổng (NS00405 chấm được dù nợ biên bản, grace_used=false).
+  //   Thử lại 1 lần + nới 5s → mạng yếu vẫn kịp nhận trạng thái; thật sự rớt mạng mới fail-open.
+  for (let _try = 0; _try < 2 && (d == null); _try++){
+    try {
+      const r = await Promise.race([
+        supa.rpc('fn_bs_trang_thai_nv', { p_ma_nv: SESSION.ma }),
+        new Promise(function(res){ setTimeout(function(){ res({ data: null }); }, 5000); })
+      ]);
+      d = r && r.data;
+    } catch(e){}
+  }
   // Fail-soft: lỗi / chưa chạy SQL / cơ động / không cần biên bản / đã nộp → CHO QUA (không cản chấm công)
   if (!d || !d.ok || d.co_dong || !d.can_bien_ban || d.da_nop_bien_ban){
     window._bscGateOK = true; try{ selType(loai, btnId); }catch(e){} return;
