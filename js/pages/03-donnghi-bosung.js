@@ -892,6 +892,8 @@ async function guiBoSungCa(){
       for (const a of _bscBBAnhs) { const u = await _bscBBUpload(a.blob); if (u) _bbUrls.push(u); }
       if (!_bbUrls.length) { errEl.textContent='Tải ảnh biên bản thất bại — thử lại.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Gửi yêu cầu'; return; }
     }
+    // [v18.204] Gửi kèm tường trình + biên bản vào hàm tạo → SERVER tự kiểm (chặn nếu thiếu)
+    //   + đính biên bản trong cùng lần tạo. App cache cũ gọi thiếu biên bản cũng bị server từ chối.
     const { data, error } = await supa.rpc('fn_nv_bo_sung_ca', {
       p_ma_nv: SESSION.ma,
       p_ngay: ngayBSC,
@@ -899,19 +901,16 @@ async function guiBoSungCa(){
       p_loai: loai,
       p_ma_ch: maChFinal,
       p_ly_do: lyDo,
-      p_nguon: isCoDong ? 'CO_DONG' : null
+      p_nguon: isCoDong ? 'CO_DONG' : null,
+      p_tuong_trinh: _ttNoiDung || null,
+      p_bien_ban_urls: (_bbUrls && _bbUrls.length) ? _bbUrls : null
     });
     if (error) throw error;
     if (data && data.success === false) {
       errEl.textContent = data.error || 'Lỗi gửi yêu cầu';
       errEl.style.display = 'block';
     } else {
-      // [v18.97] Gắn giải trình/biên bản vào ĐÚNG lượt bổ sung (event_key khớp máy dò):
-      //   từ 2026-09 = ma_nv#BO_SUNG#ngày#<id log>; trước đó = ma_nv#BO_SUNG#ngày (gộp ngày).
-      const _bsId = (data && data.id) ? String(data.id) : '';
-      const _evk = SESSION.ma + '#BO_SUNG#' + ngayBSC + ((ngayBSC >= '2026-09-01' && _bsId) ? ('#' + _bsId) : '');
-      if (_laBB) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'BIEN_BAN', p_noi_dung: (_ttNoiDung || lyDo), p_anh_urls: _bbUrls, p_event_key: _evk }); } catch(e){} }
-      else if (_ttNoiDung) { try { await supa.rpc('fn_bs_nop_bien_ban', { p_ma_nv: SESSION.ma, p_loai: 'TUONG_TRINH', p_noi_dung: _ttNoiDung, p_anh_url: null, p_event_key: _evk }); } catch(e){} }
+      // Biên bản/tường trình đã được server đính (fn_nv_bo_sung_ca) → KHÔNG gọi fn_bs_nop_bien_ban riêng.
       dongModalBoSungCa();
       showToast('✓ Đã gửi yêu cầu bổ sung' + (_laBB ? ' kèm biên bản giấy' : (_ttNoiDung ? ' kèm tường trình' : '')) + '. QLNS sẽ xem xét.', 'ok');
       taiLichSu();

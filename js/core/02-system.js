@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.203',
+  'sys.cache_version': 'v18.204',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -2730,7 +2730,7 @@ function _renderGioCongTable(){
       //   → ca thường cùng CH cùng ngày với 1 ca cơ động KHÔNG còn bị lây nhãn "Cơ Động".
       const _teamVao = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioVao || '') + '|V']) || null;   // [v18.179] team của log VÀO tại giờ vào
       const _teamRa  = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioRa  || '') + '|R']) || null;   // [v18.179] team của log RA tại giờ ra
-      // [v18.203] Ca cơ động/đội QUA ĐÊM bị tách ở mốc 00:00 GIẢ (không có log thật tại 00:00 → thiếu team).
+      // [v18.204] Ca cơ động/đội QUA ĐÊM bị tách ở mốc 00:00 GIẢ (không có log thật tại 00:00 → thiếu team).
       //   Bên 00:00 KẾ THỪA team của cặp (vào‖ra) → cả 2 nửa (ngày trước + ngày sau) vẫn hiện "Cơ Động/Đội - CH".
       const _teamCapNN  = _teamVao || _teamRa;
       const _teamVaoEff = _teamVao || ((p.gioVao === '00:00') ? _teamCapNN : null);
