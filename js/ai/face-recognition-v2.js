@@ -66,6 +66,7 @@ var _ready = false, _loading = false, _loadPct = 0;
 var _detSess = null, _recSess = null;
 var _detCanvas = null;   // canvas 192 tái dùng (đỡ GC)
 var _dbg = { det: 0, emb: 0 };
+var _lastGumTry = -1;    // [DIAG] chỉ số bộ constraint getUserMedia thành công gần nhất
 
 /* ─── WASM SIMD check (iOS <16.4 không SIMD → dùng ort-wasm.wasm, chậm hơn nhưng chạy) ─── */
 var _simdCache = null;
@@ -381,6 +382,53 @@ async function _cameraProducesVideo(video, abortRef) {
   return false;
 }
 
+/* ════════════════ [DIAG] MÁY DÒ CAMERA — ghi trạng thái lên Supabase (face_cam_diag) ════════════════
+ * Mục đích: tìm chính xác vì sao "Đang mở camera…" đen trên PWA standalone iOS (stream? khung? paused? đen?).
+ * Fire-and-forget, bọc try/catch — KHÔNG ảnh hưởng luồng quét. Xoá sau khi điều tra xong. */
+function _frameStats(video) {
+  try {
+    var vw = video && video.videoWidth, vh = video && video.videoHeight;
+    if (!vw || !vh) return { w: vw || 0, h: vh || 0, min: -1, max: -1, avg: -1, real: false };
+    if (!_probeCanvas) { _probeCanvas = document.createElement('canvas'); _probeCanvas.width = 32; _probeCanvas.height = 32; }
+    var ctx = _probeCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, 0, 0, 32, 32);
+    var d = ctx.getImageData(0, 0, 32, 32).data, min = 255, max = 0, sum = 0, n = 0;
+    for (var i = 0; i < d.length; i += 4) { var l = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000; if (l < min) min = l; if (l > max) max = l; sum += l; n++; }
+    var avg = sum / n;
+    return { w: vw, h: vh, min: Math.round(min), max: Math.round(max), avg: Math.round(avg), real: ((max - min) > 8 || avg > 12) };
+  } catch (e) { return { w: 0, h: 0, min: -1, max: -1, avg: -1, real: true }; }
+}
+function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs) {
+  try {
+    var st = _frameStats(video);
+    var track = null; try { track = stream && stream.getVideoTracks && stream.getVideoTracks()[0]; } catch (e) {}
+    var standalone = false; try { standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; } catch (e) {}
+    var payload = {
+      ma_nv: (window.SESSION && SESSION.ma) || null,
+      buoc: buoc,
+      standalone: standalone,
+      gum_ok: !!stream,
+      gum_try: (typeof _lastGumTry === 'number') ? _lastGumTry : -1,
+      gum_err: gumErr ? String((gumErr && gumErr.name) || (gumErr && gumErr.message) || gumErr) : null,
+      vw: st.w, vh: st.h,
+      ready_state: video ? video.readyState : null,
+      paused: video ? video.paused : null,
+      frame_real: st.real,
+      lum_min: st.min, lum_max: st.max, lum_avg: st.avg,
+      track_ready: track ? track.readyState : null,
+      track_muted: track ? track.muted : null,
+      track_enabled: track ? track.enabled : null,
+      t_open_ms: (typeof tOpenMs === 'number') ? tOpenMs : null,
+      scr_w: (window.screen && screen.width) || null,
+      scr_h: (window.screen && screen.height) || null,
+      dpr: window.devicePixelRatio || null,
+      ua: navigator.userAgent || null,
+      extra: { simd: _simdOk(), ready: _ready, loadPct: _loadPct, vis: document.visibilityState }
+    };
+    if (window.supa && supa.rpc) { supa.rpc('fn_face_cam_diag', { p: payload }).then(function () {}, function () {}); }
+  } catch (e) {}
+}
+
 /* ════════════════ CAMERA (kế thừa nguyên bài học v17.68→v18.50) ════════════════ */
 
 function _gumWithTimeout(constraints, ms) {
@@ -430,6 +478,7 @@ async function _openCam(videoEl) {
   for (i = 0; i < _CAM_TRIES.length; i++) {
     try {
       stream = await _gumWithTimeout({ video: _CAM_TRIES[i], audio: false }, CFG.GUM_TIMEOUT);
+      _lastGumTry = i;   // [DIAG]
       break;
     } catch (e) {
       if (e && e.name === 'CameraTimeoutError') throw e;   // treo hệ thống → báo ngay, không thử thêm 15s/lượt
@@ -698,10 +747,13 @@ async function _startEnrollFlow() {
 
   var video = document.getElementById('fe-video');
   _setInstruction('fe', 'Đang mở camera…');
+  var _t0e = Date.now();
   try {
     _enrollStream = await _openCam(video);
+    _sendCamDiag('enroll-open', video, _enrollStream, null, Date.now() - _t0e);   // [DIAG]
     if (video.paused) _setInstruction('fe', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
+    _sendCamDiag('enroll-err', video, null, e, Date.now() - _t0e);               // [DIAG]
     var isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
     if (isPerm) _setInstruction('fe', 'Cần cấp quyền camera — vào Cài đặt cho phép rồi bấm "Thử lại"');
     else if (e && e.name === 'CameraTimeoutError') _setInstruction('fe', 'Không mở được camera — kiểm tra quyền Camera trong Cài đặt > Safari rồi bấm "Thử lại"');
@@ -713,6 +765,7 @@ async function _startEnrollFlow() {
 
   // [FIX máy đen] Camera không ra hình (máy cũ / iOS PWA lỗi) → không ép đăng ký, báo dùng ảnh tay
   var feCamReal = await _cameraProducesVideo(video, _enrollAbort);
+  _sendCamDiag('enroll-frame', video, _enrollStream, null, Date.now() - _t0e);   // [DIAG] mốc quyết định đen/thật
   if (_enrollAbort.aborted) return;
   if (!feCamReal) {
     window._nsFaceCamBroken = true;
@@ -859,10 +912,13 @@ async function v2StartChamCong(onSuccess, onFail) {
 
   var video = document.getElementById('fv-video');
   _setInstruction('fv', 'Đang mở camera…');
+  var _t0v = Date.now();
   try {
     _verifyStream = await _openCam(video);
+    _sendCamDiag('verify-open', video, _verifyStream, null, Date.now() - _t0v);   // [DIAG]
     if (video.paused) _setInstruction('fv', 'Chạm vào vòng tròn để bật camera');
   } catch (e) {
+    _sendCamDiag('verify-err', video, null, e, Date.now() - _t0v);               // [DIAG]
     var isPerm = e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' || /denied|permission/i.test(e.message || ''));
     if (isPerm) {
       _setInstruction('fv', 'Cần cấp quyền camera');
@@ -882,6 +938,7 @@ async function v2StartChamCong(onSuccess, onFail) {
 
   // [FIX máy đen] Kiểm camera có RA HÌNH thật không TRƯỚC khi tải model 5.9MB — đen thì tự chuyển ảnh tay ngay
   var camReal = await _cameraProducesVideo(video, _verifyAbort);
+  _sendCamDiag('verify-frame', video, _verifyStream, null, Date.now() - _t0v);   // [DIAG] mốc quyết định đen/thật
   if (_verifyAbort.aborted) return;
   if (!camReal) {
     window._nsFaceCamBroken = true;   // nhớ trong phiên → lần sau đi thẳng ảnh tay
