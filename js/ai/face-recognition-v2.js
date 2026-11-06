@@ -452,6 +452,14 @@ function _gumWithTimeout(constraints, ms) {
   });
 }
 
+// [v18.209] play() bọc timeout — tránh await treo vô hạn khi video track hỏng (máy lỗi)
+function _playWithTimeout(videoEl, ms) {
+  return Promise.race([
+    Promise.resolve(videoEl.play()),
+    new Promise(function (_, rej) { setTimeout(function () { rej(new Error('play-timeout')); }, ms); })
+  ]);
+}
+
 var _CAM_TRIES = [
   { facingMode: 'user', width: { exact: 640 }, height: { exact: 480 }, frameRate: { ideal: 24, max: 30 } },
   { facingMode: 'user', width: { exact: 480 }, height: { exact: 640 }, frameRate: { ideal: 24, max: 30 } },
@@ -480,9 +488,19 @@ async function _openCam(videoEl) {
     try {
       stream = await _gumWithTimeout({ video: _CAM_TRIES[i], audio: false }, CFG.GUM_TIMEOUT);
       _lastGumTry = i;   // [DIAG]
+      // [v18.209] Vài máy (vd iOS 17.6 standalone) trả VIDEO TRACK 'ended' NGAY → video 0x0, đen,
+      //   play() treo rất lâu. Coi như thất bại → dừng stream này, thử cấu hình LỎNG hơn (có thể ra track sống).
+      var _vt = stream && stream.getVideoTracks && stream.getVideoTracks()[0];
+      if (_vt && _vt.readyState === 'ended') {
+        try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+        stream = null;
+        if (i === _CAM_TRIES.length - 1) { var er = new Error('camera-track-ended'); er.name = 'CameraTrackEnded'; throw er; }
+        continue;
+      }
       break;
     } catch (e) {
       if (e && e.name === 'CameraTimeoutError') throw e;   // treo hệ thống → báo ngay, không thử thêm 15s/lượt
+      if (e && e.name === 'CameraTrackEnded') throw e;      // mọi cấu hình đều ended → báo ngay
       if (i === _CAM_TRIES.length - 1) throw e;
     }
   }
@@ -495,10 +513,11 @@ async function _openCam(videoEl) {
       videoEl.addEventListener('loadedmetadata', function () { clearTimeout(tid); resolve(); }, { once: true });
     });
   }
-  try { await videoEl.play(); }
+  // [v18.209] play() CÓ GIỚI HẠN 4s — vài máy để play() TREO vô hạn (video track hỏng) → NV tưởng "mở camera hoài".
+  try { await _playWithTimeout(videoEl, 4000); }
   catch (e) {
     await new Promise(function (r) { setTimeout(r, 150); });
-    try { await videoEl.play(); } catch (e2) {}
+    try { await _playWithTimeout(videoEl, 4000); } catch (e2) {}
   }
   if (videoEl.paused) {
     var tapTarget = videoEl.closest('.ns-face-stage') || videoEl;
@@ -924,6 +943,9 @@ async function v2StartChamCong(onSuccess, onFail) {
     if (isPerm) {
       _setInstruction('fv', 'Cần cấp quyền camera');
       _setSubstatus('fv', 'Vào Cài đặt cho phép camera, rồi bấm "Thử lại"', 'err');
+    } else if (e && e.name === 'CameraTrackEnded') {
+      _setInstruction('fv', 'Máy chưa mở được camera trong ứng dụng');
+      _setSubstatus('fv', 'Hãy khởi động lại máy, hoặc mở trang bằng Safari để quét. (Camera bị tắt ngay khi mở)', 'err');
     } else if (e && e.name === 'CameraTimeoutError') {
       _setInstruction('fv', 'Không mở được camera');
       _setSubstatus('fv', 'Kiểm tra quyền Camera trong Cài đặt > Safari, đóng app đang dùng camera, rồi bấm "Thử lại" — hoặc chấm công bằng ảnh tay', 'err');
