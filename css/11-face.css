@@ -174,7 +174,12 @@
   left: 0; top: 0;
   opacity: 1;
   object-fit: cover;
-  transform: scaleX(-1);   /* lật gương selfie */
+  /* [v18.208 FIX iOS PWA ĐEN] BỎ transform:scaleX(-1) trên <video>.
+     Máy dò (face_cam_diag) chứng minh camera ra KHUNG THẬT trong app standalone,
+     nhưng NV vẫn thấy ĐEN → iOS standalone KHÔNG ghép được lớp <video> bị transform
+     nằm trong khung bo tròn overflow:hidden (Safari thì vẽ được). Đây đúng bài học v17.86
+     "gỡ transform khỏi <video>". Preview giờ KHÔNG lật gương, nhưng ẢNH LƯU vẫn lật
+     (lật bằng canvas trong _captureFaceFrame) → không ảnh hưởng ảnh xác minh. */
 }
 .ns-face-cam.nsface2 .ns-face-preview { display: none; }
 
