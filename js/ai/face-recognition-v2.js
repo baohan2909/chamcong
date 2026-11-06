@@ -398,7 +398,7 @@ function _frameStats(video) {
     return { w: vw, h: vh, min: Math.round(min), max: Math.round(max), avg: Math.round(avg), real: ((max - min) > 8 || avg > 12) };
   } catch (e) { return { w: 0, h: 0, min: -1, max: -1, avg: -1, real: true }; }
 }
-function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs) {
+function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs, extraObj) {
   try {
     var st = _frameStats(video);
     var track = null; try { track = stream && stream.getVideoTracks && stream.getVideoTracks()[0]; } catch (e) {}
@@ -425,6 +425,7 @@ function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs) {
       ua: navigator.userAgent || null,
       extra: { simd: _simdOk(), ready: _ready, loadPct: _loadPct, vis: document.visibilityState }
     };
+    if (extraObj) { try { for (var k in extraObj) { if (Object.prototype.hasOwnProperty.call(extraObj, k)) payload.extra[k] = extraObj[k]; } } catch (e) {} }
     if (typeof supa !== 'undefined' && supa && supa.rpc) { supa.rpc('fn_face_cam_diag', { p: payload }).then(function () {}, function () {}); }
   } catch (e) {}
 }
@@ -951,6 +952,7 @@ async function v2StartChamCong(onSuccess, onFail) {
   _setInstruction('fv', 'Chuẩn bị máy quét…');
   _setSubstatus('fv', 'Đang tải bộ nhận diện… ' + _loadPct + '%', 'ok');
   var ok = await _ensureLoaded(function (pct) { _setSubstatus('fv', 'Đang tải bộ nhận diện… ' + pct + '%', 'ok'); });
+  _sendCamDiag('verify-model', video, _verifyStream, ok ? null : new Error('model-load-fail'), Date.now() - _t0v, { model_ok: ok });   // [DIAG]
   if (_verifyAbort.aborted) return;
   if (!ok) {
     _setInstruction('fv', 'Không tải được máy quét');
@@ -980,6 +982,7 @@ async function _runVerifyAttempt(video, attempt) {
 
   _setInstruction('fv', attempt === 0 ? 'Đặt khuôn mặt vào khung' : 'Vui lòng thử lại');
   var embedding = await _smoothScan(video, 'fv', _verifyAbort);
+  _sendCamDiag('verify-scan', video, _verifyStream, null, null, { attempt: attempt, has_embedding: !!embedding, det_ms: _dbg.det, emb_ms: _dbg.emb });   // [DIAG]
   if (_verifyAbort.aborted) return;
   if (!embedding) {
     _setSubstatus('fv', 'Chưa lấy được nét mặt', 'err');
@@ -990,6 +993,7 @@ async function _runVerifyAttempt(video, attempt) {
 
   _setSubstatus('fv', 'Đang xác thực...', 'ok');
   var result = await _submitVerify(embedding);
+  _sendCamDiag('verify-done', video, _verifyStream, (result && result.error) ? new Error(String(result.error)) : null, null, { attempt: attempt, passed: !!(result && result.passed), match_pct: (result && result.match_pct) }); // [DIAG]
 
   if (result && result.passed) {
     var matchPct = result.match_pct !== undefined ? result.match_pct : '?';
