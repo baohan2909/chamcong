@@ -404,7 +404,7 @@ function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs) {
     var track = null; try { track = stream && stream.getVideoTracks && stream.getVideoTracks()[0]; } catch (e) {}
     var standalone = false; try { standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; } catch (e) {}
     var payload = {
-      ma_nv: (window.SESSION && SESSION.ma) || null,
+      ma_nv: (typeof SESSION !== 'undefined' && SESSION && SESSION.ma) || null,
       buoc: buoc,
       standalone: standalone,
       gum_ok: !!stream,
@@ -425,7 +425,7 @@ function _sendCamDiag(buoc, video, stream, gumErr, tOpenMs) {
       ua: navigator.userAgent || null,
       extra: { simd: _simdOk(), ready: _ready, loadPct: _loadPct, vis: document.visibilityState }
     };
-    if (window.supa && supa.rpc) { supa.rpc('fn_face_cam_diag', { p: payload }).then(function () {}, function () {}); }
+    if (typeof supa !== 'undefined' && supa && supa.rpc) { supa.rpc('fn_face_cam_diag', { p: payload }).then(function () {}, function () {}); }
   } catch (e) {}
 }
 
