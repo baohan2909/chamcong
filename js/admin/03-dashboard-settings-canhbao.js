@@ -1449,6 +1449,7 @@ function adm2CloseSuaLog() {
 async function adm2LoadSuaLogBody() {
   const body = document.getElementById('adm2-sua-log-body');
   body.innerHTML = '<div class="adm2-empty">⏳ Đang tải...</div>';
+  window._suaChDirty = {};   // [v18.210] reset cờ "đã chọn lại ô cửa hàng" mỗi lần dựng lại danh sách
   try {
     const d = await adm2Rpc('fn_admin_get_logs_ngay', { p_ma_nv: _suaLogState.maNV, p_ngay: _suaLogState.ngay });
     const logs = (d && d.logs) || [];
@@ -1531,9 +1532,6 @@ async function adm2LoadSuaLogBody() {
         if (l.tenCH) {
           chHtml = (typeof _fmtChPerLog === 'function') ? _fmtChPerLog(l.tenCH, _team) : adm2Esc(l.tenCH);
         }
-        // [v18.210] Log có đánh dấu Đội SALE/Cơ động trên 1 CỬA HÀNG THẬT → cho phép GỠ đánh dấu (giữ cửa hàng).
-        const _coMarker = !!_team && !_slLaDiDong(l.tenCH || '', l.maCH || '');
-        const _teamShort = /cơ\s*động|co\s*dong/i.test(_team || '') ? 'Cơ động' : 'Đội SALE';
         const _logCbs = cbByCC[l.id] || [];
         const cbBadges = _logCbs.map(cb => {
           const tt = cb.trang_thai;
@@ -1564,7 +1562,6 @@ async function adm2LoadSuaLogBody() {
                 <div id="sua-ch-sug-${l.id}" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.15);margin-top:4px;max-height:240px;overflow-y:auto;z-index:100;min-width:280px"></div>
               </div>
               <label title="Đánh dấu trưởng ca" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0F766E;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-tc-${l.id}" ${_tcMap[l.id]?'checked':''} style="width:15px;height:15px;accent-color:#0F766E;cursor:pointer">TC</label>
-              ${_coMarker ? `<label title="Bỏ đánh dấu Đội SALE/Cơ động, chỉ giữ lại cửa hàng" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#B45309;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-bodoi-${l.id}" style="width:15px;height:15px;accent-color:#B45309;cursor:pointer">Bỏ ${_teamShort}</label>` : ''}
               <div style="display:flex;gap:6px;flex-wrap:nowrap;align-items:center">
                 <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
                 <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
@@ -1628,12 +1625,19 @@ async function adm2SuaLog(id, ngay) {
   //   mới, server giữ nguyên device_info cũ ([SALE_ORIGIN]). Client giữ nguyên hành vi gốc.
   let maChFinal = maCH || null;
   let lyDoFinal = 'Sửa từ form duyệt CB';
-  // [v18.210] Checkbox "Bỏ Đội SALE/Cơ động" → gỡ sạch marker ở server, chỉ giữ cửa hàng (không bắt nhập CH thực)
-  const _boDoiEl = document.getElementById('sua-bodoi-' + id);
-  const boDoi = !!(_boDoiEl && _boDoiEl.checked);
-  const isDoi = !boDoi && maCH && _slLaDiDong(tenCHChon, maCH);
+  // [v18.210] CHỈ đổi nhãn đội khi admin ĐÃ CHỌN LẠI ô cửa hàng (suaCHPick). Không đụng ô CH → giữ nguyên đội + CH.
+  const _storeDirty = !!(window._suaChDirty && window._suaChDirty[id]);
+  const _raw = (window._suaLogRawById && window._suaLogRawById[id]) || null;
+  const _hadMarker = !!(_raw && (
+    (typeof _nhanDoiSaleLog === 'function' && _nhanDoiSaleLog(_raw)) ||
+    _raw.nguon === 'CO_DONG' ||
+    _slLaDiDong(_raw.ten_ch_snapshot || '', _raw.ma_ch || '')
+  ));
+  const isDoi = _storeDirty && maCH && _slLaDiDong(tenCHChon, maCH);
   // [v16.2] Cơ Động cần ghi nguon='CO_DONG' để fn_tong_hop_ngay bỏ lỗi "khác CH" → tính giờ
   const isCoDong = !!(isDoi && (typeof _laCoDong === 'function') && _laCoDong(tenCHChon, maCH));
+  // Chọn lại ô CH = cửa hàng THƯỜNG + log vốn có đánh dấu đội → GỠ marker (giữ cửa hàng vừa chọn)
+  const boDoi = _storeDirty && !isDoi && _hadMarker;
   if (boDoi) {
     lyDoFinal = 'Bỏ đánh dấu Đội SALE/Cơ động (giữ cửa hàng)';
   } else if (isDoi) {
@@ -1702,6 +1706,9 @@ function suaCHShowSug(logId) {
 }
 function suaCHHideSug(logId) { setTimeout(()=>{ const s=document.getElementById('sua-ch-sug-'+logId); if (s) s.style.display='none'; }, 200); }
 function suaCHPick(logId, ma, ten) {
+  // [v18.210] Đánh dấu "admin ĐÃ CHỌN LẠI ô cửa hàng" → lúc Lưu mới đổi nhãn đội theo lựa chọn.
+  if (!window._suaChDirty) window._suaChDirty = {};
+  window._suaChDirty[logId] = true;
   document.getElementById('sua-ch-inp-' + logId).value = ten + ' (' + ma + ')';
   document.getElementById('sua-ch-' + logId).value = ma;
   document.getElementById('sua-ch-sug-' + logId).style.display = 'none';
