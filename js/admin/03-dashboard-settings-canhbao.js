@@ -1525,16 +1525,15 @@ async function adm2LoadSuaLogBody() {
         const initIsDoi = _slLaDiDong(l.tenCH || '', l.maCH || '');
         // [v18.90] Nhãn CH THEO TỪNG LOG: khớp log với ghi_chu/device_info của chính nó (theo id)
         //   → chỉ ca thật sự cơ động/sale mới gắn nhãn; ca thường cùng CH cùng ngày chỉ hiện tên CH.
+        const _raw0 = (window._suaLogRawById && window._suaLogRawById[l.id]) || null;
+        const _team = (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(_raw0) : null;
         let chHtml = '';
         if (l.tenCH) {
-          if (typeof _fmtChPerLog === 'function') {
-            const _raw = (window._suaLogRawById && window._suaLogRawById[l.id]) || null;
-            const _team = (typeof _nhanDoiSaleLog === 'function') ? _nhanDoiSaleLog(_raw) : null;
-            chHtml = _fmtChPerLog(l.tenCH, _team);
-          } else {
-            chHtml = adm2Esc(l.tenCH);
-          }
+          chHtml = (typeof _fmtChPerLog === 'function') ? _fmtChPerLog(l.tenCH, _team) : adm2Esc(l.tenCH);
         }
+        // [v18.210] Log có đánh dấu Đội SALE/Cơ động trên 1 CỬA HÀNG THẬT → cho phép GỠ đánh dấu (giữ cửa hàng).
+        const _coMarker = !!_team && !_slLaDiDong(l.tenCH || '', l.maCH || '');
+        const _teamShort = /cơ\s*động|co\s*dong/i.test(_team || '') ? 'Cơ động' : 'Đội SALE';
         const _logCbs = cbByCC[l.id] || [];
         const cbBadges = _logCbs.map(cb => {
           const tt = cb.trang_thai;
@@ -1565,6 +1564,7 @@ async function adm2LoadSuaLogBody() {
                 <div id="sua-ch-sug-${l.id}" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #D1D5DB;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.15);margin-top:4px;max-height:240px;overflow-y:auto;z-index:100;min-width:280px"></div>
               </div>
               <label title="Đánh dấu trưởng ca" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0F766E;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-tc-${l.id}" ${_tcMap[l.id]?'checked':''} style="width:15px;height:15px;accent-color:#0F766E;cursor:pointer">TC</label>
+              ${_coMarker ? `<label title="Bỏ đánh dấu Đội SALE/Cơ động, chỉ giữ lại cửa hàng" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#B45309;cursor:pointer;user-select:none;white-space:nowrap"><input type="checkbox" id="sua-bodoi-${l.id}" style="width:15px;height:15px;accent-color:#B45309;cursor:pointer">Bỏ ${_teamShort}</label>` : ''}
               <div style="display:flex;gap:6px;flex-wrap:nowrap;align-items:center">
                 <button class="adm2-btn adm2-btn-primary adm2-btn-sm" onclick="adm2SuaLog('${l.id}','${_suaLogState.ngay}')">Lưu</button>
                 <button class="adm2-btn adm2-btn-danger adm2-btn-sm" onclick="adm2XoaLog('${l.id}')">Xóa</button>
@@ -1628,10 +1628,15 @@ async function adm2SuaLog(id, ngay) {
   //   mới, server giữ nguyên device_info cũ ([SALE_ORIGIN]). Client giữ nguyên hành vi gốc.
   let maChFinal = maCH || null;
   let lyDoFinal = 'Sửa từ form duyệt CB';
-  const isDoi = maCH && _slLaDiDong(tenCHChon, maCH);
+  // [v18.210] Checkbox "Bỏ Đội SALE/Cơ động" → gỡ sạch marker ở server, chỉ giữ cửa hàng (không bắt nhập CH thực)
+  const _boDoiEl = document.getElementById('sua-bodoi-' + id);
+  const boDoi = !!(_boDoiEl && _boDoiEl.checked);
+  const isDoi = !boDoi && maCH && _slLaDiDong(tenCHChon, maCH);
   // [v16.2] Cơ Động cần ghi nguon='CO_DONG' để fn_tong_hop_ngay bỏ lỗi "khác CH" → tính giờ
   const isCoDong = !!(isDoi && (typeof _laCoDong === 'function') && _laCoDong(tenCHChon, maCH));
-  if (isDoi) {
+  if (boDoi) {
+    lyDoFinal = 'Bỏ đánh dấu Đội SALE/Cơ động (giữ cửa hàng)';
+  } else if (isDoi) {
     const maChThuc = (document.getElementById('sua-chthuc-' + id).value || '').trim();
     const tenChThuc = document.getElementById('sua-chthuc-inp-' + id).value || '';
     if (!maChThuc) {
@@ -1652,7 +1657,8 @@ async function adm2SuaLog(id, ngay) {
       p_thoi_gian: thoiGian, p_loai: loai,
       p_ma_ch: maChFinal, p_ly_do: lyDoFinal,
       p_nguon: isCoDong ? 'CO_DONG' : null,
-      p_truong_ca: _tcEl ? _tcEl.checked : null
+      p_truong_ca: _tcEl ? _tcEl.checked : null,
+      p_bo_doi_sale: boDoi || null
     });
     if (d && d.success === false) { adm2Toast(d.error || 'Lỗi', 'error'); return; }
     _suaLogState.daSuaGio = true;
