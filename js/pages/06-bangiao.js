@@ -593,13 +593,22 @@ async function _bgUploadPool(items, limit, taskFn){
 // [v18.184] Upload 1 ảnh có TỰ ĐỘNG THỬ LẠI khi rớt mạng ("Load failed" trên wifi yếu).
 //   upsert:true để lần thử lại ghi đè đúng path (tránh lỗi "đã tồn tại" nếu lần trước
 //   đã lên server nhưng mất phản hồi). Thử tối đa `tries` lần, giãn cách tăng dần.
+// [v18.211] Upload 1 lần CÓ GIỚI HẠN THỜI GIAN — mạng "full cột nhưng không có internet" làm fetch upload
+//   TREO VÔ HẠN (không trả lỗi) → kẹt "Đang gửi..." mãi, retry không cứu được (không có lỗi để bắt).
+//   Race upload vs timeout → quá giờ coi như thất bại → thử lại (upsert:true nên lần treo cũ lên muộn cũng vô hại).
+function _bgUploadOnce(bucket, path, blob, ms){
+  return Promise.race([
+    supa.storage.from(bucket).upload(path, blob, { contentType:'image/jpeg', upsert:true }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('Quá thời gian (mạng chậm)')), ms))
+  ]);
+}
 async function _bgUploadRetry(bucket, path, blob, tries){
-  tries = tries || 3;
+  tries = tries || 4;
   let lastErr = null;
   for (let t = 0; t < tries; t++){
-    if (t > 0) await new Promise(r => setTimeout(r, 700 * t));   // backoff: 0 / 700 / 1400ms
+    if (t > 0) await new Promise(r => setTimeout(r, 800 * t));   // backoff: 0 / 800 / 1600 / 2400ms
     try {
-      const { error } = await supa.storage.from(bucket).upload(path, blob, { contentType:'image/jpeg', upsert:true });
+      const { error } = await _bgUploadOnce(bucket, path, blob, 20000);   // [v18.211] timeout 20s/lần
       if (!error) return true;
       lastErr = error;
     } catch(e){ lastErr = e; }
@@ -761,11 +770,12 @@ async function bgSubmit(){
     // [fix-ngay] Ngày LOCAL VN — trước dùng toISOString() (UTC) → up sáng sớm (00:00-06:59) bị lùi 1 ngày → biên bản "mất" khi lọc đúng ngày
     const _dNow = new Date();
     const ngay = _dNow.getFullYear() + '-' + String(_dNow.getMonth()+1).padStart(2,'0') + '-' + String(_dNow.getDate()).padStart(2,'0');
-    // [v18.182] Upload SONG SONG (tối đa 4 luồng) thay vì tuần tự → nhanh hơn nhiều trên wifi yếu
+    // [v18.211] Upload TUẦN TỰ (1 ảnh/lần) — wifi cửa hàng yếu: 2 luồng song song tranh băng thông → cùng rớt/treo.
+    //   1 ảnh/lần cho mỗi ảnh trọn băng thông, chậm hơn chút nhưng chắc ăn hơn (kèm timeout + 4 lần thử ở _bgUploadRetry).
     let _xong = 0; const _tong = bgPhotos.length;
-    const _resPaths = await _bgUploadPool(bgPhotos, 2, async (p, i) => {
+    const _resPaths = await _bgUploadPool(bgPhotos, 1, async (p, i) => {
       const path = `${bgCurrentCH.ma}/${ngay}/${Date.now()}_${i}_${SESSION.ma}.jpg`;
-      try { await _bgUploadRetry(bucket, path, p.blob, 3); }
+      try { await _bgUploadRetry(bucket, path, p.blob, 4); }
       catch(ue){ throw new Error('Upload ảnh '+(i+1)+': '+((ue&&ue.message)||'rớt mạng')); }
       _xong++; btn.innerHTML = 'Tải ảnh '+_xong+'/'+_tong+'...';
       return path;
@@ -783,11 +793,11 @@ async function bgSubmit(){
       for (const it of g.items){
         const st = bgState[it.id];
         if (st && st.status === 'VD' && st.anh_urls && st.anh_urls.length){
-          // [v18.182] Ảnh mỗi hạng mục cũng upload SONG SONG (tối đa 4 luồng), giữ thứ tự
-          const _res = await _bgUploadPool(st.anh_urls, 2, async (p, i) => {
+          // [v18.211] Ảnh mỗi hạng mục cũng upload TUẦN TỰ (1 ảnh/lần) + timeout + 4 lần thử — bền trên wifi yếu
+          const _res = await _bgUploadPool(st.anh_urls, 1, async (p, i) => {
             if (!p.blob) return (p.dataUrl || p);
             const path = `${bgCurrentCH.ma}/${ngay}/item_${it.stt}_${Date.now()}_${i}_${SESSION.ma}.jpg`;
-            try { await _bgUploadRetry(bucket, path, p.blob, 3); }
+            try { await _bgUploadRetry(bucket, path, p.blob, 4); }
             catch(_){ return null; }
             const { data: pub } = supa.storage.from(bucket).getPublicUrl(path);
             return pub.publicUrl;
