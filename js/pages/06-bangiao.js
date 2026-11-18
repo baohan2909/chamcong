@@ -602,16 +602,29 @@ function _bgUploadOnce(bucket, path, blob, ms){
     new Promise((_, rej) => setTimeout(() => rej(new Error('Quá thời gian (mạng chậm)')), ms))
   ]);
 }
+// [v18.217] Kiểm ảnh ĐÃ lên server chưa — mạng chập ở CH yếu: upload XONG server nhưng gói "thành công" RỚT
+//   → client tưởng lỗi, kẹt "Tải ảnh 1/2..." dù ảnh đã có. Request list nhẹ (metadata) nên dễ qua hơn upload.
+async function _bgObjExists(bucket, path){
+  try {
+    const i = path.lastIndexOf('/');
+    const dir = i >= 0 ? path.slice(0, i) : '';
+    const fname = i >= 0 ? path.slice(i + 1) : path;
+    const { data } = await supa.storage.from(bucket).list(dir, { search: fname, limit: 100 });
+    return !!(data && data.some(o => o && o.name === fname));
+  } catch(e){ return false; }
+}
 async function _bgUploadRetry(bucket, path, blob, tries){
   tries = tries || 4;
   let lastErr = null;
   for (let t = 0; t < tries; t++){
     if (t > 0) await new Promise(r => setTimeout(r, 800 * t));   // backoff: 0 / 800 / 1600 / 2400ms
     try {
-      const { error } = await _bgUploadOnce(bucket, path, blob, 20000);   // [v18.211] timeout 20s/lần
+      const { error } = await _bgUploadOnce(bucket, path, blob, 45000);   // [v18.217] 20s→45s: ảnh ~650KB mạng CH yếu cần ~40s
       if (!error) return true;
       lastErr = error;
     } catch(e){ lastErr = e; }
+    // [v18.217] Có thể upload ĐÃ xong server nhưng mất phản hồi → kiểm tồn tại, có thì coi như xong (hết kẹt)
+    try { if (await _bgObjExists(bucket, path)) return true; } catch(e){}
   }
   throw (lastErr || new Error('Tải ảnh thất bại'));
 }
