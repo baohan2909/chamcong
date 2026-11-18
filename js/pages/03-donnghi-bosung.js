@@ -1100,11 +1100,17 @@ function _renderACCDnpQL(){
       // [v8.8] Dùng lyDo + anhUrl trực tiếp từ RPC
       const lyDoTxt = don.lyDo || '';
       const linkAnh = don.anhUrl || '';
-      const btns=(don.trangThai==='Chờ duyệt' && (typeof _canQuanLyNS==='function' && _canQuanLyNS()))
-        ? `<div class="ns-duyet-wrap" style="margin-top:8px">
-             <button class="ns-btn-ok" onclick="duyetDonNghiById('${don.id}','Đã duyệt')">✓ Duyệt</button>
-             <button class="ns-btn-no" onclick="duyetDonNghiById('${don.id}','Từ chối')">✗ Từ chối</button>
-           </div>`
+      // [v18.213] QL/Admin: Duyệt/Từ chối khi Chờ duyệt + nút XÓA (đơn sai / NV không nghỉ nữa) ở MỌI trạng thái.
+      const _canQLx = (typeof _canQuanLyNS==='function' && _canQuanLyNS());
+      const _duyetB = (don.trangThai==='Chờ duyệt' && _canQLx)
+        ? `<button class="ns-btn-ok" onclick="duyetDonNghiById('${don.id}','Đã duyệt')">✓ Duyệt</button>
+           <button class="ns-btn-no" onclick="duyetDonNghiById('${don.id}','Từ chối')">✗ Từ chối</button>`
+        : '';
+      const _xoaB = _canQLx
+        ? `<button class="ns-btn-no" onclick="xoaDonNghi('${don.id}')" title="Xóa đơn (đơn sai hoặc NV không nghỉ nữa) — không hoàn tác" style="background:#fff;color:#B91C1C;border:1px solid #FCA5A5">🗑 Xóa</button>`
+        : '';
+      const btns=(_duyetB||_xoaB)
+        ? `<div class="ns-duyet-wrap" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${_duyetB}${_xoaB}</div>`
         : '';
       const qlnsNote=don.ghiChuQLNS?`<div class="dnp-qlns-note">💬 QLNS: ${don.ghiChuQLNS}</div>`:'';
       const nguoiDuyetInfo = (don.trangThai!=='Chờ duyệt' && don.nguoiDuyet)

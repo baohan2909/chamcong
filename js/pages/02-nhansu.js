@@ -2349,7 +2349,11 @@ async function xoaDonNghi(idsStr){
   if (errCnt === 0) showToast('✓ Đã xóa ' + okCnt + ' đơn', 'ok');
   else showToast('⚠ ' + okCnt + ' OK, ' + errCnt + ' lỗi' + (lastErr?(': '+lastErr):''), 'warn');
   _silentUpdateAccBadges();
-  taiDonNghiPhep(true);
+  // [v18.213] Tải lại ĐÚNG trang đang mở: Nhân sự (dnp-list) hoặc trang "Đơn nghỉ phép" sidebar (accdnp-list)
+  try {
+    if (document.getElementById('accdnp-list') && typeof taiDonNghiACC === 'function') taiDonNghiACC();
+    else if (typeof taiDonNghiPhep === 'function') taiDonNghiPhep(true);
+  } catch(e){}
 }
 if (typeof window !== 'undefined') window.xoaDonNghi = xoaDonNghi;
 
