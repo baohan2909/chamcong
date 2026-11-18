@@ -567,7 +567,7 @@ function _startPreview(videoEl, canvasEl) {
   canvasEl._nsRaf = raf;
 }
 
-// Ảnh bằng chứng lưu kèm chấm công (lật gương khớp góc nhìn user — như v1)
+// Ảnh bằng chứng lưu kèm chấm công — [v18.212] KHÔNG lật gương (Aroma yêu cầu ảnh đúng như thật, không bị ngược mặt)
 function _captureFaceFrame(videoEl) {
   try {
     var w = videoEl.videoWidth || 640, h = videoEl.videoHeight || 480;
@@ -575,9 +575,7 @@ function _captureFaceFrame(videoEl) {
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     var ctx = canvas.getContext('2d');
-    ctx.translate(w, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(videoEl, 0, 0, w, h);
+    ctx.drawImage(videoEl, 0, 0, w, h);   // [v18.212] vẽ thẳng, bỏ translate+scale(-1) → không lật gương
     return canvas.toDataURL('image/jpeg', 0.88);
   } catch (e) { return null; }
 }
