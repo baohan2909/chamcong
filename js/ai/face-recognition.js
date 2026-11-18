@@ -326,7 +326,9 @@ function _captureFaceFrame(videoEl) {
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
-    // [v18.212] KHÔNG lật gương (Aroma yêu cầu ảnh đúng như thật) — vẽ thẳng, bỏ translate+scale(-1)
+    // [v18.215] Aroma chốt kiểu B (soi gương/selfie) — lật gương ảnh lưu cho khớp ảnh tay + thói quen selfie
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
     ctx.drawImage(videoEl, 0, 0, w, h);
     return canvas.toDataURL('image/jpeg', 0.88);
   } catch(e) { return null; }
