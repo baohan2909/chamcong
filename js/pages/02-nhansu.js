@@ -2077,11 +2077,15 @@ function renderDonNghiPhep(){
         ? fmtNgay2(g.ngayBatDau)
         : `<span style="color:#0F6E56;font-weight:700">${fmtNgay2(g.ngayBatDau)} → ${fmtNgay2(g.ngayKetThuc)}</span> <span style="background:#E0F2F1;color:#0F6E56;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px">${g.soNgay} ngày</span>`;
       const ids = g.danhSach.map(x => x.id).filter(Boolean);
-      const actionsHtml = (g.trangThai === 'Chờ duyệt' && !(typeof _laCuaHang==='function'&&_laCuaHang())) ? `
-        <div class="dnp-actions" style="margin-top:8px">
-          <button class="dnp-btn-ok" onclick="duyetGopDonNghi('${ids.join(',')}','Đã duyệt')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>Duyệt${g.soNgay>1?' cả '+g.soNgay+' ngày':''}</button>
-          <button class="dnp-btn-no" onclick="duyetGopDonNghi('${ids.join(',')}','Từ chối')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Từ chối</button>
-        </div>` : '';
+      // [v18.213] Nút XÓA đơn (đơn sai / NV không nghỉ nữa) — ADMIN/QLNS, mọi trạng thái; cửa hàng không thấy.
+      const _laCH_ = (typeof _laCuaHang==='function'&&_laCuaHang());
+      const _canQL_ = !_laCH_ && (typeof _canQuanLyNS!=='function' || _canQuanLyNS());
+      const _duyetBtns = (g.trangThai === 'Chờ duyệt' && !_laCH_) ?
+          `<button class="dnp-btn-ok" onclick="duyetGopDonNghi('${ids.join(',')}','Đã duyệt')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>Duyệt${g.soNgay>1?' cả '+g.soNgay+' ngày':''}</button>
+          <button class="dnp-btn-no" onclick="duyetGopDonNghi('${ids.join(',')}','Từ chối')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Từ chối</button>` : '';
+      const _xoaBtn = _canQL_ ?
+          `<button class="dnp-btn-xoa" onclick="xoaDonNghi('${ids.join(',')}')" title="Xóa đơn (đơn sai hoặc NV không nghỉ nữa) — không hoàn tác" style="background:#fff;color:#B91C1C;border:1px solid #FCA5A5;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Xóa</button>` : '';
+      const actionsHtml = (_duyetBtns || _xoaBtn) ? `<div class="dnp-actions" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">${_duyetBtns}${_xoaBtn}</div>` : '';
       const qlnsNote = g.ghiChuQLNS ? `<div class="dnp-qlns-note">💬 ${g.ghiChuQLNS}</div>` : '';
       const nguoiDuyetInfo = (g.trangThai!=='Chờ duyệt' && g.nguoiDuyet)
         ? `<div style="font-size:11px;color:var(--text-m);margin-top:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Người duyệt: ${g.nguoiDuyet}</div>` : '';
@@ -2320,6 +2324,34 @@ async function duyetGopDonNghi(idsStr, quyetDinh){
   _silentUpdateAccBadges();
   taiDonNghiPhep(true);   // [fix request 3] giữ vị trí cuộn
 }
+
+// [v18.213] XÓA đơn nghỉ phép (đơn sai / NV không nghỉ nữa) — ADMIN/QLNS. Xóa cả slot "Nghỉ phép" ở lịch ca (server).
+async function xoaDonNghi(idsStr){
+  if(typeof _canQuanLyNS==='function' && !_canQuanLyNS()){ if(typeof showToast==='function') showToast('Chỉ QLNS hoặc Admin mới được xóa','warn'); return; }
+  const ids = String(idsStr || '').split(',').filter(Boolean);
+  if (!ids.length){ showToast('Không có đơn để xóa', 'err'); return; }
+  const msg = 'Xóa ' + ids.length + ' ngày nghỉ này khỏi hệ thống?\nDùng khi đơn bị SAI hoặc NV KHÔNG nghỉ nữa. Thao tác KHÔNG hoàn tác.';
+  let ok=false;
+  if (typeof appConfirm==='function') ok = await appConfirm(msg, { title:'Xóa đơn nghỉ', okLabel:'Xóa', danger:true });
+  else ok = confirm(msg);
+  if (!ok) return;
+  showToast('Đang xóa ' + ids.length + ' đơn...', 'ok');
+  let okCnt = 0, errCnt = 0, lastErr = '';
+  for (const id of ids){
+    try {
+      const { data: res, error } = await supa.rpc('fn_xoa_don_nghi', {
+        p_id: id, p_ma_nguoi: SESSION.ma, p_ly_do: null
+      });
+      if (error || !res || !res.success){ errCnt++; lastErr = (res&&res.error)||(error&&error.message)||''; }
+      else okCnt++;
+    } catch(e){ errCnt++; lastErr = e.message; }
+  }
+  if (errCnt === 0) showToast('✓ Đã xóa ' + okCnt + ' đơn', 'ok');
+  else showToast('⚠ ' + okCnt + ' OK, ' + errCnt + ' lỗi' + (lastErr?(': '+lastErr):''), 'warn');
+  _silentUpdateAccBadges();
+  taiDonNghiPhep(true);
+}
+if (typeof window !== 'undefined') window.xoaDonNghi = xoaDonNghi;
 
 function duyetDonNP(maNV, ngay, tuan, quyetDinh){
   const ghiChuEl=document.getElementById(`dnp-note-inp-${maNV}-${ngay}`);
