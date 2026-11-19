@@ -23,7 +23,9 @@ const TN_LABELS = {
   hh_dungca_db:'Hoa hồng đứng ca 3% DB', online_tiktok:'Online (Tiktok)', sale_hoahong:'Hoa hồng Sale Đội',
   sale_tai_ch:'Hoa hồng cửa hàng', hh_thi_dua:'Hoa hồng thi đua', cong_tac_phi:'Công tác phí',
   ho_tro_khac:'Hỗ trợ / bổ sung khác', com_doi_live:'Tiền cơm đội Live', com_ch:'Tiền cơm cửa hàng',
-  thanhtoan_phep_nam:'Thanh toán phép năm', ngay_vao_lam:'Ngày vào làm', tham_nien:'Thâm niên',
+  thanhtoan_phep_nam:'Thanh toán phép năm',
+  cac_khoan_tinh_thue:'Các khoản đã chi (tính thuế)', hanh_kinh:'Hành kinh', con_nho:'Con nhỏ',  // [v18.218] 3 cột mới
+  ngay_vao_lam:'Ngày vào làm', tham_nien:'Thâm niên',
   tien_tham_nien:'Tiền thâm niên', tong_thu_nhap:'Tổng thu nhập', tong_tn_ck:'Tổng TN chuyển khoản',
   tong_tn_tm:'Tổng TN tiền mặt', bhxh_8:'BHXH 8%', bhyt_15:'BHYT 1,5%', bhtn_1:'BHTN 1%',
   bhxh_105:'BHXH (10,5%)', nguoi_phu_thuoc:'Người phụ thuộc', giam_tru_gia_canh:'Giảm trừ gia cảnh',

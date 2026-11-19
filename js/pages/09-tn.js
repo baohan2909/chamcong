@@ -421,6 +421,7 @@ const TN_KEYS=[
   'tong_gio_cong','gio_chuan','thanh_tien','gio_15','tangca_15','gio_x2','tangca_20','gio_x3','tangca_30',
   'cong_nang_suat','luong_nang_suat','luong_hqcv','pc_trach_nhiem',
   'tong_ngay_nghi','phep_su_dung','tien_luong_ngay_nghi','phep_con_lai','thanhtoan_phep_nam',
+  'cac_khoan_tinh_thue','hanh_kinh','con_nho',  // [v18.218] 3 cột MỚI chèn giữa (file 64 cột): Các khoản tính thuế · Hành kinh · Con nhỏ
   'hh_xuat_sac','hh_dungca_ch','hh_dungca_db','online_tiktok','sale_hoahong','sale_tai_ch','hh_khac',
   'cong_tac_phi','ho_tro_khac','tong_com','truy_linh','truy_thu',
   'ngay_vao_lam','tham_nien','tien_tham_nien',

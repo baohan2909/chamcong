@@ -26,7 +26,7 @@ window.APP_SETTINGS_DEFAULTS = {
   'sys.maintenance_mode': false,
   'sys.maintenance_message': 'Hệ thống đang bảo trì, vui lòng quay lại sau.',
   'sys.force_logout_ts': 0,
-  'sys.cache_version': 'v18.217',
+  'sys.cache_version': 'v18.218',
   'chk.bat': true,
   'chk.nhac_bat': true,
   'chk.gio_nhac': '09:00',
@@ -1902,7 +1902,7 @@ function chupAnhCamera(){
   const canvas = document.createElement('canvas');
   canvas.width = nw; canvas.height = nh;
   const ctx = canvas.getContext('2d');
-  // [v18.217] Selfie chấm công (camera trước) → LẬT GƯƠNG kiểu B; ảnh tài liệu (đơn nghỉ, camera sau) giữ nguyên.
+  // [v18.218] Selfie chấm công (camera trước) → LẬT GƯƠNG kiểu B; ảnh tài liệu (đơn nghỉ, camera sau) giữ nguyên.
   if (_cameraTarget === 'cham_cong') { ctx.save(); ctx.translate(nw,0); ctx.scale(-1,1); ctx.drawImage(v,0,0,nw,nh); ctx.restore(); }
   else { ctx.drawImage(v, 0, 0, nw, nh); }
   // Watermark
@@ -1976,7 +1976,7 @@ function xuLyAnhChup(input){
       else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
       const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
       const ctx=canvas.getContext('2d');
-      // [v18.217] LẬT GƯƠNG ảnh tay (kiểu B selfie) cho khớp PREVIEW iOS + ảnh quét mặt. iOS lưu ảnh camera
+      // [v18.218] LẬT GƯƠNG ảnh tay (kiểu B selfie) cho khớp PREVIEW iOS + ảnh quét mặt. iOS lưu ảnh camera
       //   trước kiểu "thật" (mặc định Mirror Front Camera TẮT) → đây lật lại thành selfie. Watermark vẽ SAU (không lật).
       ctx.save(); ctx.translate(w,0); ctx.scale(-1,1); ctx.drawImage(img,0,0,w,h); ctx.restore();
       const now=new Date();
@@ -2735,7 +2735,7 @@ function _renderGioCongTable(){
       //   → ca thường cùng CH cùng ngày với 1 ca cơ động KHÔNG còn bị lây nhãn "Cơ Động".
       const _teamVao = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioVao || '') + '|V']) || null;   // [v18.179] team của log VÀO tại giờ vào
       const _teamRa  = (window._gcTeamByTime && window._gcTeamByTime[ngay + '|' + (p.gioRa  || '') + '|R']) || null;   // [v18.179] team của log RA tại giờ ra
-      // [v18.217] Ca cơ động/đội QUA ĐÊM bị tách ở mốc 00:00 GIẢ (không có log thật tại 00:00 → thiếu team).
+      // [v18.218] Ca cơ động/đội QUA ĐÊM bị tách ở mốc 00:00 GIẢ (không có log thật tại 00:00 → thiếu team).
       //   Bên 00:00 KẾ THỪA team của cặp (vào‖ra) → cả 2 nửa (ngày trước + ngày sau) vẫn hiện "Cơ Động/Đội - CH".
       const _teamCapNN  = _teamVao || _teamRa;
       const _teamVaoEff = _teamVao || ((p.gioVao === '00:00') ? _teamCapNN : null);
