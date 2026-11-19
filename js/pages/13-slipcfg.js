@@ -10,37 +10,40 @@
 'use strict';
 
 // ── Nhãn tiếng Việt cho 71 khóa TN ──
+// [v18.219] NHÃN KHỚP CHÍNH XÁC TIÊU ĐỀ FILE EXCEL (64 cột) để "Nhập từ Excel" tự gắn đúng khóa,
+//   KHÔNG báo MỚI, KHÔNG đảo khóa ma_nv. Khi đổi tên/thêm cột thì cột đó mới báo MỚI → admin chọn khóa gắn.
+//   (Nhãn HIỂN THỊ trên phiếu lấy từ TN_GROUPS, KHÔNG phải bảng này → sửa đây không đổi phiếu.)
 const TN_LABELS = {
-  stt:'STT', ma_nv:'Mã nhân viên', ma_ns:'Mã NS', ho_ten:'Họ và tên', chuc_vu:'Chức vụ',
-  cua_hang:'Cửa hàng', ma_ch:'Mã cửa hàng', khu_vuc:'Khu vực', luong_cb:'Lương căn bản',
-  hieu_qua_cv:'Hiệu quả công việc (gốc)', bhxh_tham_gia:'BHXH tham gia', pc_com:'Phụ cấp cơm',
-  pc_xang:'Phụ cấp xăng', pc_dilai:'Phụ cấp đi lại', thuong_hieu_qua:'Thưởng hiệu quả',
-  pc_trach_nhiem:'Phụ cấp trách nhiệm, điện thoại', tong_gio_cong:'Tổng giờ công', gio_chuan:'Giờ công chuẩn',
-  thanh_tien:'Thành tiền công', gio_15:'Giờ tăng ca ×1.5 (ngày thường)', tangca_15:'Thành tiền tăng ca ×1.5',
-  gio_x2:'Giờ tăng ca ×2.0', tangca_20:'Thành tiền tăng ca ×2.0', gio_x3:'Giờ tăng ca ×3.0 (lễ)',
-  tangca_30:'Thành tiền tăng ca ×3.0', hieu_qua_thanhtien:'Hiệu quả công việc (thành tiền)',
+  // 64 cột theo đúng thứ tự file — nhãn = TIÊU ĐỀ trong file Excel
+  stt:'STT', ma_bh:'MÃ NV', ma_nv:'MSNV2', ho_ten:'HỌ VÀ TÊN', chuc_vu:'CHỨC VỤ',
+  cua_hang:'CỬA HÀNG', ma_ch:'MÃ CỬA HÀNG', khu_vuc:'KHU VỰC',
+  luong_cb:'Mức lương chính', hieu_qua_cv:'HQCV', bhxh_tham_gia:'Mức đóng BHXH',
+  tong_gio_cong:'Giờ công thực tế', gio_chuan:'Công chính', thanh_tien:'Thành tiền 1',
+  gio_15:'Tăng ca ngày thường', tangca_15:'Thành tiền 1.5', gio_x2:'Tăng ca ngày nghỉ hàng tuần',
+  tangca_20:'Thành tiền 2', gio_x3:'Tăng ca lễ', tangca_30:'Thành tiền 3',
+  cong_nang_suat:'Công năng suất', luong_nang_suat:'Lương năng suất', luong_hqcv:'Lương HQCV',
+  pc_trach_nhiem:'PC-TN (CĐ thực tế)',
+  tong_ngay_nghi:'Tổng cộng (Số ngày không làm việc)', phep_su_dung:'Phép năm, CĐ, Lễ, Tết',
+  tien_luong_ngay_nghi:'Tiền lương ngày nghỉ', phep_con_lai:'Phép tồn (cuối kỳ)', thanhtoan_phep_nam:'Trả phép (nghỉ việc)',
+  cac_khoan_tinh_thue:'Các khoản đã chi đưa vào tính thuế (Thưởng, sinh nhật,…)', hanh_kinh:'Hành kinh', con_nho:'Con nhỏ',
+  hh_xuat_sac:'HH xuất sắc', hh_dungca_ch:'HH Đứng ca CH', hh_dungca_db:'HH đứng ca ĐB',
+  online_tiktok:'HH Tiktok', sale_hoahong:'HH sale đội', sale_tai_ch:'HH sale', hh_khac:'HH khác',
+  cong_tac_phi:'Công tác phí', ho_tro_khac:'Thu nhập khác', tong_com:'Tổng cơm',
+  truy_linh:'Truy lĩnh', truy_thu:'Truy thu',
+  ngay_vao_lam:'Ngày vào làm', tham_nien:'Số năm thâm niên', tien_tham_nien:'Thâm niên',
+  tong_thu_nhap:'Tổng thu nhập',
+  bhxh_8:'BHXH', bhyt_15:'BHYT', bhtn_1:'BHTN', bhxh_105:'Tổng BHXH',
+  so_nguoi_phu_thuoc:'Số NPT', giam_tru_gia_canh:'Tổng GTGC', tn_chiu_thue:'Thu nhập chịu thuế', thue_tncn:'Thuế TNCN',
+  tong_tam_ung:'Tạm ứng', tong_phai_tru:'Tổng trừ', tong_thuc_lanh:'Thực lãnh',
+  tk_ten:'Tên', tk_stk:'Số tài khoản', tk_nganhang:'Ngân hàng', tk_chinhanh:'Chi nhánh', tk_gmail:'Email',
+  // Khóa cũ (format khác / dự phòng) — giữ nhãn để không gãy nếu cấu hình cũ còn dùng
+  ma_ns:'Mã NS', pc_com:'Phụ cấp cơm', pc_xang:'Phụ cấp xăng', pc_dilai:'Phụ cấp đi lại',
+  thuong_hieu_qua:'Thưởng hiệu quả', hieu_qua_thanhtien:'Hiệu quả công việc (thành tiền)',
   nghi_phep:'Nghỉ phép', hh_cht:'Hoa hồng CHT 1%', hh_nvbhsx:'Hoa hồng đơn hàng NVBH SX',
-  hh_dungca_db:'Hoa hồng đứng ca 3% DB', online_tiktok:'Online (Tiktok)', sale_hoahong:'Hoa hồng Sale Đội',
-  sale_tai_ch:'Hoa hồng cửa hàng', hh_thi_dua:'Hoa hồng thi đua', cong_tac_phi:'Công tác phí',
-  ho_tro_khac:'Hỗ trợ / bổ sung khác', com_doi_live:'Tiền cơm đội Live', com_ch:'Tiền cơm cửa hàng',
-  thanhtoan_phep_nam:'Thanh toán phép năm',
-  cac_khoan_tinh_thue:'Các khoản đã chi (tính thuế)', hanh_kinh:'Hành kinh', con_nho:'Con nhỏ',  // [v18.218] 3 cột mới
-  ngay_vao_lam:'Ngày vào làm', tham_nien:'Thâm niên',
-  tien_tham_nien:'Tiền thâm niên', tong_thu_nhap:'Tổng thu nhập', tong_tn_ck:'Tổng TN chuyển khoản',
-  tong_tn_tm:'Tổng TN tiền mặt', bhxh_8:'BHXH 8%', bhyt_15:'BHYT 1,5%', bhtn_1:'BHTN 1%',
-  bhxh_105:'BHXH (10,5%)', nguoi_phu_thuoc:'Người phụ thuộc', giam_tru_gia_canh:'Giảm trừ gia cảnh',
-  com_khong_thue:'Tiền cơm không tính thuế', tn_chiu_thue:'Thu nhập chịu thuế', thue_tncn:'Thuế TNCN',
-  tong_tam_ung:'Tạm ứng trong kỳ', tn_da_nhan:'Thu nhập đã nhận', tru_khac:'Trừ khác',
-  tong_phai_tru:'Tổng phải trừ', tong_thuc_lanh:'Tổng thực lãnh', thuc_nhan_ck:'Thực nhận chuyển khoản',
-  thuc_nhan_tm:'Thực nhận tại cửa hàng', tk_ten:'Chủ tài khoản', tk_stk:'Số tài khoản',
-  tk_nganhang:'Ngân hàng', tk_chinhanh:'Chi nhánh', tk_gmail:'Email', so_nguoi_phu_thuoc:'SL người phụ thuộc',
-  tong_gio_cong2:'Tổng giờ công (2)', tong_ngay_nghi:'Tổng cộng (số ngày không làm việc)', phep_su_dung:'Phép năm, CĐ, Lễ, Tết',
-  phep_con_lai:'Phép tồn (cuối kỳ)',
-  // [v18.185] Cột MỚI của format 61 cột
-  ma_bh:'Mã NV (BH)', cong_nang_suat:'Công năng suất', luong_nang_suat:'Lương năng suất',
-  luong_hqcv:'Lương HQCV', tien_luong_ngay_nghi:'Tiền lương ngày nghỉ',
-  hh_xuat_sac:'HH xuất sắc', hh_dungca_ch:'HH Đứng ca CH', hh_khac:'HH khác',
-  tong_com:'Tổng cơm', truy_linh:'Truy lĩnh', truy_thu:'Truy thu'
+  hh_thi_dua:'Hoa hồng thi đua', com_doi_live:'Tiền cơm đội Live', com_ch:'Tiền cơm cửa hàng',
+  tong_tn_ck:'Tổng TN chuyển khoản', tong_tn_tm:'Tổng TN tiền mặt', nguoi_phu_thuoc:'Người phụ thuộc',
+  com_khong_thue:'Tiền cơm không tính thuế', tn_da_nhan:'Thu nhập đã nhận', tru_khac:'Trừ khác',
+  thuc_nhan_ck:'Thực nhận chuyển khoản', thuc_nhan_tm:'Thực nhận tại cửa hàng', tong_gio_cong2:'Tổng giờ công (2)'
 };
 
 // ── Nhãn tiếng Việt cho 20 khóa Tạm ứng ──
@@ -283,7 +286,7 @@ function _colsHtml(){ const n=ST.cols.length; return ST.cols.map((c,i)=>_colRow(
 function _colRow(c,i,n){
   const tag = c.locked ? '<span class="scf-tag id">định danh</span>' : (c.custom?'<span class="scf-tag new">mới</span>':'');
   const keyHtml = c.custom
-    ? '<span class="scf-key editable" contenteditable="true" spellcheck="false" onblur="SLIPCFG._keyEdit('+i+',this)">'+_esc(c.key)+'</span>'
+    ? '<span class="scf-key editable" contenteditable="true" spellcheck="false" onblur="SLIPCFG._keyEdit('+i+',this)">'+_esc(c.key)+'</span>'+_keyPicker(i)
     : '<span class="scf-key">'+_esc(c.key)+'</span>';
   const del = c.locked
     ? '<span class="scf-lock" title="Cột định danh — không thể xoá"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>'
@@ -302,6 +305,22 @@ function _rerenderCols(){ const box=document.getElementById('scf-cols'); if(box)
 function _markColsDirty(){ if(ST){ ST.colsDirty=true; _updFoot(); } }
 function _lblEdit(i,v){ if(ST&&ST.cols[i]){ ST.cols[i].label=v; _markColsDirty(); } }
 function _keyEdit(i,el){ if(!ST||!ST.cols[i])return; const nk=_slug(el.textContent||''); if(nk!==ST.cols[i].key){ ST.cols[i].key=nk; _markColsDirty(); } el.textContent=nk; }
+// [v18.219] Dropdown CHỌN khóa nội bộ gắn vào cột MỚI (admin khỏi gõ tay, khỏi nhớ tên khóa).
+function _keyPicker(i){
+  if(!ST||!ST.def||!ST.def.defaultKeys) return '';
+  const used={}; (ST.cols||[]).forEach((c,ci)=>{ if(ci!==i && c && c.key) used[c.key]=1; });
+  const L=ST.def.labels||{};
+  const opts=ST.def.defaultKeys().map(function(k){
+    const lbl=L[k]||k; const dis=used[k]?' · đã dùng':'';
+    return '<option value="'+_esc(k)+'">'+_esc(lbl)+' ['+_esc(k)+']'+dis+'</option>';
+  }).join('');
+  return '<select class="scf-key-pick" style="margin-left:8px;font-size:11px;padding:2px 5px;border:1px solid #D1D5DB;border-radius:5px;max-width:210px;vertical-align:middle" onchange="SLIPCFG._keyPick('+i+',this.value)" title="Chọn khóa nội bộ để gắn vào cột này"><option value="">— gắn khóa —</option>'+opts+'</select>';
+}
+function _keyPick(i,key){
+  if(!ST||!ST.cols[i]||!key) return;
+  ST.cols[i].key=key; ST.cols[i].custom=false;   // đã gắn khóa chuẩn → hết "MỚI"
+  _markColsDirty(); _rerenderCols();
+}
 function _move(i,d){ if(!ST)return; const j=i+d; if(j<0||j>=ST.cols.length)return; const t=ST.cols[i];ST.cols[i]=ST.cols[j];ST.cols[j]=t; _markColsDirty(); _rerenderCols(); }
 function _del(i){ if(!ST||!ST.cols[i]||ST.cols[i].locked)return; ST.cols.splice(i,1); _markColsDirty(); _rerenderCols(); }
 function _add(){
@@ -568,7 +587,7 @@ async function _save(){
 // ── Export API ──
 window.SLIPCFG={
   open:open, close:close, resolveKeys:resolveKeys, resolveGroups:resolveGroups, isCustomized:isCustomized, defs:DEFS,
-  _tab:_setTab, _add:_add, _del:_del, _move:_move, _lblEdit:_lblEdit, _keyEdit:_keyEdit, _reset:_reset,
+  _tab:_setTab, _add:_add, _del:_del, _move:_move, _lblEdit:_lblEdit, _keyEdit:_keyEdit, _keyPick:_keyPick, _reset:_reset,
   _import:_import, _impApply:_impApply, _impCancel:_impCancel, _restore:_restore, _save:_save,
   _gAddG:_gAddG, _gReset:_gReset, _gName:_gName, _gAccent:_gAccent, _gAccentLive:_gAccentLive, _gHidden:_gHidden, _gMoveG:_gMoveG, _gDelG:_gDelG,
   _gRowLabel:_gRowLabel, _gRowKey:_gRowKey, _gRowFmt:_gRowFmt, _gRowZero:_gRowZero, _gRowMove:_gRowMove, _gRowDel:_gRowDel, _gAddRow:_gAddRow
