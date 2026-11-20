@@ -177,7 +177,7 @@ function _tnHeaderVal(d,key){
     case 'ma_nv': {
       const bh = (d.ma_bh||'').toString().trim();              // mã BH
       const ns = (d.ma_nv || d.ma_ns || '').toString().trim(); // mã NS
-      return (bh && ns && bh!==ns) ? (bh+' · '+ns) : (ns||bh);
+      return (ns && bh && ns!==bh) ? (ns+' · '+bh) : (ns||bh); // [v18.221] Mã NS trước · Mã BH sau
     }
     case 'ma_ns': return d.ma_ns || d.ma_nv;
     case 'cua_hang': return (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:'');
