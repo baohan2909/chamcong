@@ -173,8 +173,13 @@ function tnGroups(){ try{ if(window.SLIPCFG&&SLIPCFG.resolveGroups){ const g=SLI
 function _tnHeaderVal(d,key){
   switch(key){
     case 'ho_ten': return d.ho_ten;
-    case 'ma_nv': return (d.ma_nv||'')+(d.ma_ns?' · '+d.ma_ns:'');
-    case 'ma_ns': return d.ma_ns;
+    // [v18.220] Gộp Mã BH · Mã NS trong 1 ô (giữ giao diện 1 cụm, khỏi thêm cột). ma_bh=cột "MÃ NV", ma_nv=cột "MSNV2".
+    case 'ma_nv': {
+      const bh = (d.ma_bh||'').toString().trim();              // mã BH
+      const ns = (d.ma_nv || d.ma_ns || '').toString().trim(); // mã NS
+      return (bh && ns && bh!==ns) ? (bh+' · '+ns) : (ns||bh);
+    }
+    case 'ma_ns': return d.ma_ns || d.ma_nv;
     case 'cua_hang': return (d.cua_hang||'')+(d.ma_ch?' · '+d.ma_ch:'');
     case 'chuc_vu': return d.chuc_vu;
     case 'ngay_vao_lam': return _tnDate(d.ngay_vao_lam);
